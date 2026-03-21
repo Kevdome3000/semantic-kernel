@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
 using PromptyCore = Prompty.Core;
 
@@ -19,6 +13,7 @@ public static class KernelFunctionPrompty
     /// <summary>Default template factory to use when none is provided.</summary>
     internal static readonly AggregatorPromptTemplateFactory s_defaultTemplateFactory =
         new(new LiquidPromptTemplateFactory(), new HandlebarsPromptTemplateFactory(), new KernelPromptTemplateFactory());
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified markdown text.
@@ -43,6 +38,7 @@ public static class KernelFunctionPrompty
             loggerFactory);
     }
 
+
     /// <summary>
     /// Create a <see cref="PromptTemplateConfig"/> from a prompty template.
     /// </summary>
@@ -62,17 +58,18 @@ public static class KernelFunctionPrompty
         {
             Name = prompty.Name,
             Description = prompty.Description,
-            Template = prompty.Content.ToString() ?? string.Empty,
+            Template = prompty.Content.ToString() ?? string.Empty
         };
 
         PromptExecutionSettings? defaultExecutionSetting = null;
+
         if (prompty.Model?.Id is not null || prompty.Model?.Connection?.ServiceId is not null || prompty.Model?.Options?.Count > 0)
         {
-            defaultExecutionSetting = new PromptExecutionSettings()
+            defaultExecutionSetting = new PromptExecutionSettings
             {
                 ModelId = prompty.Model.Id,
                 ServiceId = prompty.Model.Connection?.ServiceId,
-                ExtensionData = prompty.Model.Options,
+                ExtensionData = prompty.Model.Options
             };
             promptTemplateConfig.AddExecutionSettings(defaultExecutionSetting);
         }
@@ -90,10 +87,11 @@ public static class KernelFunctionPrompty
                     IsRequired = input.Required,
                     Description = input.Description,
                     AllowDangerouslySetContent = !input.Strict,
-                    JsonSchema = ToJsonSchema(input.JsonSchema),
+                    JsonSchema = ToJsonSchema(input.JsonSchema)
                 });
             }
         }
+
         if (prompty.Outputs is not null)
         {
             // PromptTemplateConfig supports only a single output variable. If the prompty template
@@ -104,7 +102,7 @@ public static class KernelFunctionPrompty
                 promptTemplateConfig.OutputVariable = new()
                 {
                     Description = output.Description,
-                    JsonSchema = ToJsonSchema(output.JsonSchema),
+                    JsonSchema = ToJsonSchema(output.JsonSchema)
                 };
             }
         }
@@ -115,7 +113,9 @@ public static class KernelFunctionPrompty
         return promptTemplateConfig;
     }
 
+
     #region private
+
     private static string? ToJsonSchema(object? input)
     {
         if (input is null)
@@ -130,5 +130,8 @@ public static class KernelFunctionPrompty
 
         return JsonSerializer.Serialize(input);
     }
+
     #endregion
+
+
 }

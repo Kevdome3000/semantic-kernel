@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.Collections;
 using System.IO;
 using System.Linq;
@@ -28,21 +29,21 @@ internal static class FoundryWorkflowHelperExtensions
 
         // Check if URI contains "run" and body contains assistant_id starting with "wf_"
         bool isRunOrAgentPath =
-           uri.ToString().Contains("runs", StringComparison.OrdinalIgnoreCase) ||
-           uri.AbsolutePath.EndsWith("/agents", StringComparison.OrdinalIgnoreCase);
+            uri.ToString().Contains("runs", StringComparison.OrdinalIgnoreCase) || uri.AbsolutePath.EndsWith("/agents", StringComparison.OrdinalIgnoreCase);
 
         bool isWorkflowInstance =
             uri.AbsolutePath.Contains("/wf_agent");
 
         bool shouldRewriteToWorkflow =
-            (isRunOrAgentPath && isWorkflow) || isWorkflowInstance;
+            isRunOrAgentPath && isWorkflow || isWorkflowInstance;
 
         if (shouldRewriteToWorkflow)
         {
             // 1RP
             if (uriBuilder.Host.EndsWith("services.ai.azure.com", StringComparison.OrdinalIgnoreCase))
             {
-                var items = new ArrayList(uriBuilder.Path.Split(['/'], options: StringSplitOptions.RemoveEmptyEntries));
+                var items = new ArrayList(uriBuilder.Path.Split(['/'], StringSplitOptions.RemoveEmptyEntries));
+
                 if (items.Count > 3)
                 {
                     items.Insert(3, "workflows");
@@ -53,7 +54,10 @@ internal static class FoundryWorkflowHelperExtensions
             else
             {
                 // Non-1RP (Machine Learning RP)
-                uriBuilder.Path = Regex.Replace(uriBuilder.Path, "/agents/v1.0", "/workflows/v1.0", RegexOptions.IgnoreCase);
+                uriBuilder.Path = Regex.Replace(uriBuilder.Path,
+                    "/agents/v1.0",
+                    "/workflows/v1.0",
+                    RegexOptions.IgnoreCase);
             }
         }
 
@@ -72,6 +76,7 @@ internal static class FoundryWorkflowHelperExtensions
         return uriBuilder.Uri;
     }
 
+
     /// <summary>
     /// Determines whether the <see cref="RequestContent"/> contains a workflow pattern.
     /// </summary>
@@ -82,15 +87,17 @@ internal static class FoundryWorkflowHelperExtensions
         return IsWorkflowInternal(content, (c, s) => c?.WriteTo(s, default));
     }
 
+
     /// <summary>
     /// Determines whether the <see cref="System.ClientModel.BinaryContent"/> contains a workflow pattern.
     /// </summary>
     /// <param name="content">The binary content.</param>
     /// <returns><c>true</c> if the content contains a workflow pattern; otherwise, <c>false</c>.</returns>
-    public static bool IsWorkflow(this System.ClientModel.BinaryContent content)
+    public static bool IsWorkflow(this BinaryContent content)
     {
-        return IsWorkflowInternal(content, (c, s) => c?.WriteTo(s, default));
+        return IsWorkflowInternal(content, (c, s) => c?.WriteTo(s));
     }
+
 
     private static bool IsWorkflowInternal<T>(T content, Action<T, Stream> writeToStream)
     {
@@ -109,12 +116,14 @@ internal static class FoundryWorkflowHelperExtensions
         return false;
     }
 
+
     private static bool StreamContainsWorkflowPattern(Stream stream, params string[] bodies)
     {
         var patterns = bodies.Select(b => Encoding.UTF8.GetBytes(b)).ToArray();
         stream.Position = 0;
         int b;
         var matchIndexes = new int[patterns.Length];
+
         while ((b = stream.ReadByte()) != -1)
         {
             for (int i = 0; i < patterns.Length; i++)
@@ -122,6 +131,7 @@ internal static class FoundryWorkflowHelperExtensions
                 if (b == patterns[i][matchIndexes[i]])
                 {
                     matchIndexes[i]++;
+
                     if (matchIndexes[i] == patterns[i].Length)
                     {
                         return true;
@@ -129,12 +139,15 @@ internal static class FoundryWorkflowHelperExtensions
                 }
                 else
                 {
-                    matchIndexes[i] = (b == patterns[i][0]) ? 1 : 0;
+                    matchIndexes[i] = b == patterns[i][0]
+                        ? 1
+                        : 0;
                 }
             }
         }
         return false;
     }
+
 
     private static bool Contains(this string source, string value, StringComparison comparison)
     {

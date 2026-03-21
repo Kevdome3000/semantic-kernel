@@ -30,6 +30,7 @@ internal sealed class BingSearchResponse<T>
     public BingWebPages<T>? WebPages { get; set; }
 }
 
+
 /// <summary>
 /// The query string that Bing used for the request.
 /// </summary>
@@ -51,6 +52,7 @@ internal sealed class BingQueryContext
     [JsonPropertyName("alteredQuery")]
     public string? AlteredQuery { get; set; }
 }
+
 
 /// <summary>
 /// A list of webpages that are relevant to the search query.

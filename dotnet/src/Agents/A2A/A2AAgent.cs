@@ -26,11 +26,12 @@ public sealed class A2AAgent : Agent
         Verify.NotNull(client);
         Verify.NotNull(agentCard);
 
-        this.Client = client;
-        this.AgentCard = agentCard;
-        this.Name = agentCard.Name;
-        this.Description = agentCard.Description;
+        Client = client;
+        AgentCard = agentCard;
+        Name = agentCard.Name;
+        Description = agentCard.Description;
     }
+
 
     /// <summary>
     /// The associated client.
@@ -42,20 +43,26 @@ public sealed class A2AAgent : Agent
     /// </summary>
     public AgentCard AgentCard { get; }
 
+
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages);
 
-        var agentThread = await this.EnsureThreadExistsWithMessagesAsync(
-            messages,
-            thread,
-            () => new A2AAgentThread(this.Client),
-            cancellationToken).ConfigureAwait(false);
+        var agentThread = await EnsureThreadExistsWithMessagesAsync(
+                messages,
+                thread,
+                () => new A2AAgentThread(Client),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         // Invoke the agent.
-        var invokeResults = this.InternalInvokeAsync(
-            this.AgentCard.Name,
+        var invokeResults = InternalInvokeAsync(
+            AgentCard.Name,
             messages,
             agentThread,
             options ?? new AgentInvokeOptions(),
@@ -64,25 +71,31 @@ public sealed class A2AAgent : Agent
         // Notify the thread of new messages and return them to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
-            await this.NotifyThreadOfNewMessage(agentThread, result, cancellationToken).ConfigureAwait(false);
-            yield return new(result, agentThread);
+            await NotifyThreadOfNewMessage(agentThread, result, cancellationToken).ConfigureAwait(false);
+            yield return new AgentResponseItem<ChatMessageContent>(result, agentThread);
         }
     }
 
+
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+        ICollection<ChatMessageContent> messages,
+        AgentThread? thread = null,
+        AgentInvokeOptions? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages);
 
-        var agentThread = await this.EnsureThreadExistsWithMessagesAsync(
-            messages,
-            thread,
-            () => new A2AAgentThread(this.Client),
-            cancellationToken).ConfigureAwait(false);
+        var agentThread = await EnsureThreadExistsWithMessagesAsync(
+                messages,
+                thread,
+                () => new A2AAgentThread(Client),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         // Invoke the agent.
         var chatMessages = new ChatHistory();
-        var invokeResults = this.InternalInvokeStreamingAsync(
+        var invokeResults = InternalInvokeStreamingAsync(
             messages,
             agentThread,
             options ?? new AgentInvokeOptions(),
@@ -92,13 +105,13 @@ public sealed class A2AAgent : Agent
         // Return the chunks to the caller.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
-            yield return new(result, agentThread);
+            yield return new AgentResponseItem<StreamingChatMessageContent>(result, agentThread);
         }
 
         // Notify the thread of any new messages that were assembled from the streaming response.
         foreach (var chatMessage in chatMessages)
         {
-            await this.NotifyThreadOfNewMessage(agentThread, chatMessage, cancellationToken).ConfigureAwait(false);
+            await NotifyThreadOfNewMessage(agentThread, chatMessage, cancellationToken).ConfigureAwait(false);
 
             if (options?.OnIntermediateMessage is not null)
             {
@@ -107,11 +120,13 @@ public sealed class A2AAgent : Agent
         }
     }
 
+
     /// <inheritdoc/>
     protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
         throw new NotSupportedException($"{nameof(A2AAgent)} is not for use with {nameof(AgentChat)}.");
     }
+
 
     /// <inheritdoc/>
     protected override IEnumerable<string> GetChannelKeys()
@@ -119,14 +134,22 @@ public sealed class A2AAgent : Agent
         throw new NotSupportedException($"{nameof(A2AAgent)} is not for use with {nameof(AgentChat)}.");
     }
 
+
     /// <inheritdoc/>
     protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         throw new NotSupportedException($"{nameof(A2AAgent)} is not for use with {nameof(AgentChat)}.");
     }
 
+
     #region private
-    private async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InternalInvokeAsync(string name, ICollection<ChatMessageContent> messages, A2AAgentThread thread, AgentInvokeOptions options, [EnumeratorCancellation] CancellationToken cancellationToken)
+
+    private async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InternalInvokeAsync(
+        string name,
+        ICollection<ChatMessageContent> messages,
+        A2AAgentThread thread,
+        AgentInvokeOptions options,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Verify.NotNull(messages);
 
@@ -137,16 +160,26 @@ public sealed class A2AAgent : Agent
         }
 
         // Send all messages to the remote agent in a single request.
-        await foreach (var result in this.InvokeAgentAsync(messages, thread, options, cancellationToken).ConfigureAwait(false))
+        await foreach (var result in InvokeAgentAsync(messages,
+                thread,
+                options,
+                cancellationToken)
+            .ConfigureAwait(false))
         {
-            await this.NotifyThreadOfNewMessage(thread, result, cancellationToken).ConfigureAwait(false);
-            yield return new(result, thread);
+            await NotifyThreadOfNewMessage(thread, result, cancellationToken).ConfigureAwait(false);
+            yield return new AgentResponseItem<ChatMessageContent>(result, thread);
         }
     }
 
-    private async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAgentAsync(ICollection<ChatMessageContent> messages, A2AAgentThread thread, AgentInvokeOptions options, [EnumeratorCancellation] CancellationToken cancellationToken)
+
+    private async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAgentAsync(
+        ICollection<ChatMessageContent> messages,
+        A2AAgentThread thread,
+        AgentInvokeOptions options,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         List<Part> parts = [];
+
         foreach (var message in messages)
         {
             foreach (var item in message.Items)
@@ -155,7 +188,7 @@ public sealed class A2AAgent : Agent
                 {
                     parts.Add(new TextPart
                     {
-                        Text = textContent.Text ?? string.Empty,
+                        Text = textContent.Text ?? string.Empty
                     });
                 }
                 else
@@ -171,11 +204,12 @@ public sealed class A2AAgent : Agent
             {
                 MessageId = Guid.NewGuid().ToString(),
                 Role = MessageRole.User,
-                Parts = parts,
+                Parts = parts
             }
         };
 
-        A2AResponse response = await this.Client.SendMessageAsync(messageSendParams, cancellationToken).ConfigureAwait(false);
+        A2AResponse response = await Client.SendMessageAsync(messageSendParams, cancellationToken).ConfigureAwait(false);
+
         if (response is AgentTask agentTask)
         {
             if (agentTask.Artifacts != null && agentTask.Artifacts.Count > 0)
@@ -213,7 +247,13 @@ public sealed class A2AAgent : Agent
         }
     }
 
-    private async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InternalInvokeStreamingAsync(ICollection<ChatMessageContent> messages, A2AAgentThread thread, AgentInvokeOptions options, ChatHistory chatMessages, [EnumeratorCancellation] CancellationToken cancellationToken)
+
+    private async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InternalInvokeStreamingAsync(
+        ICollection<ChatMessageContent> messages,
+        A2AAgentThread thread,
+        AgentInvokeOptions options,
+        ChatHistory chatMessages,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         Verify.NotNull(messages);
 
@@ -224,24 +264,32 @@ public sealed class A2AAgent : Agent
         }
 
         // Send all messages to the remote agent in a single request.
-        await foreach (var result in this.InvokeAgentAsync(messages, thread, options, cancellationToken).ConfigureAwait(false))
+        await foreach (var result in InvokeAgentAsync(messages,
+                thread,
+                options,
+                cancellationToken)
+            .ConfigureAwait(false))
         {
-            await this.NotifyThreadOfNewMessage(thread, result, cancellationToken).ConfigureAwait(false);
-            yield return new(this.ToStreamingAgentResponseItem(result), thread);
+            await NotifyThreadOfNewMessage(thread, result, cancellationToken).ConfigureAwait(false);
+            yield return new AgentResponseItem<StreamingChatMessageContent>(ToStreamingAgentResponseItem(result), thread);
         }
     }
+
 
     private AgentResponseItem<StreamingChatMessageContent> ToStreamingAgentResponseItem(AgentResponseItem<ChatMessageContent> responseItem)
     {
         var messageContent = new StreamingChatMessageContent(
             responseItem.Message.Role,
             responseItem.Message.Content,
-            innerContent: responseItem.Message.InnerContent,
+            responseItem.Message.InnerContent,
             modelId: responseItem.Message.ModelId,
             encoding: responseItem.Message.Encoding,
             metadata: responseItem.Message.Metadata);
 
         return new AgentResponseItem<StreamingChatMessageContent>(messageContent, responseItem.Thread);
     }
+
     #endregion
+
+
 }

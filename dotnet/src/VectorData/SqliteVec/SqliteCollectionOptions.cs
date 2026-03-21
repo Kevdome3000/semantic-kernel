@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
-
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 /// <summary>
@@ -11,6 +9,7 @@ public sealed class SqliteCollectionOptions : VectorStoreCollectionOptions
 {
     internal static readonly SqliteCollectionOptions Default = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteCollectionOptions"/> class.
     /// </summary>
@@ -18,10 +17,12 @@ public sealed class SqliteCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
+
     internal SqliteCollectionOptions(SqliteCollectionOptions? source) : base(source)
     {
-        this.VectorVirtualTableName = source?.VectorVirtualTableName;
+        VectorVirtualTableName = source?.VectorVirtualTableName;
     }
+
 
     /// <summary>
     /// Custom virtual table name to store vectors.

@@ -20,4 +20,9 @@ namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 /// </param>
 /// <param name="options">The operation run options.</param>
 /// <returns>The operation payload.</returns>
-internal delegate (object Payload, HttpContent Content)? RestApiOperationPayloadFactory(RestApiOperation operation, IDictionary<string, object?> arguments, bool enableDynamicPayload, bool enablePayloadNamespacing, RestApiOperationRunOptions? options);
+internal delegate (object Payload, HttpContent Content)? RestApiOperationPayloadFactory(
+    RestApiOperation operation,
+    IDictionary<string, object?> arguments,
+    bool enableDynamicPayload,
+    bool enablePayloadNamespacing,
+    RestApiOperationRunOptions? options);

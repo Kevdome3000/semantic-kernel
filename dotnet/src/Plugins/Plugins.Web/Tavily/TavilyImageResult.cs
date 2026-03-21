@@ -25,6 +25,7 @@ internal sealed class TavilyImageResult
     [JsonRequired]
     public string Description { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TavilyImageResult" /> class.
     /// </summary>

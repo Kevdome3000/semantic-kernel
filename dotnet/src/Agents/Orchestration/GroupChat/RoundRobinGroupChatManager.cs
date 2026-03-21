@@ -3,7 +3,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 
@@ -17,6 +16,7 @@ public class RoundRobinGroupChatManager : GroupChatManager
 {
     private int _currentAgentIndex;
 
+
     /// <inheritdoc/>
     public override ValueTask<GroupChatManagerResult<string>> FilterResults(ChatHistory history, CancellationToken cancellationToken = default)
     {
@@ -28,18 +28,20 @@ public class RoundRobinGroupChatManager : GroupChatManager
 #endif
     }
 
+
     /// <inheritdoc/>
     public override ValueTask<GroupChatManagerResult<string>> SelectNextAgent(ChatHistory history, GroupChatTeam team, CancellationToken cancellationToken = default)
     {
-        string nextAgent = team.Skip(this._currentAgentIndex).First().Key;
-        this._currentAgentIndex = (this._currentAgentIndex + 1) % team.Count;
-        GroupChatManagerResult<string> result = new(nextAgent) { Reason = $"Selected agent at index: {this._currentAgentIndex}" };
+        string nextAgent = team.Skip(_currentAgentIndex).First().Key;
+        _currentAgentIndex = (_currentAgentIndex + 1) % team.Count;
+        GroupChatManagerResult<string> result = new(nextAgent) { Reason = $"Selected agent at index: {_currentAgentIndex}" };
 #if !NETCOREAPP
         return result.AsValueTask();
 #else
         return ValueTask.FromResult(result);
 #endif
     }
+
 
     /// <inheritdoc/>
     public override ValueTask<GroupChatManagerResult<bool>> ShouldRequestUserInput(ChatHistory history, CancellationToken cancellationToken = default)

@@ -29,10 +29,11 @@ public class TypePrefixSubscription : ISubscriptionDefinition
     /// <param name="id">Unique identifier for the subscription. If not provided, a new UUID will be generated.</param>
     public TypePrefixSubscription(string topicTypePrefix, AgentType agentType, string? id = null)
     {
-        this.TopicTypePrefix = topicTypePrefix;
-        this.AgentType = agentType;
-        this.Id = id ?? Guid.NewGuid().ToString();
+        TopicTypePrefix = topicTypePrefix;
+        AgentType = agentType;
+        Id = id ?? Guid.NewGuid().ToString();
     }
+
 
     /// <summary>
     /// Gets the unique identifier of the subscription.
@@ -49,6 +50,7 @@ public class TypePrefixSubscription : ISubscriptionDefinition
     /// </summary>
     public AgentType AgentType { get; }
 
+
     /// <summary>
     /// Checks if a given <see cref="TopicId"/> matches the subscription based on its type prefix.
     /// </summary>
@@ -56,8 +58,9 @@ public class TypePrefixSubscription : ISubscriptionDefinition
     /// <returns><c>true</c> if the topic's type starts with the subscription's prefix, <c>false</c> otherwise.</returns>
     public bool Matches(TopicId topic)
     {
-        return topic.Type.StartsWith(this.TopicTypePrefix, StringComparison.Ordinal);
+        return topic.Type.StartsWith(TopicTypePrefix, StringComparison.Ordinal);
     }
+
 
     /// <summary>
     /// Maps a <see cref="TopicId"/> to an <see cref="AgentId"/>. Should only be called if <see cref="Matches"/> returns true.
@@ -67,13 +70,14 @@ public class TypePrefixSubscription : ISubscriptionDefinition
     /// <exception cref="InvalidOperationException">Thrown if the topic does not match the subscription.</exception>
     public AgentId MapToAgent(TopicId topic)
     {
-        if (!this.Matches(topic))
+        if (!Matches(topic))
         {
             throw new InvalidOperationException("TopicId does not match the subscription.");
         }
 
-        return new AgentId(this.AgentType, topic.Source); // No need for .Name, since AgentType implicitly converts to string
+        return new AgentId(AgentType, topic.Source); // No need for .Name, since AgentType implicitly converts to string
     }
+
 
     /// <summary>
     /// Determines whether the specified object is equal to the current subscription.
@@ -83,18 +87,20 @@ public class TypePrefixSubscription : ISubscriptionDefinition
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
         return
-            obj is TypePrefixSubscription other &&
-                (this.Id == other.Id ||
-                    (this.AgentType == other.AgentType &&
-                     this.TopicTypePrefix == other.TopicTypePrefix));
+            obj is TypePrefixSubscription other && (Id == other.Id || AgentType == other.AgentType && TopicTypePrefix == other.TopicTypePrefix);
     }
+
 
     /// <summary>
     /// Determines whether the specified subscription is equal to the current subscription.
     /// </summary>
     /// <param name="other">The subscription to compare.</param>
     /// <returns><c>true</c> if the subscriptions are equal; otherwise, <c>false</c>.</returns>
-    public bool Equals(ISubscriptionDefinition? other) => this.Id == other?.Id;
+    public bool Equals(ISubscriptionDefinition? other)
+    {
+        return Id == other?.Id;
+    }
+
 
     /// <summary>
     /// Returns a hash code for this instance.
@@ -102,6 +108,6 @@ public class TypePrefixSubscription : ISubscriptionDefinition
     /// <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures.</returns>
     public override int GetHashCode()
     {
-        return HashCode.Combine(this.Id, this.AgentType, this.TopicTypePrefix);
+        return HashCode.Combine(Id, AgentType, TopicTypePrefix);
     }
 }

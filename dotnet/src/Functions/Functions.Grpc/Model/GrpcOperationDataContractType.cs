@@ -2,9 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Plugins.Grpc.Model;
 
-using System.Collections.Generic;
-
-
 /// <summary>
 /// The gRPC operation data contract.
 /// </summary>

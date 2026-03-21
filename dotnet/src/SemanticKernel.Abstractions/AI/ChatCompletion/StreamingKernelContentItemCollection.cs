@@ -7,6 +7,7 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.ChatCompletion;
 #pragma warning disable CA1033 // Interface methods should be callable by child types
 
+
 /// <summary>
 /// Contains collection of streaming kernel content items of type <see cref="StreamingKernelContent"/>.
 /// </summary>
@@ -19,6 +20,7 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
     {
         _items = [];
     }
+
 
     /// <summary>
     /// Gets or sets the content item at the specified index in the collection.
@@ -42,6 +44,7 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
     /// </summary>
     public int Count => _items.Count;
 
+
     /// <summary>
     /// Adds a content item to the collection.
     /// </summary>
@@ -52,6 +55,7 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
         Verify.NotNull(item);
         _items.Add(item);
     }
+
 
     /// <summary>
     /// Removes all content items from the collection.
@@ -74,6 +78,7 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
 
         return _items.Contains(item);
     }
+
 
     /// <summary>
     /// Copies all of the content items in the collection to an array, starting at the specified destination array index.
@@ -102,6 +107,7 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
         return _items.IndexOf(item);
     }
 
+
     /// <summary>
     /// Inserts a content item into the collection at the specified index.
     /// </summary>
@@ -113,6 +119,7 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
         Verify.NotNull(item);
         _items.Insert(index, item);
     }
+
 
     /// <summary>
     /// Removes the first occurrence of the specified content item from the collection.
@@ -127,6 +134,7 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
         return _items.Remove(item);
     }
 
+
     /// <summary>
     /// Removes the content item at the specified index from the collection.
     /// </summary>
@@ -139,6 +147,7 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
 
     /// <inheritdoc/>
     bool ICollection<StreamingKernelContent>.IsReadOnly => false;
+
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator()
@@ -159,5 +168,6 @@ public sealed class StreamingKernelContentItemCollection : IList<StreamingKernel
     private readonly List<StreamingKernelContent> _items;
 
     #endregion
+
 
 }

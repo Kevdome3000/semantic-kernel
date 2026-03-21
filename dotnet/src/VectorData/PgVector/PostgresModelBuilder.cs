@@ -4,9 +4,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
-using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
@@ -17,16 +16,20 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(ModelBuildingOpti
     public static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true
     };
 
 
     protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
-        => keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
+    {
+        return keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
+    }
+
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(short)
@@ -56,7 +59,12 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(ModelBuildingOpti
 
         static bool IsValid(Type type)
         {
-            return type == typeof(bool) || type == typeof(short) || type == typeof(int) || type == typeof(long) || type == typeof(float) || type == typeof(double) || type == typeof(decimal) || type == typeof(string) || type == typeof(byte[]) || type == typeof(DateTime) || type == typeof(DateTimeOffset) || type == typeof(Guid);
+            return type == typeof(bool) || type == typeof(short) || type == typeof(int) || type == typeof(long) || type == typeof(float) || type == typeof(double) || type == typeof(decimal) || type == typeof(string) || type == typeof(byte[]) || type == typeof(DateTime) || type == typeof(DateTimeOffset) ||#if NET
+            type == typeof(DateOnly)
+                || type == typeof(TimeOnly)
+                ||
+#endif
+                type == typeof(Guid);
         }
     }
 
@@ -81,9 +89,10 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(ModelBuildingOpti
             || type == typeof(float[])
             ||
 #if NET
-            type == typeof(ReadOnlyMemory<Half>) ||
-            type == typeof(Embedding<Half>) ||
-            type == typeof(Half[]) ||
+            type == typeof(ReadOnlyMemory<Half>)
+            || type == typeof(Embedding<Half>)
+            || type == typeof(Half[])
+            ||
 #endif
             type == typeof(BitArray)
             || type == typeof(SparseVector);
@@ -91,13 +100,30 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(ModelBuildingOpti
 
 
     /// <inheritdoc />
-    protected override Type? ResolveEmbeddingType(
-        VectorPropertyModel vectorProperty,
-        IEmbeddingGenerator embeddingGenerator,
-        Type? userRequestedEmbeddingType)
-        => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
+    protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
+    {
+        base.ValidateProperty(propertyModel, definition);
+
+        if (propertyModel.IsTimestampWithoutTimezone())
+        {
+            var type = Nullable.GetUnderlyingType(propertyModel.Type) ?? propertyModel.Type;
+
+            if (type != typeof(DateTime))
+            {
+                throw new NotSupportedException(
+                    $"Property '{propertyModel.ModelName}' has store type 'timestamp' configured, but this is only supported for DateTime properties. The property type is '{propertyModel.Type.Name}'.");
+            }
+        }
+    }
+
+
+    /// <inheritdoc />
+    protected override IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; } =
+    [
+        EmbeddingGenerationDispatcher.Create<Embedding<float>>(),
 #if NET
-        ?? vectorProperty.ResolveEmbeddingType<Embedding<Half>>(embeddingGenerator, userRequestedEmbeddingType)
+        EmbeddingGenerationDispatcher.Create<Embedding<Half>>(),
 #endif
-    ;
+        EmbeddingGenerationDispatcher.Create<BinaryEmbedding>()
+    ];
 }

@@ -8,6 +8,7 @@ using System.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Specifies that a method on a class imported as a plugin should be included as a <see cref="KernelFunction"/> in the resulting <see cref="KernelPlugin"/>.
 /// </summary>
@@ -77,13 +78,14 @@ namespace Microsoft.SemanticKernel;
 /// If no value can be derived from any of these means for all parameters, the invocation will fail.
 /// </para>
 /// </remarks>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Method)]
 public sealed class KernelFunctionAttribute : Attribute
 {
     /// <summary>Initializes the attribute.</summary>
     public KernelFunctionAttribute()
     {
     }
+
 
     /// <summary>Initializes the attribute.</summary>
     /// <param name="name">The name to use for the function.</param>

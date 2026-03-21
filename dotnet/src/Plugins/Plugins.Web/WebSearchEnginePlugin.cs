@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.Web;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
+namespace Microsoft.SemanticKernel.Plugins.Web;
 
 /// <summary>
 /// Web search engine plugin (e.g. Bing).
@@ -36,7 +35,7 @@ public sealed class WebSearchEnginePlugin
     /// </summary>
     private static readonly JsonSerializerOptions s_jsonOptionsCache = new()
     {
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
 
@@ -62,7 +61,7 @@ public sealed class WebSearchEnginePlugin
     /// This method is marked as "unsafe." The usage of JavaScriptEncoder.UnsafeRelaxedJsonEscaping may introduce security risks.
     /// Only use this method if you are aware of the potential risks and have validated the input to prevent security vulnerabilities.
     /// </remarks>
-    [KernelFunction, Description("Perform a web search.")]
+    [KernelFunction] [Description("Perform a web search.")]
     public async Task<string> SearchAsync(
         [Description("Search query")] string query,
         [Description("Number of results")] int count = 10,
@@ -70,8 +69,11 @@ public sealed class WebSearchEnginePlugin
         int offset = 0,
         CancellationToken cancellationToken = default)
     {
-        var results = await _connector.SearchAsync<string>(query, count, offset, cancellationToken).
-            ConfigureAwait(false);
+        var results = await _connector.SearchAsync<string>(query,
+                count,
+                offset,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         if (!results.Any())
         {
@@ -92,7 +94,7 @@ public sealed class WebSearchEnginePlugin
     /// <param name="offset">The number of results to skip. Default is 0.</param>
     /// <param name="cancellationToken">A cancellation token to observe while waiting for the task to complete.</param>
     /// <returns>The return value contains the search results as an IEnumerable WebPage object serialized as a string</returns>
-    [KernelFunction, Description("Perform a web search and return complete results.")]
+    [KernelFunction] [Description("Perform a web search and return complete results.")]
     public async Task<string> GetSearchResultsAsync(
         [Description("Text to search for")] string query,
         [Description("Number of results")] int count = 1,
@@ -104,8 +106,11 @@ public sealed class WebSearchEnginePlugin
 
         try
         {
-            results = await _connector.SearchAsync<WebPage>(query, count, offset, cancellationToken).
-                ConfigureAwait(false);
+            results = await _connector.SearchAsync<WebPage>(query,
+                    count,
+                    offset,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             if (!results.Any())
             {

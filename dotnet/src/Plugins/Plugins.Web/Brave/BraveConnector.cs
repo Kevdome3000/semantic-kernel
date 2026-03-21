@@ -21,8 +21,9 @@ public sealed class BraveConnector : IWebSearchEngineConnector
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
     private readonly string? _apiKey;
-    private readonly Uri? _uri = null;
+    private readonly Uri? _uri;
     private const string DefaultUri = "https://api.search.brave.com/res/v1/web/search?q";
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BraveConnector"/> class.
@@ -31,9 +32,13 @@ public sealed class BraveConnector : IWebSearchEngineConnector
     /// <param name="uri">The URI of the Bing Search instance. Defaults to "https://api.bing.microsoft.com/v7.0/search?q".</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public BraveConnector(string apiKey, Uri? uri = null, ILoggerFactory? loggerFactory = null) :
-        this(apiKey, HttpClientProvider.GetHttpClient(), uri, loggerFactory)
+        this(apiKey,
+            HttpClientProvider.GetHttpClient(),
+            uri,
+            loggerFactory)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BraveConnector"/> class.
@@ -42,7 +47,11 @@ public sealed class BraveConnector : IWebSearchEngineConnector
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
     /// <param name="uri">The URI of the Bing Search instance. Defaults to "https://api.bing.microsoft.com/v7.0/search?q".</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
-    public BraveConnector(string apiKey, HttpClient httpClient, Uri? uri = null, ILoggerFactory? loggerFactory = null)
+    public BraveConnector(
+        string apiKey,
+        HttpClient httpClient,
+        Uri? uri = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(httpClient);
 
@@ -54,8 +63,13 @@ public sealed class BraveConnector : IWebSearchEngineConnector
         _uri = uri ?? new Uri(DefaultUri);
     }
 
+
     /// <inheritdoc/>
-    public async Task<IEnumerable<T>> SearchAsync<T>(string query, int count = 1, int offset = 0, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> SearchAsync<T>(
+        string query,
+        int count = 1,
+        int offset = 0,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(query);
 
@@ -85,6 +99,7 @@ public sealed class BraveConnector : IWebSearchEngineConnector
         var data = JsonSerializer.Deserialize<BraveSearchResponse<BraveWebResult>>(json);
 
         List<T>? returnValues = null;
+
         if (data?.Web?.Results is not null)
         {
             if (typeof(T) == typeof(string))
@@ -100,7 +115,8 @@ public sealed class BraveConnector : IWebSearchEngineConnector
             else if (typeof(T) == typeof(WebPage))
             {
                 List<WebPage>? webPages = data.Web?.Results
-                    .Select(x => new WebPage() { Name = x.Title, Snippet = x.Description, Url = x.Url }).ToList();
+                    .Select(x => new WebPage { Name = x.Title, Snippet = x.Description, Url = x.Url })
+                    .ToList();
 
                 returnValues = webPages!.Take(count).ToList() as List<T>;
             }
@@ -125,7 +141,8 @@ public sealed class BraveConnector : IWebSearchEngineConnector
             else if (typeof(T) == typeof(WebPage))
             {
                 List<WebPage>? webPages = data.Videos?.Results
-                    .Select(x => new WebPage() { Name = x.Title, Snippet = x.Description, Url = x.Url }).ToList();
+                    .Select(x => new WebPage { Name = x.Title, Snippet = x.Description, Url = x.Url })
+                    .ToList();
 
                 returnValues = webPages!.Take(count).ToList() as List<T>;
             }
@@ -135,10 +152,13 @@ public sealed class BraveConnector : IWebSearchEngineConnector
             }
         }
         return
-            returnValues is null ? [] :
-            returnValues.Count <= count ? returnValues :
-            returnValues.Take(count);
+            returnValues is null
+                ? []
+                : returnValues.Count <= count
+                    ? returnValues
+                    : returnValues.Take(count);
     }
+
 
     /// <summary>
     /// Sends a GET request to the specified URI.

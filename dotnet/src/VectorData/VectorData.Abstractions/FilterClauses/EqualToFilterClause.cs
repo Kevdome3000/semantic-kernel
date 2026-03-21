@@ -1,10 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
 /// Represents a filter clause that filters using equality of a field value.
 /// </summary>
+[Obsolete("Use LINQ expressions via VectorSearchOptions<TRecord>.Filter instead. This type will be removed in a future version.")]
 public sealed class EqualToFilterClause : FilterClause
 {
     /// <summary>
@@ -14,9 +17,10 @@ public sealed class EqualToFilterClause : FilterClause
     /// <param name="value">Field value.</param>
     public EqualToFilterClause(string fieldName, object value)
     {
-        this.FieldName = fieldName;
-        this.Value = value;
+        FieldName = fieldName;
+        Value = value;
     }
+
 
     /// <summary>
     /// Gets the field name to match.

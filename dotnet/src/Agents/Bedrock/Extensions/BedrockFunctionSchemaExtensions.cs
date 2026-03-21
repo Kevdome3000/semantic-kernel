@@ -2,8 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
 using Amazon.BedrockAgentRuntime.Model;
+using FunctionSchema = Amazon.BedrockAgent.Model.FunctionSchema;
+using ParameterDetail = Amazon.BedrockAgent.Model.ParameterDetail;
+using Type = Amazon.BedrockAgent.Type;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
 
@@ -15,6 +19,7 @@ internal static class BedrockFunctionSchemaExtensions
     public static KernelArguments FromFunctionParameters(this List<FunctionParameter> parameters, KernelArguments? arguments)
     {
         KernelArguments kernelArguments = arguments ?? [];
+
         foreach (var parameter in parameters)
         {
             kernelArguments.Add(parameter.Name, parameter.Value);
@@ -23,10 +28,12 @@ internal static class BedrockFunctionSchemaExtensions
         return kernelArguments;
     }
 
-    public static Amazon.BedrockAgent.Model.FunctionSchema ToFunctionSchema(this Kernel kernel)
+
+    public static FunctionSchema ToFunctionSchema(this Kernel kernel)
     {
         var plugins = kernel.Plugins;
         List<Function> functions = [];
+
         foreach (var plugin in plugins)
         {
             foreach (KernelFunction function in plugin)
@@ -41,62 +48,66 @@ internal static class BedrockFunctionSchemaExtensions
                     // Only after the user confirms, the function call request will be issued by the agent.
                     // If the user denies the confirmation, the agent will act as if the function does not exist.
                     // Currently, we do not support this feature, so we set it to "DISABLED".
-                    RequireConfirmation = Amazon.BedrockAgent.RequireConfirmation.DISABLED,
+                    RequireConfirmation = RequireConfirmation.DISABLED
                 });
             }
         }
 
-        return new Amazon.BedrockAgent.Model.FunctionSchema
+        return new FunctionSchema
         {
-            Functions = functions,
+            Functions = functions
         };
     }
 
-    private static Dictionary<string, Amazon.BedrockAgent.Model.ParameterDetail> CreateParameterSpec(
+
+    private static Dictionary<string, ParameterDetail> CreateParameterSpec(
         this IReadOnlyList<KernelParameterMetadata> parameters)
     {
-        Dictionary<string, Amazon.BedrockAgent.Model.ParameterDetail> parameterSpec = [];
+        Dictionary<string, ParameterDetail> parameterSpec = [];
+
         foreach (var parameter in parameters)
         {
-            parameterSpec.Add(parameter.Name, new Amazon.BedrockAgent.Model.ParameterDetail
-            {
-                Description = parameter.Description,
-                Required = parameter.IsRequired,
-                Type = parameter.ParameterType.ToAmazonType(),
-            });
+            parameterSpec.Add(parameter.Name,
+                new ParameterDetail
+                {
+                    Description = parameter.Description,
+                    Required = parameter.IsRequired,
+                    Type = parameter.ParameterType.ToAmazonType()
+                });
         }
 
         return parameterSpec;
     }
 
-    private static Amazon.BedrockAgent.Type ToAmazonType(this System.Type? parameterType)
+
+    private static Type ToAmazonType(this System.Type? parameterType)
     {
         var typeString = parameterType?.GetFriendlyTypeName();
         return typeString switch
         {
-            "String" => Amazon.BedrockAgent.Type.String,
-            "Boolean" => Amazon.BedrockAgent.Type.Boolean,
-            "Int16" => Amazon.BedrockAgent.Type.Integer,
-            "UInt16" => Amazon.BedrockAgent.Type.Integer,
-            "Int32" => Amazon.BedrockAgent.Type.Integer,
-            "UInt32" => Amazon.BedrockAgent.Type.Integer,
-            "Int64" => Amazon.BedrockAgent.Type.Integer,
-            "UInt64" => Amazon.BedrockAgent.Type.Integer,
-            "Single" => Amazon.BedrockAgent.Type.Number,
-            "Double" => Amazon.BedrockAgent.Type.Number,
-            "Decimal" => Amazon.BedrockAgent.Type.Number,
-            "String[]" => Amazon.BedrockAgent.Type.Array,
-            "Boolean[]" => Amazon.BedrockAgent.Type.Array,
-            "Int16[]" => Amazon.BedrockAgent.Type.Array,
-            "UInt16[]" => Amazon.BedrockAgent.Type.Array,
-            "Int32[]" => Amazon.BedrockAgent.Type.Array,
-            "UInt32[]" => Amazon.BedrockAgent.Type.Array,
-            "Int64[]" => Amazon.BedrockAgent.Type.Array,
-            "UInt64[]" => Amazon.BedrockAgent.Type.Array,
-            "Single[]" => Amazon.BedrockAgent.Type.Array,
-            "Double[]" => Amazon.BedrockAgent.Type.Array,
-            "Decimal[]" => Amazon.BedrockAgent.Type.Array,
-            _ => throw new ArgumentException($"Unsupported parameter type: {typeString}"),
+            "String" => Type.String,
+            "Boolean" => Type.Boolean,
+            "Int16" => Type.Integer,
+            "UInt16" => Type.Integer,
+            "Int32" => Type.Integer,
+            "UInt32" => Type.Integer,
+            "Int64" => Type.Integer,
+            "UInt64" => Type.Integer,
+            "Single" => Type.Number,
+            "Double" => Type.Number,
+            "Decimal" => Type.Number,
+            "String[]" => Type.Array,
+            "Boolean[]" => Type.Array,
+            "Int16[]" => Type.Array,
+            "UInt16[]" => Type.Array,
+            "Int32[]" => Type.Array,
+            "UInt32[]" => Type.Array,
+            "Int64[]" => Type.Array,
+            "UInt64[]" => Type.Array,
+            "Single[]" => Type.Array,
+            "Double[]" => Type.Array,
+            "Decimal[]" => Type.Array,
+            _ => throw new ArgumentException($"Unsupported parameter type: {typeString}")
         };
     }
 }

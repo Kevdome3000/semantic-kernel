@@ -30,6 +30,7 @@ public class ChatHistoryChannelTests
         await Assert.ThrowsAsync<KernelException>(() => channel.InvokeAsync(agent.Object).ToArrayAsync().AsTask());
     }
 
+
     /// <summary>
     /// Verify a <see cref="ChatHistoryChannel"/> filters empty content on receive.
     /// </summary>
@@ -45,6 +46,7 @@ public class ChatHistoryChannelTests
         // Assert
         Assert.Empty(await channel.GetHistoryAsync().ToArrayAsync());
     }
+
 
     /// <summary>
     /// Verify a <see cref="ChatHistoryChannel"/> filters file content on receive.
@@ -66,18 +68,21 @@ public class ChatHistoryChannelTests
 
         // Act
         await channel.ReceiveAsync(
-            [new ChatMessageContent(
+        [
+            new ChatMessageContent(
                 AuthorRole.Assistant,
                 [
                     new TextContent("test"),
                     new FileReferenceContent("fileId")
-                ])]);
+                ])
+        ]);
 
         // Assert
         var history = await channel.GetHistoryAsync().ToArrayAsync();
         Assert.Single(history);
         Assert.Equal(2, history[0].Items.Count);
     }
+
 
     /// <summary>
     /// Verify a <see cref="ChatHistoryChannel"/> accepts function content on receive.
@@ -95,7 +100,7 @@ public class ChatHistoryChannelTests
         Assert.Single(await channel.GetHistoryAsync().ToArrayAsync());
 
         // Arrange
-        channel = new();
+        channel = new ChatHistoryChannel();
 
         // Act
         await channel.ReceiveAsync([new ChatMessageContent(AuthorRole.Assistant, [new FunctionResultContent("test-func")])]);
@@ -103,6 +108,7 @@ public class ChatHistoryChannelTests
         // Assert
         Assert.Single(await channel.GetHistoryAsync().ToArrayAsync());
     }
+
 
     /// <summary>
     /// Verify a <see cref="ChatHistoryChannel"/> accepts image content on receive.

@@ -15,6 +15,7 @@ public sealed partial class CopilotStudioAgent : Agent
 {
     private const string CopilotStudioHttpClientName = nameof(CopilotStudioAgent);
 
+
     /// <summary>
     /// Creates a new instance of <see cref="CopilotClient"/> configured with the provided settings and an optional logger.
     /// </summary>
@@ -36,7 +37,10 @@ public sealed partial class CopilotStudioAgent : Agent
                 .BuildServiceProvider()
                 .GetRequiredService<IHttpClientFactory>();
 
-        CopilotClient client = new(settings, httpClientFactory, logger ?? NullLogger.Instance, CopilotStudioHttpClientName);
+        CopilotClient client = new(settings,
+            httpClientFactory,
+            logger ?? NullLogger.Instance,
+            CopilotStudioHttpClientName);
 
         return client;
     }

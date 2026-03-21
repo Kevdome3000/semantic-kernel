@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
@@ -16,7 +17,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
     public void AsAIAgent_WithValidOpenAIResponseAgent_ReturnsSemanticKernelAIAgent()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
         var responseAgent = new OpenAIResponseAgent(responseClient);
 
         // Act
@@ -26,6 +27,7 @@ public sealed class OpenAIResponseAgentExtensionsTests
         Assert.NotNull(result);
         Assert.IsType<SemanticKernelAIAgent>(result);
     }
+
 
     [Fact]
     public void AsAIAgent_WithNullOpenAIResponseAgent_ThrowsArgumentNullException()
@@ -37,11 +39,12 @@ public sealed class OpenAIResponseAgentExtensionsTests
         Assert.Throws<ArgumentNullException>(() => nullAgent.AsAIAgent());
     }
 
+
     [Fact]
     public void AsAIAgent_CreatesWorkingThreadFactoryStoreTrue()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
         var responseAgent = new OpenAIResponseAgent(responseClient)
         {
             StoreEnabled = true
@@ -58,11 +61,12 @@ public sealed class OpenAIResponseAgentExtensionsTests
         Assert.IsType<OpenAIResponseAgentThread>(threadAdapter.InnerThread);
     }
 
+
     [Fact]
     public void AsAIAgent_CreatesWorkingThreadFactoryStoreFalse()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
         var responseAgent = new OpenAIResponseAgent(responseClient)
         {
             StoreEnabled = false
@@ -79,11 +83,12 @@ public sealed class OpenAIResponseAgentExtensionsTests
         Assert.IsType<ChatHistoryAgentThread>(threadAdapter.InnerThread);
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
         var responseAgent = new OpenAIResponseAgent(responseClient)
         {
             StoreEnabled = true
@@ -101,11 +106,12 @@ public sealed class OpenAIResponseAgentExtensionsTests
         Assert.IsType<OpenAIResponseAgentThread>(threadAdapter.InnerThread);
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
         var responseAgent = new OpenAIResponseAgent(responseClient)
         {
             StoreEnabled = true
@@ -125,11 +131,12 @@ public sealed class OpenAIResponseAgentExtensionsTests
         Assert.Equal(threadId, threadAdapter.InnerThread.Id);
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadSerializer_SerializesThreadId()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
         var responseAgent = new OpenAIResponseAgent(responseClient)
         {
             StoreEnabled = true
@@ -149,10 +156,11 @@ public sealed class OpenAIResponseAgentExtensionsTests
         Assert.Equal(expectedThreadId, serializedElement.GetString());
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithNullJson_CreatesThreadWithEmptyChatHistory()
     {
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
         var responseAgent = new OpenAIResponseAgent(responseClient);
         var jsonElement = JsonSerializer.SerializeToElement((string?)null);
 
@@ -168,10 +176,11 @@ public sealed class OpenAIResponseAgentExtensionsTests
         Assert.Empty(chatHistoryAgentThread.ChatHistory);
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithChatHistory_CreatesThreadWithChatHistory()
     {
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
         var responseAgent = new OpenAIResponseAgent(responseClient);
         var expectedChatHistory = new ChatHistory("mock message", AuthorRole.User);
         var jsonElement = JsonSerializer.SerializeToElement(expectedChatHistory);
@@ -191,11 +200,12 @@ public sealed class OpenAIResponseAgentExtensionsTests
         Assert.Equal("mock message", firstMessage.Content);
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadSerializer_SerializesChatHistory()
     {
         // Arrange
-        var responseClient = new OpenAIResponseClient("model", "apikey");
+        var responseClient = new ResponsesClient(new ApiKeyCredential("apikey"));
         var responseAgent = new OpenAIResponseAgent(responseClient);
         var expectedChatHistory = new ChatHistory("mock message", AuthorRole.User);
         var jsonElement = JsonSerializer.SerializeToElement(expectedChatHistory);

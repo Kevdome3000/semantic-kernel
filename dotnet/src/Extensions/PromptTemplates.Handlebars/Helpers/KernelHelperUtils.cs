@@ -7,6 +7,7 @@ using System.Text.Json.Nodes;
 using HandlebarsDotNet;
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Handlebars.Helpers;
+
 /// <summary>
 /// Extension class to register additional helpers as Kernel System helpers.
 /// </summary>
@@ -28,6 +29,7 @@ internal static class KernelHelpersUtils
         handlebarsInstance.RegisterHelper(helperName, helper);
     }
 
+
     /// <summary>
     /// Returns value if defined, else, tries to resolve value from given KernelArguments dictionary.
     /// </summary>
@@ -48,6 +50,7 @@ internal static class KernelHelpersUtils
         return argument;
     }
 
+
     /// <summary>
     /// Processes arguments to resolve unbinded values. If argument was not bound to the Handlebars template at render time, get the value from the KernelArguments dictionary.
     /// </summary>
@@ -64,6 +67,7 @@ internal static class KernelHelpersUtils
         return new Arguments(processedArguments.ToArray());
     }
 
+
     /// <summary>
     /// Determines whether the specified type is a numeric type.
     /// </summary>
@@ -72,21 +76,12 @@ internal static class KernelHelpersUtils
     public static bool IsNumericType(Type? type)
     {
         return type == typeof(nuint)
-               || type == typeof(nint)
-               || (type is not null &&
-                   Type.GetTypeCode(type) is
-                       TypeCode.SByte or
-                       TypeCode.Int16 or
-                       TypeCode.Int32 or
-                       TypeCode.Int64 or
-                       TypeCode.Byte or
-                       TypeCode.UInt16 or
-                       TypeCode.UInt32 or
-                       TypeCode.UInt64 or
-                       TypeCode.Double or
-                       TypeCode.Single or
-                       TypeCode.Decimal);
+            || type == typeof(nint)
+            || type is not null
+            && Type.GetTypeCode(type) is
+                TypeCode.SByte or TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 or TypeCode.Byte or TypeCode.UInt16 or TypeCode.UInt32 or TypeCode.UInt64 or TypeCode.Double or TypeCode.Single or TypeCode.Decimal;
     }
+
 
     /// <summary>
     /// Tries to parse the input as any of the numeric types.
@@ -97,11 +92,9 @@ internal static class KernelHelpersUtils
     {
         // Check if input can be parsed as any of these numeric types.
         // We only need to check the largest types, as if they fail, the smaller types will also fail.
-        return long.TryParse(input, out _) ||
-               ulong.TryParse(input, out _) ||
-               double.TryParse(input, out _) ||
-               decimal.TryParse(input, out _);
+        return long.TryParse(input, out _) || ulong.TryParse(input, out _) || double.TryParse(input, out _) || decimal.TryParse(input, out _);
     }
+
 
     /// <summary>
     /// Tries to convert a <see cref="JsonNode"/> object to a specific type.

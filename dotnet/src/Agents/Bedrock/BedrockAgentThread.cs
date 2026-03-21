@@ -4,14 +4,17 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgentRuntime;
+using Amazon.BedrockAgentRuntime.Model;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
+
 /// <summary>
 /// Represents a conversation thread for a Bedrock agent.
 /// </summary>
 public sealed class BedrockAgentThread : AgentThread
 {
     private readonly IAmazonBedrockAgentRuntime _runtimeClient;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BedrockAgentThread"/> class.
@@ -21,9 +24,10 @@ public sealed class BedrockAgentThread : AgentThread
     /// <exception cref="ArgumentNullException"></exception>
     public BedrockAgentThread(IAmazonBedrockAgentRuntime runtimeClient, string? sessionId = null)
     {
-        this._runtimeClient = runtimeClient ?? throw new ArgumentNullException(nameof(runtimeClient));
-        this.Id = sessionId;
+        _runtimeClient = runtimeClient ?? throw new ArgumentNullException(nameof(runtimeClient));
+        Id = sessionId;
     }
+
 
     /// <summary>
     /// Creates the thread and returns the thread id.
@@ -35,6 +39,7 @@ public sealed class BedrockAgentThread : AgentThread
         return base.CreateAsync(cancellationToken);
     }
 
+
     /// <inheritdoc />
     protected override async Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
     {
@@ -42,9 +47,10 @@ public sealed class BedrockAgentThread : AgentThread
 
         try
         {
-            var response = await this._runtimeClient.CreateSessionAsync(
-                request: new(),
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+            var response = await _runtimeClient.CreateSessionAsync(
+                    new CreateSessionRequest(),
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             return response.SessionId;
         }
@@ -58,6 +64,7 @@ public sealed class BedrockAgentThread : AgentThread
         }
     }
 
+
     /// <inheritdoc />
     protected override async Task DeleteInternalAsync(CancellationToken cancellationToken)
     {
@@ -65,21 +72,23 @@ public sealed class BedrockAgentThread : AgentThread
 
         try
         {
-            var endSessionResponse = await this._runtimeClient.EndSessionAsync(
-                request: new()
-                {
-                    SessionIdentifier = this.Id
-                },
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+            var endSessionResponse = await _runtimeClient.EndSessionAsync(
+                    new EndSessionRequest
+                    {
+                        SessionIdentifier = Id
+                    },
+                    cancellationToken)
+                .ConfigureAwait(false);
 
-            var deleteSessionResponse = await this._runtimeClient.DeleteSessionAsync(
-                request: new()
-                {
-                    SessionIdentifier = this.Id
-                },
-                cancellationToken: cancellationToken).ConfigureAwait(false);
+            var deleteSessionResponse = await _runtimeClient.DeleteSessionAsync(
+                    new DeleteSessionRequest
+                    {
+                        SessionIdentifier = Id
+                    },
+                    cancellationToken)
+                .ConfigureAwait(false);
 
-            this.Id = null;
+            Id = null;
         }
         catch (AmazonBedrockAgentRuntimeException ex)
         {
@@ -91,10 +100,11 @@ public sealed class BedrockAgentThread : AgentThread
         }
     }
 
+
     /// <inheritdoc />
     protected override async Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
         // Create the thread if it does not exist. Bedrock agents cannot add messages to the thread without invoking so we don't do that here
-        await this.CreateAsync(cancellationToken).ConfigureAwait(false);
+        await CreateAsync(cancellationToken).ConfigureAwait(false);
     }
 }

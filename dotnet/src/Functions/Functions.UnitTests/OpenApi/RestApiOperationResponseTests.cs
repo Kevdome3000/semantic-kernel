@@ -21,6 +21,7 @@ public class RestApiOperationResponseTests
         Assert.True(result);
     }
 
+
     [Fact]
     public void ItShouldValidateByteContentTWithNoSchema()
     {
@@ -33,6 +34,7 @@ public class RestApiOperationResponseTests
         //Assert
         Assert.True(result);
     }
+
 
     [Theory]
     [InlineData("fake-content", "application/json", "{\"type\": \"string\"}")]
@@ -50,6 +52,7 @@ public class RestApiOperationResponseTests
         //Assert
         Assert.False(result);
     }
+
 
     [Theory]
     [InlineData("\"fake-content\"", "application/json", "{\"type\": \"string\"}")]
@@ -69,6 +72,7 @@ public class RestApiOperationResponseTests
         Assert.True(result);
     }
 
+
     [Theory]
     [InlineData("ValidProductContent.json", "application/json", "ObjectResponseSchema.json")]
     [InlineData("ValidProductContent.json", "application/json", "ProductResponseSchema.json")]
@@ -86,6 +90,7 @@ public class RestApiOperationResponseTests
         Assert.True(result);
     }
 
+
     [Theory]
     [InlineData("NotProductContent.json", "application/json", "ProductResponseSchema.json")]
     [InlineData("InvalidProductContent.json", "application/json", "ProductResponseSchema.json")]
@@ -102,6 +107,7 @@ public class RestApiOperationResponseTests
         //Assert
         Assert.False(result);
     }
+
 
     [Theory]
     [InlineData(null, "")]

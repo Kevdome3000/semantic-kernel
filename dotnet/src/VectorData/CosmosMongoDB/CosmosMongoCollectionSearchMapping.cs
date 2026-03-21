@@ -1,11 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Linq;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
-using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 
@@ -15,10 +10,22 @@ namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 internal static class CosmosMongoCollectionSearchMapping
 {
     /// <summary>Returns index kind specified on vector property or default <see cref="MongoConstants.DefaultIndexKind"/>.</summary>
-    public static string GetVectorPropertyIndexKind(string? indexKind) => !string.IsNullOrWhiteSpace(indexKind) ? indexKind! : MongoConstants.DefaultIndexKind;
+    public static string GetVectorPropertyIndexKind(string? indexKind)
+    {
+        return !string.IsNullOrWhiteSpace(indexKind)
+            ? indexKind!
+            : MongoConstants.DefaultIndexKind;
+    }
+
 
     /// <summary>Returns distance function specified on vector property or default <see cref="MongoConstants.DefaultDistanceFunction"/>.</summary>
-    public static string GetVectorPropertyDistanceFunction(string? distanceFunction) => !string.IsNullOrWhiteSpace(distanceFunction) ? distanceFunction! : MongoConstants.DefaultDistanceFunction;
+    public static string GetVectorPropertyDistanceFunction(string? distanceFunction)
+    {
+        return !string.IsNullOrWhiteSpace(distanceFunction)
+            ? distanceFunction!
+            : MongoConstants.DefaultDistanceFunction;
+    }
+
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <summary>
@@ -56,8 +63,8 @@ internal static class CosmosMongoCollectionSearchMapping
             else
             {
                 throw new NotSupportedException(
-                    $"Unsupported filter clause type '{filterClause.GetType().Name}'. " +
-                    $"Supported filter clause types are: {string.Join(", ", [
+                    $"Unsupported filter clause type '{filterClause.GetType().Name}'. "
+                    + $"Supported filter clause types are: {string.Join(", ", [
                         nameof(EqualToFilterClause)])}");
             }
 
@@ -73,21 +80,21 @@ internal static class CosmosMongoCollectionSearchMapping
                 if (filter[storageName] is BsonDocument document && document.Contains(filterOperator))
                 {
                     throw new NotSupportedException(
-                        $"Filter with operator '{filterOperator}' is already added to '{propertyName}' property. " +
-                        "Multiple filters of the same type in the same property are not supported.");
+                        $"Filter with operator '{filterOperator}' is already added to '{propertyName}' property. " + "Multiple filters of the same type in the same property are not supported.");
                 }
 
                 filter[storageName][filterOperator] = propertyValue;
             }
             else
             {
-                filter[storageName] = new BsonDocument() { [filterOperator] = propertyValue };
+                filter[storageName] = new BsonDocument { [filterOperator] = propertyValue };
             }
         }
 
         return filter;
     }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
+
 
     /// <summary>Returns search part of the search query for <see cref="IndexKind.Hnsw"/> index kind.</summary>
     public static BsonDocument GetSearchQueryForHnswIndex<TVector>(
@@ -112,7 +119,8 @@ internal static class CosmosMongoCollectionSearchMapping
 
         return new BsonDocument
         {
-            { "$search",
+            {
+                "$search",
                 new BsonDocument
                 {
                     { "cosmosSearch", searchQuery }
@@ -120,6 +128,7 @@ internal static class CosmosMongoCollectionSearchMapping
             }
         };
     }
+
 
     /// <summary>Returns search part of the search query for <see cref="IndexKind.IvfFlat"/> index kind.</summary>
     public static BsonDocument GetSearchQueryForIvfIndex<TVector>(
@@ -132,7 +141,7 @@ internal static class CosmosMongoCollectionSearchMapping
         {
             { "vector", BsonArray.Create(vector) },
             { "path", vectorPropertyName },
-            { "k", limit },
+            { "k", limit }
         };
 
         if (filter is not null)
@@ -142,7 +151,8 @@ internal static class CosmosMongoCollectionSearchMapping
 
         return new BsonDocument
         {
-            { "$search",
+            {
+                "$search",
                 new BsonDocument
                 {
                     { "cosmosSearch", searchQuery },
@@ -152,12 +162,14 @@ internal static class CosmosMongoCollectionSearchMapping
         };
     }
 
+
     /// <summary>Returns projection part of the search query to return similarity score together with document.</summary>
     public static BsonDocument GetProjectionQuery(string scorePropertyName, string documentPropertyName)
     {
         return new BsonDocument
         {
-            { "$project",
+            {
+                "$project",
                 new BsonDocument
                 {
                     { scorePropertyName, new BsonDocument { { "$meta", "searchScore" } } },
@@ -167,13 +179,15 @@ internal static class CosmosMongoCollectionSearchMapping
         };
     }
 
+
     /// <summary>Returns a $match stage to filter results by score threshold.</summary>
     /// <remarks>
     /// Cosmos MongoDB returns a similarity score where higher values mean more similar,
     /// so we filter with $gte to keep results at or above the threshold.
     /// </remarks>
     public static BsonDocument GetScoreThresholdMatchQuery(string scorePropertyName, double scoreThreshold)
-        => new()
+    {
+        return new()
         {
             {
                 "$match", new BsonDocument
@@ -182,4 +196,5 @@ internal static class CosmosMongoCollectionSearchMapping
                 }
             }
         };
+    }
 }

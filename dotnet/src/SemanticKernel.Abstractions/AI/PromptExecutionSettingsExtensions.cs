@@ -49,55 +49,43 @@ public static class PromptExecutionSettingsExtensions
         {
             foreach (var entry in extensionData)
             {
-                if (entry.Key.Equals("temperature", StringComparison.OrdinalIgnoreCase) &&
-                    TryConvert(entry.Value, out float temperature))
+                if (entry.Key.Equals("temperature", StringComparison.OrdinalIgnoreCase) && TryConvert(entry.Value, out float temperature))
                 {
                     options.Temperature = temperature;
                 }
-                else if (entry.Key.Equals("top_p", StringComparison.OrdinalIgnoreCase) &&
-                    TryConvert(entry.Value, out float topP))
+                else if (entry.Key.Equals("top_p", StringComparison.OrdinalIgnoreCase) && TryConvert(entry.Value, out float topP))
                 {
                     options.TopP = topP;
                 }
-                else if (entry.Key.Equals("top_k", StringComparison.OrdinalIgnoreCase) &&
-                    TryConvert(entry.Value, out int topK))
+                else if (entry.Key.Equals("top_k", StringComparison.OrdinalIgnoreCase) && TryConvert(entry.Value, out int topK))
                 {
                     options.TopK = topK;
                 }
-                else if (entry.Key.Equals("seed", StringComparison.OrdinalIgnoreCase) &&
-                    TryConvert(entry.Value, out long seed))
+                else if (entry.Key.Equals("seed", StringComparison.OrdinalIgnoreCase) && TryConvert(entry.Value, out long seed))
                 {
                     options.Seed = seed;
                 }
-                else if (entry.Key.Equals("max_tokens", StringComparison.OrdinalIgnoreCase) &&
-                    TryConvert(entry.Value, out int maxTokens))
+                else if (entry.Key.Equals("max_tokens", StringComparison.OrdinalIgnoreCase) && TryConvert(entry.Value, out int maxTokens))
                 {
                     options.MaxOutputTokens = maxTokens;
                 }
-                else if (entry.Key.Equals("frequency_penalty", StringComparison.OrdinalIgnoreCase) &&
-                    TryConvert(entry.Value, out float frequencyPenalty))
+                else if (entry.Key.Equals("frequency_penalty", StringComparison.OrdinalIgnoreCase) && TryConvert(entry.Value, out float frequencyPenalty))
                 {
                     options.FrequencyPenalty = frequencyPenalty;
                 }
-                else if (entry.Key.Equals("presence_penalty", StringComparison.OrdinalIgnoreCase) &&
-                    TryConvert(entry.Value, out float presencePenalty))
+                else if (entry.Key.Equals("presence_penalty", StringComparison.OrdinalIgnoreCase) && TryConvert(entry.Value, out float presencePenalty))
                 {
                     options.PresencePenalty = presencePenalty;
                 }
-                else if (entry.Key.Equals("stop_sequences", StringComparison.OrdinalIgnoreCase) &&
-                    TryConvert(entry.Value, out IList<string>? stopSequences))
+                else if (entry.Key.Equals("stop_sequences", StringComparison.OrdinalIgnoreCase) && TryConvert(entry.Value, out IList<string>? stopSequences))
                 {
                     options.StopSequences = stopSequences;
                 }
-                else if ((entry.Key.Equals("chat_system_prompt", StringComparison.OrdinalIgnoreCase) ||
-                          entry.Key.Equals("chat_developer_prompt", StringComparison.OrdinalIgnoreCase) ||
-                          entry.Key.Equals("systemInstruction", StringComparison.OrdinalIgnoreCase)) &&
-                         TryConvert(entry.Value, out string? systemInstructions))
+                else if ((entry.Key.Equals("chat_system_prompt", StringComparison.OrdinalIgnoreCase) || entry.Key.Equals("chat_developer_prompt", StringComparison.OrdinalIgnoreCase) || entry.Key.Equals("systemInstruction", StringComparison.OrdinalIgnoreCase)) && TryConvert(entry.Value, out string? systemInstructions))
                 {
                     options.Instructions = systemInstructions;
                 }
-                else if (entry.Key.Equals("response_format", StringComparison.OrdinalIgnoreCase) &&
-                    entry.Value is { } responseFormat)
+                else if (entry.Key.Equals("response_format", StringComparison.OrdinalIgnoreCase) && entry.Value is { } responseFormat)
                 {
                     if (TryConvert(responseFormat, out string? responseFormatString))
                     {
@@ -105,19 +93,33 @@ public static class PromptExecutionSettingsExtensions
                         {
                             "text" => ChatResponseFormat.Text,
                             "json_object" => ChatResponseFormat.Json,
-                            _ => null,
+                            _ => null
                         };
                     }
                     else
                     {
-                        options.ResponseFormat = responseFormat is JsonElement e ? ChatResponseFormat.ForJsonSchema(e) : null;
+                        options.ResponseFormat = responseFormat is JsonElement e
+                            ? ChatResponseFormat.ForJsonSchema(e)
+                            : null;
                     }
+                }
+                else if (entry.Key.Equals("reasoning_effort", StringComparison.OrdinalIgnoreCase) && TryConvert(entry.Value, out string? reasoningEffort))
+                {
+                    (options.Reasoning ??= new ReasoningOptions()).Effort = reasoningEffort.ToUpperInvariant() switch
+                    {
+                        "LOW" => ReasoningEffort.Low,
+                        "MEDIUM" => ReasoningEffort.Medium,
+                        "HIGH" => ReasoningEffort.High,
+                        "XHIGH" => ReasoningEffort.ExtraHigh,
+                        _ => null
+                    };
                 }
                 else
                 {
                     // Roundtripping a derived PromptExecutionSettings through the base type will have put all the
                     // object values in AdditionalProperties into JsonElements. Convert them back where possible.
                     object? value = entry.Value;
+
                     if (value is JsonElement jsonElement)
                     {
                         value = jsonElement.ValueKind switch
@@ -127,14 +129,16 @@ public static class PromptExecutionSettingsExtensions
                             JsonValueKind.True => true,
                             JsonValueKind.False => false,
                             JsonValueKind.Null => null,
-                            _ => value,
+                            _ => value
                         };
 
                         if (jsonElement.ValueKind == JsonValueKind.Array)
                         {
                             var enumerator = jsonElement.EnumerateArray();
 
-                            var enumeratorType = enumerator.MoveNext() ? enumerator.Current.ValueKind : JsonValueKind.Null;
+                            var enumeratorType = enumerator.MoveNext()
+                                ? enumerator.Current.ValueKind
+                                : JsonValueKind.Null;
 
                             switch (enumeratorType)
                             {
@@ -156,26 +160,25 @@ public static class PromptExecutionSettingsExtensions
             }
         }
 
-        if (settings.FunctionChoiceBehavior?.GetConfiguration(new([]) { Kernel = kernel }).Functions is { Count: > 0 } functions)
+        if (settings.FunctionChoiceBehavior?.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = kernel }).Functions is { Count: > 0 } functions)
         {
             if (settings.FunctionChoiceBehavior is AutoFunctionChoiceBehavior autoChoiceBehavior)
             {
                 options.ToolMode = ChatToolMode.Auto;
                 options.AllowMultipleToolCalls = autoChoiceBehavior.Options?.AllowParallelCalls;
             }
-            else
-            if (settings.FunctionChoiceBehavior is NoneFunctionChoiceBehavior noneFunctionChoiceBehavior)
+            else if (settings.FunctionChoiceBehavior is NoneFunctionChoiceBehavior noneFunctionChoiceBehavior)
             {
                 options.ToolMode = ChatToolMode.None;
             }
-            else
-            if (settings.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior)
+            else if (settings.FunctionChoiceBehavior is RequiredFunctionChoiceBehavior requiredFunctionChoiceBehavior)
             {
                 options.ToolMode = ChatToolMode.RequireAny;
                 options.AllowMultipleToolCalls = requiredFunctionChoiceBehavior.Options?.AllowParallelCalls;
             }
 
             options.Tools = [];
+
             foreach (var function in functions)
             {
                 // Clone the function to ensure it works running as a AITool lower-level abstraction for the specified kernel.
@@ -187,7 +190,7 @@ public static class PromptExecutionSettingsExtensions
         // Enables usage of AutoFunctionInvocationFilters
         return kernel is null
             ? options
-            : new KernelChatOptions(kernel, options, settings: settings);
+            : new KernelChatOptions(kernel, options, settings);
 
         // Be a little lenient on the types of the values used in the extension data,
         // e.g. allow doubles even when requesting floats.
@@ -209,7 +212,7 @@ public static class PromptExecutionSettingsExtensions
                     // reflection-based serialization is enabled or T is one of the types special-cased
                     // in the AbstractionsJsonContext. For other cases with NativeAOT, we would need to
                     // have a JsonSerializationOptions with the relevant type information.
-                    if (AbstractionsJsonContext.TryGetTypeInfo(typeof(T), firstOptions: null, out JsonTypeInfo? jti))
+                    if (AbstractionsJsonContext.TryGetTypeInfo(typeof(T), null, out JsonTypeInfo? jti))
                     {
                         try
                         {

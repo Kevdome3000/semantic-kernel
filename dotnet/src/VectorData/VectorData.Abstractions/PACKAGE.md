@@ -4,18 +4,20 @@ Contains abstractions for accessing Vector Databases and Vector Indexes.
 
 ## Key Features
 
-- Base abstract classes and interfaces for Vector Database implementation. Vector Database implementations are provided separately in other packages, for example  `Microsoft.SemanticKernel.Connectors.AzureAISearch`.
+- Base abstract classes and interfaces for Vector Database implementation. Vector Database implementations are provided
+  separately in other packages, for example  `Microsoft.SemanticKernel.Connectors.AzureAISearch`.
 - Abstractions include:
-  - Creating, listing and deleting collections with custom schema support.
-  - Creating, retrieving, updating and deleting records.
-  - Similarty search using vector embeddings.
-  - Search using filters.
-  - Hybrid search combining vector similarity and keyword search.
-  - Built-in embedding generation using `Microsoft.Extensions.AI`.
+    - Creating, listing and deleting collections with custom schema support.
+    - Creating, retrieving, updating and deleting records.
+    - Similarty search using vector embeddings.
+    - Search using filters.
+    - Hybrid search combining vector similarity and keyword search.
+    - Built-in embedding generation using `Microsoft.Extensions.AI`.
 
 ## How to Use
 
-This package is typically used with an implementation of the vector database abstractions such as `Microsoft.SemanticKernel.Connectors.AzureAISearch`.
+This package is typically used with an implementation of the vector database abstractions such as
+`Microsoft.SemanticKernel.Connectors.AzureAISearch`.
 
 ## Main Types
 
@@ -48,4 +50,6 @@ Vector Database implementations:
 
 ## Feedback & Contributing
 
-Microsoft.Extensions.VectorData.Abstractions is released as open source under the [MIT license](https://licenses.nuget.org/MIT). Bug reports and contributions are welcome at [the GitHub repository](https://github.com/microsoft/semantic-kernel).
+Microsoft.Extensions.VectorData.Abstractions is released as open source under
+the [MIT license](https://licenses.nuget.org/MIT). Bug reports and contributions are welcome
+at [the GitHub repository](https://github.com/microsoft/semantic-kernel).

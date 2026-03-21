@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides read-only metadata for a <see cref="KernelFunction"/> parameter.
 /// </summary>
@@ -25,8 +26,10 @@ public sealed class KernelParameterMetadata
 
     /// <summary>The schema of the parameter, potentially lazily-initialized.</summary>
     private InitializedSchema? _schema;
+
     /// <summary>The serializer options to generate JSON schema.</summary>
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
+
 
     /// <summary>Initializes the <see cref="KernelParameterMetadata"/> for a parameter with the specified name.</summary>
     /// <param name="name">The name of the parameter.</param>
@@ -36,7 +39,9 @@ public sealed class KernelParameterMetadata
     [RequiresDynamicCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
     public KernelParameterMetadata(string name)
         : this(name, null!)
-    { }
+    {
+    }
+
 
     /// <summary>Initializes the <see cref="KernelParameterMetadata"/> for a parameter with the specified name.</summary>
     /// <param name="name">The name of the parameter.</param>
@@ -48,6 +53,7 @@ public sealed class KernelParameterMetadata
         Name = name;
         _jsonSerializerOptions = jsonSerializerOptions;
     }
+
 
     /// <summary>Initializes a <see cref="KernelParameterMetadata"/> as a copy of another <see cref="KernelParameterMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
@@ -66,6 +72,7 @@ public sealed class KernelParameterMetadata
         _jsonSerializerOptions = metadata._jsonSerializerOptions;
     }
 
+
     /// <summary>Initializes a <see cref="KernelParameterMetadata"/> as a copy of another <see cref="KernelParameterMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
     /// <param name="metadata">The metadata to copy.</param>
@@ -82,6 +89,7 @@ public sealed class KernelParameterMetadata
         _schema = metadata._schema;
         _jsonSerializerOptions = jsonSerializerOptions;
     }
+
 
     /// <summary>Gets the name of the function.</summary>
     public string Name
@@ -157,8 +165,9 @@ public sealed class KernelParameterMetadata
             _jsonSerializerOptions)).Schema;
         set => _schema = value is null
             ? null
-            : new() { Inferred = false, Schema = value };
+            : new InitializedSchema { Inferred = false, Schema = value };
     }
+
 
     /// <summary>Infers a JSON schema from a <see cref="Type"/> and description.</summary>
     /// <param name="parameterType">The parameter type. If null, no schema can be inferred.</param>
@@ -167,7 +176,11 @@ public sealed class KernelParameterMetadata
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
     [RequiresUnreferencedCode("Uses reflection if no JSOs are provided, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection if no JSOs are provided, making it incompatible with AOT scenarios.")]
-    internal static InitializedSchema InferSchema(Type? parameterType, object? defaultValue, string? description, JsonSerializerOptions? jsonSerializerOptions)
+    internal static InitializedSchema InferSchema(
+        Type? parameterType,
+        object? defaultValue,
+        string? description,
+        JsonSerializerOptions? jsonSerializerOptions)
     {
         KernelJsonSchema? schema = null;
 
@@ -178,11 +191,12 @@ public sealed class KernelParameterMetadata
             bool invalidAsGeneric =
                 // from RuntimeType.ThrowIfTypeNeverValidGenericArgument
 #if NET
-                parameterType.IsFunctionPointer ||
+                parameterType.IsFunctionPointer
+                ||
 #endif
-                parameterType.IsPointer ||
-                parameterType.IsByRef ||
-                parameterType == typeof(void);
+                parameterType.IsPointer
+                || parameterType.IsByRef
+                || parameterType == typeof(void);
 
             if (!invalidAsGeneric)
             {
@@ -213,6 +227,7 @@ public sealed class KernelParameterMetadata
         // it again. If inference failed, we just leave the Schema null in the instance.
         return new InitializedSchema { Inferred = true, Schema = schema };
     }
+
 
     /// <summary>A wrapper for a <see cref="KernelJsonSchema"/> and whether it was inferred or set explicitly by the user.</summary>
     internal sealed class InitializedSchema

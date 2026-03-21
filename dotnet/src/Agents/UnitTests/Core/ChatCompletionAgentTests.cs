@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
@@ -32,7 +33,7 @@ public class ChatCompletionAgentTests
             {
                 Description = "test description",
                 Instructions = "test instructions",
-                Name = "test name",
+                Name = "test name"
             };
 
         // Assert
@@ -42,6 +43,7 @@ public class ChatCompletionAgentTests
         Assert.Equal("test name", agent.Name);
         Assert.Null(agent.Arguments);
     }
+
 
     /// <summary>
     /// Verify the invocation and response of <see cref="ChatCompletionAgent"/>.
@@ -70,6 +72,7 @@ public class ChatCompletionAgentTests
         Assert.Equal(arguments, agent.Arguments);
     }
 
+
     /// <summary>
     /// Verify the invocation and response of <see cref="ChatCompletionAgent"/>.
     /// </summary>
@@ -86,21 +89,21 @@ public class ChatCompletionAgentTests
                 {
                     {
                         PromptExecutionSettings.DefaultServiceId,
-                        new PromptExecutionSettings()
+                        new PromptExecutionSettings
                         {
                             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-                            ModelId = "gpt-new",
+                            ModelId = "gpt-new"
                         }
                     },
                     {
                         "manual",
-                        new PromptExecutionSettings()
+                        new PromptExecutionSettings
                         {
                             ServiceId = "manual",
                             FunctionChoiceBehavior = FunctionChoiceBehavior.Required(),
-                            ModelId = "gpt-old",
+                            ModelId = "gpt-old"
                         }
-                    },
+                    }
                 }
             };
         KernelPromptTemplateFactory templateFactory = new();
@@ -116,6 +119,7 @@ public class ChatCompletionAgentTests
         Assert.Equal(promptConfig.ExecutionSettings, agent.Arguments?.ExecutionSettings);
     }
 
+
     /// <summary>
     /// Verify throws <see cref="KernelException"/> when invalid <see cref="IPromptTemplateFactory"/> is provided.
     /// </summary>
@@ -129,13 +133,14 @@ public class ChatCompletionAgentTests
                 Name = "TestName",
                 Description = "TestDescription",
                 Template = "TestInstructions",
-                TemplateFormat = "handlebars",
+                TemplateFormat = "handlebars"
             };
         KernelPromptTemplateFactory templateFactory = new();
 
         // Act and Assert
         Assert.Throws<KernelException>(() => new ChatCompletionAgent(promptConfig, templateFactory));
     }
+
 
     /// <summary>
     /// Verify the invocation and response of <see cref="ChatCompletionAgent"/>.
@@ -145,23 +150,23 @@ public class ChatCompletionAgentTests
     {
         // Arrange
         Mock<IChatCompletionService> mockService = new();
-        mockService.Setup(
-            s => s.GetChatMessageContentsAsync(
+        mockService.Setup(s => s.GetChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
-                It.IsAny<CancellationToken>())).ReturnsAsync([new(AuthorRole.Assistant, "what?")]);
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new ChatMessageContent(AuthorRole.Assistant, "what?")]);
 
         ChatCompletionAgent agent =
             new()
             {
                 Instructions = "test instructions",
                 Kernel = CreateKernel(mockService.Object),
-                Arguments = [],
+                Arguments = []
             };
 
         // Act
-        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>()).ToArrayAsync();
 
         // Assert
         Assert.Single(result);
@@ -176,6 +181,7 @@ public class ChatCompletionAgentTests
             Times.Once);
     }
 
+
     /// <summary>
     /// Verify the invocation and response of <see cref="ChatCompletionAgent"/>.
     /// </summary>
@@ -184,12 +190,12 @@ public class ChatCompletionAgentTests
     {
         // Arrange
         Mock<IChatCompletionService> mockService = new();
-        mockService.Setup(
-            s => s.GetChatMessageContentsAsync(
+        mockService.Setup(s => s.GetChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
-                It.IsAny<CancellationToken>())).ReturnsAsync([new(AuthorRole.Assistant, "what?")]);
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new ChatMessageContent(AuthorRole.Assistant, "what?")]);
 
         var kernel = CreateKernel(mockService.Object);
         ChatCompletionAgent agent =
@@ -197,11 +203,11 @@ public class ChatCompletionAgentTests
             {
                 Instructions = "test instructions",
                 Kernel = kernel,
-                Arguments = [],
+                Arguments = []
             };
 
         // Act
-        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>()).ToArrayAsync();
 
         // Assert
         Assert.Single(result);
@@ -216,6 +222,7 @@ public class ChatCompletionAgentTests
             Times.Once);
     }
 
+
     /// <summary>
     /// Verify the invocation and response of <see cref="ChatCompletionAgent"/> using <see cref="IChatClient"/>.
     /// </summary>
@@ -224,22 +231,22 @@ public class ChatCompletionAgentTests
     {
         // Arrange
         Mock<IChatClient> mockService = new();
-        mockService.Setup(
-            s => s.GetResponseAsync(
+        mockService.Setup(s => s.GetResponseAsync(
                 It.IsAny<IEnumerable<ChatMessage>>(),
                 It.IsAny<ChatOptions>(),
-                It.IsAny<CancellationToken>())).ReturnsAsync(new ChatResponse([new(ChatRole.Assistant, "what?")]));
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ChatResponse([new ChatMessage(ChatRole.Assistant, "what?")]));
 
         ChatCompletionAgent agent =
             new()
             {
                 Instructions = "test instructions",
                 Kernel = CreateKernel(mockService.Object),
-                Arguments = new(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Arguments = new KernelArguments(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })
             };
 
         // Act
-        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>()).ToArrayAsync();
 
         // Assert
         Assert.Single(result);
@@ -253,6 +260,7 @@ public class ChatCompletionAgentTests
             Times.Once);
     }
 
+
     /// <summary>
     /// Verify the streaming invocation and response of <see cref="ChatCompletionAgent"/>.
     /// </summary>
@@ -261,29 +269,29 @@ public class ChatCompletionAgentTests
     {
         // Arrange
         StreamingChatMessageContent[] returnContent =
-            [
-                new(AuthorRole.Assistant, "wh"),
-                new(AuthorRole.Assistant, "at?"),
-            ];
+        [
+            new(AuthorRole.Assistant, "wh"),
+            new(AuthorRole.Assistant, "at?")
+        ];
 
         Mock<IChatCompletionService> mockService = new();
-        mockService.Setup(
-            s => s.GetStreamingChatMessageContentsAsync(
+        mockService.Setup(s => s.GetStreamingChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
-                It.IsAny<CancellationToken>())).Returns(returnContent.ToAsyncEnumerable());
+                It.IsAny<CancellationToken>()))
+            .Returns(returnContent.ToAsyncEnumerable());
 
         ChatCompletionAgent agent =
             new()
             {
                 Instructions = "test instructions",
                 Kernel = CreateKernel(mockService.Object),
-                Arguments = [],
+                Arguments = []
             };
 
         // Act
-        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
+        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>()).ToArrayAsync();
 
         // Assert
         Assert.Equal(2, result.Length);
@@ -298,6 +306,7 @@ public class ChatCompletionAgentTests
             Times.Once);
     }
 
+
     /// <summary>
     /// Verify the streaming invocation and response of <see cref="ChatCompletionAgent"/>.
     /// </summary>
@@ -306,18 +315,18 @@ public class ChatCompletionAgentTests
     {
         // Arrange
         StreamingChatMessageContent[] returnContent =
-            [
-                new(AuthorRole.Assistant, "wh"),
-                new(AuthorRole.Assistant, "at?"),
-            ];
+        [
+            new(AuthorRole.Assistant, "wh"),
+            new(AuthorRole.Assistant, "at?")
+        ];
 
         Mock<IChatCompletionService> mockService = new();
-        mockService.Setup(
-            s => s.GetStreamingChatMessageContentsAsync(
+        mockService.Setup(s => s.GetStreamingChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
-                It.IsAny<CancellationToken>())).Returns(returnContent.ToAsyncEnumerable());
+                It.IsAny<CancellationToken>()))
+            .Returns(returnContent.ToAsyncEnumerable());
 
         var kernel = CreateKernel(mockService.Object);
         ChatCompletionAgent agent =
@@ -325,11 +334,11 @@ public class ChatCompletionAgentTests
             {
                 Instructions = "test instructions",
                 Kernel = kernel,
-                Arguments = [],
+                Arguments = []
             };
 
         // Act
-        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
+        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>()).ToArrayAsync();
 
         // Assert
         Assert.Equal(2, result.Length);
@@ -344,6 +353,7 @@ public class ChatCompletionAgentTests
             Times.Once);
     }
 
+
     /// <summary>
     /// Verify the streaming invocation and response of <see cref="ChatCompletionAgent"/> using <see cref="IChatClient"/>.
     /// </summary>
@@ -353,27 +363,27 @@ public class ChatCompletionAgentTests
         // Arrange
         ChatResponseUpdate[] returnUpdates =
         [
-            new ChatResponseUpdate(role: ChatRole.Assistant, content: "wh"),
-            new ChatResponseUpdate(role: null, content: "at?"),
+            new(ChatRole.Assistant, "wh"),
+            new(null, "at?")
         ];
 
         Mock<IChatClient> mockService = new();
-        mockService.Setup(
-            s => s.GetStreamingResponseAsync(
+        mockService.Setup(s => s.GetStreamingResponseAsync(
                 It.IsAny<IEnumerable<ChatMessage>>(),
                 It.IsAny<ChatOptions>(),
-                It.IsAny<CancellationToken>())).Returns(returnUpdates.ToAsyncEnumerable());
+                It.IsAny<CancellationToken>()))
+            .Returns(returnUpdates.ToAsyncEnumerable());
 
         ChatCompletionAgent agent =
             new()
             {
                 Instructions = "test instructions",
                 Kernel = CreateKernel(mockService.Object),
-                Arguments = new(new PromptExecutionSettings() { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() }),
+                Arguments = new KernelArguments(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })
             };
 
         // Act
-        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>).ToArrayAsync();
+        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>()).ToArrayAsync();
 
         // Assert
         Assert.Equal(2, result.Length);
@@ -386,6 +396,7 @@ public class ChatCompletionAgentTests
                     It.IsAny<CancellationToken>()),
             Times.Once);
     }
+
 
     /// <summary>
     /// Verify the invocation and response of <see cref="ChatCompletionAgent.GetChatCompletionService"/>.
@@ -410,8 +421,9 @@ public class ChatCompletionAgentTests
         Assert.Null(settings);
 
         // Act and Assert
-        Assert.Throws<KernelException>(() => ChatCompletionAgent.GetChatCompletionService(kernel, new KernelArguments(new PromptExecutionSettings() { ServiceId = "anything" })));
+        Assert.Throws<KernelException>(() => ChatCompletionAgent.GetChatCompletionService(kernel, new KernelArguments(new PromptExecutionSettings { ServiceId = "anything" })));
     }
+
 
     /// <summary>
     /// Verify the invocation and response of <see cref="ChatCompletionAgent.GetChatCompletionService"/> using <see cref="IChatClient"/>.
@@ -436,8 +448,9 @@ public class ChatCompletionAgentTests
         Assert.Null(settings);
 
         // Act and Assert
-        Assert.Throws<KernelException>(() => ChatCompletionAgent.GetChatCompletionService(kernel, new KernelArguments(new PromptExecutionSettings() { ServiceId = "anything" })));
+        Assert.Throws<KernelException>(() => ChatCompletionAgent.GetChatCompletionService(kernel, new KernelArguments(new PromptExecutionSettings { ServiceId = "anything" })));
     }
+
 
     /// <summary>
     /// Verify the invocation and response of <see cref="ChatCompletionAgent.GetChatCompletionService"/>.
@@ -459,6 +472,7 @@ public class ChatCompletionAgentTests
         Assert.NotEqual(agent3.GetChannelKeys(), agent5.GetChannelKeys());
     }
 
+
     /// <summary>
     /// Verify that InvalidOperationException is thrown when UseImmutableKernel is false and AIFunctions exist.
     /// </summary>
@@ -467,12 +481,12 @@ public class ChatCompletionAgentTests
     {
         // Arrange
         Mock<IChatCompletionService> mockService = new();
-        mockService.Setup(
-            s => s.GetChatMessageContentsAsync(
+        mockService.Setup(s => s.GetChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
-                It.IsAny<CancellationToken>())).ReturnsAsync([new(AuthorRole.Assistant, "what?")]);
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new ChatMessageContent(AuthorRole.Assistant, "what?")]);
 
         var mockAIContextProvider = new Mock<AIContextProvider>();
         var aiContext = new AIContext
@@ -480,7 +494,7 @@ public class ChatCompletionAgentTests
             AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
         ChatCompletionAgent agent =
             new()
@@ -495,11 +509,11 @@ public class ChatCompletionAgentTests
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>, thread: thread).ToArrayAsync());
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await agent.InvokeAsync(Array.Empty<ChatMessageContent>(), thread).ToArrayAsync());
 
         Assert.NotNull(exception);
     }
+
 
     /// <summary>
     /// Verify that InvalidOperationException is thrown when UseImmutableKernel is default (false) and AIFunctions exist.
@@ -509,12 +523,12 @@ public class ChatCompletionAgentTests
     {
         // Arrange
         Mock<IChatCompletionService> mockService = new();
-        mockService.Setup(
-            s => s.GetChatMessageContentsAsync(
+        mockService.Setup(s => s.GetChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
-                It.IsAny<CancellationToken>())).ReturnsAsync([new(AuthorRole.Assistant, "what?")]);
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new ChatMessageContent(AuthorRole.Assistant, "what?")]);
 
         var mockAIContextProvider = new Mock<AIContextProvider>();
         var aiContext = new AIContext
@@ -522,7 +536,7 @@ public class ChatCompletionAgentTests
             AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
         ChatCompletionAgent agent =
             new()
@@ -537,11 +551,11 @@ public class ChatCompletionAgentTests
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>, thread: thread).ToArrayAsync());
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await agent.InvokeAsync(Array.Empty<ChatMessageContent>(), thread).ToArrayAsync());
 
         Assert.NotNull(exception);
     }
+
 
     /// <summary>
     /// Verify that kernel remains immutable when UseImmutableKernel is true.
@@ -552,14 +566,17 @@ public class ChatCompletionAgentTests
         // Arrange
         Mock<IChatCompletionService> mockService = new();
         Kernel capturedKernel = null!;
-        mockService.Setup(
-            s => s.GetChatMessageContentsAsync(
+        mockService.Setup(s => s.GetChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
                 It.IsAny<CancellationToken>()))
-            .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>((_, _, kernel, _) => capturedKernel = kernel)
-            .ReturnsAsync([new(AuthorRole.Assistant, "what?")]);
+            .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>((
+                _,
+                _,
+                kernel,
+                _) => capturedKernel = kernel)
+            .ReturnsAsync([new ChatMessageContent(AuthorRole.Assistant, "what?")]);
 
         var originalKernel = CreateKernel(mockService.Object);
         var originalPluginCount = originalKernel.Plugins.Count;
@@ -570,7 +587,7 @@ public class ChatCompletionAgentTests
             AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
         ChatCompletionAgent agent =
             new()
@@ -585,7 +602,7 @@ public class ChatCompletionAgentTests
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act
-        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>, thread: thread).ToArrayAsync();
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>(), thread).ToArrayAsync();
 
         // Assert
         Assert.Single(result);
@@ -601,6 +618,7 @@ public class ChatCompletionAgentTests
         Assert.Contains(capturedKernel.Plugins, p => p.Name == "Tools");
     }
 
+
     /// <summary>
     /// Verify that mutable kernel behavior works when UseImmutableKernel is false and no AIFunctions exist.
     /// </summary>
@@ -610,14 +628,17 @@ public class ChatCompletionAgentTests
         // Arrange
         Mock<IChatCompletionService> mockService = new();
         Kernel capturedKernel = null!;
-        mockService.Setup(
-            s => s.GetChatMessageContentsAsync(
+        mockService.Setup(s => s.GetChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
                 It.IsAny<CancellationToken>()))
-            .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>((_, _, kernel, _) => capturedKernel = kernel)
-            .ReturnsAsync([new(AuthorRole.Assistant, "what?")]);
+            .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>((
+                _,
+                _,
+                kernel,
+                _) => capturedKernel = kernel)
+            .ReturnsAsync([new ChatMessageContent(AuthorRole.Assistant, "what?")]);
 
         var originalKernel = CreateKernel(mockService.Object);
 
@@ -627,7 +648,7 @@ public class ChatCompletionAgentTests
             AIFunctions = [] // Empty AIFunctions list
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
         ChatCompletionAgent agent =
             new()
@@ -642,7 +663,7 @@ public class ChatCompletionAgentTests
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act
-        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>, thread: thread).ToArrayAsync();
+        AgentResponseItem<ChatMessageContent>[] result = await agent.InvokeAsync(Array.Empty<ChatMessageContent>(), thread).ToArrayAsync();
 
         // Assert
         Assert.Single(result);
@@ -650,6 +671,7 @@ public class ChatCompletionAgentTests
         // Verify the same kernel instance was used (mutable behavior)
         Assert.Same(originalKernel, capturedKernel);
     }
+
 
     /// <summary>
     /// Verify that InvalidOperationException is thrown when UseImmutableKernel is false and AIFunctions exist (streaming).
@@ -659,18 +681,18 @@ public class ChatCompletionAgentTests
     {
         // Arrange
         StreamingChatMessageContent[] returnContent =
-            [
-                new(AuthorRole.Assistant, "wh"),
-                new(AuthorRole.Assistant, "at?"),
-            ];
+        [
+            new(AuthorRole.Assistant, "wh"),
+            new(AuthorRole.Assistant, "at?")
+        ];
 
         Mock<IChatCompletionService> mockService = new();
-        mockService.Setup(
-            s => s.GetStreamingChatMessageContentsAsync(
+        mockService.Setup(s => s.GetStreamingChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
-                It.IsAny<CancellationToken>())).Returns(returnContent.ToAsyncEnumerable());
+                It.IsAny<CancellationToken>()))
+            .Returns(returnContent.ToAsyncEnumerable());
 
         var mockAIContextProvider = new Mock<AIContextProvider>();
         var aiContext = new AIContext
@@ -678,7 +700,7 @@ public class ChatCompletionAgentTests
             AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
         ChatCompletionAgent agent =
             new()
@@ -693,11 +715,11 @@ public class ChatCompletionAgentTests
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>, thread: thread).ToArrayAsync());
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>(), thread).ToArrayAsync());
 
         Assert.NotNull(exception);
     }
+
 
     /// <summary>
     /// Verify that InvalidOperationException is thrown when UseImmutableKernel is default (false) and AIFunctions exist (streaming).
@@ -707,18 +729,18 @@ public class ChatCompletionAgentTests
     {
         // Arrange
         StreamingChatMessageContent[] returnContent =
-            [
-                new(AuthorRole.Assistant, "wh"),
-                new(AuthorRole.Assistant, "at?"),
-            ];
+        [
+            new(AuthorRole.Assistant, "wh"),
+            new(AuthorRole.Assistant, "at?")
+        ];
 
         Mock<IChatCompletionService> mockService = new();
-        mockService.Setup(
-            s => s.GetStreamingChatMessageContentsAsync(
+        mockService.Setup(s => s.GetStreamingChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
-                It.IsAny<CancellationToken>())).Returns(returnContent.ToAsyncEnumerable());
+                It.IsAny<CancellationToken>()))
+            .Returns(returnContent.ToAsyncEnumerable());
 
         var mockAIContextProvider = new Mock<AIContextProvider>();
         var aiContext = new AIContext
@@ -726,7 +748,7 @@ public class ChatCompletionAgentTests
             AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
         ChatCompletionAgent agent =
             new()
@@ -741,11 +763,11 @@ public class ChatCompletionAgentTests
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>, thread: thread).ToArrayAsync());
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>(), thread).ToArrayAsync());
 
         Assert.NotNull(exception);
     }
+
 
     /// <summary>
     /// Verify that kernel remains immutable when UseImmutableKernel is true (streaming).
@@ -755,20 +777,23 @@ public class ChatCompletionAgentTests
     {
         // Arrange
         StreamingChatMessageContent[] returnContent =
-            [
-                new(AuthorRole.Assistant, "wh"),
-                new(AuthorRole.Assistant, "at?"),
-            ];
+        [
+            new(AuthorRole.Assistant, "wh"),
+            new(AuthorRole.Assistant, "at?")
+        ];
 
         Mock<IChatCompletionService> mockService = new();
         Kernel capturedKernel = null!;
-        mockService.Setup(
-            s => s.GetStreamingChatMessageContentsAsync(
+        mockService.Setup(s => s.GetStreamingChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
                 It.IsAny<CancellationToken>()))
-            .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>((_, _, kernel, _) => capturedKernel = kernel)
+            .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>((
+                _,
+                _,
+                kernel,
+                _) => capturedKernel = kernel)
             .Returns(returnContent.ToAsyncEnumerable());
 
         var originalKernel = CreateKernel(mockService.Object);
@@ -780,7 +805,7 @@ public class ChatCompletionAgentTests
             AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
         ChatCompletionAgent agent =
             new()
@@ -795,7 +820,7 @@ public class ChatCompletionAgentTests
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act
-        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>, thread: thread).ToArrayAsync();
+        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>(), thread).ToArrayAsync();
 
         // Assert
         Assert.Equal(2, result.Length);
@@ -811,6 +836,7 @@ public class ChatCompletionAgentTests
         Assert.Contains(capturedKernel.Plugins, p => p.Name == "Tools");
     }
 
+
     /// <summary>
     /// Verify that mutable kernel behavior works when UseImmutableKernel is false and no AIFunctions exist (streaming).
     /// </summary>
@@ -819,20 +845,23 @@ public class ChatCompletionAgentTests
     {
         // Arrange
         StreamingChatMessageContent[] returnContent =
-            [
-                new(AuthorRole.Assistant, "wh"),
-                new(AuthorRole.Assistant, "at?"),
-            ];
+        [
+            new(AuthorRole.Assistant, "wh"),
+            new(AuthorRole.Assistant, "at?")
+        ];
 
         Mock<IChatCompletionService> mockService = new();
         Kernel capturedKernel = null!;
-        mockService.Setup(
-            s => s.GetStreamingChatMessageContentsAsync(
+        mockService.Setup(s => s.GetStreamingChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 It.IsAny<Kernel>(),
                 It.IsAny<CancellationToken>()))
-            .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>((_, _, kernel, _) => capturedKernel = kernel)
+            .Callback<ChatHistory, PromptExecutionSettings, Kernel, CancellationToken>((
+                _,
+                _,
+                kernel,
+                _) => capturedKernel = kernel)
             .Returns(returnContent.ToAsyncEnumerable());
 
         var originalKernel = CreateKernel(mockService.Object);
@@ -843,7 +872,7 @@ public class ChatCompletionAgentTests
             AIFunctions = [] // Empty AIFunctions list
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
         ChatCompletionAgent agent =
             new()
@@ -858,7 +887,7 @@ public class ChatCompletionAgentTests
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act
-        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>() as ICollection<ChatMessageContent>, thread: thread).ToArrayAsync();
+        AgentResponseItem<StreamingChatMessageContent>[] result = await agent.InvokeStreamingAsync(Array.Empty<ChatMessageContent>(), thread).ToArrayAsync();
 
         // Assert
         Assert.Equal(2, result.Length);
@@ -867,6 +896,7 @@ public class ChatCompletionAgentTests
         Assert.Same(originalKernel, capturedKernel);
     }
 
+
     private static Kernel CreateKernel(IChatCompletionService chatCompletionService)
     {
         var builder = Kernel.CreateBuilder();
@@ -874,12 +904,14 @@ public class ChatCompletionAgentTests
         return builder.Build();
     }
 
+
     private static Kernel CreateKernel(IChatClient chatClient)
     {
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<IChatClient>(chatClient);
         return builder.Build();
     }
+
 
     /// <summary>
     /// Gets the Kernel property from ChatOptions using reflection.
@@ -889,10 +921,9 @@ public class ChatCompletionAgentTests
     private static Kernel? GetKernelFromChatOptions(ChatOptions options)
     {
         // Use reflection to try to get the Kernel property
-        var kernelProperty = options.GetType().GetProperty("Kernel",
-            System.Reflection.BindingFlags.Public |
-            System.Reflection.BindingFlags.NonPublic |
-            System.Reflection.BindingFlags.Instance);
+        var kernelProperty = options.GetType()
+            .GetProperty("Kernel",
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
         if (kernelProperty != null)
         {
@@ -902,6 +933,7 @@ public class ChatCompletionAgentTests
         return null;
     }
 
+
     /// <summary>
     /// Helper class for testing AIFunction behavior.
     /// </summary>
@@ -909,13 +941,15 @@ public class ChatCompletionAgentTests
     {
         public TestAIFunction(string name, string description = "")
         {
-            this.Name = name;
-            this.Description = description;
+            Name = name;
+            Description = description;
         }
+
 
         public override string Name { get; }
 
         public override string Description { get; }
+
 
         protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
         {

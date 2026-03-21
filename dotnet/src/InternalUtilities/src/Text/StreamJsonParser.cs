@@ -2,16 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Text;
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Text.Json.Nodes;
-using System.Threading;
-using System.Threading.Tasks;
-
 #pragma warning disable CA1812 // Internal class that is apparently never instantiated
 #pragma warning disable CA1846 // Prefer 'AsSpan' over 'Substring' when span-based overloads are available
 
@@ -44,8 +34,7 @@ internal sealed class StreamJsonParser
         using var reader = new StreamReader(stream, Encoding.UTF8);
         ChunkParser chunkParser = new(reader);
 
-        while (await chunkParser.ExtractNextChunkAsync(validateJson, cancellationToken).
-                   ConfigureAwait(false) is { } json)
+        while (await chunkParser.ExtractNextChunkAsync(validateJson, cancellationToken).ConfigureAwait(false) is { } json)
         {
             yield return json;
         }
@@ -89,10 +78,11 @@ internal sealed class StreamJsonParser
 
             while ((line = await _reader.ReadLineAsync(
 #if NET
-                           cancellationToken
+                        cancellationToken
 #endif
-                       ).
-                       ConfigureAwait(false)) is not null || _lastLine is not null)
+                    )
+                    .ConfigureAwait(false)) is not null
+                || _lastLine is not null)
             {
                 if (_lastLine is not null)
                 {
@@ -202,7 +192,10 @@ internal sealed class StreamJsonParser
         }
 
 
-        private void ResetEscapeFlag() => _isEscaping = false;
+        private void ResetEscapeFlag()
+        {
+            _isEscaping = false;
+        }
 
 
         private void HandleCurrentCharacterOutsideQuotes(int index)

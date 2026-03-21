@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Agents.Runtime;
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
 /// <summary>
-/// Extensions for logging <see cref="GroupChatOrchestration{TInput, TOutput}"/>.
+/// Extensions for logging <see cref="GroupChatOrchestration{TInput,TOutput}"/>.
 /// </summary>
 /// <remarks>
 /// This extension uses the <see cref="LoggerMessageAttribute"/> to
@@ -25,6 +25,7 @@ internal static partial class GroupChatOrchestrationLogMessages
         this ILogger logger,
         AgentId agentId);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
@@ -34,6 +35,7 @@ internal static partial class GroupChatOrchestrationLogMessages
         AgentId agentId,
         string? message);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Debug,
@@ -42,6 +44,7 @@ internal static partial class GroupChatOrchestrationLogMessages
         this ILogger logger,
         AgentId agentId);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Debug,
@@ -49,6 +52,7 @@ internal static partial class GroupChatOrchestrationLogMessages
     public static partial void LogChatManagerInvoke(
         this ILogger logger,
         AgentId agentId);
+
 
     [LoggerMessage(
         EventId = 0,
@@ -60,6 +64,7 @@ internal static partial class GroupChatOrchestrationLogMessages
         bool result,
         string reason);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Debug,
@@ -68,6 +73,7 @@ internal static partial class GroupChatOrchestrationLogMessages
         this ILogger logger,
         AgentId agentId,
         AgentType nextAgent);
+
 
     [LoggerMessage(
         EventId = 0,
@@ -79,6 +85,7 @@ internal static partial class GroupChatOrchestrationLogMessages
         string result,
         string reason);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Debug,
@@ -88,6 +95,7 @@ internal static partial class GroupChatOrchestrationLogMessages
         AgentId agentId,
         bool result,
         string reason);
+
 
     [LoggerMessage(
         EventId = 0,

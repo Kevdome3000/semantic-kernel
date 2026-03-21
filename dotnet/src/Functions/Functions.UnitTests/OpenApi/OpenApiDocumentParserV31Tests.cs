@@ -14,6 +14,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
+using SharpYaml.Serialization;
 using Xunit;
 
 namespace SemanticKernel.Functions.UnitTests.OpenApi;
@@ -35,21 +36,23 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     /// </summary>
     private readonly ILogger _logger = new LoggerFactory().CreateLogger<OpenApiDocumentParserV30Tests>();
 
+
     /// <summary>
     /// Creates an instance of a <see cref="OpenApiDocumentParserV31Tests"/> class.
     /// </summary>
     public OpenApiDocumentParserV31Tests()
     {
-        this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV3_1.yaml");
+        _openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV3_1.yaml");
 
-        this._sut = new OpenApiDocumentParser();
+        _sut = new OpenApiDocumentParser();
     }
+
 
     [Fact]
     public async Task ItCanParsePutOperationBodySuccessfullyAsync()
     {
         // Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         // Assert
         Assert.NotNull(restApi.Operations);
@@ -109,11 +112,12 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal("Determines whether the object is encrypted.", encryptedProperty.Schema.RootElement.GetProperty("description").GetString());
     }
 
+
     [Fact]
     public async Task ItCanParsePutOperationMetadataSuccessfullyAsync()
     {
         // Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         // Assert
         Assert.NotNull(restApi.Operations);
@@ -127,7 +131,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal(HttpMethod.Put, putOperation.Method);
         Assert.Equal("/secrets/{secret-name}", putOperation.Path);
 
-        var parameters = putOperation.GetParameters(addPayloadParamsFromMetadata: false);
+        var parameters = putOperation.GetParameters(false);
         Assert.NotNull(parameters);
         Assert.True(parameters.Count >= 5);
 
@@ -162,11 +166,12 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Null(contentTypeParameter.Schema);
     }
 
+
     [Fact]
     public async Task ItCanUseOperationSummaryAsync()
     {
         // Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         // Assert
         Assert.NotNull(restApi.Operations);
@@ -178,14 +183,18 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal("Turn a scenario into a creative or humorous excuse to send your boss", operation.Summary);
     }
 
+
     [Fact]
     public async Task ItCanExtractSimpleTypeHeaderParameterMetadataSuccessfullyAsync()
     {
         // Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         //Assert string header parameter metadata
-        var accept = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiParameterLocation.Header, "Accept");
+        var accept = GetParameterMetadata(restApi.Operations,
+            "SetSecret",
+            RestApiParameterLocation.Header,
+            "Accept");
 
         Assert.Equal("string", accept.Type);
         Assert.Equal("application/json", accept.DefaultValue);
@@ -193,7 +202,10 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.False(accept.IsRequired);
 
         //Assert integer header parameter metadata
-        var apiVersion = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiParameterLocation.Header, "X-API-Version");
+        var apiVersion = GetParameterMetadata(restApi.Operations,
+            "SetSecret",
+            RestApiParameterLocation.Header,
+            "X-API-Version");
 
         Assert.Equal("integer", apiVersion.Type);
         Assert.Equal(10, apiVersion.DefaultValue);
@@ -201,14 +213,18 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.True(apiVersion.IsRequired);
     }
 
+
     [Fact]
     public async Task ItCanExtractCsvStyleHeaderParameterMetadataSuccessfullyAsync()
     {
         // Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         //Assert header parameters metadata
-        var acceptParameter = GetParameterMetadata(restApi.Operations, "SetSecret", RestApiParameterLocation.Header, "X-Operation-Csv-Ids");
+        var acceptParameter = GetParameterMetadata(restApi.Operations,
+            "SetSecret",
+            RestApiParameterLocation.Header,
+            "X-Operation-Csv-Ids");
 
         Assert.Null(acceptParameter.DefaultValue);
         Assert.False(acceptParameter.IsRequired);
@@ -218,11 +234,12 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal("string", acceptParameter.ArrayItemType);
     }
 
+
     [Fact]
     public async Task ItCanExtractHeadersSuccessfullyAsync()
     {
         // Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         // Assert
         Assert.True(restApi.Operations.Any());
@@ -234,26 +251,28 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.NotNull(headerParameters);
         Assert.Equal(3, headerParameters.Count());
 
-        Assert.Contains(headerParameters, (p) => p.Name == "Accept");
-        Assert.Contains(headerParameters, (p) => p.Name == "X-API-Version");
-        Assert.Contains(headerParameters, (p) => p.Name == "X-Operation-Csv-Ids");
+        Assert.Contains(headerParameters, p => p.Name == "Accept");
+        Assert.Contains(headerParameters, p => p.Name == "X-API-Version");
+        Assert.Contains(headerParameters, p => p.Name == "X-Operation-Csv-Ids");
     }
+
 
     [Fact]
     public async Task ItCanExtractAllPathsAsOperationsAsync()
     {
         // Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         // Assert
         Assert.Equal(8, restApi.Operations.Count);
     }
 
+
     [Fact]
     public async Task ItCanParseOperationHavingTextPlainBodySuccessfullyAsync()
     {
         // Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         // Assert
         Assert.NotNull(restApi.Operations);
@@ -273,37 +292,42 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Empty(properties);
     }
 
+
     [Fact]
     public async Task ItCanWorkWithDocumentsWithoutServersAttributeAsync()
     {
         //Arrange
-        using var stream = ModifyOpenApiDocument(this._openApiDocument, (yaml) =>
-        {
-            yaml.Remove("servers");
-        });
+        using var stream = ModifyOpenApiDocument(_openApiDocument,
+            yaml =>
+            {
+                yaml.Remove("servers");
+            });
 
         //Act
-        var restApi = await this._sut.ParseAsync(stream);
+        var restApi = await _sut.ParseAsync(stream);
 
         //Assert
-        Assert.All(restApi.Operations, (op) => Assert.Empty(op.Servers));
+        Assert.All(restApi.Operations, op => Assert.Empty(op.Servers));
     }
+
 
     [Fact]
     public async Task ItCanWorkWithDocumentsWithEmptyServersAttributeAsync()
     {
         //Arrange
-        using var stream = ModifyOpenApiDocument(this._openApiDocument, (yaml) =>
-        {
-            yaml["servers"] = Array.Empty<string>();
-        });
+        using var stream = ModifyOpenApiDocument(_openApiDocument,
+            yaml =>
+            {
+                yaml["servers"] = Array.Empty<string>();
+            });
 
         //Act
-        var restApi = await this._sut.ParseAsync(stream);
+        var restApi = await _sut.ParseAsync(stream);
 
         //Assert
-        Assert.All(restApi.Operations, (op) => Assert.Empty(op.Servers));
+        Assert.All(restApi.Operations, op => Assert.Empty(op.Servers));
     }
+
 
     [Theory]
     [InlineData("explodeFormParam")]
@@ -311,7 +335,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItShouldSupportsAmpersandSeparatedParametersForFormStyleArrayQueryStringParametersAsync(string parameterName)
     {
         //Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         //Assert
         Assert.True(restApi.Operations.Any());
@@ -323,11 +347,12 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.True(explodeFormParam.Expand);
     }
 
+
     [Fact]
     public async Task ItShouldSupportsCommaSeparatedValuesForFormStyleArrayQueryStringParametersAsync()
     {
         //Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         //Assert
         Assert.True(restApi.Operations.Any());
@@ -339,11 +364,12 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.False(explodeFormParam.Expand);
     }
 
+
     [Fact]
     public async Task ItCanParseResponsesSuccessfullyAsync()
     {
         //Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         //Assert
         Assert.NotNull(restApi.Operations);
@@ -363,11 +389,12 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
             JsonSerializer.Serialize(response.Schema));
     }
 
+
     [Fact]
     public async Task ItCanWorkWithDefaultParametersOfVariousTypesAsync()
     {
         //Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         //Assert
         Assert.NotNull(restApi.Operations);
@@ -399,7 +426,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
 
         var doubleParameter = parameters.Single(p => p.Name == "double-parameter");
         Assert.True(doubleParameter.DefaultValue is double);
-        Assert.Equal((double)-12.01, doubleParameter.DefaultValue);
+        Assert.Equal(-12.01, doubleParameter.DefaultValue);
 
         var encodedCharactersParameter = parameters.Single(p => p.Name == "encoded-characters-parameter");
         Assert.True(encodedCharactersParameter.DefaultValue is byte[]);
@@ -415,18 +442,26 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
 
         var dateTimeParameter = parameters.Single(p => p.Name == "date-time-parameter");
         Assert.True(dateTimeParameter.DefaultValue is DateTimeOffset);
-        Assert.Equal(new DateTimeOffset(2017, 07, 21, 17, 32, 28, TimeSpan.Zero), dateTimeParameter.DefaultValue);
+        Assert.Equal(new DateTimeOffset(2017,
+                07,
+                21,
+                17,
+                32,
+                28,
+                TimeSpan.Zero),
+            dateTimeParameter.DefaultValue);
 
         var passwordParameter = parameters.Single(p => p.Name == "password-parameter");
         Assert.True(passwordParameter.DefaultValue is string);
         Assert.Equal("password-value", passwordParameter.DefaultValue);
     }
 
+
     [Fact]
     public async Task ItCanParseRestApiInfoAsync()
     {
         //Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         //Assert
         Assert.NotNull(restApi.Info);
@@ -435,6 +470,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.NotNull(restApi.Info.Description);
         Assert.NotEmpty(restApi.Info.Description);
     }
+
 
     [Theory]
     [InlineData("string-parameter", "string", null)]
@@ -448,7 +484,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
     public async Task ItCanParseParametersOfPrimitiveDataTypeAsync(string name, string type, string? format)
     {
         // Arrange & Act
-        var restApiSpec = await this._sut.ParseAsync(this._openApiDocument);
+        var restApiSpec = await _sut.ParseAsync(_openApiDocument);
 
         // Assert
         var parameters = restApiSpec.Operations.Single(o => o.Id == "TestParameterDataTypes").GetParameters();
@@ -460,11 +496,12 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal(format, parameter.Format);
     }
 
+
     [Fact]
     public async Task ItCanParsePropertiesOfObjectDataTypeAsync()
     {
         // Arrange & Act
-        var restApiSpec = await this._sut.ParseAsync(this._openApiDocument);
+        var restApiSpec = await _sut.ParseAsync(_openApiDocument);
 
         // Assert
         var properties = restApiSpec.Operations.Single(o => o.Id == "TestParameterDataTypes").Payload!.Properties;
@@ -474,46 +511,38 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Null(property.Format);
     }
 
+
     [Fact]
     public async Task ItCanParseDocumentWithMultipleServersAsync()
     {
         // Act
-        var restApi = await this._sut.ParseAsync(this._openApiDocument);
+        var restApi = await _sut.ParseAsync(_openApiDocument);
 
         // Assert
-        Assert.All(restApi.Operations, (operation) => Assert.Equal(2, operation.Servers.Count));
+        Assert.All(restApi.Operations, operation => Assert.Equal(2, operation.Servers.Count));
 
         Assert.Equal("https://my-key-vault.vault.azure.net", restApi.Operations[0].Servers[0].Url);
         Assert.Equal("https://ppe.my-key-vault.vault.azure.net", restApi.Operations[0].Servers[1].Url);
     }
 
+
     [Fact]
     public async Task ItCanParsePathItemPathParametersAsync()
-    {//TODO update the document version when upgrading Microsoft.OpenAPI to v2
+    {
+        //TODO update the document version when upgrading Microsoft.OpenAPI to v2
         var document =
-        """
-        {
-            "openapi": "3.0.0",
-            "info": {
-                "title": "Test API",
-                "version": "1.0.0"
-            },
-            "paths": {
-                "/items/{itemId}/{format}": {
-                    "parameters": [
-                        {
-                            "name": "itemId",
-                            "in": "path",
-                            "required": true,
-                            "schema": {
-                                "type": "string"
-                            }
-                        }
-                    ],
-                    "get": {
+            """
+            {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "Test API",
+                    "version": "1.0.0"
+                },
+                "paths": {
+                    "/items/{itemId}/{format}": {
                         "parameters": [
                             {
-                                "name": "format",
+                                "name": "itemId",
                                 "in": "path",
                                 "required": true,
                                 "schema": {
@@ -521,20 +550,31 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
                                 }
                             }
                         ],
-                        "summary": "Get an item by ID",
-                        "responses": {
-                            "200": {
-                                "description": "Successful response"
+                        "get": {
+                            "parameters": [
+                                {
+                                    "name": "format",
+                                    "in": "path",
+                                    "required": true,
+                                    "schema": {
+                                        "type": "string"
+                                    }
+                                }
+                            ],
+                            "summary": "Get an item by ID",
+                            "responses": {
+                                "200": {
+                                    "description": "Successful response"
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        """;
+            """;
 
         await using var steam = new MemoryStream(Encoding.UTF8.GetBytes(document));
-        var restApi = await this._sut.ParseAsync(steam);
+        var restApi = await _sut.ParseAsync(steam);
 
         Assert.NotNull(restApi);
         Assert.NotNull(restApi.Operations);
@@ -567,63 +607,65 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal("string", formatParameter.Schema.RootElement.GetProperty("type").GetString());
     }
 
+
     [Fact]
     public async Task ItCanParsePathItemPathParametersAndOverridesAsync()
-    {//TODO update the document version when upgrading Microsoft.OpenAPI to v2
+    {
+        //TODO update the document version when upgrading Microsoft.OpenAPI to v2
         var document =
-        """
-        {
-            "openapi": "3.0.0",
-            "info": {
-                "title": "Test API",
-                "version": "1.0.0"
-            },
-            "paths": {
-                "/items/{itemId}/{format}": {
-                    "parameters": [
-                        {
-                            "name": "itemId",
-                            "in": "path",
-                            "required": true,
-                            "schema": {
-                                "type": "string"
-                            }
-                        }
-                    ],
-                    "get": {
+            """
+            {
+                "openapi": "3.0.0",
+                "info": {
+                    "title": "Test API",
+                    "version": "1.0.0"
+                },
+                "paths": {
+                    "/items/{itemId}/{format}": {
                         "parameters": [
-                            {
-                                "name": "format",
-                                "in": "path",
-                                "required": true,
-                                "schema": {
-                                    "type": "string"
-                                }
-                            },
                             {
                                 "name": "itemId",
                                 "in": "path",
-                                "description": "item ID override",
                                 "required": true,
                                 "schema": {
                                     "type": "string"
                                 }
                             }
                         ],
-                        "summary": "Get an item by ID",
-                        "responses": {
-                            "200": {
-                                "description": "Successful response"
+                        "get": {
+                            "parameters": [
+                                {
+                                    "name": "format",
+                                    "in": "path",
+                                    "required": true,
+                                    "schema": {
+                                        "type": "string"
+                                    }
+                                },
+                                {
+                                    "name": "itemId",
+                                    "in": "path",
+                                    "description": "item ID override",
+                                    "required": true,
+                                    "schema": {
+                                        "type": "string"
+                                    }
+                                }
+                            ],
+                            "summary": "Get an item by ID",
+                            "responses": {
+                                "200": {
+                                    "description": "Successful response"
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        """;
+            """;
 
         await using var steam = new MemoryStream(Encoding.UTF8.GetBytes(document));
-        var restApi = await this._sut.ParseAsync(steam);
+        var restApi = await _sut.ParseAsync(steam);
 
         Assert.NotNull(restApi);
         Assert.NotNull(restApi.Operations);
@@ -657,6 +699,7 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal("string", formatParameter.Schema.RootElement.GetProperty("type").GetString());
     }
 
+
     [Fact]
     public void ItCanVerifyAllServerLevelsAreStoredCorrectly()
     {
@@ -664,33 +707,37 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         var document = new OpenApiDocument
         {
             Servers =
-        [
-            new() { Url = "https://global-server.com", Description = "Global server" }
-        ]
+            [
+                new OpenApiServer { Url = "https://global-server.com", Description = "Global server" }
+            ]
         };
 
         var pathItem = new OpenApiPathItem
         {
             Servers =
-        [
-            new() { Url = "https://path-server.com", Description = "Path server" }
-        ],
+            [
+                new OpenApiServer { Url = "https://path-server.com", Description = "Path server" }
+            ],
             Operations = new Dictionary<OperationType, OpenApiOperation>
             {
-                [OperationType.Get] = new OpenApiOperation
+                [OperationType.Get] = new()
                 {
                     OperationId = "GetTest",
                     Servers =
-                [
-                    new() { Url = "https://operation-server.com", Description = "Operation server" }
-                ],
+                    [
+                        new OpenApiServer { Url = "https://operation-server.com", Description = "Operation server" }
+                    ],
                     Responses = []
                 }
             }
         };
 
         // Act
-        var operations = OpenApiDocumentParser.CreateRestApiOperations(document, "/test", pathItem, null, this._logger);
+        var operations = OpenApiDocumentParser.CreateRestApiOperations(document,
+            "/test",
+            pathItem,
+            null,
+            _logger);
         var operation = operations[0];
 
         // Assert
@@ -710,9 +757,10 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         Assert.Equal("Operation server", operation.OperationServers[0].Description);
     }
 
+
     private static MemoryStream ModifyOpenApiDocument(Stream openApiDocument, Action<IDictionary<string, object>> transformer)
     {
-        var serializer = new SharpYaml.Serialization.Serializer();
+        var serializer = new Serializer();
 
         //Deserialize yaml
         var yaml = serializer.Deserialize<ExpandoObject>(openApiDocument);
@@ -730,7 +778,12 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         return stream;
     }
 
-    private static RestApiParameter GetParameterMetadata(IList<RestApiOperation> operations, string operationId, RestApiParameterLocation location, string name)
+
+    private static RestApiParameter GetParameterMetadata(
+        IList<RestApiOperation> operations,
+        string operationId,
+        RestApiParameterLocation location,
+        string name)
     {
         Assert.True(operations.Any());
 
@@ -746,8 +799,9 @@ public sealed class OpenApiDocumentParserV31Tests : IDisposable
         return parameter;
     }
 
+
     public void Dispose()
     {
-        this._openApiDocument.Dispose();
+        _openApiDocument.Dispose();
     }
 }

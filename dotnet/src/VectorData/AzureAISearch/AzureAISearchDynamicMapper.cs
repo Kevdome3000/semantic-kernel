@@ -1,13 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ProviderServices;
 using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -25,24 +18,24 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
         var jsonObject = new JsonObject
         {
             [model.KeyProperty.StorageName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
-            ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
-            : keyValue switch
-            {
-                string s => s,
-                Guid g => g.ToString(),
+                ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
+                : keyValue switch
+                {
+                    string s => s,
+                    Guid g => g.ToString(),
 
-                null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
-                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string or Guid.")
-            }
+                    null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
+                    _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string or Guid.")
+                }
         };
 
         foreach (var dataProperty in model.DataProperties)
         {
             if (dataModel.TryGetValue(dataProperty.ModelName, out var dataValue))
             {
-                jsonObject[dataProperty.StorageName] = dataValue is not null ?
-                    JsonSerializer.SerializeToNode(dataValue, dataProperty.Type, jsonSerializerOptions) :
-                    null;
+                jsonObject[dataProperty.StorageName] = dataValue is not null
+                    ? JsonSerializer.SerializeToNode(ConvertToStorageValue(dataValue), GetStorageType(dataProperty.Type), jsonSerializerOptions)
+                    : null;
             }
         }
 
@@ -86,6 +79,7 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
         return jsonObject;
     }
 
+
     /// <inheritdoc />
     public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
@@ -116,7 +110,10 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
                 {
                     if (storageModel.TryGetPropertyValue(dataProperty.StorageName, out var value))
                     {
-                        result.Add(dataProperty.ModelName, value is null ? null : GetDataPropertyValue(property.Type, value));
+                        result.Add(dataProperty.ModelName,
+                            value is null
+                                ? null
+                                : GetDataPropertyValue(property.Type, value));
                     }
                     continue;
                 }
@@ -158,6 +155,7 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
         return result;
     }
 
+
     /// <summary>
     /// Get the value of the given json node as the given property type.
     /// </summary>
@@ -183,6 +181,10 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
             Type t when t == typeof(DateTime?) => value.GetValue<DateTime?>(),
             Type t when t == typeof(DateTimeOffset) => value.GetValue<DateTimeOffset>(),
             Type t when t == typeof(DateTimeOffset?) => value.GetValue<DateTimeOffset?>(),
+#if NET
+            Type t when t == typeof(DateOnly) => DateOnly.FromDateTime(value.GetValue<DateTimeOffset>().DateTime),
+            Type t when t == typeof(DateOnly?) => (DateOnly?)DateOnly.FromDateTime(value.GetValue<DateTimeOffset>().DateTime),
+#endif
 
             _ => (object?)null
         };
@@ -242,4 +244,42 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
 
         throw new UnreachableException($"Unsupported property type '{propertyType.Name}'.");
     }
+
+
+    /// <summary>
+    /// Converts a value to its storage representation for Azure AI Search.
+    /// Azure AI Search only supports <see cref="DateTimeOffset"/> for date/time types, and always internally
+    /// converts to UTC for storage.
+    /// </summary>
+    /// <summary>
+    /// Gets the storage type for a given property type. Azure AI Search stores DateTime and DateOnly as DateTimeOffset.
+    /// </summary>
+    private static Type GetStorageType(Type propertyType)
+    {
+        var underlying = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+
+        if (underlying == typeof(DateTime)
+#if NET
+            || underlying == typeof(DateOnly)
+#endif
+        )
+        {
+            return propertyType == underlying
+                ? typeof(DateTimeOffset)
+                : typeof(DateTimeOffset?);
+        }
+
+        return propertyType;
+    }
+
+
+    private static object ConvertToStorageValue(object value)
+        => value switch
+        {
+            DateTime dateTime => new DateTimeOffset(dateTime, TimeSpan.Zero),
+#if NET
+            DateOnly dateOnly => new DateTimeOffset(dateOnly.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+#endif
+            _ => value
+        };
 }

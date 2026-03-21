@@ -1,9 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
+using Amazon.BedrockAgent.Model;
 using Amazon.BedrockAgentRuntime;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
@@ -21,6 +23,7 @@ public sealed class BedrockAgentFactory : AgentFactory
 
     private const string AgentResourceRoleArn = "agent_resource_role_arn";
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BedrockAgentFactory"/> class.
     /// </summary>
@@ -29,12 +32,17 @@ public sealed class BedrockAgentFactory : AgentFactory
     {
     }
 
+
     /// <inheritdoc/>
-    public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default)
+    public override async Task<Agent?> TryCreateAsync(
+        Kernel kernel,
+        AgentDefinition agentDefinition,
+        AgentCreationOptions? agentCreationOptions = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
-        if (agentDefinition.Type?.Equals(BedrockAgentType, System.StringComparison.Ordinal) ?? false)
+        if (agentDefinition.Type?.Equals(BedrockAgentType, StringComparison.Ordinal) ?? false)
         {
             var agentClient = new AmazonBedrockAgentClient();
             var runtimeClient = new AmazonBedrockAgentRuntimeClient();
@@ -43,19 +51,20 @@ public sealed class BedrockAgentFactory : AgentFactory
             {
                 // Get an existing agent
                 var agentResponse = await agentClient.GetAgentAsync(
-                    new()
-                    {
-                        AgentId = agentDefinition.Id,
-                    },
-                    cancellationToken
-                ).ConfigureAwait(false);
+                        new GetAgentRequest
+                        {
+                            AgentId = agentDefinition.Id
+                        },
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
 
                 return new BedrockAgent(agentResponse.Agent, agentClient, runtimeClient)
                 {
                     Kernel = kernel,
                     Arguments = agentDefinition.GetDefaultKernelArguments(kernel) ?? [],
                     Template = agentDefinition.GetPromptTemplate(kernel, agentCreationOptions?.PromptTemplateFactory),
-                    Instructions = agentDefinition.Instructions,
+                    Instructions = agentDefinition.Instructions
                 };
             }
 
@@ -67,22 +76,23 @@ public sealed class BedrockAgentFactory : AgentFactory
             Verify.NotNull(agentDefinition.Model.Id);
             var agentResourceRoleArn = GetAgentResourceRoleArn(agentDefinition);
             var agentModel = await agentClient.CreateAgentAndWaitAsync(
-                new()
-                {
-                    FoundationModel = agentDefinition.Model!.Id,
-                    AgentName = agentDefinition.Name,
-                    Description = agentDefinition.Description,
-                    Instruction = agentDefinition.Instructions,
-                    AgentResourceRoleArn = agentResourceRoleArn,
-                },
-                cancellationToken
-            ).ConfigureAwait(false);
+                    new CreateAgentRequest
+                    {
+                        FoundationModel = agentDefinition.Model!.Id,
+                        AgentName = agentDefinition.Name,
+                        Description = agentDefinition.Description,
+                        Instruction = agentDefinition.Instructions,
+                        AgentResourceRoleArn = agentResourceRoleArn
+                    },
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
 
             var agent = new BedrockAgent(agentModel, agentClient, runtimeClient)
             {
                 Kernel = kernel,
                 Arguments = agentDefinition.GetDefaultKernelArguments(kernel) ?? [],
-                Template = agentDefinition.GetPromptTemplate(kernel, agentCreationOptions?.PromptTemplateFactory),
+                Template = agentDefinition.GetPromptTemplate(kernel, agentCreationOptions?.PromptTemplateFactory)
             };
 
             // create tools from the definition
@@ -97,11 +107,17 @@ public sealed class BedrockAgentFactory : AgentFactory
         return null;
     }
 
+
     #region private
+
     private static string? GetAgentResourceRoleArn(AgentDefinition agentDefinition)
     {
-        return agentDefinition.Model?.Connection?.ExtensionData.TryGetValue(AgentResourceRoleArn, out var value) ?? false ? value as string : null;
+        return agentDefinition.Model?.Connection?.ExtensionData.TryGetValue(AgentResourceRoleArn, out var value) ?? false
+            ? value as string
+            : null;
     }
 
     #endregion
+
+
 }

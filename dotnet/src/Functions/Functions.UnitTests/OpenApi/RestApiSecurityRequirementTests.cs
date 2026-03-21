@@ -40,7 +40,7 @@ public class RestApiSecurityRequirementTests
         Assert.True(sut.ContainsKey(scheme));
 
         // TryGetValue
-        Assert.True(sut.TryGetValue(scheme, out IList<string>? value) && object.Equals(value, scopes));
+        Assert.True(sut.TryGetValue(scheme, out IList<string>? value) && Equals(value, scopes));
 
         // this[RestApiSecurityScheme key]
         IList<string> newScopes = ["scope1"];
@@ -62,6 +62,7 @@ public class RestApiSecurityRequirementTests
         Assert.Throws<InvalidOperationException>(sut.Clear);
         Assert.Throws<InvalidOperationException>(() => sut[scheme] = scopes);
     }
+
 
     [Fact]
     public void ItShouldSupportAllMembersOfIDictionaryInterface()
@@ -90,7 +91,7 @@ public class RestApiSecurityRequirementTests
         Assert.True(sut.ContainsKey(scheme));
 
         // TryGetValue
-        Assert.True(sut.TryGetValue(scheme, out IList<string>? value) && object.Equals(value, scopes));
+        Assert.True(sut.TryGetValue(scheme, out IList<string>? value) && Equals(value, scopes));
 
         // this[RestApiSecurityScheme key]
         IList<string> newScopes = ["scope1"];
@@ -112,6 +113,7 @@ public class RestApiSecurityRequirementTests
         Assert.Throws<InvalidOperationException>(() => sut[scheme] = scopes);
     }
 
+
     [Fact]
     public void ItShouldSupportAllMembersOfIReadOnlyDictionaryInterface()
     {
@@ -132,7 +134,7 @@ public class RestApiSecurityRequirementTests
         Assert.True(sut.ContainsKey(scheme));
 
         // TryGetValue
-        Assert.True(sut.TryGetValue(scheme, out IList<string>? value) && object.Equals(value, scopes));
+        Assert.True(sut.TryGetValue(scheme, out IList<string>? value) && Equals(value, scopes));
 
         // this[RestApiSecurityScheme key]
         Assert.Equal(scopes, sut[scheme]);
@@ -145,6 +147,7 @@ public class RestApiSecurityRequirementTests
         Assert.Single(sut.Values);
         Assert.Equal(scopes, sut.Values.ElementAt(0));
     }
+
 
     [Fact]
     public void ItShouldSupportAllMembersOfICollectionInterface()
@@ -199,6 +202,7 @@ public class RestApiSecurityRequirementTests
         Assert.Throws<InvalidOperationException>(sut.Clear);
     }
 
+
     [Fact]
     public void ItShouldSupportAllMembersOfIEnumerableInterface()
     {
@@ -221,16 +225,17 @@ public class RestApiSecurityRequirementTests
         Assert.False(enumerator.MoveNext());
     }
 
+
     [Fact]
     public void ItShouldFreezeKeysAndValues()
     {
         // Arrange
         RestApiOAuthFlows flows = new()
         {
-            Implicit = new RestApiOAuthFlow() { Scopes = new Dictionary<string, string>() { ["s1"] = "v1" } },
-            Password = new RestApiOAuthFlow() { Scopes = new Dictionary<string, string>() { ["s1"] = "v1" } },
-            ClientCredentials = new RestApiOAuthFlow() { Scopes = new Dictionary<string, string>() { ["s1"] = "v1" } },
-            AuthorizationCode = new RestApiOAuthFlow() { Scopes = new Dictionary<string, string>() { ["s1"] = "v1" } },
+            Implicit = new RestApiOAuthFlow { Scopes = new Dictionary<string, string> { ["s1"] = "v1" } },
+            Password = new RestApiOAuthFlow { Scopes = new Dictionary<string, string> { ["s1"] = "v1" } },
+            ClientCredentials = new RestApiOAuthFlow { Scopes = new Dictionary<string, string> { ["s1"] = "v1" } },
+            AuthorizationCode = new RestApiOAuthFlow { Scopes = new Dictionary<string, string> { ["s1"] = "v1" } }
         };
 
         RestApiSecurityScheme scheme = new() { Flows = flows };

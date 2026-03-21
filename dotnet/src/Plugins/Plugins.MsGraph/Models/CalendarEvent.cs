@@ -2,10 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
-using System;
-using System.Collections.Generic;
-
-
 /// <summary>
 /// Model for a calendar event.
 /// </summary>

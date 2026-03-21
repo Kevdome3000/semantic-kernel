@@ -23,8 +23,8 @@ public sealed class InMemoryDynamicCollection : InMemoryCollection<object, Dicti
     [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
     public InMemoryDynamicCollection(string name, InMemoryCollectionOptions options)
         : base(
-            internalCollection: null,
-            internalCollectionTypes: null,
+            null,
+            null,
             name,
             static options => new InMemoryModelBuilder().BuildDynamic(
                 options.Definition ?? throw new ArgumentException("Definition is required for dynamic collections"),
@@ -32,6 +32,7 @@ public sealed class InMemoryDynamicCollection : InMemoryCollection<object, Dicti
             options)
     {
     }
+
 
     internal InMemoryDynamicCollection(
         ConcurrentDictionary<string, ConcurrentDictionary<object, object>> internalCollection,

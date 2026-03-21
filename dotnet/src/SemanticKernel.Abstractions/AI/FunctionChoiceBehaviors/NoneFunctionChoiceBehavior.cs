@@ -21,6 +21,7 @@ public sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
     {
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="NoneFunctionChoiceBehavior"/> class.
     /// </summary>
@@ -34,6 +35,7 @@ public sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
         Functions = functions?.Select(f => FunctionName.ToFullyQualifiedName(f.Name, f.PluginName, FunctionNameSeparator)).ToList();
         Options = options;
     }
+
 
     /// <summary>
     /// Fully qualified names of the functions to provide to AI model.
@@ -51,6 +53,7 @@ public sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
     [JsonPropertyName("options")]
     public FunctionChoiceBehaviorOptions? Options { get; set; }
 
+
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
@@ -60,7 +63,7 @@ public sealed class NoneFunctionChoiceBehavior : FunctionChoiceBehavior
         {
             Choice = FunctionChoice.None,
             Functions = functions,
-            AutoInvoke = false,
+            AutoInvoke = false
         };
     }
 }

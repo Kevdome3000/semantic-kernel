@@ -8,12 +8,12 @@ using System.Threading;
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>
-/// Defines options for calling <see cref="VectorStoreCollection{TKey, TRecord}.GetAsync(Expression{Func{TRecord, bool}}, int, FilteredRecordRetrievalOptions{TRecord}, CancellationToken)"/>.
+/// Defines options for calling <see cref="VectorStoreCollection{TKey, TRecord}.GetAsync(System.Linq.Expressions.Expression{System.Func{TRecord,bool}}, int, FilteredRecordRetrievalOptions{TRecord}, CancellationToken)"/>.
 /// </summary>
 /// <typeparam name="TRecord">The type of the record.</typeparam>
 public sealed class FilteredRecordRetrievalOptions<TRecord>
 {
-    private int _skip = 0;
+    private int _skip;
 
     /// <summary>
     /// Gets or sets the number of results to skip before returning results, that is, the index of the first result to return.
@@ -21,7 +21,7 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
     /// <exception cref="ArgumentOutOfRangeException">The value is less than 0.</exception>
     public int Skip
     {
-        get => this._skip;
+        get => _skip;
         set
         {
             if (value < 0)
@@ -29,7 +29,7 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
                 throw new ArgumentOutOfRangeException(nameof(value), "Skip must be greater than or equal to 0.");
             }
 
-            this._skip = value;
+            _skip = value;
         }
     }
 
@@ -46,6 +46,7 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
     /// </summary>
     public bool IncludeVectors { get; set; }
 
+
     /// <summary>
     /// Represents a builder for sorting.
     /// </summary>
@@ -58,7 +59,8 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
         /// Gets the expressions to sort by.
         /// </summary>
         /// <remarks>This property is intended to be consumed by the connectors to retrieve the configuration.</remarks>
-        public IReadOnlyList<SortInfo> Values => this._values;
+        public IReadOnlyList<SortInfo> Values => _values;
+
 
         /// <summary>
         /// Creates an ascending sort.
@@ -70,9 +72,10 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
                 throw new ArgumentNullException(nameof(propertySelector));
             }
 
-            this._values.Add(new(propertySelector, true));
+            _values.Add(new SortInfo(propertySelector, true));
             return this;
         }
+
 
         /// <summary>
         /// Creates a descending sort.
@@ -84,9 +87,10 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
                 throw new ArgumentNullException(nameof(propertySelector));
             }
 
-            this._values.Add(new(propertySelector, false));
+            _values.Add(new SortInfo(propertySelector, false));
             return this;
         }
+
 
         /// <summary>
         /// Provides a way to define property ordering.
@@ -96,9 +100,10 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
         {
             internal SortInfo(Expression<Func<TRecord, object?>> propertySelector, bool isAscending)
             {
-                this.PropertySelector = propertySelector;
-                this.Ascending = isAscending;
+                PropertySelector = propertySelector;
+                Ascending = isAscending;
             }
+
 
             /// <summary>
             /// Gets the expression to select the property to sort by.

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides an <see cref="EventArgs"/> for cancelable operations related
 /// to <see cref="Kernel"/>-based operations.
@@ -21,6 +22,7 @@ public abstract class CancelKernelEventArgs : KernelEventArgs
         base(function, arguments, metadata)
     {
     }
+
 
     /// <summary>
     /// Gets or sets a value indicating whether the operation associated with

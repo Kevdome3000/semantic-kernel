@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.AI;
-
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>Defines an abstract base class for options passed to a collection.</summary>
@@ -14,14 +12,16 @@ public abstract class VectorStoreCollectionOptions
     {
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreCollectionOptions"/> class.
     /// </summary>
     protected VectorStoreCollectionOptions(VectorStoreCollectionOptions? source)
     {
-        this.Definition = source?.Definition;
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+        Definition = source?.Definition;
+        EmbeddingGenerator = source?.EmbeddingGenerator;
     }
+
 
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

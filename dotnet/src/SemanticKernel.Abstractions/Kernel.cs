@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides state for use throughout a Semantic Kernel workload.
 /// </summary>
@@ -44,6 +45,7 @@ public sealed class Kernel
 
     /// <summary>The collection of automatic function invocation filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private NonNullCollection<IAutoFunctionInvocationFilter>? _autoFunctionInvocationFilters;
+
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -84,9 +86,14 @@ public sealed class Kernel
         AddFilters();
     }
 
+
     /// <summary>Creates a builder for constructing <see cref="Kernel"/> instances.</summary>
     /// <returns>A new <see cref="IKernelBuilder"/> instance.</returns>
-    public static IKernelBuilder CreateBuilder() => new KernelBuilder();
+    public static IKernelBuilder CreateBuilder()
+    {
+        return new KernelBuilder();
+    }
+
 
     /// <summary>
     /// Clone the <see cref="Kernel"/> object to create a new instance that may be mutated without affecting the current instance.
@@ -112,18 +119,29 @@ public sealed class Kernel
     /// <item>The same <see cref="CultureInfo"/> reference as is returned by the current instance's <see cref="Kernel.Culture"/>.</item>
     /// </list>
     /// </remarks>
-    public Kernel Clone() =>
-        new(Services,
+    public Kernel Clone()
+    {
+        return new Kernel(Services,
             _plugins is { Count: > 0 }
                 ? new KernelPluginCollection(_plugins)
-            : null)
+                : null)
         {
-            _functionInvocationFilters = _functionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IFunctionInvocationFilter>(_functionInvocationFilters) : null,
-            _promptRenderFilters = _promptRenderFilters is { Count: > 0 } ? new NonNullCollection<IPromptRenderFilter>(_promptRenderFilters) : null,
-            _autoFunctionInvocationFilters = _autoFunctionInvocationFilters is { Count: > 0 } ? new NonNullCollection<IAutoFunctionInvocationFilter>(_autoFunctionInvocationFilters) : null,
-            _data = _data is { Count: > 0 } ? new Dictionary<string, object?>(_data) : null,
-            _culture = _culture,
+            _functionInvocationFilters = _functionInvocationFilters is { Count: > 0 }
+                ? new NonNullCollection<IFunctionInvocationFilter>(_functionInvocationFilters)
+                : null,
+            _promptRenderFilters = _promptRenderFilters is { Count: > 0 }
+                ? new NonNullCollection<IPromptRenderFilter>(_promptRenderFilters)
+                : null,
+            _autoFunctionInvocationFilters = _autoFunctionInvocationFilters is { Count: > 0 }
+                ? new NonNullCollection<IAutoFunctionInvocationFilter>(_autoFunctionInvocationFilters)
+                : null,
+            _data = _data is { Count: > 0 }
+                ? new Dictionary<string, object?>(_data)
+                : null,
+            _culture = _culture
         };
+    }
+
 
     /// <summary>
     /// Gets the collection of plugins available through the kernel.
@@ -181,8 +199,7 @@ public sealed class Kernel
     [JsonIgnore]
     public ILoggerFactory LoggerFactory =>
         Services.GetService<ILoggerFactory>()
-        ??
-        NullLoggerFactory.Instance;
+        ?? NullLoggerFactory.Instance;
 
     /// <summary>
     /// Gets the <see cref="IAIServiceSelector"/> associated with this <see cref="Kernel"/>.
@@ -190,8 +207,7 @@ public sealed class Kernel
     [JsonIgnore]
     public IAIServiceSelector ServiceSelector =>
         Services.GetService<IAIServiceSelector>()
-        ??
-        OrderedAIServiceSelector.Instance;
+        ?? OrderedAIServiceSelector.Instance;
 
     /// <summary>
     /// Gets a dictionary for ambient data associated with the kernel.
@@ -201,6 +217,7 @@ public sealed class Kernel
     /// </remarks>
     public IDictionary<string, object?> Data =>
         _data ?? Interlocked.CompareExchange(ref _data, [], null) ?? _data;
+
 
     #region GetServices
 
@@ -232,8 +249,7 @@ public sealed class Kernel
             if (service is null && Services is IKeyedServiceProvider)
             {
                 service = GetAllServices<T>()
-                    .
-                    LastOrDefault();
+                    .LastOrDefault();
             }
         }
 
@@ -241,10 +257,11 @@ public sealed class Kernel
         if (service is null)
         {
             string message =
-                serviceKey is null ? $"Service of type '{typeof(T)}' not registered." : Services is not IKeyedServiceProvider
-                    ? $"Key '{serviceKey}' specified but service provider '{Services}' is not a {nameof(IKeyedServiceProvider)}."
-                    :
-                $"Service of type '{typeof(T)}' and key '{serviceKey}' not registered.";
+                serviceKey is null
+                    ? $"Service of type '{typeof(T)}' not registered."
+                    : Services is not IKeyedServiceProvider
+                        ? $"Key '{serviceKey}' specified but service provider '{Services}' is not a {nameof(IKeyedServiceProvider)}."
+                        : $"Service of type '{typeof(T)}' and key '{serviceKey}' not registered.";
 
             throw new KernelException(message);
         }
@@ -252,6 +269,7 @@ public sealed class Kernel
         // Return the found service.
         return service;
     }
+
 
     /// <summary>Gets all services of the specified type.</summary>
     /// <typeparam name="T">Specifies the type of the services to retrieve.</typeparam>
@@ -280,6 +298,7 @@ public sealed class Kernel
     }
 
     #endregion
+
 
     #region Filters
 
@@ -310,6 +329,7 @@ public sealed class Kernel
         }
     }
 
+
     internal async Task<FunctionInvocationContext> OnFunctionInvocationAsync(
         KernelFunction function,
         KernelArguments arguments,
@@ -318,18 +338,21 @@ public sealed class Kernel
         Func<FunctionInvocationContext, Task> functionCallback,
         CancellationToken cancellationToken)
     {
-        FunctionInvocationContext context = new(this, function, arguments, functionResult)
+        FunctionInvocationContext context = new(this,
+            function,
+            arguments,
+            functionResult)
         {
             CancellationToken = cancellationToken,
             IsStreaming = isStreaming
         };
 
         await InvokeFilterOrFunctionAsync(_functionInvocationFilters, functionCallback, context)
-            .
-            ConfigureAwait(false);
+            .ConfigureAwait(false);
 
         return context;
     }
+
 
     /// <summary>
     /// This method will execute filters and kernel function recursively.
@@ -346,17 +369,20 @@ public sealed class Kernel
     {
         if (functionFilters is { Count: > 0 } && index < functionFilters.Count)
         {
-            await functionFilters[index].
-                OnFunctionInvocationAsync(context,
-                    (context) => InvokeFilterOrFunctionAsync(functionFilters, functionCallback, context, index + 1)).
-                ConfigureAwait(false);
+            await functionFilters[index]
+                .OnFunctionInvocationAsync(context,
+                    context => InvokeFilterOrFunctionAsync(functionFilters,
+                        functionCallback,
+                        context,
+                        index + 1))
+                .ConfigureAwait(false);
         }
         else
         {
-            await functionCallback(context).
-                ConfigureAwait(false);
+            await functionCallback(context).ConfigureAwait(false);
         }
     }
+
 
     internal async Task<PromptRenderContext> OnPromptRenderAsync(
         KernelFunction function,
@@ -374,11 +400,11 @@ public sealed class Kernel
         };
 
         await InvokeFilterOrPromptRenderAsync(_promptRenderFilters, renderCallback, context)
-            .
-            ConfigureAwait(false);
+            .ConfigureAwait(false);
 
         return context;
     }
+
 
     /// <summary>
     /// This method will execute prompt filters and prompt rendering recursively.
@@ -395,19 +421,22 @@ public sealed class Kernel
     {
         if (promptFilters is { Count: > 0 } && index < promptFilters.Count)
         {
-            await promptFilters[index].
-                OnPromptRenderAsync(context,
-                    (context) => InvokeFilterOrPromptRenderAsync(promptFilters, renderCallback, context, index + 1)).
-                ConfigureAwait(false);
+            await promptFilters[index]
+                .OnPromptRenderAsync(context,
+                    context => InvokeFilterOrPromptRenderAsync(promptFilters,
+                        renderCallback,
+                        context,
+                        index + 1))
+                .ConfigureAwait(false);
         }
         else
         {
-            await renderCallback(context).
-                ConfigureAwait(false);
+            await renderCallback(context).ConfigureAwait(false);
         }
     }
 
     #endregion
+
 
     #region InvokeAsync
 
@@ -433,6 +462,7 @@ public sealed class Kernel
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
 
+
     /// <summary>
     /// Invoke the <see cref="IKernelFunction"/> with the specified arguments.
     /// </summary>
@@ -449,6 +479,7 @@ public sealed class Kernel
 
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
+
 
     /// <summary>
     /// Invokes a function from <see cref="Kernel.Plugins"/> using the specified arguments.
@@ -478,6 +509,7 @@ public sealed class Kernel
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
 
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
@@ -498,11 +530,11 @@ public sealed class Kernel
         CancellationToken cancellationToken = default)
     {
         FunctionResult result = await InvokeAsync(function, arguments, cancellationToken)
-            .
-            ConfigureAwait(false);
+            .ConfigureAwait(false);
 
         return result.GetValue<TResult>();
     }
+
 
     /// <summary>
     /// Invokes a function from <see cref="Plugins"/> using the specified arguments.
@@ -531,13 +563,13 @@ public sealed class Kernel
                 functionName,
                 arguments,
                 cancellationToken)
-            .
-            ConfigureAwait(false);
+            .ConfigureAwait(false);
 
         return result.GetValue<TResult>();
     }
 
     #endregion
+
 
     #region InvokeStreamingAsync
 
@@ -563,6 +595,7 @@ public sealed class Kernel
         return function.InvokeStreamingAsync<StreamingKernelContent>(this, arguments, cancellationToken);
     }
 
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -591,6 +624,7 @@ public sealed class Kernel
         return function.InvokeStreamingAsync<StreamingKernelContent>(this, arguments, cancellationToken);
     }
 
+
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -612,6 +646,7 @@ public sealed class Kernel
 
         return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
     }
+
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
@@ -643,12 +678,16 @@ public sealed class Kernel
 
     #endregion
 
+
     #region Private
 
-    private static bool IsNotEmpty<T>(IEnumerable<T> enumerable) =>
-        enumerable is not ICollection<T> collection || collection.Count != 0;
+    private static bool IsNotEmpty<T>(IEnumerable<T> enumerable)
+    {
+        return enumerable is not ICollection<T> collection || collection.Count != 0;
+    }
 
     #endregion
+
 
     #region Obsolete
 
@@ -683,5 +722,6 @@ public sealed class Kernel
 #pragma warning disable CS0067 // The event is never used
 
     #endregion
+
 
 }

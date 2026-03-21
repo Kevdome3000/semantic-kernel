@@ -32,6 +32,7 @@ public class AssistantMessageFactoryTests
         Assert.Empty(options.Metadata);
     }
 
+
     /// <summary>
     /// Verify options creation.
     /// </summary>
@@ -53,6 +54,7 @@ public class AssistantMessageFactoryTests
         Assert.Empty(options.Metadata);
     }
 
+
     /// <summary>
     /// Verify options creation.
     /// </summary>
@@ -64,10 +66,10 @@ public class AssistantMessageFactoryTests
             new(AuthorRole.User, "test")
             {
                 Metadata =
-                    new Dictionary<string, object?>()
+                    new Dictionary<string, object?>
                     {
                         { "a", 1 },
-                        { "b", "2" },
+                        { "b", "2" }
                     }
             };
 
@@ -82,6 +84,7 @@ public class AssistantMessageFactoryTests
         Assert.Equal("2", options.Metadata["b"]);
     }
 
+
     /// <summary>
     /// Verify options creation.
     /// </summary>
@@ -93,10 +96,10 @@ public class AssistantMessageFactoryTests
             new(AuthorRole.User, "test")
             {
                 Metadata =
-                    new Dictionary<string, object?>()
+                    new Dictionary<string, object?>
                     {
                         { "a", null },
-                        { "b", "2" },
+                        { "b", "2" }
                     }
             };
 
@@ -111,6 +114,7 @@ public class AssistantMessageFactoryTests
         Assert.Equal("2", options.Metadata["b"]);
     }
 
+
     /// <summary>
     /// Verify options creation.
     /// </summary>
@@ -118,7 +122,7 @@ public class AssistantMessageFactoryTests
     public void VerifyAssistantMessageAdapterGetMessageContentsWithText()
     {
         // Arrange
-        ChatMessageContent message = new(AuthorRole.User, items: [new TextContent("test")]);
+        ChatMessageContent message = new(AuthorRole.User, [new TextContent("test")]);
 
         // Act
         MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
@@ -129,6 +133,7 @@ public class AssistantMessageFactoryTests
         Assert.NotNull(contents.Single().Text);
     }
 
+
     /// <summary>
     /// Verify options creation.
     /// </summary>
@@ -136,7 +141,7 @@ public class AssistantMessageFactoryTests
     public void VerifyAssistantMessageAdapterGetMessageWithImageUrl()
     {
         // Arrange
-        ChatMessageContent message = new(AuthorRole.User, items: [new ImageContent(new Uri("https://localhost/myimage.png"))]);
+        ChatMessageContent message = new(AuthorRole.User, [new ImageContent(new Uri("https://localhost/myimage.png"))]);
 
         // Act
         MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
@@ -146,6 +151,7 @@ public class AssistantMessageFactoryTests
         Assert.Single(contents);
         Assert.NotNull(contents.Single().ImageUri);
     }
+
 
     /// <summary>
     /// Verify options creation.
@@ -154,7 +160,7 @@ public class AssistantMessageFactoryTests
     public void VerifyAssistantMessageAdapterGetMessageWithImageData()
     {
         // Arrange
-        ChatMessageContent message = new(AuthorRole.User, items: [new ImageContent(new byte[] { 1, 2, 3 }, "image/png") { DataUri = "data:image/png;base64,MTIz" }]);
+        ChatMessageContent message = new(AuthorRole.User, [new ImageContent(new byte[] { 1, 2, 3 }, "image/png") { DataUri = "data:image/png;base64,MTIz" }]);
 
         // Act
         MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
@@ -165,6 +171,7 @@ public class AssistantMessageFactoryTests
         Assert.NotNull(contents.Single().ImageUri);
     }
 
+
     /// <summary>
     /// Verify options creation.
     /// </summary>
@@ -172,7 +179,7 @@ public class AssistantMessageFactoryTests
     public void VerifyAssistantMessageAdapterGetMessageWithImageFile()
     {
         // Arrange
-        ChatMessageContent message = new(AuthorRole.User, items: [new FileReferenceContent("file-id")]);
+        ChatMessageContent message = new(AuthorRole.User, [new FileReferenceContent("file-id")]);
 
         // Act
         MessageContent[] contents = AssistantMessageFactory.GetMessageContents(message).ToArray();
@@ -182,6 +189,7 @@ public class AssistantMessageFactoryTests
         Assert.Single(contents);
         Assert.NotNull(contents.Single().ImageFileId);
     }
+
 
     /// <summary>
     /// Verify options creation.
@@ -193,7 +201,6 @@ public class AssistantMessageFactoryTests
         ChatMessageContent message =
             new(
                 AuthorRole.User,
-                items:
                 [
                     new TextContent("test"),
                     new ImageContent(new Uri("https://localhost/myimage.png")),

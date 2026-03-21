@@ -15,7 +15,9 @@ internal static class ChatResponseUpdateExtensions
     internal static StreamingChatMessageContent ToStreamingChatMessageContent(this ChatResponseUpdate update)
     {
         StreamingChatMessageContent content = new(
-            update.Role is not null ? new AuthorRole(update.Role.Value.Value) : null,
+            update.Role is not null
+                ? new AuthorRole(update.Role.Value.Value)
+                : null,
             null)
         {
             InnerContent = update.RawRepresentation,
@@ -26,12 +28,15 @@ internal static class ChatResponseUpdateExtensions
         foreach (AIContent item in update.Contents)
         {
             StreamingKernelContent? resultContent =
-                item is TextContent tc ? new StreamingTextContent(tc.Text) :
-                item is FunctionCallContent fcc ?
-                    new StreamingFunctionCallUpdateContent(fcc.CallId, fcc.Name, fcc.Arguments is not null ?
-                        JsonSerializer.Serialize(fcc.Arguments!, AbstractionsJsonContext.Default.IDictionaryStringObject!) :
-                        null) :
-                null;
+                item is TextContent tc
+                    ? new StreamingTextContent(tc.Text)
+                    : item is FunctionCallContent fcc
+                        ? new StreamingFunctionCallUpdateContent(fcc.CallId,
+                            fcc.Name,
+                            fcc.Arguments is not null
+                                ? JsonSerializer.Serialize(fcc.Arguments!, AbstractionsJsonContext.Default.IDictionaryStringObject!)
+                                : null)
+                        : null;
 
             if (resultContent is not null)
             {

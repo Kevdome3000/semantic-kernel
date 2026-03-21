@@ -16,11 +16,13 @@ public class MessageDroppedException : Exception
     /// </summary>
     public MessageDroppedException() : base("The message was dropped.") { }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MessageDroppedException"/> class with a custom error message.
     /// </summary>
     /// <param name="message">The custom error message.</param>
     public MessageDroppedException(string message) : base(message) { }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MessageDroppedException"/> class with a custom error message and an inner exception.

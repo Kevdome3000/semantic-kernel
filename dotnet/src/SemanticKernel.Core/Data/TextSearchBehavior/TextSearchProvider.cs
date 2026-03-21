@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -29,6 +31,7 @@ public sealed class TextSearchProvider : AIContextProvider
     private readonly ILogger<TextSearchProvider>? _logger;
     private readonly AIFunction[] _aIFunctions;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TextSearchProvider"/> class.
     /// </summary>
@@ -42,30 +45,32 @@ public sealed class TextSearchProvider : AIContextProvider
 
         _textSearch = textSearch;
         _logger = loggerFactory?.CreateLogger<TextSearchProvider>();
-        Options = options ?? new();
+        Options = options ?? new TextSearchProviderOptions();
 
         _aIFunctions =
         [
             AIFunctionFactory.Create(
-            SearchAsync,
-            name: Options.PluginFunctionName ?? DefaultPluginSearchFunctionName,
-            description: Options.PluginFunctionDescription ?? DefaultPluginSearchFunctionDescription)
+                SearchAsync,
+                Options.PluginFunctionName ?? DefaultPluginSearchFunctionName,
+                Options.PluginFunctionDescription ?? DefaultPluginSearchFunctionDescription)
         ];
     }
+
 
     /// <summary>
     /// Gets the options that have been configured for this component.
     /// </summary>
     public TextSearchProviderOptions Options { get; }
 
+
     /// <inheritdoc/>
     public override async Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
         if (Options.SearchTime != TextSearchProviderOptions.RagBehavior.BeforeAIInvoke)
         {
-            return new()
+            return new AIContext
             {
-                AIFunctions = _aIFunctions.ToArray(),
+                AIFunctions = _aIFunctions.ToArray()
             };
         }
 
@@ -74,9 +79,10 @@ public sealed class TextSearchProvider : AIContextProvider
         string input = string.Join("\n", newMessages.Where(m => m is not null).Select(m => m.Text));
 
         var searchResults = await _textSearch.GetTextSearchResultsAsync(
-            input,
-            new() { Top = Options.Top, Filter = Options.Filter },
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+                input,
+                new TextSearchOptions { Top = Options.Top, Filter = Options.Filter },
+                cancellationToken)
+            .ConfigureAwait(false);
 
         var results = await searchResults.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
 
@@ -85,8 +91,9 @@ public sealed class TextSearchProvider : AIContextProvider
         _logger?.LogInformation("TextSearchBehavior: Retrieved {Count} search results.", results.Count);
         _logger?.LogTrace("TextSearchBehavior:\nInput Messages:{Input}\nOutput context instructions:\n{Instructions}", input, formatted);
 
-        return new() { Instructions = formatted };
+        return new AIContext { Instructions = formatted };
     }
+
 
     /// <summary>
     /// Plugin method to search the database on demand.
@@ -95,9 +102,10 @@ public sealed class TextSearchProvider : AIContextProvider
     internal async Task<string> SearchAsync(string userQuestion, CancellationToken cancellationToken = default)
     {
         var searchResults = await _textSearch.GetTextSearchResultsAsync(
-            userQuestion,
-            new() { Top = Options.Top, Filter = Options.Filter },
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+                userQuestion,
+                new TextSearchOptions { Top = Options.Top, Filter = Options.Filter },
+                cancellationToken)
+            .ConfigureAwait(false);
 
         var results = await searchResults.Results.ToListAsync(cancellationToken).ConfigureAwait(false);
 
@@ -105,6 +113,7 @@ public sealed class TextSearchProvider : AIContextProvider
 
         return formatted;
     }
+
 
     /// <summary>
     /// Format the results showing the content with source link and name for each result.
@@ -125,6 +134,7 @@ public sealed class TextSearchProvider : AIContextProvider
 
         var sb = new StringBuilder();
         sb.AppendLine(Options.ContextPrompt ?? DefaultContextPrompt);
+
         for (int i = 0; i < results.Count; i++)
         {
             var result = results[i];
@@ -135,6 +145,7 @@ public sealed class TextSearchProvider : AIContextProvider
             {
                 sb.AppendLine($"SourceDocName: {result.Name}");
             }
+
             if (!string.IsNullOrWhiteSpace(result.Link))
             {
                 sb.AppendLine($"SourceDocLink: {result.Link}");
@@ -147,6 +158,7 @@ public sealed class TextSearchProvider : AIContextProvider
         return sb.ToString();
     }
 }
+
 
 [JsonSourceGenerationOptions(JsonSerializerDefaults.General,
     UseStringEnumConverter = false,

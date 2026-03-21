@@ -1,8 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Agents.Serialization;
 
 /// <summary>
@@ -45,11 +41,11 @@ internal class JsonChannelStateConverter : JsonConverter<string>
         return doc.RootElement.GetRawText();
     }
 
+
     /// <inheritdoc/>
     public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)
     {
-        if ((value.StartsWith("[", StringComparison.Ordinal) && value.EndsWith("]", StringComparison.Ordinal)) ||
-            (value.StartsWith("{", StringComparison.Ordinal) && value.EndsWith("}", StringComparison.Ordinal)))
+        if (value.StartsWith("[", StringComparison.Ordinal) && value.EndsWith("]", StringComparison.Ordinal) || value.StartsWith("{", StringComparison.Ordinal) && value.EndsWith("}", StringComparison.Ordinal))
         {
             writer.WriteRawValue(value);
         }

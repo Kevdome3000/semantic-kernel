@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Microsoft.SemanticKernel.Http;
@@ -19,6 +14,7 @@ public static class WeaviateServiceCollectionExtensions
     private const string DynamicCodeMessage = "This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
     private const string UnreferencedCodeMessage = "This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
 
+
     /// <summary>
     /// Registers a <see cref="WeaviateVectorStore"/> as <see cref="VectorStore"/>
     /// with <see cref="HttpClient"/> returned by <paramref name="clientProvider"/>
@@ -32,7 +28,14 @@ public static class WeaviateServiceCollectionExtensions
         Func<IServiceProvider, HttpClient>? clientProvider = default,
         Func<IServiceProvider, WeaviateVectorStoreOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedWeaviateVectorStore(services, serviceKey: null, clientProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedWeaviateVectorStore(services,
+            null,
+            clientProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="WeaviateVectorStore"/> as <see cref="VectorStore"/>
@@ -56,19 +59,25 @@ public static class WeaviateServiceCollectionExtensions
     {
         Verify.NotNull(services);
 
-        services.Add(new ServiceDescriptor(typeof(WeaviateVectorStore), serviceKey, (sp, _) =>
-        {
-            var client = HttpClientProvider.GetHttpClient(clientProvider?.Invoke(sp), sp);
-            var options = GetStoreOptions(sp, optionsProvider ?? (static s => s.GetService<WeaviateVectorStoreOptions>()!));
+        services.Add(new ServiceDescriptor(typeof(WeaviateVectorStore),
+            serviceKey,
+            (sp, _) =>
+            {
+                var client = HttpClientProvider.GetHttpClient(clientProvider?.Invoke(sp), sp);
+                var options = GetStoreOptions(sp, optionsProvider ?? (static s => s.GetService<WeaviateVectorStoreOptions>()!));
 
-            return new WeaviateVectorStore(client, options);
-        }, lifetime));
+                return new WeaviateVectorStore(client, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<WeaviateVectorStore>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStore),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<WeaviateVectorStore>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="WeaviateVectorStore"/> as <see cref="VectorStore"/>
@@ -83,7 +92,15 @@ public static class WeaviateServiceCollectionExtensions
         string? apiKey,
         WeaviateVectorStoreOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedWeaviateVectorStore(services, serviceKey: null, endpoint, apiKey, options, lifetime);
+    {
+        return AddKeyedWeaviateVectorStore(services,
+            null,
+            endpoint,
+            apiKey,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="WeaviateVectorStore"/> as <see cref="VectorStore"/>
@@ -114,8 +131,13 @@ public static class WeaviateServiceCollectionExtensions
             ApiKey = apiKey
         };
 
-        return AddKeyedWeaviateVectorStore(services, serviceKey, sp => HttpClientProvider.GetHttpClient(null, sp), sp => copy, lifetime);
+        return AddKeyedWeaviateVectorStore(services,
+            serviceKey,
+            sp => HttpClientProvider.GetHttpClient(null, sp),
+            sp => copy,
+            lifetime);
     }
+
 
     /// <summary>
     /// Registers a <see cref="WeaviateCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -131,7 +153,15 @@ public static class WeaviateServiceCollectionExtensions
         Func<IServiceProvider, WeaviateCollectionOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedWeaviateCollection<TRecord>(services, serviceKey: null, name, clientProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedWeaviateCollection<TRecord>(services,
+            null,
+            name,
+            clientProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="WeaviateCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -159,25 +189,35 @@ public static class WeaviateServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(name);
 
-        services.Add(new ServiceDescriptor(typeof(WeaviateCollection<Guid, TRecord>), serviceKey, (sp, _) =>
-        {
-            var client = HttpClientProvider.GetHttpClient(clientProvider?.Invoke(sp), sp);
-            var options = GetCollectionOptions(sp, optionsProvider ?? (static s => s.GetService<WeaviateCollectionOptions>()!));
+        services.Add(new ServiceDescriptor(typeof(WeaviateCollection<Guid, TRecord>),
+            serviceKey,
+            (sp, _) =>
+            {
+                var client = HttpClientProvider.GetHttpClient(clientProvider?.Invoke(sp), sp);
+                var options = GetCollectionOptions(sp, optionsProvider ?? (static s => s.GetService<WeaviateCollectionOptions>()!));
 
-            return new WeaviateCollection<Guid, TRecord>(client, name, options);
-        }, lifetime));
+                return new WeaviateCollection<Guid, TRecord>(client, name, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<Guid, TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<WeaviateCollection<Guid, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<Guid, TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<WeaviateCollection<Guid, TRecord>>(key),
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<WeaviateCollection<Guid, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<WeaviateCollection<Guid, TRecord>>(key),
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IKeywordHybridSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<WeaviateCollection<Guid, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IKeywordHybridSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<WeaviateCollection<Guid, TRecord>>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="WeaviateCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -194,7 +234,16 @@ public static class WeaviateServiceCollectionExtensions
         WeaviateCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedWeaviateCollection<TRecord>(services, serviceKey: null, name, endpoint, apiKey, options, lifetime);
+    {
+        return AddKeyedWeaviateCollection<TRecord>(services,
+            null,
+            name,
+            endpoint,
+            apiKey,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="WeaviateCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -228,12 +277,19 @@ public static class WeaviateServiceCollectionExtensions
             ApiKey = apiKey
         };
 
-        return AddKeyedWeaviateCollection<TRecord>(services, serviceKey, name, sp => HttpClientProvider.GetHttpClient(null, sp), sp => copy, lifetime);
+        return AddKeyedWeaviateCollection<TRecord>(services,
+            serviceKey,
+            name,
+            sp => HttpClientProvider.GetHttpClient(null, sp),
+            sp => copy,
+            lifetime);
     }
+
 
     private static WeaviateVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, WeaviateVectorStoreOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.
@@ -245,9 +301,11 @@ public static class WeaviateServiceCollectionExtensions
             : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
 
+
     private static WeaviateCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, WeaviateCollectionOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.

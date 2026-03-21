@@ -34,10 +34,15 @@ public static class OpenApiKernelExtensions
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, filePath, executionParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName,
+                filePath,
+                executionParameters,
+                cancellationToken)
+            .ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>
     /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification and adds it to <see cref="Kernel.Plugins"/>.
@@ -55,10 +60,15 @@ public static class OpenApiKernelExtensions
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, uri, executionParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName,
+                uri,
+                executionParameters,
+                cancellationToken)
+            .ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>
     /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification and adds it to <see cref="Kernel.Plugins"/>.
@@ -76,10 +86,15 @@ public static class OpenApiKernelExtensions
         OpenApiFunctionExecutionParameters? executionParameters = null,
         CancellationToken cancellationToken = default)
     {
-        KernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName, stream, executionParameters, cancellationToken).ConfigureAwait(false);
+        KernelPlugin plugin = await kernel.CreatePluginFromOpenApiAsync(pluginName,
+                stream,
+                executionParameters,
+                cancellationToken)
+            .ConfigureAwait(false);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>
     /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification and adds it to <see cref="Kernel.Plugins"/>.
@@ -99,6 +114,7 @@ public static class OpenApiKernelExtensions
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>
     /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification.
@@ -126,18 +142,21 @@ public static class OpenApiKernelExtensions
         ILoggerFactory loggerFactory = executionParameters?.LoggerFactory ?? kernel.LoggerFactory;
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromFilePathAsync(
-            filePath,
-            loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
-            cancellationToken).ConfigureAwait(false);
+                filePath,
+                loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
-            kernel,
-            pluginName,
-            executionParameters,
-            httpClient,
-            openApiSpec,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+                kernel,
+                pluginName,
+                executionParameters,
+                httpClient,
+                openApiSpec,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification.
@@ -165,22 +184,25 @@ public static class OpenApiKernelExtensions
         ILoggerFactory loggerFactory = executionParameters?.LoggerFactory ?? kernel.LoggerFactory;
 
         var openApiSpec = await DocumentLoader.LoadDocumentFromUriAsync(
-            uri,
-            loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
-            httpClient,
-            executionParameters?.AuthCallback,
-            executionParameters?.UserAgent,
-            cancellationToken).ConfigureAwait(false);
+                uri,
+                loggerFactory.CreateLogger(typeof(OpenApiKernelExtensions)) ?? NullLogger.Instance,
+                httpClient,
+                executionParameters?.AuthCallback,
+                executionParameters?.UserAgent,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
-            kernel,
-            pluginName,
-            executionParameters,
-            httpClient,
-            openApiSpec,
-            uri,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+                kernel,
+                pluginName,
+                executionParameters,
+                httpClient,
+                openApiSpec,
+                uri,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification.
@@ -208,13 +230,15 @@ public static class OpenApiKernelExtensions
         var openApiSpec = await DocumentLoader.LoadDocumentFromStreamAsync(stream, cancellationToken).ConfigureAwait(false);
 
         return await CreateOpenApiPluginAsync(
-            kernel,
-            pluginName,
-            executionParameters,
-            httpClient,
-            openApiSpec,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
+                kernel,
+                pluginName,
+                executionParameters,
+                httpClient,
+                openApiSpec,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification.
@@ -247,6 +271,7 @@ public static class OpenApiKernelExtensions
             loggerFactory: kernel.LoggerFactory);
     }
 
+
     #region private
 
     private static async Task<KernelPlugin> CreateOpenApiPluginAsync(
@@ -260,8 +285,19 @@ public static class OpenApiKernelExtensions
     {
         ILoggerFactory loggerFactory = executionParameters?.LoggerFactory ?? kernel.LoggerFactory;
 
-        return await OpenApiKernelPluginFactory.CreateOpenApiPluginAsync(pluginName, executionParameters, httpClient, pluginJson, documentUri, loggerFactory, cancellationToken).ConfigureAwait(false); ;
+        return await OpenApiKernelPluginFactory.CreateOpenApiPluginAsync(pluginName,
+                executionParameters,
+                httpClient,
+                pluginJson,
+                documentUri,
+                loggerFactory,
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        ;
     }
 
     #endregion
+
+
 }

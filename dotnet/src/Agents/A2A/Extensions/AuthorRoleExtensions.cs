@@ -21,6 +21,7 @@ internal static class AuthorRoleExtensions
         };
     }
 
+
     public static MessageRole ToMessageRole(this AuthorRole role)
     {
         return role.Label switch

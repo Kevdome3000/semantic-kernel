@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
+
 /// <summary>
 /// A <see cref="Block"/> that represents a named argument for a function call.
 /// For example, in the template {{ MyPlugin.MyFunction var1="foo" }}, var1="foo" is a named arg block.
@@ -25,6 +26,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// VarBlock associated with this named argument.
     /// </summary>
     internal VarBlock? VarBlock { get; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NamedArgBlock"/> class.
@@ -55,6 +57,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         }
     }
 
+
     /// <summary>
     /// Attempts to extract the name and value of a named argument block from a string
     /// </summary>
@@ -69,7 +72,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
 
         if (!string.IsNullOrEmpty(text))
         {
-            string[] argBlockParts = text!.Split(new char[] { Symbols.NamedArgBlockSeparator }, StringSplitOptions.RemoveEmptyEntries);
+            string[] argBlockParts = text!.Split(new[] { Symbols.NamedArgBlockSeparator }, StringSplitOptions.RemoveEmptyEntries);
 
             if (argBlockParts.Length == 2)
             {
@@ -82,6 +85,7 @@ internal sealed class NamedArgBlock : Block, ITextRendering
 
         return false;
     }
+
 
     /// <summary>
     /// Gets the rendered value of the function argument. If the value is a <see cref="ValBlock"/>, the value stays the same.
@@ -108,11 +112,13 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         return string.Empty;
     }
 
+
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
         return Content;
     }
+
 
     /// <summary>
     /// Returns whether the named arg block has valid syntax.
@@ -139,14 +145,16 @@ internal sealed class NamedArgBlock : Block, ITextRendering
 
             return false;
         }
-        else if (VarBlock is not null && !VarBlock.IsValid(out var variableErrorMsg))
+
+        if (VarBlock is not null && !VarBlock.IsValid(out var variableErrorMsg))
         {
             errorMsg = $"There was an issue with the named argument value for '{Name}': {variableErrorMsg}";
             Logger.LogError(errorMsg);
 
             return false;
         }
-        else if (_valBlock is null && VarBlock is null)
+
+        if (_valBlock is null && VarBlock is null)
         {
             errorMsg = "A named argument must have a value";
             Logger.LogError(errorMsg);
@@ -157,8 +165,14 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         // Argument names share the same validation as variables
         if (!_argNameAsVarBlock.IsValid(out var argNameErrorMsg))
         {
-            errorMsg = Regex.Replace(argNameErrorMsg, "a variable", "An argument", RegexOptions.IgnoreCase);
-            errorMsg = Regex.Replace(errorMsg, "the variable", "The argument", RegexOptions.IgnoreCase);
+            errorMsg = Regex.Replace(argNameErrorMsg,
+                "a variable",
+                "An argument",
+                RegexOptions.IgnoreCase);
+            errorMsg = Regex.Replace(errorMsg,
+                "the variable",
+                "The argument",
+                RegexOptions.IgnoreCase);
 
             return false;
         }
@@ -167,11 +181,13 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     }
 #pragma warning restore CA2254
 
+
     #region private ================================================================================
 
     private readonly VarBlock _argNameAsVarBlock;
 
     private readonly ValBlock? _valBlock;
+
 
     private static string? TrimWhitespace(string? text)
     {
@@ -182,13 +198,14 @@ internal sealed class NamedArgBlock : Block, ITextRendering
 
         string[] trimmedParts = GetTrimmedParts(text);
 
-        return (trimmedParts?.Length) switch
+        return trimmedParts?.Length switch
         {
             1 => trimmedParts[0],
             2 => $"{trimmedParts[0]}{Symbols.NamedArgBlockSeparator}{trimmedParts[1]}",
-            _ => null,
+            _ => null
         };
     }
+
 
     private static string[] GetTrimmedParts(string? text)
     {
@@ -202,19 +219,18 @@ internal sealed class NamedArgBlock : Block, ITextRendering
 
         if (parts.Length > 0)
         {
-            result[0] = parts[0].
-                Trim();
+            result[0] = parts[0].Trim();
         }
 
         if (parts.Length > 1)
         {
-            result[1] = parts[1].
-                Trim();
+            result[1] = parts[1].Trim();
         }
 
         return result;
     }
 
     #endregion
+
 
 }

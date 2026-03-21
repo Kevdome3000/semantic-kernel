@@ -30,6 +30,7 @@ public class MessageEnvelopeTests
         Assert.Null(envelope.Topic);
     }
 
+
     [Fact]
     public void ConstructOnlyRequiredParametersTest()
     {
@@ -42,6 +43,7 @@ public class MessageEnvelopeTests
         // Verify it's a valid GUID
         Assert.True(Guid.TryParse(envelope.MessageId, out _));
     }
+
 
     [Fact]
     public void WithSenderTest()
@@ -58,6 +60,7 @@ public class MessageEnvelopeTests
         Assert.Equal(sender, envelope.Sender);
     }
 
+
     [Fact]
     public async Task ForSendTest()
     {
@@ -66,7 +69,10 @@ public class MessageEnvelopeTests
         AgentId receiver = new("receivertype", "receiverkey");
         object expectedResult = new { Response = "Success" };
 
-        ValueTask<object?> servicer(MessageEnvelope env, CancellationToken ct) => ValueTask.FromResult<object?>(expectedResult);
+        ValueTask<object?> servicer(MessageEnvelope env, CancellationToken ct)
+        {
+            return ValueTask.FromResult<object?>(expectedResult);
+        }
 
         // Act
         MessageDelivery delivery = envelope.ForSend(receiver, servicer);
@@ -83,6 +89,7 @@ public class MessageEnvelopeTests
         Assert.Same(expectedResult, result);
     }
 
+
     [Fact]
     public void ForPublishTest()
     {
@@ -90,7 +97,10 @@ public class MessageEnvelopeTests
         MessageEnvelope envelope = new("test");
         TopicId topic = new("testtopic");
 
-        static ValueTask servicer(MessageEnvelope env, CancellationToken ct) => ValueTask.CompletedTask;
+        static ValueTask servicer(MessageEnvelope env, CancellationToken ct)
+        {
+            return ValueTask.CompletedTask;
+        }
 
         // Act
         MessageDelivery delivery = envelope.ForPublish(topic, servicer);

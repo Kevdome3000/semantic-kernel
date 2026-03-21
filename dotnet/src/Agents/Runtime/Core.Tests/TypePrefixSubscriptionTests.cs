@@ -26,6 +26,7 @@ public class TypePrefixSubscriptionTests
         subscription.Id.Should().Be(id);
     }
 
+
     [Fact]
     public void Constructor_WithoutId_ShouldGenerateGuid()
     {
@@ -43,6 +44,7 @@ public class TypePrefixSubscriptionTests
         Guid.TryParse(subscription.Id, out _).Should().BeTrue();
     }
 
+
     [Fact]
     public void Matches_TopicWithMatchingPrefix_ShouldReturnTrue()
     {
@@ -57,6 +59,7 @@ public class TypePrefixSubscriptionTests
         // Assert
         result.Should().BeTrue();
     }
+
 
     [Fact]
     public void Matches_TopicWithMatchingPrefixAndAdditionalSuffix_ShouldReturnTrue()
@@ -73,6 +76,7 @@ public class TypePrefixSubscriptionTests
         result.Should().BeTrue();
     }
 
+
     [Fact]
     public void Matches_TopicWithDifferentPrefix_ShouldReturnFalse()
     {
@@ -86,6 +90,7 @@ public class TypePrefixSubscriptionTests
         // Assert
         result.Should().BeFalse();
     }
+
 
     [Fact]
     public void MapToAgent_MatchingTopic_ShouldReturnCorrectAgentId()
@@ -105,6 +110,7 @@ public class TypePrefixSubscriptionTests
         agentId.Key.Should().Be(source);
     }
 
+
     [Fact]
     public void MapToAgent_TopicWithMatchingPrefixAndSuffix_ShouldReturnCorrectAgentId()
     {
@@ -123,6 +129,7 @@ public class TypePrefixSubscriptionTests
         agentId.Key.Should().Be(source);
     }
 
+
     [Fact]
     public void MapToAgent_NonMatchingTopic_ShouldThrowInvalidOperationException()
     {
@@ -132,9 +139,11 @@ public class TypePrefixSubscriptionTests
 
         // Act & Assert
         Action action = () => subscription.MapToAgent(topic);
-        action.Should().Throw<InvalidOperationException>()
+        action.Should()
+            .Throw<InvalidOperationException>()
             .WithMessage("TopicId does not match the subscription.");
     }
+
 
     [Fact]
     public void Equals_SameId_ShouldReturnTrue()
@@ -146,8 +155,9 @@ public class TypePrefixSubscriptionTests
 
         // Act & Assert
         subscription1.Equals((object)subscription2).Should().BeTrue();
-        subscription1.Equals(subscription2 as ISubscriptionDefinition).Should().BeTrue();
+        subscription1.Equals(subscription2).Should().BeTrue();
     }
+
 
     [Fact]
     public void Equals_SameTypeAndAgentType_ShouldReturnTrue()
@@ -162,6 +172,7 @@ public class TypePrefixSubscriptionTests
         subscription1.Equals((object)subscription2).Should().BeTrue();
     }
 
+
     [Fact]
     public void Equals_DifferentIdAndProperties_ShouldReturnFalse()
     {
@@ -173,6 +184,7 @@ public class TypePrefixSubscriptionTests
         subscription1.Equals((object)subscription2).Should().BeFalse();
     }
 
+
     [Fact]
     public void Equals_ISubscriptionDefinition_WithDifferentId_ShouldReturnFalse()
     {
@@ -181,8 +193,9 @@ public class TypePrefixSubscriptionTests
         TypePrefixSubscription subscription2 = new("prefix1", new AgentType("agent1"), "id2");
 
         // Act & Assert
-        subscription1.Equals(subscription2 as ISubscriptionDefinition).Should().BeFalse();
+        subscription1.Equals(subscription2).Should().BeFalse();
     }
+
 
     [Fact]
     public void Equals_WithNull_ShouldReturnFalse()
@@ -192,8 +205,9 @@ public class TypePrefixSubscriptionTests
 
         // Act & Assert
         subscription.Equals(null as object).Should().BeFalse();
-        subscription.Equals(null as ISubscriptionDefinition).Should().BeFalse();
+        subscription.Equals(null).Should().BeFalse();
     }
+
 
     [Fact]
     public void Equals_WithDifferentType_ShouldReturnFalse()
@@ -205,6 +219,7 @@ public class TypePrefixSubscriptionTests
         // Act & Assert
         subscription.Equals(differentObject).Should().BeFalse();
     }
+
 
     [Fact]
     public void GetHashCode_SameValues_ShouldReturnSameHashCode()
@@ -219,6 +234,7 @@ public class TypePrefixSubscriptionTests
         // Act & Assert
         subscription1.GetHashCode().Should().Be(subscription2.GetHashCode());
     }
+
 
     [Fact]
     public void GetHashCode_DifferentValues_ShouldReturnDifferentHashCodes()

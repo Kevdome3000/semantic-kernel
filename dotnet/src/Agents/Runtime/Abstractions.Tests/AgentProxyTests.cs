@@ -15,29 +15,33 @@ public class AgentProxyTests
     private readonly AgentId agentId;
     private readonly AgentProxy agentProxy;
 
+
     public AgentProxyTests()
     {
-        this.mockRuntime = new Mock<IAgentRuntime>();
-        this.agentId = new AgentId("testType", "testKey");
-        this.agentProxy = new AgentProxy(this.agentId, this.mockRuntime.Object);
+        mockRuntime = new Mock<IAgentRuntime>();
+        agentId = new AgentId("testType", "testKey");
+        agentProxy = new AgentProxy(agentId, mockRuntime.Object);
     }
+
 
     [Fact]
     public void IdMatchesAgentIdTest()
     {
         // Assert
-        Assert.Equal(this.agentId, this.agentProxy.Id);
+        Assert.Equal(agentId, agentProxy.Id);
     }
+
 
     [Fact]
     public void MetadataShouldMatchAgentTest()
     {
         AgentMetadata expectedMetadata = new("testType", "testKey", "testDescription");
-        this.mockRuntime.Setup(r => r.GetAgentMetadataAsync(this.agentId))
+        mockRuntime.Setup(r => r.GetAgentMetadataAsync(agentId))
             .ReturnsAsync(expectedMetadata);
 
-        Assert.Equal(expectedMetadata, this.agentProxy.Metadata);
+        Assert.Equal(expectedMetadata, agentProxy.Metadata);
     }
+
 
     [Fact]
     public async Task SendMessageResponseTest()
@@ -47,15 +51,20 @@ public class AgentProxyTests
         AgentId sender = new("senderType", "senderKey");
         object response = new { Content = "Response" };
 
-        this.mockRuntime.Setup(r => r.SendMessageAsync(message, this.agentId, sender, null, It.IsAny<CancellationToken>()))
+        mockRuntime.Setup(r => r.SendMessageAsync(message,
+                agentId,
+                sender,
+                null,
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(response);
 
         // Act
-        object? result = await this.agentProxy.SendMessageAsync(message, sender);
+        object? result = await agentProxy.SendMessageAsync(message, sender);
 
         // Assert
         Assert.Equal(response, result);
     }
+
 
     [Fact]
     public async Task LoadStateTest()
@@ -63,15 +72,16 @@ public class AgentProxyTests
         // Arrange
         JsonElement state = JsonElement.Parse("{\"key\":\"value\"}");
 
-        this.mockRuntime.Setup(r => r.LoadAgentStateAsync(this.agentId, state))
+        mockRuntime.Setup(r => r.LoadAgentStateAsync(agentId, state))
             .Returns(ValueTask.CompletedTask);
 
         // Act
-        await this.agentProxy.LoadStateAsync(state);
+        await agentProxy.LoadStateAsync(state);
 
         // Assert
-        this.mockRuntime.Verify(r => r.LoadAgentStateAsync(this.agentId, state), Times.Once);
+        mockRuntime.Verify(r => r.LoadAgentStateAsync(agentId, state), Times.Once);
     }
+
 
     [Fact]
     public async Task SaveStateTest()
@@ -79,11 +89,11 @@ public class AgentProxyTests
         // Arrange
         JsonElement expectedState = JsonElement.Parse("{\"key\":\"value\"}");
 
-        this.mockRuntime.Setup(r => r.SaveAgentStateAsync(this.agentId))
+        mockRuntime.Setup(r => r.SaveAgentStateAsync(agentId))
             .ReturnsAsync(expectedState);
 
         // Act
-        JsonElement result = await this.agentProxy.SaveStateAsync();
+        JsonElement result = await agentProxy.SaveStateAsync();
 
         // Assert
         Assert.Equal(expectedState, result);

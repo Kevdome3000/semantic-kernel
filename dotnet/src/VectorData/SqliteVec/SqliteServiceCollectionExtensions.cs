@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.SqliteVec;
 
@@ -17,6 +13,7 @@ public static class SqliteServiceCollectionExtensions
     private const string DynamicCodeMessage = "This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
     private const string UnreferencedCodeMessage = "This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
 
+
     /// <summary>
     /// Registers a <see cref="SqliteVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
     /// </summary>
@@ -26,7 +23,14 @@ public static class SqliteServiceCollectionExtensions
         Func<IServiceProvider, string> connectionStringProvider,
         Func<IServiceProvider, SqliteVectorStoreOptions>? optionsProvider = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedSqliteVectorStore(services, serviceKey: null, connectionStringProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedSqliteVectorStore(services,
+            null,
+            connectionStringProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="SqliteVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
@@ -47,18 +51,24 @@ public static class SqliteServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNull(connectionStringProvider);
 
-        services.Add(new ServiceDescriptor(typeof(SqliteVectorStore), serviceKey, (sp, _) =>
-        {
-            var connectionString = connectionStringProvider(sp);
-            var options = GetStoreOptions(sp, optionsProvider);
-            return new SqliteVectorStore(connectionString, options);
-        }, lifetime));
+        services.Add(new ServiceDescriptor(typeof(SqliteVectorStore),
+            serviceKey,
+            (sp, _) =>
+            {
+                var connectionString = connectionStringProvider(sp);
+                var options = GetStoreOptions(sp, optionsProvider);
+                return new SqliteVectorStore(connectionString, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<SqliteVectorStore>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStore),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<SqliteVectorStore>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="SqliteCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -74,7 +84,15 @@ public static class SqliteServiceCollectionExtensions
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
-        => AddKeyedSqliteCollection<TKey, TRecord>(services, serviceKey: null, name, connectionStringProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedSqliteCollection<TKey, TRecord>(services,
+            null,
+            name,
+            connectionStringProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="SqliteCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -102,24 +120,32 @@ public static class SqliteServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(name);
         Verify.NotNull(connectionStringProvider);
 
-        services.Add(new ServiceDescriptor(typeof(SqliteCollection<TKey, TRecord>), serviceKey, (sp, _) =>
-        {
-            var connectionString = connectionStringProvider(sp);
-            var options = GetCollectionOptions(sp, optionsProvider);
-            return new SqliteCollection<TKey, TRecord>(connectionString, name, options);
-        }, lifetime));
+        services.Add(new ServiceDescriptor(typeof(SqliteCollection<TKey, TRecord>),
+            serviceKey,
+            (sp, _) =>
+            {
+                var connectionString = connectionStringProvider(sp);
+                var options = GetCollectionOptions(sp, optionsProvider);
+                return new SqliteCollection<TKey, TRecord>(connectionString, name, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<SqliteCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<SqliteCollection<TKey, TRecord>>(key),
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<SqliteCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<SqliteCollection<TKey, TRecord>>(key),
+            lifetime));
 
         // Once HybridSearch supports get implemented by SqliteCollection
         // we need to add IKeywordHybridSearchable abstraction here as well.
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="SqliteCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -135,7 +161,15 @@ public static class SqliteServiceCollectionExtensions
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
-        => AddKeyedSqliteCollection<TKey, TRecord>(services, serviceKey: null, name, connectionString, options, lifetime);
+    {
+        return AddKeyedSqliteCollection<TKey, TRecord>(services,
+            null,
+            name,
+            connectionString,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="SqliteCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -161,12 +195,19 @@ public static class SqliteServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(connectionString);
 
-        return AddKeyedSqliteCollection<TKey, TRecord>(services, serviceKey, name, _ => connectionString, _ => options!, lifetime);
+        return AddKeyedSqliteCollection<TKey, TRecord>(services,
+            serviceKey,
+            name,
+            _ => connectionString,
+            _ => options!,
+            lifetime);
     }
+
 
     private static SqliteVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, SqliteVectorStoreOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.
@@ -178,9 +219,11 @@ public static class SqliteServiceCollectionExtensions
             : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
 
+
     private static SqliteCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, SqliteCollectionOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.

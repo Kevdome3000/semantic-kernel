@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.Sequential;
@@ -31,6 +32,7 @@ public class SequentialOrchestrationTests
         Assert.Equal(1, mockAgent1.InvokeCount);
     }
 
+
     [Fact]
     public async Task SequentialOrchestrationWithMultipleAgentsAsync()
     {
@@ -42,7 +44,10 @@ public class SequentialOrchestrationTests
         MockAgent mockAgent3 = CreateMockAgent(3, "lmn");
 
         // Act: Create and execute the orchestration
-        string response = await ExecuteOrchestrationAsync(runtime, mockAgent1, mockAgent2, mockAgent3);
+        string response = await ExecuteOrchestrationAsync(runtime,
+            mockAgent1,
+            mockAgent2,
+            mockAgent3);
 
         // Assert
         Assert.Equal("lmn", response);
@@ -50,6 +55,7 @@ public class SequentialOrchestrationTests
         Assert.Equal(1, mockAgent2.InvokeCount);
         Assert.Equal(1, mockAgent3.InvokeCount);
     }
+
 
     private static async Task<string> ExecuteOrchestrationAsync(InProcessRuntime runtime, params Agent[] mockAgents)
     {
@@ -72,12 +78,13 @@ public class SequentialOrchestrationTests
         return response;
     }
 
+
     private static MockAgent CreateMockAgent(int index, string response)
     {
-        return new()
+        return new MockAgent
         {
             Description = $"test {index}",
-            Response = [new(AuthorRole.Assistant, response)]
+            Response = [new ChatMessageContent(AuthorRole.Assistant, response)]
         };
     }
 }

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Represents a function call requested by AI model.
 /// </summary>
@@ -42,6 +43,7 @@ public sealed class FunctionCallContent : KernelContent
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Exception? Exception { get; init; }
 
+
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionCallContent"/> class.
     /// </summary>
@@ -64,6 +66,7 @@ public sealed class FunctionCallContent : KernelContent
         Arguments = arguments;
     }
 
+
     /// <summary>
     /// Invokes the function represented by the function call content type.
     /// </summary>
@@ -82,14 +85,14 @@ public sealed class FunctionCallContent : KernelContent
         if (kernel.Plugins.TryGetFunction(PluginName, FunctionName, out KernelFunction? function))
         {
             var result = await function.InvokeAsync(kernel, Arguments, cancellationToken)
-                .
-                ConfigureAwait(false);
+                .ConfigureAwait(false);
 
             return new FunctionResultContent(this, result);
         }
 
         throw new KeyNotFoundException($"The plugin collection does not contain a plugin and/or function with the specified names. Plugin name - '{PluginName}', function name - '{FunctionName}'.");
     }
+
 
     /// <summary>
     /// Returns list of function calls provided via <see cref="ChatMessageContent.Items"/> collection.

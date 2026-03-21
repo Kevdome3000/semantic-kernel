@@ -21,7 +21,7 @@ public class ResponseCreationOptionsFactoryTests
     public void CreateOptionsWithNullInvokeOptionsTest()
     {
         // Arrange
-        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", storeEnabled: false);
+        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", false);
         var mockThread = CreateMockAgentThread(null);
 
         // Act
@@ -42,6 +42,7 @@ public class ResponseCreationOptionsFactoryTests
         Assert.Null(options.PreviousResponseId);
     }
 
+
     /// <summary>
     /// Verify response options creation with store enabled and thread ID.
     /// </summary>
@@ -49,7 +50,7 @@ public class ResponseCreationOptionsFactoryTests
     public void CreateOptionsWithStoreEnabledAndThreadIdTest()
     {
         // Arrange
-        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", storeEnabled: true);
+        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", true);
         var mockThread = CreateMockAgentThread("thread-123");
 
         // Act
@@ -63,6 +64,7 @@ public class ResponseCreationOptionsFactoryTests
         Assert.Equal("thread-123", options.PreviousResponseId);
     }
 
+
     /// <summary>
     /// Verify response options creation with additional instructions from invoke options.
     /// </summary>
@@ -70,7 +72,7 @@ public class ResponseCreationOptionsFactoryTests
     public void CreateOptionsWithAdditionalInstructionsTest()
     {
         // Arrange
-        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", storeEnabled: false);
+        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", false);
         var mockThread = CreateMockAgentThread(null);
         var invokeOptions = new AgentInvokeOptions
         {
@@ -87,6 +89,7 @@ public class ResponseCreationOptionsFactoryTests
         Assert.False(options.StoredOutputEnabled);
     }
 
+
     /// <summary>
     /// Verify response options creation with OpenAIResponseAgentInvokeOptions with full ResponseCreationOptions.
     /// </summary>
@@ -94,9 +97,9 @@ public class ResponseCreationOptionsFactoryTests
     public void CreateOptionsWithResponseAgentInvokeOptionsTest()
     {
         // Arrange
-        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", storeEnabled: false);
+        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", false);
         var mockThread = CreateMockAgentThread(null);
-        var responseCreationOptions = new ResponseCreationOptions
+        var responseCreationOptions = new CreateResponseOptions
         {
             EndUserId = "custom-user",
             Instructions = "Custom instructions",
@@ -106,7 +109,7 @@ public class ResponseCreationOptionsFactoryTests
             ToolChoice = ResponseToolChoice.CreateAutoChoice(),
             Temperature = 0.7f,
             TopP = 0.9f,
-            PreviousResponseId = "previous-response-id",
+            PreviousResponseId = "previous-response-id"
         };
         responseCreationOptions.Tools.Add(ResponseTool.CreateWebSearchTool());
 
@@ -133,6 +136,7 @@ public class ResponseCreationOptionsFactoryTests
         Assert.Equal("previous-response-id", options.PreviousResponseId);
     }
 
+
     /// <summary>
     /// Verify response options creation with ResponseCreationOptions having null values that fallback to agent defaults.
     /// </summary>
@@ -140,9 +144,9 @@ public class ResponseCreationOptionsFactoryTests
     public void CreateOptionsWithResponseCreationOptionsNullFallbackTest()
     {
         // Arrange
-        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", storeEnabled: true);
+        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", true);
         var mockThread = CreateMockAgentThread(null);
-        var responseCreationOptions = new ResponseCreationOptions
+        var responseCreationOptions = new CreateResponseOptions
         {
             EndUserId = null, // Should fallback to agent display name
             Instructions = null, // Should fallback to agent instructions + additional
@@ -165,6 +169,7 @@ public class ResponseCreationOptionsFactoryTests
         Assert.True(options.StoredOutputEnabled);
     }
 
+
     /// <summary>
     /// Verify response options creation when agent has null instructions.
     /// </summary>
@@ -172,7 +177,7 @@ public class ResponseCreationOptionsFactoryTests
     public void CreateOptionsWithNullAgentInstructionsTest()
     {
         // Arrange
-        var mockAgent = CreateMockAgent("Test Agent", null, storeEnabled: false);
+        var mockAgent = CreateMockAgent("Test Agent", null, false);
         var mockThread = CreateMockAgentThread(null);
 
         var invokeOptions = new AgentInvokeOptions
@@ -188,6 +193,7 @@ public class ResponseCreationOptionsFactoryTests
         Assert.Equal("Be helpful", options.Instructions);
     }
 
+
     /// <summary>
     /// Verify response options creation when both agent instructions and additional instructions are null.
     /// </summary>
@@ -195,7 +201,7 @@ public class ResponseCreationOptionsFactoryTests
     public void CreateOptionsWithAllNullInstructionsTest()
     {
         // Arrange
-        var mockAgent = CreateMockAgent("Test Agent", null, storeEnabled: false);
+        var mockAgent = CreateMockAgent("Test Agent", null, false);
         var mockThread = CreateMockAgentThread(null);
 
         // Act
@@ -206,6 +212,7 @@ public class ResponseCreationOptionsFactoryTests
         Assert.Equal("", options.Instructions);
     }
 
+
     /// <summary>
     /// Verify response options creation when agent store is disabled but thread ID exists.
     /// </summary>
@@ -213,7 +220,7 @@ public class ResponseCreationOptionsFactoryTests
     public void CreateOptionsWithStoreDisabledButThreadIdExistsTest()
     {
         // Arrange
-        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", storeEnabled: false);
+        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", false);
         var mockThread = CreateMockAgentThread("thread-123");
 
         // Act
@@ -225,6 +232,7 @@ public class ResponseCreationOptionsFactoryTests
         Assert.Null(options.PreviousResponseId); // Should not set previous response ID when store is disabled
     }
 
+
     /// <summary>
     /// Verify response options creation with empty agent name fallback to "UnnamedAgent".
     /// </summary>
@@ -232,7 +240,7 @@ public class ResponseCreationOptionsFactoryTests
     public void CreateOptionsWithEmptyAgentNameTest()
     {
         // Arrange
-        var mockAgent = CreateMockAgent("", "You are a helpful assistant.", storeEnabled: false);
+        var mockAgent = CreateMockAgent("", "You are a helpful assistant.", false);
         var mockThread = CreateMockAgentThread(null);
 
         // Act
@@ -243,6 +251,7 @@ public class ResponseCreationOptionsFactoryTests
         Assert.Equal("UnnamedAgent", options.EndUserId); // Empty name should fallback to "UnnamedAgent"
     }
 
+
     /// <summary>
     /// Verify response options creation with null agent name fallback to "UnnamedAgent".
     /// </summary>
@@ -250,7 +259,7 @@ public class ResponseCreationOptionsFactoryTests
     public void CreateOptionsWithNullAgentNameTest()
     {
         // Arrange
-        var mockAgent = CreateMockAgent(null, "You are a helpful assistant.", storeEnabled: false);
+        var mockAgent = CreateMockAgent(null, "You are a helpful assistant.", false);
         var mockThread = CreateMockAgentThread(null);
 
         // Act
@@ -261,6 +270,7 @@ public class ResponseCreationOptionsFactoryTests
         Assert.Equal("UnnamedAgent", options.EndUserId); // Null name should fallback to "UnnamedAgent"
     }
 
+
     /// <summary>
     /// Verify response options creation with kernel plugin and default response options.
     /// </summary>
@@ -268,7 +278,7 @@ public class ResponseCreationOptionsFactoryTests
     public void CreateOptionsWithKernelPluginAndDefaultOptionsTest()
     {
         // Arrange
-        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", storeEnabled: false);
+        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", false);
         var mockThread = CreateMockAgentThread(null);
         mockAgent.Kernel.Plugins.AddFromObject(new TestPlugin());
 
@@ -283,6 +293,7 @@ public class ResponseCreationOptionsFactoryTests
         Assert.Null(options.ParallelToolCallsEnabled);
     }
 
+
     /// <summary>
     /// Verify response options creation with kernel plugin and custom response options.
     /// </summary>
@@ -290,14 +301,14 @@ public class ResponseCreationOptionsFactoryTests
     public void CreateOptionsWithKernelPluginAndCustomOptionsTest()
     {
         // Arrange
-        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", storeEnabled: false);
+        var mockAgent = CreateMockAgent("Test Agent", "You are a helpful assistant.", false);
         var mockThread = CreateMockAgentThread(null);
         mockAgent.Kernel.Plugins.AddFromObject(new TestPlugin());
 
         // Custom invoke options should be respected
         var invokeOptions = new OpenAIResponseAgentInvokeOptions
         {
-            ResponseCreationOptions = new ResponseCreationOptions
+            ResponseCreationOptions = new CreateResponseOptions
             {
                 ToolChoice = ResponseToolChoice.CreateNoneChoice(),
                 ParallelToolCallsEnabled = false
@@ -315,9 +326,10 @@ public class ResponseCreationOptionsFactoryTests
         Assert.False(options.ParallelToolCallsEnabled);
     }
 
+
     private static OpenAIResponseAgent CreateMockAgent(string? name, string? instructions, bool storeEnabled)
     {
-        var mockClient = new Mock<OpenAIResponseClient>();
+        var mockClient = new Mock<ResponsesClient>();
         var mockAgent = new OpenAIResponseAgent(mockClient.Object)
         {
             Name = name ?? "UnnamedAgent",
@@ -329,6 +341,7 @@ public class ResponseCreationOptionsFactoryTests
         return mockAgent;
     }
 
+
     private static Mock<AgentThread> CreateMockAgentThread(string? threadId)
     {
         var mockThread = new Mock<AgentThread>();
@@ -336,10 +349,12 @@ public class ResponseCreationOptionsFactoryTests
         return mockThread;
     }
 
+
     private sealed class TestPlugin
     {
         [KernelFunction]
         public void TestFunction()
-        { }
+        {
+        }
     }
 }

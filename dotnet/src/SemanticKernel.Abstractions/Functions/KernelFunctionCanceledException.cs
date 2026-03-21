@@ -5,6 +5,7 @@ using System;
 #pragma warning disable RCS1194 // Implement exception constructors.
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides an <see cref="OperationCanceledException"/>-derived exception type
 /// that's thrown from a <see cref="KernelFunction"/> invocation when a <see cref="Kernel"/>
@@ -34,6 +35,7 @@ public sealed class KernelFunctionCanceledException : OperationCanceledException
         Arguments = arguments;
         FunctionResult = functionResult;
     }
+
 
     /// <summary>Gets the <see cref="Kernel"/> that was passed to the invocation of <see cref="Function"/>.</summary>
     public Kernel Kernel { get; }

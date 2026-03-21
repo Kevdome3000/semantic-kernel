@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Memory;
-
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// Implements the classic 'heap' data structure. By default, the item with the lowest value is at the top of the heap.
@@ -37,11 +37,11 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
             Verify.ThrowArgumentOutOfRangeException(nameof(capacity), capacity, $"MinHeap capacity must be greater than {MinCapacity}.");
         }
 
-        this._items = new T[capacity + 1];
+        _items = new T[capacity + 1];
         //
         // The 0'th item is a sentinel entry that simplifies the code
         //
-        this._items[0] = minValue;
+        _items[0] = minValue;
     }
 
 
@@ -53,7 +53,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     public MinHeap(T minValue, IList<T> items)
         : this(minValue, items.Count)
     {
-        this.Add(items);
+        Add(items);
     }
 
 
@@ -62,37 +62,37 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// </summary>
     public int Count
     {
-        get => this._count;
+        get => _count;
         internal set
         {
-            Debug.Assert(value <= this.Capacity);
-            this._count = value;
+            Debug.Assert(value <= Capacity);
+            _count = value;
         }
     }
 
     /// <summary>
     /// Gets the number of elements that collection can hold.
     /// </summary>
-    public int Capacity => this._items.Length - 1; // 0'th item is always a sentinel to simplify code
+    public int Capacity => _items.Length - 1; // 0'th item is always a sentinel to simplify code
 
     /// <summary>
     /// Gets the element at the specified index.
     /// </summary>
     public T this[int index]
     {
-        get => this._items[index + 1];
-        internal set { this._items[index + 1] = value; }
+        get => _items[index + 1];
+        internal set => _items[index + 1] = value;
     }
 
     /// <summary>
     /// Gets first item in collection.
     /// </summary>
-    public T Top => this._items[1];
+    public T Top => _items[1];
 
     /// <summary>
     /// Gets the boolean flag which indicates if collection is empty.
     /// </summary>
-    public bool IsEmpty => (this._count == 0);
+    public bool IsEmpty => _count == 0;
 
 
     /// <summary>
@@ -100,7 +100,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// </summary>
     public void Clear()
     {
-        this._count = 0;
+        _count = 0;
     }
 
 
@@ -109,8 +109,8 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// </summary>
     public void Erase()
     {
-        Array.Clear(this._items, 1, this._count);
-        this._count = 0;
+        Array.Clear(_items, 1, _count);
+        _count = 0;
     }
 
 
@@ -119,9 +119,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// </summary>
     public T[] DetachBuffer()
     {
-        T[] buf = this._items;
-        this._items = s_emptyBuffer;
-        this._count = 0;
+        T[] buf = _items;
+        _items = s_emptyBuffer;
+        _count = 0;
 
         return buf;
     }
@@ -137,10 +137,10 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         // the 0'th item is always a sentinel and not included in this._count.
         // The length of the buffer is always this._count + 1
         //
-        this._count++;
-        this.EnsureCapacity();
-        this._items[this._count] = item;
-        this.UpHeap(this._count);
+        _count++;
+        EnsureCapacity();
+        _items[_count] = item;
+        UpHeap(_count);
     }
 
 
@@ -152,7 +152,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     {
         foreach (T item in items)
         {
-            this.Add(item);
+            Add(item);
         }
     }
 
@@ -173,7 +173,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
             Verify.ThrowArgumentOutOfRangeException(nameof(startAt), startAt, $"{nameof(startAt)} value must be less than {nameof(items)}.{nameof(items.Count)}.");
         }
 
-        this.EnsureCapacity(this._count + (newItemCount - startAt));
+        EnsureCapacity(_count + (newItemCount - startAt));
 
         for (int i = startAt; i < newItemCount; ++i)
         {
@@ -181,9 +181,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
             // the 0'th item is always a sentinel and not included in this._count.
             // The length of the buffer is always this._count + 1
             //
-            this._count++;
-            this._items[this._count] = items[i];
-            this.UpHeap(this._count);
+            _count++;
+            _items[_count] = items[i];
+            UpHeap(_count);
         }
     }
 
@@ -193,14 +193,14 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// </summary>
     public T RemoveTop()
     {
-        if (this._count == 0)
+        if (_count == 0)
         {
             throw new InvalidOperationException("MinHeap is empty.");
         }
 
-        T item = this._items[1];
-        this._items[1] = this._items[this._count--];
-        this.DownHeap(1);
+        T item = _items[1];
+        _items[1] = _items[_count--];
+        DownHeap(1);
 
         return item;
     }
@@ -211,9 +211,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// </summary>
     public IEnumerable<T> RemoveAll()
     {
-        while (this._count > 0)
+        while (_count > 0)
         {
-            yield return this.RemoveTop();
+            yield return RemoveTop();
         }
     }
 
@@ -232,9 +232,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
         // 0th item is always a sentinel
         capacity++;
 
-        if (capacity > this._items.Length)
+        if (capacity > _items.Length)
         {
-            Array.Resize(ref this._items, capacity);
+            Array.Resize(ref _items, capacity);
         }
     }
 
@@ -244,9 +244,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// </summary>
     public void EnsureCapacity()
     {
-        if (this._count == this._items.Length)
+        if (_count == _items.Length)
         {
-            Array.Resize(ref this._items, (this._count * 2) + 1);
+            Array.Resize(ref _items, _count * 2 + 1);
         }
     }
 
@@ -254,12 +254,11 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     private void UpHeap(int startAt)
     {
         int i = startAt;
-        T[] items = this._items;
+        T[] items = _items;
         T item = items[i];
         int parent = i >> 1; //i / 2;
 
-        while (parent > 0 && items[parent].
-                   CompareTo(item) > 0)
+        while (parent > 0 && items[parent].CompareTo(item) > 0)
         {
             // Child > parent. Exchange with parent, thus moving the child up the queue
             items[i] = items[parent];
@@ -274,9 +273,9 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     private void DownHeap(int startAt)
     {
         int i = startAt;
-        int count = this._count;
+        int count = _count;
         int maxParent = count >> 1;
-        T[] items = this._items;
+        T[] items = _items;
         T item = items[i];
 
         while (i <= maxParent)
@@ -288,8 +287,7 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
             //
             // First, find the smaller child
             //
-            if (child < count && items[child].
-                    CompareTo(items[child + 1]) > 0)
+            if (child < count && items[child].CompareTo(items[child + 1]) > 0)
             {
                 child++;
             }
@@ -315,16 +313,16 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     public IEnumerator<T> GetEnumerator()
     {
         // The 0'th item in the queue is a sentinel. i is 1 based.
-        for (int i = 1; i <= this._count; ++i)
+        for (int i = 1; i <= _count; ++i)
         {
-            yield return this._items[i];
+            yield return _items[i];
         }
     }
 
 
-    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+    IEnumerator IEnumerable.GetEnumerator()
     {
-        return this.GetEnumerator();
+        return GetEnumerator();
     }
 
 
@@ -335,20 +333,20 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// </summary>
     public void SortDescending()
     {
-        int count = this._count;
+        int count = _count;
         int i = count; // remember that the 0'th item in the queue is always a sentinel. So i is 1 based
 
-        while (this._count > 0)
+        while (_count > 0)
         {
             //
             // this dequeues the item with the current LOWEST relevancy
             // We take that and place it at the 'back' of the array - thus inverting it
             //
-            T item = this.RemoveTop();
-            this._items[i--] = item;
+            T item = RemoveTop();
+            _items[i--] = item;
         }
 
-        this._count = count;
+        _count = count;
     }
 
 
@@ -357,14 +355,17 @@ internal sealed class MinHeap<T> : IEnumerable<T> where T : IComparable<T>
     /// </summary>
     internal void Restore()
     {
-        this.Clear();
-        this.Add(this._items, 1);
+        Clear();
+        Add(_items, 1);
     }
 
 
     internal void Sort(IComparer<T> comparer)
     {
-        Array.Sort(this._items, 1, this._count, comparer);
+        Array.Sort(_items,
+            1,
+            _count,
+            comparer);
     }
 
 }

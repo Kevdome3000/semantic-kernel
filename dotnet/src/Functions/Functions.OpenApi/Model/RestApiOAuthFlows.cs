@@ -27,12 +27,14 @@ public sealed class RestApiOAuthFlows
     /// </summary>
     public RestApiOAuthFlow? AuthorizationCode { get; init; }
 
+
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOAuthFlows"/> class.
     /// </summary>
     internal RestApiOAuthFlows()
     {
     }
+
 
     internal void Freeze()
     {

@@ -1,12 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
@@ -34,23 +28,35 @@ internal static class QdrantFieldMapping
             Value.KindOneofCase.NullValue => null,
 
             Value.KindOneofCase.IntegerValue
-                => targetType == typeof(int) ? (object)(int)payloadValue.IntegerValue : (object)payloadValue.IntegerValue,
+                => targetType == typeof(int)
+                    ? (object)(int)payloadValue.IntegerValue
+                    : (object)payloadValue.IntegerValue,
 
             Value.KindOneofCase.StringValue when targetType == typeof(DateTimeOffset)
-                => DeserializeDateTimeOffset(payloadValue.StringValue),
+                => DateTimeOffset.Parse(payloadValue.StringValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+
+            Value.KindOneofCase.StringValue when targetType == typeof(DateTime)
+                => DateTime.Parse(payloadValue.StringValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+
+#if NET
+            Value.KindOneofCase.StringValue when targetType == typeof(DateOnly)
+                => DateOnly.Parse(payloadValue.StringValue, CultureInfo.InvariantCulture),
+#endif
 
             Value.KindOneofCase.StringValue
                 => payloadValue.StringValue,
 
             Value.KindOneofCase.DoubleValue
-                => targetType == typeof(float) ? (object)(float)payloadValue.DoubleValue : (object)payloadValue.DoubleValue,
+                => targetType == typeof(float)
+                    ? (object)(float)payloadValue.DoubleValue
+                    : (object)payloadValue.DoubleValue,
 
             Value.KindOneofCase.BoolValue
                 => payloadValue.BoolValue,
 
             Value.KindOneofCase.ListValue => DeserializeCollection(payloadValue, targetType),
 
-            _ => throw new InvalidOperationException($"Unsupported grpc value kind {payloadValue.KindCase}."),
+            _ => throw new InvalidOperationException($"Unsupported grpc value kind {payloadValue.KindCase}.")
         };
 
         static object? DeserializeCollection(Value payloadValue, Type targetType)
@@ -85,15 +91,26 @@ internal static class QdrantFieldMapping
                     => payloadValue.ListValue.Values.Select(v => v.BoolValue).ToArray(),
 
                 Type t when t == typeof(List<DateTimeOffset>)
-                    => payloadValue.ListValue.Values.Select(v => DeserializeDateTimeOffset(v.StringValue)).ToList(),
+                    => payloadValue.ListValue.Values.Select(v => DateTimeOffset.Parse(v.StringValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)).ToList(),
                 Type t when t == typeof(DateTimeOffset[])
-                    => payloadValue.ListValue.Values.Select(v => DeserializeDateTimeOffset(v.StringValue)).ToArray(),
+                    => payloadValue.ListValue.Values.Select(v => DateTimeOffset.Parse(v.StringValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)).ToArray(),
 
-                _ => throw new UnreachableException($"Unsupported collection type {targetType.Name}"),
+                Type t when t == typeof(List<DateTime>)
+                    => payloadValue.ListValue.Values.Select(v => DateTime.Parse(v.StringValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)).ToList(),
+                Type t when t == typeof(DateTime[])
+                    => payloadValue.ListValue.Values.Select(v => DateTime.Parse(v.StringValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)).ToArray(),
+
+#if NET
+                Type t when t == typeof(List<DateOnly>)
+                    => payloadValue.ListValue.Values.Select(v => DateOnly.Parse(v.StringValue, CultureInfo.InvariantCulture)).ToList(),
+                Type t when t == typeof(DateOnly[])
+                    => payloadValue.ListValue.Values.Select(v => DateOnly.Parse(v.StringValue, CultureInfo.InvariantCulture)).ToArray(),
+#endif
+
+                _ => throw new UnreachableException($"Unsupported collection type {targetType.Name}")
             };
-
-        static DateTimeOffset DeserializeDateTimeOffset(string s) => DateTimeOffset.Parse(s, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
     }
+
 
     /// <summary>
     /// Convert the given <paramref name="sourceValue"/> to a <see cref="Value"/> object that can be stored in Qdrant.
@@ -104,57 +121,56 @@ internal static class QdrantFieldMapping
     public static Value ConvertToGrpcFieldValue(object? sourceValue)
     {
         var value = new Value();
-        if (sourceValue is null)
+
+        switch (sourceValue)
         {
-            value.NullValue = NullValue.NullValue;
-        }
-        else if (sourceValue is int intValue)
-        {
-            value.IntegerValue = intValue;
-        }
-        else if (sourceValue is long longValue)
-        {
-            value.IntegerValue = longValue;
-        }
-        else if (sourceValue is string stringValue)
-        {
-            value.StringValue = stringValue;
-        }
-        else if (sourceValue is float floatValue)
-        {
-            value.DoubleValue = floatValue;
-        }
-        else if (sourceValue is double doubleValue)
-        {
-            value.DoubleValue = doubleValue;
-        }
-        else if (sourceValue is bool boolValue)
-        {
-            value.BoolValue = boolValue;
-        }
-        else if (sourceValue is DateTimeOffset dateTimeOffsetValue)
-        {
-            value.StringValue = dateTimeOffsetValue.ToString("O");
-        }
-        else if (sourceValue is IEnumerable<int> or
-            IEnumerable<long> or
-            IEnumerable<string> or
-            IEnumerable<float> or
-            IEnumerable<double> or
-            IEnumerable<bool> or
-            IEnumerable<DateTime> or
-            IEnumerable<DateTimeOffset>)
-        {
-            var listValue = sourceValue as IEnumerable;
-            value.ListValue = new ListValue();
-            foreach (var item in listValue!)
+            case null:
+                value.NullValue = NullValue.NullValue;
+                break;
+            case int intValue:
+                value.IntegerValue = intValue;
+                break;
+            case long longValue:
+                value.IntegerValue = longValue;
+                break;
+            case string stringValue:
+                value.StringValue = stringValue;
+                break;
+            case float floatValue:
+                value.DoubleValue = floatValue;
+                break;
+            case double doubleValue:
+                value.DoubleValue = doubleValue;
+                break;
+            case bool boolValue:
+                value.BoolValue = boolValue;
+                break;
+            case DateTimeOffset dateTimeOffsetValue:
+                value.StringValue = dateTimeOffsetValue.ToString("O");
+                break;
+            case DateTime dateTimeValue:
+                value.StringValue = dateTimeValue.ToString("O");
+                break;
+#if NET
+            case DateOnly dateOnlyValue:
+                value.StringValue = dateOnlyValue.ToString("O");
+                break;
+#endif
+            case IEnumerable<int> or IEnumerable<long> or IEnumerable<string> or IEnumerable<float> or IEnumerable<double> or IEnumerable<bool> or IEnumerable<DateTime> or IEnumerable<DateTimeOffset>:
             {
-                value.ListValue.Values.Add(ConvertToGrpcFieldValue(item));
+                var listValue = sourceValue as IEnumerable;
+                value.ListValue = new ListValue();
+
+                foreach (var item in listValue!)
+                {
+                    value.ListValue.Values.Add(ConvertToGrpcFieldValue(item));
+                }
+
+                break;
             }
-        }
-        else
-        {
-            throw new InvalidOperationException($"Unsupported source value type {sourceValue?.GetType().FullName}.");
+
+            default:
+                throw new InvalidOperationException($"Unsupported source value type {sourceValue?.GetType().FullName}.");
         }
 
         return value;

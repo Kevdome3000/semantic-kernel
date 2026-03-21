@@ -26,7 +26,7 @@ public class AgentDefinitionExtensionsTests
             {
                 ["Input1"] = new() { Name = "Input1", Required = false, Default = "Default1" },
                 ["Input2"] = new() { Name = "Input2", Required = true, Default = "Default2" }
-            },
+            }
         };
 
         // Act
@@ -38,6 +38,7 @@ public class AgentDefinitionExtensionsTests
         Assert.Equal("Default1", defaultArgs["Input1"]);
         Assert.Equal("Default2", defaultArgs["Input2"]);
     }
+
 
     /// <summary>
     /// Verify GetFirstToolDefinition
@@ -51,8 +52,8 @@ public class AgentDefinitionExtensionsTests
             Tools =
             [
                 new AgentToolDefinition { Type = "code_interpreter", Id = "Tool1" },
-                new AgentToolDefinition { Type = "file_search", Id = "Tool2" },
-            ],
+                new AgentToolDefinition { Type = "file_search", Id = "Tool2" }
+            ]
         };
 
         // Act & Assert
@@ -60,6 +61,7 @@ public class AgentDefinitionExtensionsTests
         Assert.NotNull(agentDefinition.GetFirstToolDefinition("file_search"));
         Assert.Null(agentDefinition.GetFirstToolDefinition("openai"));
     }
+
 
     /// <summary>
     /// Verify HasToolType
@@ -72,13 +74,14 @@ public class AgentDefinitionExtensionsTests
         {
             Tools =
             [
-                new AgentToolDefinition { Type = "code_interpreter", Id = "Tool1" },
-            ],
+                new AgentToolDefinition { Type = "code_interpreter", Id = "Tool1" }
+            ]
         };
 
         // Act & Assert
         Assert.True(agentDefinition.HasToolType("code_interpreter"));
     }
+
 
     /// <summary>
     /// Verify IsEnableFileSearch
@@ -91,8 +94,8 @@ public class AgentDefinitionExtensionsTests
         {
             Tools =
             [
-                new AgentToolDefinition { Type = "file_search", Id = "Tool2" },
-            ],
+                new AgentToolDefinition { Type = "file_search", Id = "Tool2" }
+            ]
         };
 
         // Act & Assert

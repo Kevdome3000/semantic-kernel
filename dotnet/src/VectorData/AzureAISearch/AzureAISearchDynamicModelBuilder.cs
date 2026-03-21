@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-
-using Microsoft.Extensions.VectorData.ProviderServices;
-
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 internal class AzureAISearchDynamicModelBuilder() : CollectionModelBuilder(s_modelBuildingOptions)
@@ -12,13 +7,15 @@ internal class AzureAISearchDynamicModelBuilder() : CollectionModelBuilder(s_mod
     internal static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
         UsesExternalSerializer = true
     };
 
+
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(string) && type != typeof(Guid))
@@ -28,9 +25,15 @@ internal class AzureAISearchDynamicModelBuilder() : CollectionModelBuilder(s_mod
         }
     }
 
+
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-        => AzureAISearchModelBuilder.IsDataPropertyTypeValidCore(type, out supportedTypes);
+    {
+        return AzureAISearchModelBuilder.IsDataPropertyTypeValidCore(type, out supportedTypes);
+    }
+
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-        => AzureAISearchModelBuilder.IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    {
+        return AzureAISearchModelBuilder.IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    }
 }

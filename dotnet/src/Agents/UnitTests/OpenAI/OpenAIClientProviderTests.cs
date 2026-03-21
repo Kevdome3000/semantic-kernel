@@ -28,6 +28,7 @@ public class OpenAIClientProviderTests
         Assert.NotNull(provider.Client);
     }
 
+
     /// <summary>
     /// Verify that provisioning of client for Azure OpenAI.
     /// </summary>
@@ -44,6 +45,7 @@ public class OpenAIClientProviderTests
         Assert.NotNull(provider.Client);
     }
 
+
     /// <summary>
     /// Verify that provisioning of client for OpenAI.
     /// </summary>
@@ -53,11 +55,14 @@ public class OpenAIClientProviderTests
     public void VerifyOpenAIClientProviderTargetOpenAINoKey(string? endpoint)
     {
         // Act
-        OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(endpoint != null ? new Uri(endpoint) : null);
+        OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(endpoint != null
+            ? new Uri(endpoint)
+            : null);
 
         // Assert
         Assert.NotNull(provider.Client);
     }
+
 
     /// <summary>
     /// Verify that provisioning of client for OpenAI.
@@ -68,11 +73,15 @@ public class OpenAIClientProviderTests
     public void VerifyOpenAIClientProviderTargetOpenAIByKey(string key, string? endpoint)
     {
         // Act
-        OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(key), endpoint != null ? new Uri(endpoint) : null);
+        OpenAIClientProvider provider = OpenAIClientProvider.ForOpenAI(new ApiKeyCredential(key),
+            endpoint != null
+                ? new Uri(endpoint)
+                : null);
 
         // Assert
         Assert.NotNull(provider.Client);
     }
+
 
     /// <summary>
     /// Verify that the factory can create a client with http proxy.
@@ -102,6 +111,7 @@ public class OpenAIClientProviderTests
         Assert.NotEqual(provider.ConfigurationKeys.Count, providerWithHeaders.ConfigurationKeys.Count);
     }
 
+
     /// <summary>
     /// Verify that the factory can create a client with http proxy.
     /// </summary>
@@ -118,6 +128,7 @@ public class OpenAIClientProviderTests
         // Assert
         Assert.NotNull(provider.Client);
     }
+
 
     /// <summary>
     /// Verify that the factory can accept an client that already exists.

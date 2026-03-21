@@ -1,6 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Agents.UnitTests.Core.Chat;
-
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,6 +7,7 @@ using Microsoft.SemanticKernel.Agents.Chat;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Xunit;
 
+namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 
 /// <summary>
 /// Unit testing of <see cref="KernelFunctionTerminationStrategy"/>.
@@ -26,10 +25,10 @@ public class KernelFunctionTerminationStrategyTests
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin());
 
         KernelFunctionTerminationStrategy strategy =
-            new(plugin.Single(), new())
+            new(plugin.Single(), new Kernel())
             {
                 AgentVariableName = "agent",
-                HistoryVariableName = "history",
+                HistoryVariableName = "history"
             };
 
         // Assert
@@ -56,10 +55,10 @@ public class KernelFunctionTerminationStrategyTests
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin());
 
         KernelFunctionTerminationStrategy strategy =
-            new(plugin.Single(), new())
+            new(plugin.Single(), new Kernel())
             {
-                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", "test" } },
-                ResultParser = (result) => string.Equals("test", result.GetValue<string>(), StringComparison.OrdinalIgnoreCase)
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings()) { { "key", "test" } },
+                ResultParser = result => string.Equals("test", result.GetValue<string>(), StringComparison.OrdinalIgnoreCase)
             };
 
         MockAgent mockAgent = new();
@@ -70,14 +69,13 @@ public class KernelFunctionTerminationStrategyTests
     }
 
 
-    private sealed class TestPlugin()
+    private sealed class TestPlugin
     {
 
         [KernelFunction]
         public string GetValue(KernelArguments? arguments)
         {
-            string? argument = arguments?.First().
-                Value?.ToString();
+            string? argument = arguments?.First().Value?.ToString();
 
             return argument ?? string.Empty;
         }

@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Linq;
-using Microsoft.Graph.Models;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
@@ -15,7 +12,7 @@ internal static class MicrosoftGraphModelExtensions
     /// <summary>
     /// Convert a Microsoft Graph message to an email message.
     /// </summary>
-    public static Models.EmailMessage ToEmailMessage(this Graph.Models.Message graphMessage)
+    public static EmailMessage ToEmailMessage(this Graph.Models.Message graphMessage)
         => new()
         {
             BccRecipients = graphMessage.BccRecipients?.Select(r => r.EmailAddress!.ToEmailAddress()),
@@ -32,21 +29,26 @@ internal static class MicrosoftGraphModelExtensions
             Subject = graphMessage.Subject
         };
 
+
     /// <summary>
     /// Convert a Microsoft Graph email address to an email address.
     /// </summary>
-    public static Models.EmailAddress ToEmailAddress(this Microsoft.Graph.Models.EmailAddress graphEmailAddress)
-        => new()
+    public static EmailAddress ToEmailAddress(this Microsoft.Graph.Models.EmailAddress graphEmailAddress)
+    {
+        return new EmailAddress
         {
             Address = graphEmailAddress.Address,
             Name = graphEmailAddress.Name
         };
+    }
+
 
     /// <summary>
     /// Convert a calendar event to a Microsoft Graph event.
     /// </summary>
     public static Graph.Models.Event ToGraphEvent(this CalendarEvent calendarEvent)
-        => new()
+    {
+        return new()
         {
             Subject = calendarEvent.Subject,
             Body = new Graph.Models.ItemBody { Content = calendarEvent.Content, ContentType = Microsoft.Graph.Models.BodyType.Html },
@@ -59,18 +61,22 @@ internal static class MicrosoftGraphModelExtensions
             Location = new Microsoft.Graph.Models.Location { DisplayName = calendarEvent.Location },
             Attendees = calendarEvent.Attendees?.Select(a => new Microsoft.Graph.Models.Attendee { EmailAddress = new Microsoft.Graph.Models.EmailAddress { Address = a } })?.ToList()
         };
+    }
+
 
     /// <summary>
     /// Convert a Microsoft Graph event to a calendar event.
     /// </summary>
-    public static Models.CalendarEvent ToCalendarEvent(this Graph.Models.Event msGraphEvent)
-        => new()
+    public static CalendarEvent ToCalendarEvent(this Graph.Models.Event msGraphEvent)
+    {
+        return new CalendarEvent
         {
             Subject = msGraphEvent.Subject,
             Content = msGraphEvent.Body?.Content,
             Start = msGraphEvent.Start?.ToDateTimeOffset(),
             End = msGraphEvent.End?.ToDateTimeOffset(),
             Location = msGraphEvent.Location?.DisplayName,
-            Attendees = msGraphEvent.Attendees?.Where(a => a.EmailAddress?.Address is not null).Select(a => a.EmailAddress!.Address!),
+            Attendees = msGraphEvent.Attendees?.Where(a => a.EmailAddress?.Address is not null).Select(a => a.EmailAddress!.Address!)
         };
+    }
 }

@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-
 // Source Originally from: https://github.com/dotnet/extensions/blob/ef3f0a/src/Shared/Throw/Throw.cs
 
 namespace Microsoft.SemanticKernel;
@@ -19,10 +14,11 @@ namespace Microsoft.SemanticKernel;
 [SuppressMessage("Minor Code Smell", "S4136:Method overloads should be grouped together", Justification = "Doesn't work with the region layout")]
 [SuppressMessage("Minor Code Smell", "S2333:Partial is gratuitous in this context", Justification = "Some projects add additional partial parts.")]
 [SuppressMessage("Design", "CA1716", Justification = "Not part of an API")]
-
 [ExcludeFromCodeCoverage]
-internal static partial class Throw
+internal static class Throw
 {
+
+
     #region For Object
 
     /// <summary>
@@ -43,6 +39,7 @@ internal static partial class Throw
 
         return argument;
     }
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentNullException"/> if the specified argument is <see langword="null"/>,
@@ -65,8 +62,10 @@ internal static partial class Throw
     public static TMember IfNullOrMemberNull<TParameter, TMember>(
         [NotNull] TParameter argument,
         [NotNull] TMember member,
-        [CallerArgumentExpression(nameof(argument))] string paramName = "",
-        [CallerArgumentExpression(nameof(member))] string memberName = "")
+        [CallerArgumentExpression(nameof(argument))]
+        string paramName = "",
+        [CallerArgumentExpression(nameof(member))]
+        string memberName = "")
     {
         if (argument is null)
         {
@@ -80,6 +79,7 @@ internal static partial class Throw
 
         return member;
     }
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentException" /> if the specified member is <see langword="null"/>.
@@ -102,8 +102,10 @@ internal static partial class Throw
     public static TMember IfMemberNull<TParameter, TMember>(
         TParameter argument,
         [NotNull] TMember member,
-        [CallerArgumentExpression(nameof(argument))] string paramName = "",
-        [CallerArgumentExpression(nameof(member))] string memberName = "")
+        [CallerArgumentExpression(nameof(argument))]
+        string paramName = "",
+        [CallerArgumentExpression(nameof(member))]
+        string memberName = "")
         where TParameter : notnull
     {
         if (member is null)
@@ -115,6 +117,7 @@ internal static partial class Throw
     }
 
     #endregion
+
 
     #region For String
 
@@ -151,6 +154,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentNullException"/> if the string is <see langword="null"/>,
     /// or <see cref="System.ArgumentException"/> if it is empty.
@@ -186,6 +190,7 @@ internal static partial class Throw
 
     #endregion
 
+
     #region For Buffer
 
     /// <summary>
@@ -204,6 +209,7 @@ internal static partial class Throw
     }
 
     #endregion
+
 
     #region For Enums
 
@@ -231,6 +237,7 @@ internal static partial class Throw
     }
 
     #endregion
+
 
     #region For Collections
 
@@ -292,6 +299,7 @@ internal static partial class Throw
 
     #endregion
 
+
     #region Exceptions
 
     /// <summary>
@@ -305,6 +313,7 @@ internal static partial class Throw
     public static void ArgumentNullException(string paramName)
         => throw new ArgumentNullException(paramName);
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentNullException"/>.
     /// </summary>
@@ -317,6 +326,7 @@ internal static partial class Throw
     public static void ArgumentNullException(string paramName, string? message)
         => throw new ArgumentNullException(paramName, message);
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/>.
     /// </summary>
@@ -327,6 +337,7 @@ internal static partial class Throw
     [DoesNotReturn]
     public static void ArgumentOutOfRangeException(string paramName)
         => throw new ArgumentOutOfRangeException(paramName);
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/>.
@@ -339,6 +350,7 @@ internal static partial class Throw
     [DoesNotReturn]
     public static void ArgumentOutOfRangeException(string paramName, string? message)
         => throw new ArgumentOutOfRangeException(paramName, message);
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/>.
@@ -353,6 +365,7 @@ internal static partial class Throw
     public static void ArgumentOutOfRangeException(string paramName, object? actualValue, string? message)
         => throw new ArgumentOutOfRangeException(paramName, actualValue, message);
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentException"/>.
     /// </summary>
@@ -364,6 +377,7 @@ internal static partial class Throw
     [DoesNotReturn]
     public static void ArgumentException(string paramName, string? message)
         => throw new ArgumentException(message, paramName);
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentException"/>.
@@ -382,6 +396,7 @@ internal static partial class Throw
     public static void ArgumentException(string paramName, string? message, Exception? innerException)
         => throw new ArgumentException(message, paramName, innerException);
 
+
     /// <summary>
     /// Throws an <see cref="System.InvalidOperationException"/>.
     /// </summary>
@@ -392,6 +407,7 @@ internal static partial class Throw
     [DoesNotReturn]
     public static void InvalidOperationException(string message)
         => throw new InvalidOperationException(message);
+
 
     /// <summary>
     /// Throws an <see cref="System.InvalidOperationException"/>.
@@ -406,6 +422,7 @@ internal static partial class Throw
         => throw new InvalidOperationException(message, innerException);
 
     #endregion
+
 
     #region For Integer
 
@@ -427,6 +444,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
     /// </summary>
@@ -444,6 +462,7 @@ internal static partial class Throw
 
         return argument;
     }
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
@@ -463,6 +482,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
     /// </summary>
@@ -481,6 +501,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
     /// </summary>
@@ -490,7 +511,12 @@ internal static partial class Throw
     /// <param name="paramName">The name of the parameter being checked.</param>
     /// <returns>The original value of <paramref name="argument"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IfOutOfRange(int argument, int min, int max, [CallerArgumentExpression(nameof(argument))] string paramName = "")
+    public static int IfOutOfRange(
+        int argument,
+        int min,
+        int max,
+        [CallerArgumentExpression(nameof(argument))]
+        string paramName = "")
     {
         if (argument < min || argument > max)
         {
@@ -499,6 +525,7 @@ internal static partial class Throw
 
         return argument;
     }
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
@@ -518,6 +545,7 @@ internal static partial class Throw
     }
 
     #endregion
+
 
     #region For Unsigned Integer
 
@@ -539,6 +567,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
     /// </summary>
@@ -556,6 +585,7 @@ internal static partial class Throw
 
         return argument;
     }
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
@@ -575,6 +605,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
     /// </summary>
@@ -593,6 +624,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
     /// </summary>
@@ -602,7 +634,12 @@ internal static partial class Throw
     /// <param name="paramName">The name of the parameter being checked.</param>
     /// <returns>The original value of <paramref name="argument"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint IfOutOfRange(uint argument, uint min, uint max, [CallerArgumentExpression(nameof(argument))] string paramName = "")
+    public static uint IfOutOfRange(
+        uint argument,
+        uint min,
+        uint max,
+        [CallerArgumentExpression(nameof(argument))]
+        string paramName = "")
     {
         if (argument < min || argument > max)
         {
@@ -611,6 +648,7 @@ internal static partial class Throw
 
         return argument;
     }
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
@@ -630,6 +668,7 @@ internal static partial class Throw
     }
 
     #endregion
+
 
     #region For Long
 
@@ -651,6 +690,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
     /// </summary>
@@ -668,6 +708,7 @@ internal static partial class Throw
 
         return argument;
     }
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
@@ -687,6 +728,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
     /// </summary>
@@ -705,6 +747,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
     /// </summary>
@@ -714,7 +757,12 @@ internal static partial class Throw
     /// <param name="paramName">The name of the parameter being checked.</param>
     /// <returns>The original value of <paramref name="argument"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long IfOutOfRange(long argument, long min, long max, [CallerArgumentExpression(nameof(argument))] string paramName = "")
+    public static long IfOutOfRange(
+        long argument,
+        long min,
+        long max,
+        [CallerArgumentExpression(nameof(argument))]
+        string paramName = "")
     {
         if (argument < min || argument > max)
         {
@@ -723,6 +771,7 @@ internal static partial class Throw
 
         return argument;
     }
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
@@ -742,6 +791,7 @@ internal static partial class Throw
     }
 
     #endregion
+
 
     #region For Unsigned Long
 
@@ -763,6 +813,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
     /// </summary>
@@ -780,6 +831,7 @@ internal static partial class Throw
 
         return argument;
     }
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
@@ -799,6 +851,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
     /// </summary>
@@ -817,6 +870,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
     /// </summary>
@@ -826,7 +880,12 @@ internal static partial class Throw
     /// <param name="paramName">The name of the parameter being checked.</param>
     /// <returns>The original value of <paramref name="argument"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ulong IfOutOfRange(ulong argument, ulong min, ulong max, [CallerArgumentExpression(nameof(argument))] string paramName = "")
+    public static ulong IfOutOfRange(
+        ulong argument,
+        ulong min,
+        ulong max,
+        [CallerArgumentExpression(nameof(argument))]
+        string paramName = "")
     {
         if (argument < min || argument > max)
         {
@@ -835,6 +894,7 @@ internal static partial class Throw
 
         return argument;
     }
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
@@ -854,6 +914,7 @@ internal static partial class Throw
     }
 
     #endregion
+
 
     #region For Double
 
@@ -878,6 +939,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
     /// </summary>
@@ -898,6 +960,7 @@ internal static partial class Throw
 
         return argument;
     }
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
@@ -920,6 +983,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
     /// </summary>
@@ -941,6 +1005,7 @@ internal static partial class Throw
         return argument;
     }
 
+
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
     /// </summary>
@@ -950,7 +1015,12 @@ internal static partial class Throw
     /// <param name="paramName">The name of the parameter being checked.</param>
     /// <returns>The original value of <paramref name="argument"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double IfOutOfRange(double argument, double min, double max, [CallerArgumentExpression(nameof(argument))] string paramName = "")
+    public static double IfOutOfRange(
+        double argument,
+        double min,
+        double max,
+        [CallerArgumentExpression(nameof(argument))]
+        string paramName = "")
     {
         // strange conditional needed in order to handle NaN values correctly
         if (!(min <= argument && argument <= max))
@@ -960,6 +1030,7 @@ internal static partial class Throw
 
         return argument;
     }
+
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
@@ -981,4 +1052,6 @@ internal static partial class Throw
     }
 
     #endregion
+
+
 }

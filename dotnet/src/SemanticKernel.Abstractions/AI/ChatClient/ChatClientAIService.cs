@@ -21,6 +21,7 @@ internal sealed class ChatClientAIService : IAIService, IChatClient
     /// </summary>
     internal Dictionary<string, object?> _internalAttributes { get; } = [];
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatClientAIService"/> class.
     /// </summary>
@@ -38,23 +39,34 @@ internal sealed class ChatClientAIService : IAIService, IChatClient
         _internalAttributes[nameof(metadata.ProviderUri)] = metadata.ProviderUri;
     }
 
+
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => _internalAttributes;
+
 
     /// <inheritdoc />
     public void Dispose()
     {
     }
 
+
     /// <inheritdoc />
     public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-        => _chatClient.GetResponseAsync(messages, options, cancellationToken);
+    {
+        return _chatClient.GetResponseAsync(messages, options, cancellationToken);
+    }
+
 
     /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)
-        => _chatClient.GetService(serviceType, serviceKey);
+    {
+        return _chatClient.GetService(serviceType, serviceKey);
+    }
+
 
     /// <inheritdoc />
     public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-        => _chatClient.GetStreamingResponseAsync(messages, options, cancellationToken);
+    {
+        return _chatClient.GetStreamingResponseAsync(messages, options, cancellationToken);
+    }
 }

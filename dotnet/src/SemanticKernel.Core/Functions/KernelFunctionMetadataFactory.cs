@@ -49,6 +49,7 @@ public static class KernelFunctionMetadataFactory
 
     }
 
+
     /// <summary>
     /// Creates a <see cref="KernelFunctionMetadata"/> enumeration for a method, specified via an <see cref="MethodInfo"/> instance.
     /// </summary>
@@ -69,6 +70,7 @@ public static class KernelFunctionMetadataFactory
         // Filter out non-KernelFunctions and fail if two functions have the same name (with or without the same casing).
         var functionMetadata = new List<KernelFunctionMetadata>();
         KernelFunctionFromMethodOptions options = new();
+
         foreach (MethodInfo method in methods)
         {
             if (method.GetCustomAttribute<KernelFunctionAttribute>() is not null)
@@ -76,6 +78,7 @@ public static class KernelFunctionMetadataFactory
                 functionMetadata.Add(KernelFunctionFromMethod.CreateMetadata(method, jsonSerializerOptions, loggerFactory: loggerFactory));
             }
         }
+
         if (functionMetadata.Count == 0)
         {
             throw new ArgumentException($"The {instanceType} instance doesn't implement any [KernelFunction]-attributed methods.");

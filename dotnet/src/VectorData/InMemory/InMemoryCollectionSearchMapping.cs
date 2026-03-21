@@ -4,7 +4,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics.Tensors;
 using System.Reflection;
 using Microsoft.Extensions.VectorData;
 
@@ -40,6 +39,7 @@ internal static class InMemoryCollectionSearchMapping
         }
     }
 
+
     /// <summary>
     /// Indicates whether result ordering should be descending or ascending, to get most similar results at the top, based on the distance function.
     /// </summary>
@@ -61,6 +61,7 @@ internal static class InMemoryCollectionSearchMapping
                 throw new NotSupportedException($"The distance function '{distanceFunction}' is not supported by the InMemory connector.");
         }
     }
+
 
     /// <summary>
     /// Converts the provided score into the correct result depending on the distance function.
@@ -87,6 +88,7 @@ internal static class InMemoryCollectionSearchMapping
                 throw new NotSupportedException($"The distance function '{distanceFunction}' is not supported by the InMemory connector.");
         }
     }
+
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
     /// <summary>
@@ -116,7 +118,7 @@ internal static class InMemoryCollectionSearchMapping
                 {
                     result = result && CheckEqualTo(wrapper.Record, equalToFilter);
 
-                    if (result == false)
+                    if (!result)
                     {
                         break;
                     }
@@ -125,7 +127,7 @@ internal static class InMemoryCollectionSearchMapping
                 {
                     result = result && CheckAnyTagEqualTo(wrapper.Record, anyTagEqualToFilter);
 
-                    if (result == false)
+                    if (!result)
                     {
                         break;
                     }
@@ -140,6 +142,7 @@ internal static class InMemoryCollectionSearchMapping
         });
     }
 
+
     /// <summary>
     /// Check if the required property on the record is equal to the required value form the filter.
     /// </summary>
@@ -150,6 +153,7 @@ internal static class InMemoryCollectionSearchMapping
     {
         var propertyInfo = GetPropertyInfo(record, equalToFilter.FieldName);
         var propertyValue = propertyInfo.GetValue(record);
+
         if (propertyValue == null)
         {
             return propertyValue == equalToFilter.Value;
@@ -157,6 +161,7 @@ internal static class InMemoryCollectionSearchMapping
 
         return propertyValue.Equals(equalToFilter.Value);
     }
+
 
     /// <summary>
     /// Check if the required tag list on the record is equal to the required value form the filter.
@@ -177,6 +182,7 @@ internal static class InMemoryCollectionSearchMapping
 
         // Check that the tag list contains any values. If not, return false, since the required value cannot be in an empty list.
         var propertyValue = propertyInfo.GetValue(record) as IEnumerable;
+
         if (propertyValue == null)
         {
             return false;
@@ -200,6 +206,7 @@ internal static class InMemoryCollectionSearchMapping
     }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
 
+
     /// <summary>
     /// Get the property info for the provided property name on the record.
     /// </summary>
@@ -210,6 +217,7 @@ internal static class InMemoryCollectionSearchMapping
     private static PropertyInfo GetPropertyInfo(object record, string propertyName)
     {
         var propertyInfo = record.GetType().GetProperty(propertyName);
+
         if (propertyInfo == null)
         {
             throw new InvalidOperationException($"Property {propertyName} not found on record type {record.GetType().Name}");

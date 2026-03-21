@@ -35,7 +35,10 @@
       "spec": {
         "url": "messages-openapi.yml"
       },
-      "run_for_functions": ["me_ListMessages", "me_sendMail"]
+      "run_for_functions": [
+        "me_ListMessages",
+        "me_sendMail"
+      ]
     }
   ]
 }

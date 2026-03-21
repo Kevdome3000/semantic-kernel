@@ -12,7 +12,7 @@ internal static class TestUtilities
         string template,
         List<InputVariable>? inputVariables = null)
     {
-        return new PromptTemplateConfig()
+        return new PromptTemplateConfig
         {
             TemplateFormat = HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
             Template = template,

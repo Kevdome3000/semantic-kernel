@@ -16,6 +16,7 @@ public sealed class TypePrefixSubscriptionAttribute(string topic) : Attribute
     /// </summary>
     public string Topic => topic;
 
+
     /// <summary>
     /// Creates a subscription definition that binds the topic to the specified agent type.
     /// </summary>
@@ -23,6 +24,6 @@ public sealed class TypePrefixSubscriptionAttribute(string topic) : Attribute
     /// <returns>An <see cref="ISubscriptionDefinition"/> representing the binding.</returns>
     internal ISubscriptionDefinition Bind(AgentType agentType)
     {
-        return new TypePrefixSubscription(this.Topic, agentType);
+        return new TypePrefixSubscription(Topic, agentType);
     }
 }

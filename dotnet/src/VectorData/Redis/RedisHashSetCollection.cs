@@ -1,21 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using NRedisStack.RedisStackCommands;
-using NRedisStack.Search;
-using NRedisStack.Search.Literals.Enums;
-using StackExchange.Redis;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
@@ -36,7 +22,6 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     internal static readonly CollectionModelBuildingOptions ModelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true
     };
 
@@ -61,6 +46,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     /// <summary>whether the collection name should be prefixed to the key names before reading or writing to the Redis store.</summary>
     private readonly bool _prefixCollectionNameToKeyNames;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetCollection{TKey, TRecord}"/> class.
     /// </summary>
@@ -77,12 +63,20 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(RedisHashSetDynamicCollection)))
-                : new RedisModelBuilder(ModelBuildingOptions).Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new RedisModelBuilder(ModelBuildingOptions).Build(typeof(TRecord),
+                    typeof(TKey),
+                    options.Definition,
+                    options.EmbeddingGenerator),
             options)
     {
     }
 
-    internal RedisHashSetCollection(IDatabase database, string name, Func<RedisHashSetCollectionOptions, CollectionModel> modelFactory, RedisHashSetCollectionOptions? options)
+
+    internal RedisHashSetCollection(
+        IDatabase database,
+        string name,
+        Func<RedisHashSetCollectionOptions, CollectionModel> modelFactory,
+        RedisHashSetCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(database);
@@ -96,20 +90,20 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         options ??= RedisHashSetCollectionOptions.Default;
 
         // Assign.
-        this._database = database;
-        this.Name = name;
-        this._model = modelFactory(options);
+        _database = database;
+        Name = name;
+        _model = modelFactory(options);
 
-        this._prefixCollectionNameToKeyNames = options.PrefixCollectionNameToKeyNames;
+        _prefixCollectionNameToKeyNames = options.PrefixCollectionNameToKeyNames;
 
         // Lookup storage property names.
-        this._dataStoragePropertyNameRedisValues = this._model.DataProperties.Select(p => RedisValue.Unbox(p.StorageName)).ToArray();
-        this._dataStoragePropertyNamesWithScore = [.. this._model.DataProperties.Select(p => p.StorageName), "vector_score"];
+        _dataStoragePropertyNameRedisValues = _model.DataProperties.Select(p => RedisValue.Unbox(p.StorageName)).ToArray();
+        _dataStoragePropertyNamesWithScore = [.. _model.DataProperties.Select(p => p.StorageName), "vector_score"];
 
         // Assign Mapper.
-        this._mapper = new RedisHashSetMapper<TRecord>(this._model);
+        _mapper = new RedisHashSetMapper<TRecord>(_model);
 
-        this._collectionMetadata = new()
+        _collectionMetadata = new()
         {
             VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
             VectorStoreName = database.Database.ToString(),
@@ -117,15 +111,17 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         };
     }
 
+
     /// <inheritdoc />
     public override string Name { get; }
+
 
     /// <inheritdoc />
     public override async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            await this._database.FT().InfoAsync(this.Name).ConfigureAwait(false);
+            await _database.FT().InfoAsync(Name).ConfigureAwait(false);
             return true;
         }
         // "Unknown index name" is returned in Redis Stack
@@ -139,12 +135,13 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
+                VectorStoreName = _collectionMetadata.VectorStoreName,
+                CollectionName = Name,
                 OperationName = "FT.INFO"
             };
         }
     }
+
 
     /// <inheritdoc />
     public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
@@ -152,7 +149,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         const string OperationName = "FT.CREATE";
 
         // Don't even try to create if the collection already exists.
-        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        if (await CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
             return;
         }
@@ -160,16 +157,16 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         try
         {
             // Map the record definition to a schema.
-            var schema = RedisCollectionCreateMapping.MapToSchema(this._model.Properties, useDollarPrefix: false);
+            var schema = RedisCollectionCreateMapping.MapToSchema(_model.Properties, false);
 
             // Create the index creation params.
             // Add the collection name and colon as the index prefix, which means that any record where the key is prefixed with this text will be indexed by this index
             var createParams = new FTCreateParams()
-                .AddPrefix($"{this.Name}:")
+                .AddPrefix($"{Name}:")
                 .On(IndexDataType.HASH);
 
             // Create the index.
-            await this._database.FT().CreateAsync(this.Name, createParams, schema).ConfigureAwait(false);
+            await _database.FT().CreateAsync(Name, createParams, schema).ConfigureAwait(false);
         }
         catch (RedisException ex)
         {
@@ -178,7 +175,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+                if (await CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
                 {
                     return;
                 }
@@ -191,12 +188,13 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = RedisConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
+                VectorStoreName = _collectionMetadata.VectorStoreName,
+                CollectionName = Name,
                 OperationName = OperationName
             };
         }
     }
+
 
     /// <inheritdoc />
     public override async Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
@@ -204,14 +202,15 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         try
         {
             await this.RunOperationAsync("FT.DROPINDEX",
-                () => this._database.FT().DropIndexAsync(this.Name)).ConfigureAwait(false);
+                    () => _database.FT().DropIndexAsync(Name))
+                .ConfigureAwait(false);
         }
         catch (VectorStoreException ex) when (ex.InnerException is RedisServerException)
         {
             // The RedisServerException does not expose any reliable way of checking if the index does not exist.
             // It just sets the message to "Unknown index name".
             // We catch the exception and ignore it, but only after checking that the index does not exist.
-            if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+            if (!await CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
             {
                 return;
             }
@@ -220,36 +219,43 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         }
     }
 
+
     /// <inheritdoc />
     public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var stringKey = this.GetStringKey(key);
+        var stringKey = GetStringKey(key);
 
         // Create Options
-        var maybePrefixedKey = this.PrefixKeyIfNeeded(stringKey);
+        var maybePrefixedKey = PrefixKeyIfNeeded(stringKey);
 
         var includeVectors = options?.IncludeVectors ?? false;
-        if (includeVectors && this._model.EmbeddingGenerationRequired)
+
+        if (includeVectors && _model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        var operationName = includeVectors ? "HGETALL" : "HMGET";
+        var operationName = includeVectors
+            ? "HGETALL"
+            : "HMGET";
 
         // Get the Redis value.
         HashEntry[] retrievedHashEntries;
+
         if (includeVectors)
         {
             retrievedHashEntries = await this.RunOperationAsync(
-                operationName,
-                () => this._database.HashGetAllAsync(maybePrefixedKey)).ConfigureAwait(false);
+                    operationName,
+                    () => _database.HashGetAllAsync(maybePrefixedKey))
+                .ConfigureAwait(false);
         }
         else
         {
-            var fieldKeys = this._dataStoragePropertyNameRedisValues;
+            var fieldKeys = _dataStoragePropertyNameRedisValues;
             var retrievedValues = await this.RunOperationAsync(
-                operationName,
-                () => this._database.HashGetAsync(maybePrefixedKey, fieldKeys)).ConfigureAwait(false);
+                    operationName,
+                    () => _database.HashGetAsync(maybePrefixedKey, fieldKeys))
+                .ConfigureAwait(false);
             retrievedHashEntries = fieldKeys.Zip(retrievedValues, (field, value) => new HashEntry(field, value)).Where(x => x.Value.HasValue).ToArray();
         }
 
@@ -260,71 +266,90 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         }
 
         // Convert to the caller's data model.
-        return this._mapper.MapFromStorageToDataModel((stringKey, retrievedHashEntries), includeVectors);
+        return _mapper.MapFromStorageToDataModel((stringKey, retrievedHashEntries), includeVectors);
     }
+
 
     /// <inheritdoc />
     public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        var stringKey = this.GetStringKey(key);
+        var stringKey = GetStringKey(key);
 
         // Create Options
-        var maybePrefixedKey = this.PrefixKeyIfNeeded(stringKey);
+        var maybePrefixedKey = PrefixKeyIfNeeded(stringKey);
 
         // Remove.
         return this.RunOperationAsync(
             "DEL",
-            () => this._database
+            () => _database
                 .KeyDeleteAsync(maybePrefixedKey));
     }
+
 
     /// <inheritdoc />
     public override async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
-        (_, var generatedEmbeddings) = await RedisFieldMapping.ProcessEmbeddingsAsync<TRecord>(this._model, [record], cancellationToken).ConfigureAwait(false);
+        (_, var generatedEmbeddings) = await RedisFieldMapping.ProcessEmbeddingsAsync<TRecord>(_model, [record], cancellationToken).ConfigureAwait(false);
 
-        await this.UpsertCoreAsync(record, 0, generatedEmbeddings, cancellationToken).ConfigureAwait(false);
+        await UpsertCoreAsync(record,
+                0,
+                generatedEmbeddings,
+                cancellationToken)
+            .ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(records);
 
-        (records, var generatedEmbeddings) = await RedisFieldMapping.ProcessEmbeddingsAsync<TRecord>(this._model, records, cancellationToken).ConfigureAwait(false);
+        (records, var generatedEmbeddings) = await RedisFieldMapping.ProcessEmbeddingsAsync<TRecord>(_model, records, cancellationToken).ConfigureAwait(false);
 
         var i = 0;
 
         foreach (var record in records)
         {
-            await this.UpsertCoreAsync(record, i++, generatedEmbeddings, cancellationToken).ConfigureAwait(false);
+            await UpsertCoreAsync(record,
+                    i++,
+                    generatedEmbeddings,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
     }
 
-    private async Task UpsertCoreAsync(TRecord record, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings, CancellationToken cancellationToken = default)
+
+    private async Task UpsertCoreAsync(
+        TRecord record,
+        int recordIndex,
+        IReadOnlyList<Embedding>?[]? generatedEmbeddings,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(record);
 
         // Auto-generate key if needed (client-side for Redis)
-        var keyProperty = this._model.KeyProperty;
+        var keyProperty = _model.KeyProperty;
+
         if (keyProperty.IsAutoGenerated && keyProperty.GetValue<Guid>(record) == Guid.Empty)
         {
             keyProperty.SetValue(record, Guid.NewGuid());
         }
 
         // Map.
-        var redisHashSetRecord = this._mapper.MapFromDataToStorageModel(record, recordIndex, generatedEmbeddings);
+        var redisHashSetRecord = _mapper.MapFromDataToStorageModel(record, recordIndex, generatedEmbeddings);
 
         // Upsert.
-        var maybePrefixedKey = this.PrefixKeyIfNeeded(redisHashSetRecord.Key);
+        var maybePrefixedKey = PrefixKeyIfNeeded(redisHashSetRecord.Key);
 
         await this.RunOperationAsync(
-            "HSET",
-            () => this._database
-                .HashSetAsync(
-                    maybePrefixedKey,
-                    redisHashSetRecord.HashEntries)).ConfigureAwait(false);
+                "HSET",
+                () => _database
+                    .HashSetAsync(
+                        maybePrefixedKey,
+                        redisHashSetRecord.HashEntries))
+            .ConfigureAwait(false);
     }
+
 
     #region Search
 
@@ -340,12 +365,12 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
 
         options ??= s_defaultVectorSearchOptions;
 
-        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
+        if (options.IncludeVectors && _model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+        var vectorProperty = _model.GetVectorPropertyOrSingle(options);
 
         object vector = searchValue switch
         {
@@ -353,15 +378,14 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             ReadOnlyMemory<float> r => r,
             float[] f => new ReadOnlyMemory<float>(f),
             Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
 
             // float64
             ReadOnlyMemory<double> r => r,
             double[] f => new ReadOnlyMemory<double>(f),
             Embedding<double> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<double>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false),
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), RedisModelBuilder.SupportedVectorTypes))
@@ -369,36 +393,42 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         };
 
         // Build query & search.
-        var selectFields = options.IncludeVectors ? null : this._dataStoragePropertyNamesWithScore;
+        var selectFields = options.IncludeVectors
+            ? null
+            : _dataStoragePropertyNamesWithScore;
         byte[] vectorBytes = RedisCollectionSearchMapping.ValidateVectorAndConvertToBytes(vector, "HashSet");
         var query = RedisCollectionSearchMapping.BuildQuery(
             vectorBytes,
             top,
             options,
-            this._model,
+            _model,
             vectorProperty,
             selectFields);
         var results = await this.RunOperationAsync(
-            "FT.SEARCH",
-            () => this._database
-                .FT()
-                .SearchAsync(this.Name, query)).ConfigureAwait(false);
+                "FT.SEARCH",
+                () => _database
+                    .FT()
+                    .SearchAsync(Name, query))
+            .ConfigureAwait(false);
 
         // Loop through result and convert to the caller's data model.
         var mappedResults = results.Documents.Select(result =>
         {
-            var retrievedHashEntries = this._model.DataProperties.Select(p => p.StorageName)
-                .Concat(this._model.VectorProperties.Select(p => p.StorageName))
+            var retrievedHashEntries = _model.DataProperties.Select(p => p.StorageName)
+                .Concat(_model.VectorProperties.Select(p => p.StorageName))
                 .Select(propertyName => new HashEntry(propertyName, result[propertyName]))
                 .ToArray();
 
             // Convert to the caller's data model.
-            var dataModel = this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(result.Id), retrievedHashEntries), options.IncludeVectors);
+            var dataModel = _mapper.MapFromStorageToDataModel((RemoveKeyPrefixIfNeeded(result.Id), retrievedHashEntries), options.IncludeVectors);
 
             // Process the score of the result item.
-            var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+            var vectorProperty = _model.GetVectorPropertyOrSingle(options);
             var distanceFunction = RedisCollectionSearchMapping.ResolveDistanceFunction(vectorProperty);
-            var score = RedisCollectionSearchMapping.GetOutputScoreFromRedisScore(result["vector_score"].HasValue ? (float)result["vector_score"] : null, distanceFunction);
+            var score = RedisCollectionSearchMapping.GetOutputScoreFromRedisScore(result["vector_score"].HasValue
+                    ? (float)result["vector_score"]
+                    : null,
+                distanceFunction);
 
             return new VectorSearchResult<TRecord>(dataModel, score);
         });
@@ -430,38 +460,48 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
 
     #endregion Search
 
+
     /// <inheritdoc />
-    public override async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        FilteredRecordRetrievalOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(
+        Expression<Func<TRecord, bool>> filter,
+        int top,
+        FilteredRecordRetrievalOptions<TRecord>? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
         options ??= new();
-        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
+
+        if (options.IncludeVectors && _model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        Query query = RedisCollectionSearchMapping.BuildQuery(filter, top, options, this._model);
+        Query query = RedisCollectionSearchMapping.BuildQuery(filter,
+            top,
+            options,
+            _model);
 
         var results = await this.RunOperationAsync(
-            "FT.SEARCH",
-            () => this._database
-                .FT()
-                .SearchAsync(this.Name, query)).ConfigureAwait(false);
+                "FT.SEARCH",
+                () => _database
+                    .FT()
+                    .SearchAsync(Name, query))
+            .ConfigureAwait(false);
 
         foreach (var document in results.Documents)
         {
-            var retrievedHashEntries = this._model.DataProperties.Select(p => p.StorageName)
-                .Concat(this._model.VectorProperties.Select(p => p.StorageName))
+            var retrievedHashEntries = _model.DataProperties.Select(p => p.StorageName)
+                .Concat(_model.VectorProperties.Select(p => p.StorageName))
                 .Select(propertyName => new HashEntry(propertyName, document[propertyName]))
                 .ToArray();
 
             // Convert to the caller's data model.
-            yield return this._mapper.MapFromStorageToDataModel((this.RemoveKeyPrefixIfNeeded(document.Id), retrievedHashEntries), options.IncludeVectors);
+            yield return _mapper.MapFromStorageToDataModel((RemoveKeyPrefixIfNeeded(document.Id), retrievedHashEntries), options.IncludeVectors);
         }
     }
+
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
@@ -469,12 +509,17 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(IDatabase) ? this._database :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreCollectionMetadata)
+                    ? _collectionMetadata
+                    : serviceType == typeof(IDatabase)
+                        ? _database
+                        : serviceType.IsInstanceOfType(this)
+                            ? this
+                            : null;
     }
+
 
     /// <summary>
     /// Prefix the key with the collection name if the option is set.
@@ -483,13 +528,14 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     /// <returns>The updated key if updating is required, otherwise the input key.</returns>
     private string PrefixKeyIfNeeded(string key)
     {
-        if (this._prefixCollectionNameToKeyNames)
+        if (_prefixCollectionNameToKeyNames)
         {
-            return $"{this.Name}:{key}";
+            return $"{Name}:{key}";
         }
 
         return key;
     }
+
 
     /// <summary>
     /// Remove the prefix of the given key if the option is set.
@@ -498,15 +544,16 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     /// <returns>The updated key if updating is required, otherwise the input key.</returns>
     private string RemoveKeyPrefixIfNeeded(string key)
     {
-        var prefixLength = this.Name.Length + 1;
+        var prefixLength = Name.Length + 1;
 
-        if (this._prefixCollectionNameToKeyNames && key.Length > prefixLength)
+        if (_prefixCollectionNameToKeyNames && key.Length > prefixLength)
         {
             return key.Substring(prefixLength);
         }
 
         return key;
     }
+
 
     /// <summary>
     /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreException"/>."/>
@@ -516,10 +563,13 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     /// <param name="operation">The operation to run.</param>
     /// <returns>The result of the operation.</returns>
     private Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
-        => VectorStoreErrorHandler.RunOperationAsync<T, RedisException>(
-            this._collectionMetadata,
+    {
+        return VectorStoreErrorHandler.RunOperationAsync<T, RedisException>(
+            _collectionMetadata,
             operationName,
             operation);
+    }
+
 
     /// <summary>
     /// Run the given operation and wrap any Redis exceptions with <see cref="VectorStoreException"/>."/>
@@ -528,10 +578,13 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     /// <param name="operation">The operation to run.</param>
     /// <returns>The result of the operation.</returns>
     private Task RunOperationAsync(string operationName, Func<Task> operation)
-        => VectorStoreErrorHandler.RunOperationAsync<RedisException>(
-            this._collectionMetadata,
+    {
+        return VectorStoreErrorHandler.RunOperationAsync<RedisException>(
+            _collectionMetadata,
             operationName,
             operation);
+    }
+
 
     private string GetStringKey(TKey key)
     {

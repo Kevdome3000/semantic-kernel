@@ -1,16 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 /// <summary>
@@ -31,6 +20,7 @@ public sealed class SqlServerVectorStore : VectorStore
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStore"/> class.
     /// </summary>
@@ -42,20 +32,21 @@ public sealed class SqlServerVectorStore : VectorStore
     {
         Verify.NotNullOrWhiteSpace(connectionString);
 
-        this._connectionString = connectionString;
+        _connectionString = connectionString;
 
         options ??= SqlServerVectorStoreOptions.Defaults;
-        this._schema = options.Schema;
-        this._embeddingGenerator = options.EmbeddingGenerator;
+        _schema = options.Schema;
+        _embeddingGenerator = options.EmbeddingGenerator;
 
         var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
 
-        this._metadata = new()
+        _metadata = new()
         {
             VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
             VectorStoreName = connectionStringBuilder.InitialCatalog
         };
     }
+
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc/>
@@ -69,14 +60,15 @@ public sealed class SqlServerVectorStore : VectorStore
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new SqlServerCollection<TKey, TRecord>(
-                this._connectionString,
+                _connectionString,
                 name,
-                new()
+                new SqlServerCollectionOptions
                 {
-                    Schema = this._schema,
+                    Schema = _schema,
                     Definition = definition,
-                    EmbeddingGenerator = this._embeddingGenerator
+                    EmbeddingGenerator = _embeddingGenerator
                 });
+
 
     /// <inheritdoc />
     // TODO: The provider uses unsafe JSON serialization in many places, #11963
@@ -88,51 +80,57 @@ public sealed class SqlServerVectorStore : VectorStore
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new SqlServerDynamicCollection(
-            this._connectionString,
+            _connectionString,
             name,
-            new()
+            new SqlServerCollectionOptions
             {
-                Schema = this._schema,
+                Schema = _schema,
                 Definition = definition,
-                EmbeddingGenerator = this._embeddingGenerator,
+                EmbeddingGenerator = _embeddingGenerator
             }
         );
 #pragma warning restore IDE0090
 
+
     /// <inheritdoc/>
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        using SqlConnection connection = new(this._connectionString);
-        using SqlCommand command = SqlServerCommandBuilder.SelectTableNames(connection, this._schema);
+        using SqlConnection connection = new(_connectionString);
+        using SqlCommand command = SqlServerCommandBuilder.SelectTableNames(connection, _schema);
 
         using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
-            this._metadata,
-            operationName: "ListCollectionNames",
-            () => command.ExecuteReaderAsync(cancellationToken),
-            cancellationToken).ConfigureAwait(false);
+                _metadata,
+                operationName: "ListCollectionNames",
+                () => command.ExecuteReaderAsync(cancellationToken),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         while (await reader.ReadWithErrorHandlingAsync(
-            this._metadata,
-            operationName: "ListCollectionNames",
-            cancellationToken).ConfigureAwait(false))
+                _metadata,
+                operationName: "ListCollectionNames",
+                cancellationToken)
+            .ConfigureAwait(false))
         {
             yield return reader.GetString(reader.GetOrdinal("table_name"));
         }
     }
 
+
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
@@ -140,9 +138,12 @@ public sealed class SqlServerVectorStore : VectorStore
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreMetadata)
+                    ? _metadata
+                    : serviceType.IsInstanceOfType(this)
+                        ? this
+                        : null;
     }
 }

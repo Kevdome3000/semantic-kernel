@@ -14,19 +14,20 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI;
 public sealed class OpenAIAssistantAgentExtensionsTests
 {
     private static readonly Assistant s_assistantDefinition = ModelReaderWriter.Read<Assistant>(BinaryData.FromString(
-    """
-    {
-        "id": "asst_abc123",
-        "object": "assistant",
-        "created_at": 1698984975,
-        "name": "TestAssistant",
-        "description": "A test assistant",
-        "model": "gpt-4",
-        "instructions": "Test instructions",
-        "tools": [],
-        "metadata": {}
-    }
-    """))!;
+        """
+        {
+            "id": "asst_abc123",
+            "object": "assistant",
+            "created_at": 1698984975,
+            "name": "TestAssistant",
+            "description": "A test assistant",
+            "model": "gpt-4",
+            "instructions": "Test instructions",
+            "tools": [],
+            "metadata": {}
+        }
+        """))!;
+
 
     [Fact]
     public void AsAIAgent_WithValidOpenAIAssistantAgent_ReturnsSemanticKernelAIAgent()
@@ -43,6 +44,7 @@ public sealed class OpenAIAssistantAgentExtensionsTests
         Assert.IsType<SemanticKernelAIAgent>(result);
     }
 
+
     [Fact]
     public void AsAIAgent_WithNullOpenAIAssistantAgent_ThrowsArgumentNullException()
     {
@@ -52,6 +54,7 @@ public sealed class OpenAIAssistantAgentExtensionsTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => nullAgent.AsAIAgent());
     }
+
 
     [Fact]
     public void AsAIAgent_CreatesWorkingThreadFactory()
@@ -71,6 +74,7 @@ public sealed class OpenAIAssistantAgentExtensionsTests
         Assert.IsType<OpenAIAssistantAgentThread>(threadAdapter.InnerThread);
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
     {
@@ -89,6 +93,7 @@ public sealed class OpenAIAssistantAgentExtensionsTests
         var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<OpenAIAssistantAgentThread>(threadAdapter.InnerThread);
     }
+
 
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
@@ -110,6 +115,7 @@ public sealed class OpenAIAssistantAgentExtensionsTests
         Assert.IsType<OpenAIAssistantAgentThread>(threadAdapter.InnerThread);
         Assert.Equal(threadId, threadAdapter.InnerThread.Id);
     }
+
 
     [Fact]
     public void AsAIAgent_ThreadSerializer_SerializesThreadId()

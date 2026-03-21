@@ -46,6 +46,7 @@ public struct TopicId : IEquatable<TopicId>
     /// </summary>
     public string Source { get; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TopicId"/> struct.
     /// </summary>
@@ -53,9 +54,10 @@ public struct TopicId : IEquatable<TopicId>
     /// <param name="source">The source of the event. Defaults to <see cref="DefaultSource"/> if not specified.</param>
     public TopicId(string type, string source = DefaultSource)
     {
-        this.Type = type;
-        this.Source = source;
+        Type = type;
+        Source = source;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TopicId"/> struct from a tuple.
@@ -65,19 +67,28 @@ public struct TopicId : IEquatable<TopicId>
     {
     }
 
+
     /// <summary>
     /// Converts a string in the format "type/source" into a <see cref="TopicId"/>.
     /// </summary>
     /// <param name="maybeTopicId">The topic ID string.</param>
     /// <returns>An instance of <see cref="TopicId"/>.</returns>
     /// <exception cref="FormatException">Thrown when the string is not in the valid "type/source" format.</exception>
-    public static TopicId FromStr(string maybeTopicId) => new(maybeTopicId.ToKeyValuePair(nameof(Type), nameof(Source)));
+    public static TopicId FromStr(string maybeTopicId)
+    {
+        return new TopicId(maybeTopicId.ToKeyValuePair(nameof(Type), nameof(Source)));
+    }
+
 
     /// <summary>
     /// Returns the string representation of the <see cref="TopicId"/>.
     /// </summary>
     /// <returns>A string in the format "type/source".</returns>
-    public override readonly string ToString() => $"{this.Type}{Separator}{this.Source}";
+    public override readonly string ToString()
+    {
+        return $"{Type}{Separator}{Source}";
+    }
+
 
     /// <summary>
     /// Determines whether the specified object is equal to the current <see cref="TopicId"/>.
@@ -88,11 +99,12 @@ public struct TopicId : IEquatable<TopicId>
     {
         if (obj is TopicId other)
         {
-            return this.Type == other.Type && this.Source == other.Source;
+            return Type == other.Type && Source == other.Source;
         }
 
         return false;
     }
+
 
     /// <summary>
     /// Determines whether the specified object is equal to the current <see cref="TopicId"/>.
@@ -101,8 +113,9 @@ public struct TopicId : IEquatable<TopicId>
     /// <returns><c>true</c> if the specified object is equal to the current <see cref="TopicId"/>; otherwise, <c>false</c>.</returns>
     public readonly bool Equals([NotNullWhen(true)] TopicId other)
     {
-        return this.Type == other.Type && this.Source == other.Source;
+        return Type == other.Type && Source == other.Source;
     }
+
 
     /// <summary>
     /// Returns a hash code for this <see cref="TopicId"/>.
@@ -110,15 +123,20 @@ public struct TopicId : IEquatable<TopicId>
     /// <returns>A hash code for the current instance.</returns>
     public override readonly int GetHashCode()
     {
-        return HashCode.Combine(this.Type, this.Source);
+        return HashCode.Combine(Type, Source);
     }
+
 
     /// <summary>
     /// Explicitly converts a string to a <see cref="TopicId"/>.
     /// </summary>
     /// <param name="id">The string representation of a topic ID.</param>
     /// <returns>An instance of <see cref="TopicId"/>.</returns>
-    public static explicit operator TopicId(string id) => FromStr(id);
+    public static explicit operator TopicId(string id)
+    {
+        return FromStr(id);
+    }
+
 
     // TODO: Implement < for wildcard matching (type, *)
     // == => <
@@ -132,14 +150,16 @@ public struct TopicId : IEquatable<TopicId>
     /// </returns>
     public readonly bool IsWildcardMatch(TopicId other)
     {
-        return this.Type == other.Type;
+        return Type == other.Type;
     }
+
 
     /// <inheritdoc/>
     public static bool operator ==(TopicId left, TopicId right)
     {
         return left.Equals(right);
     }
+
 
     /// <inheritdoc/>
     public static bool operator !=(TopicId left, TopicId right)

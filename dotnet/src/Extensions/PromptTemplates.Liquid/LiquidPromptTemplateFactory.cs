@@ -2,10 +2,6 @@
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-
-
 /// <summary>
 /// Provides an <see cref="IPromptTemplateFactory"/> for liquid template format.
 /// </summary>
@@ -36,7 +32,7 @@ public sealed class LiquidPromptTemplateFactory : IPromptTemplateFactory
 
         if (LiquidTemplateFormat.Equals(templateConfig.TemplateFormat, StringComparison.Ordinal))
         {
-            result = new LiquidPromptTemplate(templateConfig, this.AllowDangerouslySetContent);
+            result = new LiquidPromptTemplate(templateConfig, AllowDangerouslySetContent);
 
             return true;
         }

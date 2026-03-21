@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel.Agents.Extensions;
 
 /// <summary>
@@ -16,7 +14,11 @@ internal static class AgentExtensions
     /// </summary>
     /// <param name="agent">The target agent</param>
     /// <returns>The agent name as a non-empty string</returns>
-    public static string GetName(this Agent agent) => agent.Name ?? agent.Id;
+    public static string GetName(this Agent agent)
+    {
+        return agent.Name ?? agent.Id;
+    }
+
 
     /// <summary>
     /// Provides the display name of the agent.
@@ -25,7 +27,13 @@ internal static class AgentExtensions
     /// <remarks>
     /// Currently, it's intended for telemetry purposes only.
     /// </remarks>
-    public static string GetDisplayName(this Agent agent) => !string.IsNullOrWhiteSpace(agent.Name) ? agent.Name! : "UnnamedAgent";
+    public static string GetDisplayName(this Agent agent)
+    {
+        return !string.IsNullOrWhiteSpace(agent.Name)
+            ? agent.Name!
+            : "UnnamedAgent";
+    }
+
 
     /// <summary>
     /// Gets the kernel scoped to the current invocation.
@@ -35,5 +43,8 @@ internal static class AgentExtensions
     /// <returns>
     /// The <see cref="Kernel"/> instance to use for the current invocation. Returns the kernel from <paramref name="options"/> if specified; otherwise, returns the kernel from <paramref name="agent"/>.
     /// </returns>
-    public static Kernel GetKernel(this Agent agent, AgentInvokeOptions? options) => options?.Kernel ?? agent.Kernel;
+    public static Kernel GetKernel(this Agent agent, AgentInvokeOptions? options)
+    {
+        return options?.Kernel ?? agent.Kernel;
+    }
 }

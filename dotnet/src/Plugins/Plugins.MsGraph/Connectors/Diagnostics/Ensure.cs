@@ -2,11 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-
-
 /// <summary>
 /// Internal data validation class.
 /// </summary>

@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -14,7 +10,8 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 internal static class PineconeFieldMapping
 {
     public static object? ConvertFromMetadataValueToNativeType(MetadataValue metadataValue, Type targetType)
-        => metadataValue.Value switch
+    {
+        return metadataValue.Value switch
         {
             null => null,
             bool v => v,
@@ -29,22 +26,28 @@ internal static class PineconeFieldMapping
 
             IEnumerable<MetadataValue> enumerable => DeserializeCollection(enumerable, targetType),
 
-            _ => throw new InvalidOperationException($"Unsupported metadata type: '{metadataValue.Value?.GetType().FullName}'."),
+            _ => throw new InvalidOperationException($"Unsupported metadata type: '{metadataValue.Value?.GetType().FullName}'.")
         };
+    }
+
 
     private static object? DeserializeCollection(IEnumerable<MetadataValue> collection, Type targetType)
-        => targetType switch
+    {
+        return targetType switch
         {
             Type t when t == typeof(List<string>)
                 => collection.Select(v => (string)v.Value).ToList(),
             Type t when t == typeof(string[])
                 => collection.Select(v => (string)v.Value).ToArray(),
 
-            _ => throw new UnreachableException($"Unsupported collection type {targetType.Name}"),
+            _ => throw new UnreachableException($"Unsupported collection type {targetType.Name}")
         };
+    }
+
 
     public static MetadataValue ConvertToMetadataValue(object? sourceValue)
-        => sourceValue switch
+    {
+        return sourceValue switch
         {
             bool boolValue => boolValue,
             bool[] bools => bools,
@@ -62,9 +65,12 @@ internal static class PineconeFieldMapping
             float floatValue => floatValue,
             _ => throw new InvalidOperationException($"Unsupported source value type '{sourceValue?.GetType().FullName}'.")
         };
+    }
+
 
     private static object? ConvertToNumericValue(object? number, Type targetType)
-        => number is null
+    {
+        return number is null
             ? null
             : (Nullable.GetUnderlyingType(targetType) ?? targetType) switch
             {
@@ -73,6 +79,7 @@ internal static class PineconeFieldMapping
                 Type t when t == typeof(float) => Convert.ToSingle(number),
                 Type t when t == typeof(double) => Convert.ToDouble(number),
 
-                _ => throw new InvalidOperationException($"Unsupported target numeric type '{targetType.FullName}'."),
+                _ => throw new InvalidOperationException($"Unsupported target numeric type '{targetType.FullName}'.")
             };
+    }
 }

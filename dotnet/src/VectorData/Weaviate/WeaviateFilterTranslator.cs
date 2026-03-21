@@ -1,23 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections;
 using System.Diagnostics;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Text.Json;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using Microsoft.Extensions.VectorData.ProviderServices.Filter;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 #pragma warning disable MEVD9001 // Experimental: filter translation base types
 
+
 // https://weaviate.io/developers/weaviate/api/graphql/filters#filter-structure
 internal class WeaviateFilterTranslator : FilterTranslatorBase
 {
     private readonly StringBuilder _filter = new();
+
 
     internal string? Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
@@ -31,9 +25,10 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
 
         var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
-        this.Translate(preprocessedExpression);
-        return this._filter.ToString();
+        Translate(preprocessedExpression);
+        return _filter.ToString();
     }
+
 
     private void Translate(Expression? node)
     {
@@ -41,27 +36,30 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
         {
             case BinaryExpression
             {
-                NodeType: ExpressionType.Equal or ExpressionType.NotEqual
-                or ExpressionType.GreaterThan or ExpressionType.GreaterThanOrEqual
-                or ExpressionType.LessThan or ExpressionType.LessThanOrEqual
+                NodeType: ExpressionType.Equal
+                or ExpressionType.NotEqual
+                or ExpressionType.GreaterThan
+                or ExpressionType.GreaterThanOrEqual
+                or ExpressionType.LessThan
+                or ExpressionType.LessThanOrEqual
             } binary:
-                this.TranslateEqualityComparison(binary);
+                TranslateEqualityComparison(binary);
                 return;
 
             case BinaryExpression { NodeType: ExpressionType.AndAlso } andAlso:
-                this._filter.Append("{ operator: And, operands: [");
-                this.Translate(andAlso.Left);
-                this._filter.Append(", ");
-                this.Translate(andAlso.Right);
-                this._filter.Append("] }");
+                _filter.Append("{ operator: And, operands: [");
+                Translate(andAlso.Left);
+                _filter.Append(", ");
+                Translate(andAlso.Right);
+                _filter.Append("] }");
                 return;
 
             case BinaryExpression { NodeType: ExpressionType.OrElse } orElse:
-                this._filter.Append("{ operator: Or, operands: [");
-                this.Translate(orElse.Left);
-                this._filter.Append(", ");
-                this.Translate(orElse.Right);
-                this._filter.Append("] }");
+                _filter.Append("{ operator: Or, operands: [");
+                Translate(orElse.Left);
+                _filter.Append(", ");
+                Translate(orElse.Right);
+                _filter.Append("] }");
                 return;
 
             case UnaryExpression { NodeType: ExpressionType.Not } not:
@@ -70,9 +68,11 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
                 {
                     // Special handling for !(a == b) and !(a != b), transforming to a != b and a == b respectively.
                     case BinaryExpression { NodeType: ExpressionType.Equal or ExpressionType.NotEqual } binary:
-                        this.TranslateEqualityComparison(
+                        TranslateEqualityComparison(
                             Expression.MakeBinary(
-                                binary.NodeType is ExpressionType.Equal ? ExpressionType.NotEqual : ExpressionType.Equal,
+                                binary.NodeType is ExpressionType.Equal
+                                    ? ExpressionType.NotEqual
+                                    : ExpressionType.Equal,
                                 binary.Left,
                                 binary.Right));
                         return;
@@ -89,7 +89,7 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
 
             // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
             case UnaryExpression { NodeType: ExpressionType.Convert } convert when Nullable.GetUnderlyingType(convert.Type) == convert.Operand.Type:
-                this.Translate(convert.Operand);
+                Translate(convert.Operand);
                 return;
 
             // Special handling for bool constant as the filter expression (r => r.Bool)
@@ -98,7 +98,7 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
                 return;
 
             case MethodCallExpression methodCall:
-                this.TranslateMethodCall(methodCall);
+                TranslateMethodCall(methodCall);
                 return;
 
             default:
@@ -106,27 +106,29 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
         }
     }
 
+
     private void TranslateEqualityComparison(BinaryExpression binary)
     {
         if (this.TryBindProperty(binary.Left, out var property) && binary.Right is ConstantExpression { Value: var rightConstant })
         {
-            this.GenerateEqualityComparison(property.StorageName, rightConstant, binary.NodeType);
+            GenerateEqualityComparison(property.StorageName, rightConstant, binary.NodeType);
             return;
         }
 
         if (this.TryBindProperty(binary.Right, out property) && binary.Left is ConstantExpression { Value: var leftConstant })
         {
-            this.GenerateEqualityComparison(property.StorageName, leftConstant, binary.NodeType);
+            GenerateEqualityComparison(property.StorageName, leftConstant, binary.NodeType);
             return;
         }
 
         throw new NotSupportedException("Invalid equality/comparison");
     }
 
+
     private void GenerateEqualityComparison(string propertyStorageName, object? value, ExpressionType nodeType)
     {
         // { path: ["intPropName"], operator: Equal, ValueInt: 8 }
-        this._filter
+        _filter
             .Append("{ path: [\"")
             .Append(JsonEncodedText.Encode(propertyStorageName))
             .Append("\"], operator: ");
@@ -136,9 +138,11 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
         {
             if (nodeType is ExpressionType.Equal or ExpressionType.NotEqual)
             {
-                this._filter
+                _filter
                     .Append("IsNull, valueBoolean: ")
-                    .Append(nodeType is ExpressionType.Equal ? "true" : "false")
+                    .Append(nodeType is ExpressionType.Equal
+                        ? "true"
+                        : "false")
                     .Append(" }");
                 return;
             }
@@ -147,7 +151,7 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
         }
 
         // Operator
-        this._filter.Append(nodeType switch
+        _filter.Append(nodeType switch
         {
             ExpressionType.Equal => "Equal",
             ExpressionType.NotEqual => "NotEqual",
@@ -160,33 +164,39 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
             _ => throw new UnreachableException()
         });
 
-        this._filter.Append(", ");
+        _filter.Append(", ");
 
         // FieldType
         var type = value.GetType();
+
         if (Nullable.GetUnderlyingType(type) is Type underlying)
         {
             type = underlying;
         }
 
-        this._filter.Append(value.GetType() switch
+        _filter.Append(value.GetType() switch
         {
             Type t when t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte) => "valueInt",
             Type t when t == typeof(bool) => "valueBoolean",
             Type t when t == typeof(string) || t == typeof(Guid) => "valueText",
             Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) => "valueNumber",
+            Type t when t == typeof(DateTime) => "valueDate",
             Type t when t == typeof(DateTimeOffset) => "valueDate",
+#if NET
+            Type t when t == typeof(DateOnly) => "valueDate",
+#endif
 
             _ => throw new NotSupportedException($"Unsupported value type {type.FullName} in filter.")
         });
 
-        this._filter.Append(": ");
+        _filter.Append(": ");
 
-        // Value
-        this._filter.Append(JsonSerializer.Serialize(value));
+        // Value — use Weaviate's JSON serializer options for proper date/time formatting
+        _filter.Append(JsonSerializer.Serialize(value, value.GetType(), WeaviateConstants.s_jsonSerializerOptions));
 
-        this._filter.Append('}');
+        _filter.Append('}');
     }
+
 
     private void TranslateMethodCall(MethodCallExpression methodCall)
     {
@@ -194,13 +204,13 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
         {
             // Enumerable.Contains(), List.Contains(), MemoryExtensions.Contains()
             case var _ when TryMatchContains(methodCall, out var source, out var item):
-                this.TranslateContains(source, item);
+                TranslateContains(source, item);
                 return;
 
             // Enumerable.Any() with a Contains predicate (r => r.Strings.Any(s => array.Contains(s)))
             case { Method.Name: nameof(Enumerable.Any), Arguments: [var anySource, LambdaExpression lambda] } any
                 when any.Method.DeclaringType == typeof(Enumerable):
-                this.TranslateAny(anySource, lambda);
+                TranslateAny(anySource, lambda);
                 return;
 
             default:
@@ -208,13 +218,14 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
         }
     }
 
+
     private void TranslateContains(Expression source, Expression item)
     {
         // Contains over array
         // { path: ["stringArrayPropName"], operator: ContainsAny, valueText: ["foo"] }
         if (this.TryBindProperty(source, out var property) && item is ConstantExpression { Value: string stringConstant })
         {
-            this._filter
+            _filter
                 .Append("{ path: [\"")
                 .Append(JsonEncodedText.Encode(property.StorageName))
                 .Append("\"], operator: ContainsAny, valueText: [")
@@ -225,6 +236,7 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
 
         throw new NotSupportedException("Contains supported only over tag field");
     }
+
 
     /// <summary>
     /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
@@ -256,12 +268,13 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
         };
 
         // Generate: { path: ["Field"], operator: ContainsAny, valueText: ["value1", "value2"] }
-        this._filter
+        _filter
             .Append("{ path: [\"")
             .Append(JsonEncodedText.Encode(property.StorageName))
             .Append("\"], operator: ContainsAny, valueText: [");
 
         var isFirst = true;
+
         foreach (var element in values)
         {
             if (element is not string stringElement)
@@ -275,17 +288,18 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
             }
             else
             {
-                this._filter.Append(", ");
+                _filter.Append(", ");
             }
 
-            this._filter.Append(JsonSerializer.Serialize(stringElement));
+            _filter.Append(JsonSerializer.Serialize(stringElement));
         }
 
-        this._filter.Append("]}");
+        _filter.Append("]}");
 
         static object?[] ExtractArrayValues(NewArrayExpression newArray)
         {
             var result = new object?[newArray.Expressions.Count];
+
             for (var i = 0; i < newArray.Expressions.Count; i++)
             {
                 if (newArray.Expressions[i] is not ConstantExpression { Value: var elementValue })

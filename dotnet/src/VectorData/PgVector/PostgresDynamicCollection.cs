@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 

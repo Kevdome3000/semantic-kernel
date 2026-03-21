@@ -14,6 +14,7 @@ internal static class CoreKernelArgumentsExtensions
 {
     private static readonly Dictionary<string, PromptExecutionSettings> s_emptySettings = [];
 
+
     /// <summary>
     /// Provides a merged instance of <see cref="KernelArguments"/> with precedence for override arguments.
     /// </summary>
@@ -43,9 +44,9 @@ internal static class CoreKernelArgumentsExtensions
         // Merge execution settings with precedence for override arguments.
         Dictionary<string, PromptExecutionSettings>? settings =
             (overrideArguments.ExecutionSettings ?? s_emptySettings)
-                .Concat(primaryArguments.ExecutionSettings ?? s_emptySettings)
-                .GroupBy(entry => entry.Key)
-                .ToDictionary(entry => entry.Key, entry => entry.First().Value);
+            .Concat(primaryArguments.ExecutionSettings ?? s_emptySettings)
+            .GroupBy(entry => entry.Key)
+            .ToDictionary(entry => entry.Key, entry => entry.First().Value);
 
         // Merge parameters with precedence for override arguments.
         Dictionary<string, object?>? parameters =

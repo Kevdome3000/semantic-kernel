@@ -19,6 +19,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
     /// </summary>
     private const string SingleSpaceKey = " ";
 
+
     /// <summary>
     /// Produces an <see cref="AzureOpenAIClient"/>.
     /// </summary>
@@ -35,6 +36,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
 
         return new AzureOpenAIClient(endpoint, apiKey!, clientOptions);
     }
+
 
     /// <summary>
     /// Produces an <see cref="AzureOpenAIClient"/>.
@@ -53,6 +55,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
         return new AzureOpenAIClient(endpoint, credential, clientOptions);
     }
 
+
     /// <summary>
     /// Produces an <see cref="OpenAIClient"/>.
     /// </summary>
@@ -64,6 +67,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
         OpenAIClientOptions clientOptions = CreateOpenAIClientOptions(endpoint, httpClient);
         return new OpenAIClient(new ApiKeyCredential(SingleSpaceKey), clientOptions);
     }
+
 
     /// <summary>
     /// Produces an <see cref="OpenAIClient"/>.
@@ -77,6 +81,7 @@ public sealed partial class OpenAIAssistantAgent : Agent
         return new OpenAIClient(apiKey, clientOptions);
     }
 
+
     private static AzureOpenAIClientOptions CreateAzureClientOptions(HttpClient? httpClient)
     {
         AzureOpenAIClientOptions options = new();
@@ -86,17 +91,19 @@ public sealed partial class OpenAIAssistantAgent : Agent
         return options;
     }
 
+
     private static OpenAIClientOptions CreateOpenAIClientOptions(Uri? endpoint, HttpClient? httpClient)
     {
         OpenAIClientOptions options = new()
         {
-            Endpoint = endpoint ?? httpClient?.BaseAddress,
+            Endpoint = endpoint ?? httpClient?.BaseAddress
         };
 
         ConfigureClientOptions(httpClient, options);
 
         return options;
     }
+
 
     private static void ConfigureClientOptions(HttpClient? httpClient, ClientPipelineOptions options)
     {
@@ -106,24 +113,26 @@ public sealed partial class OpenAIAssistantAgent : Agent
         if (httpClient is not null)
         {
             options.Transport = new HttpClientPipelineTransport(httpClient);
-            options.RetryPolicy = new ClientRetryPolicy(maxRetries: 0); // Disable retry policy if and only if a custom HttpClient is provided.
+            options.RetryPolicy = new ClientRetryPolicy(0); // Disable retry policy if and only if a custom HttpClient is provided.
             options.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable default timeout
         }
     }
 
+
     private static GenericActionPipelinePolicy CreateRequestHeaderPolicy(string headerName, string headerValue)
-        =>
-            new((message) =>
+    {
+        return new GenericActionPipelinePolicy(message =>
+        {
+            var headers = message?.Request?.Headers;
+
+            if (headers is not null)
             {
-                var headers = message?.Request?.Headers;
+                var value = !headers.TryGetValue(headerName, out string? existingHeaderValue) || string.IsNullOrWhiteSpace(existingHeaderValue)
+                    ? headerValue
+                    : $"{headerValue} {existingHeaderValue}";
 
-                if (headers is not null)
-                {
-                    var value = !headers.TryGetValue(headerName, out string? existingHeaderValue) || string.IsNullOrWhiteSpace(existingHeaderValue) ?
-                        headerValue :
-                        $"{headerValue} {existingHeaderValue}";
-
-                    headers.Set(headerName, value);
-                }
-            });
+                headers.Set(headerName, value);
+            }
+        });
+    }
 }

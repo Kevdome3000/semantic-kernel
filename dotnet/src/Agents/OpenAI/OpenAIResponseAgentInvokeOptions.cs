@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using OpenAI.Responses;
-
 namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 /// <summary>
@@ -16,6 +14,7 @@ public sealed class OpenAIResponseAgentInvokeOptions : AgentInvokeOptions
     {
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIResponseAgentInvokeOptions"/> class by cloning the provided options.
     /// </summary>
@@ -27,9 +26,10 @@ public sealed class OpenAIResponseAgentInvokeOptions : AgentInvokeOptions
 
         if (options is OpenAIResponseAgentInvokeOptions responseAgentInvokeOptions)
         {
-            this.ResponseCreationOptions = responseAgentInvokeOptions.ResponseCreationOptions;
+            ResponseCreationOptions = responseAgentInvokeOptions.ResponseCreationOptions;
         }
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIResponseAgentInvokeOptions"/> class by cloning the provided options.
@@ -40,11 +40,12 @@ public sealed class OpenAIResponseAgentInvokeOptions : AgentInvokeOptions
     {
         Verify.NotNull(options);
 
-        this.ResponseCreationOptions = options.ResponseCreationOptions;
+        ResponseCreationOptions = options.ResponseCreationOptions;
     }
+
 
     /// <summary>
     /// Gets or initializes the options used for creating a response.
     /// </summary>
-    public ResponseCreationOptions? ResponseCreationOptions { get; set; }
+    public CreateResponseOptions? ResponseCreationOptions { get; set; }
 }

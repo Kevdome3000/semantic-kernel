@@ -1,16 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using Microsoft.Extensions.VectorData.ProviderServices.Filter;
-
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 #pragma warning disable MEVD9001 // Experimental: filter translation base types
+
 
 internal class AzureAISearchFilterTranslator : FilterTranslatorBase
 {
@@ -18,37 +11,39 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
 
     private static readonly char[] s_searchInDefaultDelimiter = [' ', ','];
 
+
     internal string Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
         var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
-        this.Translate(preprocessedExpression);
+        Translate(preprocessedExpression);
 
-        return this._filter.ToString();
+        return _filter.ToString();
     }
+
 
     private void Translate(Expression? node)
     {
         switch (node)
         {
             case BinaryExpression binary:
-                this.TranslateBinary(binary);
+                TranslateBinary(binary);
                 return;
 
             case ConstantExpression constant:
-                this.TranslateConstant(constant);
+                TranslateConstant(constant);
                 return;
 
             case MemberExpression member:
-                this.TranslateMember(member);
+                TranslateMember(member);
                 return;
 
             case MethodCallExpression methodCall:
-                this.TranslateMethodCall(methodCall);
+                TranslateMethodCall(methodCall);
                 return;
 
             case UnaryExpression unary:
-                this.TranslateUnary(unary);
+                TranslateUnary(unary);
                 return;
 
             default:
@@ -56,12 +51,13 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
         }
     }
 
+
     private void TranslateBinary(BinaryExpression binary)
     {
-        this._filter.Append('(');
-        this.Translate(binary.Left);
+        _filter.Append('(');
+        Translate(binary.Left);
 
-        this._filter.Append(binary.NodeType switch
+        _filter.Append(binary.NodeType switch
         {
             ExpressionType.Equal => " eq ",
             ExpressionType.NotEqual => " ne ",
@@ -77,57 +73,71 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
             _ => throw new NotSupportedException("Unsupported binary expression node type: " + binary.NodeType)
         });
 
-        this.Translate(binary.Right);
-        this._filter.Append(')');
+        Translate(binary.Right);
+        _filter.Append(')');
     }
 
+
     private void TranslateConstant(ConstantExpression constant)
-        => this.GenerateLiteral(constant.Value);
+    {
+        GenerateLiteral(constant.Value);
+    }
+
 
     private void GenerateLiteral(object? value)
     {
         switch (value)
         {
             case byte b:
-                this._filter.Append(b);
+                _filter.Append(b);
                 return;
             case short s:
-                this._filter.Append(s);
+                _filter.Append(s);
                 return;
             case int i:
-                this._filter.Append(i);
+                _filter.Append(i);
                 return;
             case long l:
-                this._filter.Append(l);
+                _filter.Append(l);
                 return;
 
             case float f:
-                this._filter.Append(f);
+                _filter.Append(f);
                 return;
             case double d:
-                this._filter.Append(d);
+                _filter.Append(d);
                 return;
 
             case string untrustedInput:
                 // This is the only place where we allow untrusted input to be passed in, so we need to quote and escape it.
-                this._filter.Append('\'').Append(untrustedInput.Replace("'", "''")).Append('\'');
+                _filter.Append('\'').Append(untrustedInput.Replace("'", "''")).Append('\'');
                 return;
             case bool b:
-                this._filter.Append(b ? "true" : "false");
+                _filter.Append(b
+                    ? "true"
+                    : "false");
                 return;
             case Guid g:
-                this._filter.Append('\'').Append(g.ToString()).Append('\'');
+                _filter.Append('\'').Append(g.ToString()).Append('\'');
                 return;
 
-            case DateTimeOffset d:
-                this._filter.Append(d.ToString("o"));
+            case DateTime d:
+                _filter.Append(new DateTimeOffset(d, TimeSpan.Zero).ToString("o"));
                 return;
+            case DateTimeOffset d:
+                _filter.Append(d.ToString("o"));
+                return;
+#if NET
+            case DateOnly d:
+                this._filter.Append(new DateTimeOffset(d.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero).ToString("o"));
+                return;
+#endif
 
             case Array:
                 throw new NotImplementedException();
 
             case null:
-                this._filter.Append("null");
+                _filter.Append("null");
                 return;
 
             default:
@@ -135,17 +145,19 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
         }
     }
 
+
     private void TranslateMember(MemberExpression memberExpression)
     {
         if (this.TryBindProperty(memberExpression, out var property))
         {
             // OData identifiers cannot be escaped; storage names are validated during model building.
-            this._filter.Append(property.StorageName);
+            _filter.Append(property.StorageName);
             return;
         }
 
         throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
+
 
     private void TranslateMethodCall(MethodCallExpression methodCall)
     {
@@ -153,7 +165,7 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
         if (this.TryBindProperty(methodCall, out var property))
         {
             // OData identifiers cannot be escaped; storage names are validated during model building.
-            this._filter.Append(property.StorageName);
+            _filter.Append(property.StorageName);
             return;
         }
 
@@ -161,13 +173,13 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
         {
             // Enumerable.Contains(), List.Contains(), MemoryExtensions.Contains()
             case var _ when TryMatchContains(methodCall, out var source, out var item):
-                this.TranslateContains(source, item);
+                TranslateContains(source, item);
                 return;
 
             // Enumerable.Any() with a Contains predicate (r => r.Strings.Any(s => array.Contains(s)))
             case { Method.Name: nameof(Enumerable.Any), Arguments: [var anySource, LambdaExpression lambda] } any
                 when any.Method.DeclaringType == typeof(Enumerable):
-                this.TranslateAny(anySource, lambda);
+                TranslateAny(anySource, lambda);
                 return;
 
             default:
@@ -175,36 +187,38 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
         }
     }
 
+
     private void TranslateContains(Expression source, Expression item)
     {
         switch (source)
         {
             // Contains over array field (r => r.Strings.Contains("foo"))
             case var _ when this.TryBindProperty(source, out _):
-                this.Translate(source);
-                this._filter.Append("/any(t: t eq ");
-                this.Translate(item);
-                this._filter.Append(')');
+                Translate(source);
+                _filter.Append("/any(t: t eq ");
+                Translate(item);
+                _filter.Append(')');
                 return;
 
             // Contains over inline enumerable
             case NewArrayExpression newArray:
                 var elements = ExtractArrayValues(newArray);
-                this._filter.Append("search.in(");
-                this.Translate(item);
+                _filter.Append("search.in(");
+                Translate(item);
                 this.GenerateSearchInValues(elements);
                 return;
 
             case ConstantExpression { Value: IEnumerable enumerable and not string }:
-                this._filter.Append("search.in(");
-                this.Translate(item);
-                this.GenerateSearchInValues(enumerable);
+                _filter.Append("search.in(");
+                Translate(item);
+                GenerateSearchInValues(enumerable);
                 return;
 
             default:
                 throw new NotSupportedException("Unsupported Contains expression");
         }
     }
+
 
     /// <summary>
     /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
@@ -237,11 +251,12 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
 
         // Generate: Field/any(t: search.in(t, 'value1, value2, value3'))
         // OData identifiers cannot be escaped; storage names are validated during model building.
-        this._filter.Append(property.StorageName);
-        this._filter.Append("/any(t: search.in(t");
-        this.GenerateSearchInValues(values);
-        this._filter.Append(')');
+        _filter.Append(property.StorageName);
+        _filter.Append("/any(t: search.in(t");
+        GenerateSearchInValues(values);
+        _filter.Append(')');
     }
+
 
     /// <summary>
     /// Generates the values portion of a search.in() call, including the comma, quotes, and optional delimiter.
@@ -249,13 +264,14 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
     /// </summary>
     private void GenerateSearchInValues(IEnumerable values)
     {
-        this._filter.Append(", '");
+        _filter.Append(", '");
 
         string delimiter = ", ";
-        var startingPosition = this._filter.Length;
+        var startingPosition = _filter.Length;
 
-RestartLoop:
+    RestartLoop:
         var isFirst = true;
+
         foreach (var element in values)
         {
             if (element is not string stringElement)
@@ -269,7 +285,7 @@ RestartLoop:
             }
             else
             {
-                this._filter.Append(delimiter);
+                _filter.Append(delimiter);
             }
 
             // The default delimiter for search.in() is comma or space.
@@ -281,7 +297,7 @@ RestartLoop:
                     if (stringElement.IndexOfAny(s_searchInDefaultDelimiter) > -1)
                     {
                         delimiter = "|";
-                        this._filter.Length = startingPosition;
+                        _filter.Length = startingPosition;
                         goto RestartLoop;
                     }
 
@@ -296,25 +312,27 @@ RestartLoop:
                     break;
             }
 
-            this._filter.Append(stringElement.Replace("'", "''"));
+            _filter.Append(stringElement.Replace("'", "''"));
         }
 
-        this._filter.Append('\'');
+        _filter.Append('\'');
 
         if (delimiter != ", ")
         {
-            this._filter
+            _filter
                 .Append(", '")
                 .Append(delimiter)
                 .Append('\'');
         }
 
-        this._filter.Append(')');
+        _filter.Append(')');
     }
+
 
     private static object?[] ExtractArrayValues(NewArrayExpression newArray)
     {
         var result = new object?[newArray.Expressions.Count];
+
         for (var i = 0; i < newArray.Expressions.Count; i++)
         {
             if (newArray.Expressions[i] is not ConstantExpression { Value: var elementValue })
@@ -328,6 +346,7 @@ RestartLoop:
         return result;
     }
 
+
     private void TranslateUnary(UnaryExpression unary)
     {
         switch (unary.NodeType)
@@ -336,28 +355,30 @@ RestartLoop:
                 // Special handling for !(a == b) and !(a != b)
                 if (unary.Operand is BinaryExpression { NodeType: ExpressionType.Equal or ExpressionType.NotEqual } binary)
                 {
-                    this.TranslateBinary(
+                    TranslateBinary(
                         Expression.MakeBinary(
-                            binary.NodeType is ExpressionType.Equal ? ExpressionType.NotEqual : ExpressionType.Equal,
+                            binary.NodeType is ExpressionType.Equal
+                                ? ExpressionType.NotEqual
+                                : ExpressionType.Equal,
                             binary.Left,
                             binary.Right));
                     return;
                 }
 
-                this._filter.Append("(not ");
-                this.Translate(unary.Operand);
-                this._filter.Append(')');
+                _filter.Append("(not ");
+                Translate(unary.Operand);
+                _filter.Append(')');
                 return;
 
             // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
             case ExpressionType.Convert when Nullable.GetUnderlyingType(unary.Type) == unary.Operand.Type:
-                this.Translate(unary.Operand);
+                Translate(unary.Operand);
                 return;
 
             // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
             case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
                 // OData identifiers cannot be escaped; storage names are validated during model building.
-                this._filter.Append(property.StorageName);
+                _filter.Append(property.StorageName);
                 return;
 
             default:

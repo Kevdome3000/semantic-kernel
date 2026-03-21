@@ -1,6 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Agents.Serialization;
 
 /// <summary>
@@ -24,6 +22,7 @@ public sealed class AgentParticipant
     /// </summary>
     public string Type { get; init; } = string.Empty;
 
+
     /// <summary>
     /// Creates a new instance of <see cref="AgentParticipant"/>.
     /// </summary>
@@ -32,6 +31,7 @@ public sealed class AgentParticipant
     /// </remarks>
     [JsonConstructor]
     public AgentParticipant() { }
+
 
     /// <summary>
     /// Creates a new instance of <see cref="AgentParticipant"/> with the specified agent.
@@ -42,8 +42,8 @@ public sealed class AgentParticipant
     /// <param name="agent">The referenced <see cref="Agent"/>.</param>
     internal AgentParticipant(Agent agent)
     {
-        this.Id = agent.Id;
-        this.Name = agent.Name;
-        this.Type = agent.GetType().FullName!;
+        Id = agent.Id;
+        Name = agent.Name;
+        Type = agent.GetType().FullName!;
     }
 }

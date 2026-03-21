@@ -10,7 +10,6 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -42,6 +41,7 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryCollection{TKey,TRecord}"/> class.
     /// </summary>
@@ -51,15 +51,19 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
     public InMemoryCollection(string name, InMemoryCollectionOptions? options = default)
         : this(
-            internalCollection: null,
-            internalCollectionTypes: null,
+            null,
+            null,
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(InMemoryDynamicCollection)))
-                : new InMemoryModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new InMemoryModelBuilder().Build(typeof(TRecord),
+                    typeof(TKey),
+                    options.Definition,
+                    options.EmbeddingGenerator),
             options)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryCollection{TKey,TRecord}"/> class.
@@ -77,9 +81,10 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         InMemoryCollectionOptions? options = default)
         : this(name, options)
     {
-        this._internalCollections = internalCollection;
-        this._internalCollectionTypes = internalCollectionTypes;
+        _internalCollections = internalCollection;
+        _internalCollectionTypes = internalCollectionTypes;
     }
+
 
     internal InMemoryCollection(
         ConcurrentDictionary<string, ConcurrentDictionary<object, object>>? internalCollection,
@@ -94,57 +99,64 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         options ??= new InMemoryCollectionOptions();
 
         // Assign.
-        this.Name = name;
-        this._model = modelFactory(options);
+        Name = name;
+        _model = modelFactory(options);
 
-        this._internalCollections = internalCollection ?? new();
-        this._internalCollectionTypes = internalCollectionTypes ?? new();
+        _internalCollections = internalCollection ?? new ConcurrentDictionary<string, ConcurrentDictionary<object, object>>();
+        _internalCollectionTypes = internalCollectionTypes ?? new ConcurrentDictionary<string, Type>();
 
-        this._collectionMetadata = new()
+        _collectionMetadata = new VectorStoreCollectionMetadata
         {
             VectorStoreSystemName = InMemoryConstants.VectorStoreSystemName,
             CollectionName = name
         };
     }
 
+
     /// <inheritdoc />
     public override string Name { get; }
+
 
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        return this._internalCollections.ContainsKey(this.Name) ? Task.FromResult(true) : Task.FromResult(false);
+        return _internalCollections.ContainsKey(Name)
+            ? Task.FromResult(true)
+            : Task.FromResult(false);
     }
+
 
     /// <inheritdoc />
     public override Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        if (!this._internalCollections.ContainsKey(this.Name))
+        if (!_internalCollections.ContainsKey(Name))
         {
-            this._internalCollections.TryAdd(this.Name, new ConcurrentDictionary<object, object>());
-            this._internalCollectionTypes.TryAdd(this.Name, typeof(TRecord));
+            _internalCollections.TryAdd(Name, new ConcurrentDictionary<object, object>());
+            _internalCollectionTypes.TryAdd(Name, typeof(TRecord));
         }
 
         return Task.CompletedTask;
     }
+
 
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
-        this._internalCollections.TryRemove(this.Name, out _);
-        this._internalCollectionTypes.TryRemove(this.Name, out _);
+        _internalCollections.TryRemove(Name, out _);
+        _internalCollectionTypes.TryRemove(Name, out _);
         return Task.CompletedTask;
     }
+
 
     /// <inheritdoc />
     public override Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
-        if (options?.IncludeVectors == true && this._model.EmbeddingGenerationRequired)
+        if (options?.IncludeVectors == true && _model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        var collectionDictionary = this.GetCollectionDictionary();
+        var collectionDictionary = GetCollectionDictionary();
 
         if (collectionDictionary.TryGetValue(key, out var record))
         {
@@ -154,18 +166,23 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         return Task.FromResult<TRecord?>(default);
     }
 
+
     /// <inheritdoc />
     public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
-        var collectionDictionary = this.GetCollectionDictionary();
+        var collectionDictionary = GetCollectionDictionary();
 
         collectionDictionary.TryRemove(key, out _);
         return Task.CompletedTask;
     }
 
+
     /// <inheritdoc />
     public override Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
-        => this.UpsertAsync([record], cancellationToken);
+    {
+        return UpsertAsync([record], cancellationToken);
+    }
+
 
     /// <inheritdoc />
     public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
@@ -177,10 +194,11 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         // If an embedding generator is defined, invoke it once per property for all records.
         IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
 
-        var vectorPropertyCount = this._model.VectorProperties.Count;
+        var vectorPropertyCount = _model.VectorProperties.Count;
+
         for (var i = 0; i < vectorPropertyCount; i++)
         {
-            var vectorProperty = this._model.VectorProperties[i];
+            var vectorProperty = _model.VectorProperties[i];
 
             if (InMemoryModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
@@ -194,7 +212,9 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             // prevent multiple enumeration.
             if (recordsList is null)
             {
-                recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+                recordsList = records is IReadOnlyList<TRecord> r
+                    ? r
+                    : records.ToList();
 
                 if (recordsList.Count == 0)
                 {
@@ -206,29 +226,23 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+            generatedEmbeddings[i] = await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 
-        var collectionDictionary = this.GetCollectionDictionary();
+        var collectionDictionary = GetCollectionDictionary();
 
         var recordIndex = 0;
-        var keyProperty = this._model.KeyProperty;
+        var keyProperty = _model.KeyProperty;
+
         foreach (var record in records)
         {
             var key = (TKey)keyProperty.GetValueAsObject(record)!;
+
             if (keyProperty.IsAutoGenerated && (Guid)(object)key == Guid.Empty)
             {
                 var generatedGuid = Guid.NewGuid();
-                keyProperty.SetValue<Guid>(record, generatedGuid);
+                keyProperty.SetValue(record, generatedGuid);
                 key = (TKey)(object)generatedGuid;
             }
 
@@ -236,11 +250,11 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
             if (generatedEmbeddings is not null)
             {
-                for (var i = 0; i < this._model.VectorProperties.Count; i++)
+                for (var i = 0; i < _model.VectorProperties.Count; i++)
                 {
                     if (generatedEmbeddings![i] is IReadOnlyList<Embedding> propertyEmbeddings)
                     {
-                        var property = this._model.VectorProperties[i];
+                        var property = _model.VectorProperties[i];
 
                         wrappedRecord.EmbeddingGeneratedVectors[property.ModelName] = propertyEmbeddings[recordIndex] switch
                         {
@@ -257,6 +271,7 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         }
     }
 
+
     #region Search
 
     /// <inheritdoc />
@@ -270,20 +285,21 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
-        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
+
+        if (options.IncludeVectors && _model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+        var vectorProperty = _model.GetVectorPropertyOrSingle(options);
 
         ReadOnlyMemory<float> inputVector = searchValue switch
         {
             ReadOnlyMemory<float> r => r,
             float[] f => new ReadOnlyMemory<float>(f),
             Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => ((Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false)).Vector,
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), InMemoryModelBuilder.SupportedVectorTypes))
@@ -292,12 +308,12 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
 #pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Filter records using the provided filter before doing the vector comparison.
-        var allValues = this.GetCollectionDictionary().Values.Cast<InMemoryRecordWrapper<TRecord>>();
+        var allValues = GetCollectionDictionary().Values.Cast<InMemoryRecordWrapper<TRecord>>();
         var filteredRecords = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
             { OldFilter: VectorSearchFilter legacyFilter } => InMemoryCollectionSearchMapping.FilterRecords(legacyFilter, allValues),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => allValues.AsQueryable().Where(this.ConvertFilter(newFilter)),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => allValues.AsQueryable().Where(ConvertFilter(newFilter)),
             _ => allValues
         };
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
@@ -311,6 +327,7 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             {
                 // No embedding generation - just get the the vector property directly from the stored instance.
                 var value = vectorProperty.GetValueAsObject(wrapper.Record);
+
                 if (value is null)
                 {
                     return null;
@@ -348,13 +365,13 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         }
 
         // Sort the results appropriately for the selected distance function and get the right page of results .
-        var sortedScoredResults = InMemoryCollectionSearchMapping.ShouldSortDescending(vectorProperty.DistanceFunction) ?
-            nonNullResults.OrderByDescending(x => x.score) :
-            nonNullResults.OrderBy(x => x.score);
+        var sortedScoredResults = InMemoryCollectionSearchMapping.ShouldSortDescending(vectorProperty.DistanceFunction)
+            ? nonNullResults.OrderByDescending(x => x.score)
+            : nonNullResults.OrderBy(x => x.score);
         var resultsPage = sortedScoredResults.Skip(options.Skip).Take(top);
 
         // Build the response.
-        foreach (var record in resultsPage.Select(x => new VectorSearchResult<TRecord>((TRecord)x.record, x.score)))
+        foreach (var record in resultsPage.Select(x => new VectorSearchResult<TRecord>(x.record, x.score)))
         {
             yield return record;
         }
@@ -362,47 +379,57 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
     #endregion Search
 
+
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(ConcurrentDictionary<string, ConcurrentDictionary<object, object>>) ? this._internalCollections :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreCollectionMetadata)
+                    ? _collectionMetadata
+                    : serviceType == typeof(ConcurrentDictionary<string, ConcurrentDictionary<object, object>>)
+                        ? _internalCollections
+                        : serviceType.IsInstanceOfType(this)
+                            ? this
+                            : null;
     }
 
+
     /// <inheritdoc />
-    public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<TRecord> GetAsync(
+        Expression<Func<TRecord, bool>> filter,
+        int top,
+        FilteredRecordRetrievalOptions<TRecord>? options = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
-        options ??= new();
+        options ??= new FilteredRecordRetrievalOptions<TRecord>();
 
-        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
+        if (options.IncludeVectors && _model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        var records = this.GetCollectionDictionary()
+        var records = GetCollectionDictionary()
             .Values
             .Cast<InMemoryRecordWrapper<TRecord>>()
             .Select(x => x.Record)
             .AsQueryable()
             .Where(filter);
 
-        var orderBy = options.OrderBy?.Invoke(new()).Values;
+        var orderBy = options.OrderBy?.Invoke(new FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition()).Values;
+
         if (orderBy is { Count: > 0 })
         {
             var first = orderBy[0];
             var sorted = first.Ascending
-                    ? records.OrderBy(first.PropertySelector)
-                    : records.OrderByDescending(first.PropertySelector);
+                ? records.OrderBy(first.PropertySelector)
+                : records.OrderByDescending(first.PropertySelector);
 
             for (int i = 1; i < orderBy.Count; i++)
             {
@@ -421,19 +448,21 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             .ToAsyncEnumerable();
     }
 
+
     /// <summary>
     /// Get the collection dictionary from the internal storage, throws if it does not exist.
     /// </summary>
     /// <returns>The retrieved collection dictionary.</returns>
     internal ConcurrentDictionary<object, object> GetCollectionDictionary()
     {
-        if (!this._internalCollections.TryGetValue(this.Name, out var collectionDictionary))
+        if (!_internalCollections.TryGetValue(Name, out var collectionDictionary))
         {
-            throw new VectorStoreException($"Call to vector store failed. Collection '{this.Name}' does not exist.");
+            throw new VectorStoreException($"Call to vector store failed. Collection '{Name}' does not exist.");
         }
 
         return collectionDictionary;
     }
+
 
     /// <summary>
     /// Updates the collection dictionary with any matches values from the provided dictionary.
@@ -441,9 +470,9 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     /// <param name="updates">Updates to apply to the collection dictionary.</param>
     internal void UpdateCollectionDictionary(Dictionary<object, object> updates)
     {
-        if (!this._internalCollections.TryGetValue(this.Name, out var collectionDictionary))
+        if (!_internalCollections.TryGetValue(Name, out var collectionDictionary))
         {
-            throw new VectorStoreException($"Call to vector store failed. Collection '{this.Name}' does not exist.");
+            throw new VectorStoreException($"Call to vector store failed. Collection '{Name}' does not exist.");
         }
 
         foreach (var update in updates)
@@ -451,6 +480,7 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             collectionDictionary.AddOrUpdate(update.Key, update.Value, (key, currentValue) => update.Value);
         }
     }
+
 
     /// <summary>
     /// The user provides a filter expression accepting a Record, but we internally store it wrapped in an InMemoryVectorRecordWrapper.
@@ -467,9 +497,14 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             wrapperParameter);
     }
 
+
     private sealed class ParameterReplacer(ParameterExpression originalRecordParameter, Expression replacementExpression) : ExpressionVisitor
     {
         protected override Expression VisitParameter(ParameterExpression node)
-            => node == originalRecordParameter ? replacementExpression : base.VisitParameter(node);
+        {
+            return node == originalRecordParameter
+                ? replacementExpression
+                : base.VisitParameter(node);
+        }
     }
 }

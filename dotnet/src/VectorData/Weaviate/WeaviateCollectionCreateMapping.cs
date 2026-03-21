@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 /// <summary>
@@ -42,14 +36,15 @@ internal static class WeaviateCollectionCreateMapping
         {
             foreach (var property in model.VectorProperties)
             {
-                schema.VectorConfigurations.Add(property.StorageName, new WeaviateCollectionSchemaVectorConfig
-                {
-                    VectorIndexType = MapIndexKind(property.IndexKind, property.StorageName),
-                    VectorIndexConfig = new WeaviateCollectionSchemaVectorIndexConfig
+                schema.VectorConfigurations.Add(property.StorageName,
+                    new WeaviateCollectionSchemaVectorConfig
                     {
-                        Distance = MapDistanceFunction(property.DistanceFunction, property.StorageName)
-                    }
-                });
+                        VectorIndexType = MapIndexKind(property.IndexKind, property.StorageName),
+                        VectorIndexConfig = new WeaviateCollectionSchemaVectorIndexConfig
+                        {
+                            Distance = MapDistanceFunction(property.DistanceFunction, property.StorageName)
+                        }
+                    });
             }
         }
         else
@@ -64,6 +59,7 @@ internal static class WeaviateCollectionCreateMapping
 
         return schema;
     }
+
 
     #region private
 
@@ -89,13 +85,14 @@ internal static class WeaviateCollectionCreateMapping
             IndexKind.Flat => Flat,
             IndexKind.Dynamic => Dynamic,
             _ => throw new InvalidOperationException(
-                $"Index kind '{indexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore. " +
-                $"Supported index kinds: {string.Join(", ",
+                $"Index kind '{indexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore. "
+                + $"Supported index kinds: {string.Join(", ",
                     IndexKind.Hnsw,
                     IndexKind.Flat,
                     IndexKind.Dynamic)}")
         };
     }
+
 
     /// <summary>
     /// Maps record vector property distance function to Weaviate distance function.
@@ -123,8 +120,8 @@ internal static class WeaviateCollectionCreateMapping
             DistanceFunction.HammingDistance => Hamming,
             DistanceFunction.ManhattanDistance => Manhattan,
             _ => throw new NotSupportedException(
-                $"Distance function '{distanceFunction}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore. " +
-                $"Supported distance functions: {string.Join(", ",
+                $"Distance function '{distanceFunction}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Weaviate VectorStore. "
+                + $"Supported distance functions: {string.Join(", ",
                     DistanceFunction.CosineDistance,
                     DistanceFunction.NegativeDotProductSimilarity,
                     DistanceFunction.EuclideanSquaredDistance,
@@ -132,6 +129,7 @@ internal static class WeaviateCollectionCreateMapping
                     DistanceFunction.ManhattanDistance)}")
         };
     }
+
 
     /// <summary>
     /// Maps record property type to Weaviate data type taking into account if the type is a collection or single value.
@@ -142,7 +140,8 @@ internal static class WeaviateCollectionCreateMapping
         {
             var t when TryMapType(type, out var mappedType) => mappedType,
             var t when type.IsArray && TryMapType(type.GetElementType()!, out var mappedType) => mappedType + "[]",
-            var t when type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)
+            var t when type.IsGenericType
+                && type.GetGenericTypeDefinition() == typeof(List<>)
                 && TryMapType(type.GenericTypeArguments[0], out var mappedType) => mappedType + "[]",
             _ => throw new NotSupportedException($"Type '{type.Name}' is not supported by Weaviate.")
         };
@@ -155,6 +154,9 @@ internal static class WeaviateCollectionCreateMapping
                 Type t when t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte) => "int",
                 Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) => "number",
                 Type t when t == typeof(DateTime) || t == typeof(DateTimeOffset) => "date",
+#if NET
+                Type t when t == typeof(DateOnly) => "date",
+#endif
                 Type t when t == typeof(Guid) => "uuid",
                 Type t when t == typeof(bool) => "boolean",
 
@@ -166,4 +168,6 @@ internal static class WeaviateCollectionCreateMapping
     }
 
     #endregion
+
+
 }

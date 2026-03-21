@@ -45,6 +45,7 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
     /// </summary>
     public AgentMetadata Metadata { get; }
 
+
     /// <summary>
     /// Initializes a new instance of the BaseAgent class with the specified identifier, runtime, description, and optional logger.
     /// </summary>
@@ -58,15 +59,16 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
         string description,
         ILogger? logger = null)
     {
-        this.Logger = logger ?? NullLogger.Instance;
+        Logger = logger ?? NullLogger.Instance;
 
-        this.Id = id;
-        this.Description = description;
-        this.Metadata = new AgentMetadata(this.Id.Type, this.Id.Key, this.Description);
+        Id = id;
+        Description = description;
+        Metadata = new AgentMetadata(Id.Type, Id.Key, Description);
 
-        this._runtime = runtime;
-        this._handlerInvokers = HandlerInvoker.ReflectAgentHandlers(this);
+        _runtime = runtime;
+        _handlerInvokers = HandlerInvoker.ReflectAgentHandlers(this);
     }
+
 
     /// <summary>
     /// Handles an incoming message by determining its type and invoking the corresponding handler method if available.
@@ -78,7 +80,8 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
     {
         // Determine type of message, then get handler method and invoke it
         Type messageType = message.GetType();
-        if (this._handlerInvokers.TryGetValue(messageType, out HandlerInvoker? handlerInvoker))
+
+        if (_handlerInvokers.TryGetValue(messageType, out HandlerInvoker? handlerInvoker))
         {
             return await handlerInvoker.InvokeAsync(message, messageContext).ConfigureAwait(false);
         }
@@ -86,11 +89,13 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
         return null;
     }
 
+
     /// <inheritdoc/>
     public virtual ValueTask<JsonElement> SaveStateAsync()
     {
         return new ValueTask<JsonElement>(JsonElement.Parse("{}"));
     }
+
 
     /// <inheritdoc/>
     public virtual ValueTask LoadStateAsync(JsonElement state)
@@ -101,6 +106,7 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
         return ValueTask.CompletedTask;
 #endif
     }
+
 
     /// <summary>
     /// Closes this agent gracefully by releasing allocated resources and performing any necessary cleanup.
@@ -114,6 +120,7 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
 #endif
     }
 
+
     /// <summary>
     /// Sends a message to a specified recipient agent through the runtime.
     /// </summary>
@@ -124,13 +131,14 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
     {
         try
         {
-            return await this._runtime.GetAgentAsync(agent, lazy: false).ConfigureAwait(false);
+            return await _runtime.GetAgentAsync(agent, lazy: false).ConfigureAwait(false);
         }
         catch (InvalidOperationException)
         {
             return null;
         }
     }
+
 
     /// <summary>
     /// Sends a message to a specified recipient agent through the runtime.
@@ -140,10 +148,19 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
     /// <param name="messageId">An optional identifier for the message.</param>
     /// <param name="cancellationToken">A token used to cancel the operation if needed.</param>
     /// <returns>A ValueTask that represents the asynchronous operation, returning the response object or null.</returns>
-    protected ValueTask<object?> SendMessageAsync(object message, AgentId recipient, string? messageId = null, CancellationToken cancellationToken = default)
+    protected ValueTask<object?> SendMessageAsync(
+        object message,
+        AgentId recipient,
+        string? messageId = null,
+        CancellationToken cancellationToken = default)
     {
-        return this._runtime.SendMessageAsync(message, recipient, sender: this.Id, messageId, cancellationToken);
+        return _runtime.SendMessageAsync(message,
+            recipient,
+            Id,
+            messageId,
+            cancellationToken);
     }
+
 
     /// <summary>
     /// Publishes a message to all agents subscribed to a specific topic through the runtime.
@@ -153,8 +170,16 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
     /// <param name="messageId">An optional identifier for the message.</param>
     /// <param name="cancellationToken">A token used to cancel the operation if needed.</param>
     /// <returns>A ValueTask that represents the asynchronous publish operation.</returns>
-    protected ValueTask PublishMessageAsync(object message, TopicId topic, string? messageId = null, CancellationToken cancellationToken = default)
+    protected ValueTask PublishMessageAsync(
+        object message,
+        TopicId topic,
+        string? messageId = null,
+        CancellationToken cancellationToken = default)
     {
-        return this._runtime.PublishMessageAsync(message, topic, sender: this.Id, messageId, cancellationToken);
+        return _runtime.PublishMessageAsync(message,
+            topic,
+            Id,
+            messageId,
+            cancellationToken);
     }
 }

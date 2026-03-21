@@ -22,10 +22,10 @@ public static class VectorStoreExtensions
     public static object GetRequiredService<TRecord>(this VectorStore vectorStore, Type serviceType, object? serviceKey = null)
     {
         if (vectorStore is null) { throw new ArgumentNullException(nameof(vectorStore)); }
+
         if (serviceType is null) { throw new ArgumentNullException(nameof(serviceType)); }
 
         return
-            vectorStore.GetService(serviceType, serviceKey) ??
-            throw Throw.CreateMissingServiceException(serviceType, serviceKey);
+            vectorStore.GetService(serviceType, serviceKey) ?? throw Throw.CreateMissingServiceException(serviceType, serviceKey);
     }
 }

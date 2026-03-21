@@ -12,6 +12,7 @@ public class MessageDeliveryTests
 {
     private static readonly Func<MessageEnvelope, CancellationToken, ValueTask> EmptyServicer = (_, _) => new ValueTask();
 
+
     [Fact]
     public void Constructor_InitializesProperties()
     {
@@ -27,6 +28,7 @@ public class MessageDeliveryTests
         Assert.Same(EmptyServicer, delivery.Servicer);
         Assert.Same(resultSink, delivery.ResultSink);
     }
+
 
     [Fact]
     public async Task Future_WithResultSink_ReturnsSinkFuture()
@@ -45,6 +47,7 @@ public class MessageDeliveryTests
         // Assert
         Assert.Equal(expectedResult, result);
     }
+
 
     [Fact]
     public async Task InvokeAsync_CallsServicerWithCorrectParameters()

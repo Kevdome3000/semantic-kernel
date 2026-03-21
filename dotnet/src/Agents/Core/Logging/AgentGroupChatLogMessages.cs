@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Extensions;
+
+namespace Microsoft.SemanticKernel.Agents;
 
 #pragma warning disable SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
 
@@ -43,8 +43,8 @@ internal static partial class AgentGroupChatLogMessages
     /// </summary>
     private static readonly Action<ILogger, string, string, Exception?> s_logAgentGroupChatInvokingAgents =
         LoggerMessage.Define<string, string>(
-            logLevel: LogLevel.Debug,
-            eventId: 0,
+            LogLevel.Debug,
+            0,
             "[{MethodName}] Invoking chat: {Agents}");
 
 
@@ -57,7 +57,10 @@ internal static partial class AgentGroupChatLogMessages
         {
             var agentsMessage = string.Join(", ", agents.Select(a => $"{a.GetType()}:{a.Id}/{a.GetDisplayName()}"));
 
-            s_logAgentGroupChatInvokingAgents(logger, methodName, agentsMessage, null);
+            s_logAgentGroupChatInvokingAgents(logger,
+                methodName,
+                agentsMessage,
+                null);
         }
     }
 

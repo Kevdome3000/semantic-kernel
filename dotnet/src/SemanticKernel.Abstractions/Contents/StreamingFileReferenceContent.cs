@@ -16,6 +16,7 @@ public class StreamingFileReferenceContent : StreamingKernelContent
     /// </summary>
     public string FileId { get; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingFileReferenceContent"/> class.
     /// </summary>
@@ -28,11 +29,13 @@ public class StreamingFileReferenceContent : StreamingKernelContent
         FileId = fileId;
     }
 
+
     /// <inheritdoc/>
     public override string ToString()
     {
         return FileId;
     }
+
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()

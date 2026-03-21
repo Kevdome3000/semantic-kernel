@@ -18,6 +18,7 @@ public sealed class FunctionChoiceBehaviorConfiguration
         Options = options;
     }
 
+
     /// <summary>
     /// Represents an AI model's decision-making strategy for calling functions.
     /// </summary>

@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Chroma;
-
 using System.Net.Http;
-using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 internal sealed class DeleteEmbeddingsRequest
 {
@@ -23,7 +21,7 @@ internal sealed class DeleteEmbeddingsRequest
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreatePostRequest($"collections/{this.CollectionId}/delete", this);
+        return HttpRequest.CreatePostRequest($"collections/{CollectionId}/delete", this);
     }
 
 
@@ -31,8 +29,8 @@ internal sealed class DeleteEmbeddingsRequest
 
     private DeleteEmbeddingsRequest(string collectionId, string[] ids)
     {
-        this.CollectionId = collectionId;
-        this.Ids = ids;
+        CollectionId = collectionId;
+        Ids = ids;
     }
 
     #endregion

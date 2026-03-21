@@ -88,6 +88,7 @@ public class OpenAIAssistantCapabilities
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public OpenAIAssistantExecutionOptions? ExecutionOptions { get; init; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantDefinition"/> class.
     /// </summary>
@@ -97,6 +98,6 @@ public class OpenAIAssistantCapabilities
     {
         Verify.NotNullOrWhiteSpace(modelId);
 
-        this.ModelId = modelId;
+        ModelId = modelId;
     }
 }

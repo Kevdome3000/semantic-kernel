@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
@@ -34,11 +31,11 @@ public sealed class ModelDefinition
     /// </remarks>
     public string Api
     {
-        get => this._api ?? DefaultApi;
+        get => _api ?? DefaultApi;
         set
         {
             Verify.NotNullOrWhiteSpace(value);
-            this._api = value;
+            _api = value;
         }
     }
 
@@ -62,7 +59,12 @@ public sealed class ModelDefinition
     /// </remarks>
     public ModelConnection? Connection { get; set; }
 
+
     #region
+
     private string? _api;
+
     #endregion
+
+
 }

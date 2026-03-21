@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -10,7 +11,6 @@ using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
 using Amazon.Runtime.EventStreams;
 using Microsoft.SemanticKernel.Agents.Extensions;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
@@ -29,7 +29,8 @@ internal static class BedrockAgentInvokeExtensions
         // This session state is used to store the results of function calls to be passed back to the agent.
         // https://docs.aws.amazon.com/sdkfornet/v3/apidocs/items/BedrockAgentRuntime/TSessionState.html
         SessionState? sessionState = null;
-        for (var requestIndex = 0; ; requestIndex++)
+
+        for (var requestIndex = 0;; requestIndex++)
         {
             if (sessionState != null)
             {
@@ -38,12 +39,13 @@ internal static class BedrockAgentInvokeExtensions
             }
             var invokeAgentResponse = await agent.RuntimeClient.InvokeAgentAsync(invokeAgentRequest, cancellationToken).ConfigureAwait(false);
 
-            if (invokeAgentResponse.HttpStatusCode != System.Net.HttpStatusCode.OK)
+            if (invokeAgentResponse.HttpStatusCode != HttpStatusCode.OK)
             {
                 throw new HttpOperationException($"Failed to invoke agent. Status code: {invokeAgentResponse.HttpStatusCode}");
             }
 
             List<FunctionCallContent> functionCallContents = [];
+
             foreach (var responseEvent in invokeAgentResponse.Completion)
             {
                 if (responseEvent is BedrockAgentRuntimeEventStreamException bedrockAgentRuntimeEventStreamException)
@@ -52,11 +54,8 @@ internal static class BedrockAgentInvokeExtensions
                 }
 
                 var chatMessageContent =
-                    HandleChunkEvent(agent, responseEvent) ??
-                    HandleFilesEvent(agent, responseEvent) ??
-                    HandleReturnControlEvent(agent, responseEvent, arguments) ??
-                    HandleTraceEvent(agent, responseEvent) ??
-                    throw new KernelException($"Failed to handle Bedrock Agent stream event: {responseEvent}");
+                    HandleChunkEvent(agent, responseEvent) ?? HandleFilesEvent(agent, responseEvent) ?? HandleReturnControlEvent(agent, responseEvent, arguments) ?? HandleTraceEvent(agent, responseEvent) ?? throw new KernelException($"Failed to handle Bedrock Agent stream event: {responseEvent}");
+
                 if (chatMessageContent.Items.Count > 0 && chatMessageContent.Items[0] is FunctionCallContent functionCallContent)
                 {
                     functionCallContents.AddRange(chatMessageContent.Items.Where(item => item is FunctionCallContent).Cast<FunctionCallContent>());
@@ -71,7 +70,10 @@ internal static class BedrockAgentInvokeExtensions
             // It doesn't use the the `FunctionCallsProcessor` to process the functions because we do not need 
             // many of the features it offers and we want to keep the code simple.
             var functionChoiceBehaviorConfiguration = new FunctionCallsProcessor().GetConfiguration(
-                FunctionChoiceBehavior.Auto(), [], requestIndex, agent.Kernel);
+                FunctionChoiceBehavior.Auto(),
+                [],
+                requestIndex,
+                agent.Kernel);
 
             if (functionCallContents.Count > 0 && functionChoiceBehaviorConfiguration!.AutoInvoke)
             {
@@ -85,21 +87,23 @@ internal static class BedrockAgentInvokeExtensions
         }
     }
 
+
     private static ChatMessageContent? HandleChunkEvent(
         BedrockAgent agent,
         IEventStreamEvent responseEvent)
     {
         return responseEvent is not PayloadPart payload
             ? null
-            : new ChatMessageContent()
+            : new ChatMessageContent
             {
                 Role = AuthorRole.Assistant,
                 AuthorName = agent.GetDisplayName(),
                 Content = Encoding.UTF8.GetString(payload.Bytes.ToArray()),
                 ModelId = agent.AgentModel.FoundationModel,
-                InnerContent = payload,
+                InnerContent = payload
             };
     }
+
 
     private static ChatMessageContent? HandleFilesEvent(
         BedrockAgent agent,
@@ -111,26 +115,28 @@ internal static class BedrockAgentInvokeExtensions
         }
 
         ChatMessageContentItemCollection binaryContents = [];
+
         foreach (var file in files.Files)
         {
             binaryContents.Add(new BinaryContent(file.Bytes.ToArray(), file.Type)
             {
-                Metadata = new Dictionary<string, object?>()
+                Metadata = new Dictionary<string, object?>
                 {
-                    { "Name", file.Name },
-                },
+                    { "Name", file.Name }
+                }
             });
         }
 
-        return new ChatMessageContent()
+        return new ChatMessageContent
         {
             Role = AuthorRole.Assistant,
             AuthorName = agent.GetDisplayName(),
             Items = binaryContents,
             ModelId = agent.AgentModel.FoundationModel,
-            InnerContent = files,
+            InnerContent = files
         };
     }
+
 
     private static ChatMessageContent? HandleReturnControlEvent(
         BedrockAgent agent,
@@ -143,6 +149,7 @@ internal static class BedrockAgentInvokeExtensions
         }
 
         ChatMessageContentItemCollection functionCallContents = [];
+
         foreach (var invocationInput in returnControlPayload.InvocationInputs)
         {
             var functionInvocationInput = invocationInput.FunctionInvocationInput;
@@ -151,23 +158,24 @@ internal static class BedrockAgentInvokeExtensions
                 id: returnControlPayload.InvocationId,
                 arguments: functionInvocationInput.Parameters.FromFunctionParameters(arguments))
             {
-                Metadata = new Dictionary<string, object?>()
+                Metadata = new Dictionary<string, object?>
                 {
                     { "ActionGroup", functionInvocationInput.ActionGroup },
-                    { "ActionInvocationType", functionInvocationInput.ActionInvocationType },
-                },
+                    { "ActionInvocationType", functionInvocationInput.ActionInvocationType }
+                }
             });
         }
 
-        return new ChatMessageContent()
+        return new ChatMessageContent
         {
             Role = AuthorRole.Assistant,
             AuthorName = agent.GetDisplayName(),
             Items = functionCallContents,
             ModelId = agent.AgentModel.FoundationModel,
-            InnerContent = returnControlPayload,
+            InnerContent = returnControlPayload
         };
     }
+
 
     private static ChatMessageContent? HandleTraceEvent(
         BedrockAgent agent,
@@ -175,14 +183,15 @@ internal static class BedrockAgentInvokeExtensions
     {
         return responseEvent is not TracePart trace
             ? null
-            : new ChatMessageContent()
+            : new ChatMessageContent
             {
                 Role = AuthorRole.Assistant,
                 AuthorName = agent.GetDisplayName(),
                 ModelId = agent.AgentModel.FoundationModel,
-                InnerContent = trace,
+                InnerContent = trace
             };
     }
+
 
     private static async Task<List<FunctionResultContent>> InvokeFunctionCallsAsync(
         BedrockAgent agent,
@@ -190,36 +199,41 @@ internal static class BedrockAgentInvokeExtensions
         CancellationToken cancellationToken)
     {
         var functionResults = await Task.WhenAll(functionCallContents.Select(async functionCallContent =>
-        {
-            return await functionCallContent.InvokeAsync(agent.Kernel, cancellationToken).ConfigureAwait(false);
-        })).ConfigureAwait(false);
+            {
+                return await functionCallContent.InvokeAsync(agent.Kernel, cancellationToken).ConfigureAwait(false);
+            }))
+            .ConfigureAwait(false);
 
         return [.. functionResults];
     }
+
 
     private static SessionState CreateSessionStateWithFunctionResults(List<FunctionResultContent> functionResults, BedrockAgent agent)
     {
         return functionResults.Count == 0
             ? throw new KernelException("No function results were returned.")
-            : new()
+            : new SessionState
             {
                 InvocationId = functionResults[0].CallId,
-                ReturnControlInvocationResults = [.. functionResults.Select(functionResult =>
-                    {
-                        return new InvocationResultMember()
+                ReturnControlInvocationResults =
+                [
+                    .. functionResults.Select(functionResult =>
                         {
-                            FunctionResult = new Amazon.BedrockAgentRuntime.Model.FunctionResult
+                            return new InvocationResultMember
                             {
-                                ActionGroup = agent.KernelFunctionActionGroupSignature,
-                                Function = functionResult.FunctionName,
-                                ResponseBody = new Dictionary<string, ContentBody>
+                                FunctionResult = new FunctionResult
                                 {
-                                    { "TEXT", new ContentBody() { Body = FunctionCallsProcessor.ProcessFunctionResult(functionResult.Result ?? string.Empty) } }
+                                    ActionGroup = agent.KernelFunctionActionGroupSignature,
+                                    Function = functionResult.FunctionName,
+                                    ResponseBody = new Dictionary<string, ContentBody>
+                                    {
+                                        { "TEXT", new ContentBody { Body = FunctionCallsProcessor.ProcessFunctionResult(functionResult.Result ?? string.Empty) } }
+                                    }
                                 }
-                            }
-                        };
-                    }
-                )],
+                            };
+                        }
+                    )
+                ]
             };
     }
 }

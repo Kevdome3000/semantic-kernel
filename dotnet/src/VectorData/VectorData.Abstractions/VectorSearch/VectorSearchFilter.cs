@@ -21,12 +21,13 @@ public sealed class VectorSearchFilter
     private readonly List<FilterClause> _filterClauses = [];
 
     /// <summary>Gets the default search filter.</summary>
-    public static VectorSearchFilter Default { get; } = new VectorSearchFilter();
+    public static VectorSearchFilter Default { get; } = new();
 
     /// <summary>
     /// Gets the filter clauses to 'and' together.
     /// </summary>
-    public IEnumerable<FilterClause> FilterClauses => this._filterClauses;
+    public IEnumerable<FilterClause> FilterClauses => _filterClauses;
+
 
     /// <summary>
     /// Creates a new instance of <see cref="VectorSearchFilter"/>
@@ -34,6 +35,7 @@ public sealed class VectorSearchFilter
     public VectorSearchFilter()
     {
     }
+
 
     /// <summary>
     /// Creates a new instance of <see cref="VectorSearchFilter"/> with the provided <see cref="FilterClause"/> instances.
@@ -46,8 +48,9 @@ public sealed class VectorSearchFilter
             throw new ArgumentNullException(nameof(filterClauses));
         }
 
-        this._filterClauses.AddRange(filterClauses);
+        _filterClauses.AddRange(filterClauses);
     }
+
 
     /// <summary>
     /// Adds an 'equal to' clause to the filter options.
@@ -60,9 +63,10 @@ public sealed class VectorSearchFilter
     /// </remarks>
     public VectorSearchFilter EqualTo(string propertyName, object value)
     {
-        this._filterClauses.Add(new EqualToFilterClause(propertyName, value));
+        _filterClauses.Add(new EqualToFilterClause(propertyName, value));
         return this;
     }
+
 
     /// <summary>
     /// Adds an 'any tag equal to' clause to the filter options.
@@ -75,7 +79,7 @@ public sealed class VectorSearchFilter
     /// </remarks>
     public VectorSearchFilter AnyTagEqualTo(string propertyName, string value)
     {
-        this._filterClauses.Add(new AnyTagEqualToFilterClause(propertyName, value));
+        _filterClauses.Add(new AnyTagEqualToFilterClause(propertyName, value));
         return this;
     }
 }

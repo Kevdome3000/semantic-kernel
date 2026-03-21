@@ -51,6 +51,7 @@ public sealed class Mem0Provider : AIContextProvider
     private readonly Mem0Client _mem0Client;
     private readonly ILogger<Mem0Provider>? _logger;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Mem0Provider"/> class.
     /// </summary>
@@ -84,8 +85,9 @@ public sealed class Mem0Provider : AIContextProvider
         _contextPrompt = options?.ContextPrompt ?? DefaultContextPrompt;
         _logger = loggerFactory?.CreateLogger<Mem0Provider>();
 
-        _mem0Client = new(httpClient);
+        _mem0Client = new Mem0Client(httpClient);
     }
+
 
     /// <inheritdoc/>
     public override Task ConversationCreatedAsync(string? conversationId, CancellationToken cancellationToken = default)
@@ -95,6 +97,7 @@ public sealed class Mem0Provider : AIContextProvider
         _perOperationThreadId ??= conversationId;
         return Task.CompletedTask;
     }
+
 
     /// <inheritdoc/>
     public override async Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
@@ -117,14 +120,18 @@ public sealed class Mem0Provider : AIContextProvider
         if (!string.IsNullOrWhiteSpace(newMessage.Text))
         {
             await _mem0Client.CreateMemoryAsync(
-                _applicationId,
-                _agentId,
-                _scopeToPerOperationThreadId ? _perOperationThreadId : _threadId,
-                _userId,
-                newMessage.Text,
-                newMessage.Role.Value).ConfigureAwait(false);
+                    _applicationId,
+                    _agentId,
+                    _scopeToPerOperationThreadId
+                        ? _perOperationThreadId
+                        : _threadId,
+                    _userId,
+                    newMessage.Text,
+                    newMessage.Role.Value)
+                .ConfigureAwait(false);
         }
     }
+
 
     /// <inheritdoc/>
     public override async Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
@@ -133,16 +140,17 @@ public sealed class Mem0Provider : AIContextProvider
 
         string inputText = string.Join(
             Environment.NewLine,
-            newMessages.
-                Where(m => m is not null && !string.IsNullOrWhiteSpace(m.Text)).
-                Select(m => m.Text));
+            newMessages.Where(m => m is not null && !string.IsNullOrWhiteSpace(m.Text)).Select(m => m.Text));
 
         var memories = (await _mem0Client.SearchAsync(
                 _applicationId,
                 _agentId,
-                _scopeToPerOperationThreadId ? _perOperationThreadId : _threadId,
+                _scopeToPerOperationThreadId
+                    ? _perOperationThreadId
+                    : _threadId,
                 _userId,
-                inputText).ConfigureAwait(false)).ToList();
+                inputText)
+            .ConfigureAwait(false)).ToList();
 
         var lineSeparatedMemories = string.Join(Environment.NewLine, memories);
 
@@ -150,9 +158,9 @@ public sealed class Mem0Provider : AIContextProvider
         {
             Instructions =
                 $"""
-                {_contextPrompt}
-                {lineSeparatedMemories}
-                """
+                 {_contextPrompt}
+                 {lineSeparatedMemories}
+                 """
         };
 
         if (_logger != null)
@@ -164,6 +172,7 @@ public sealed class Mem0Provider : AIContextProvider
         return context;
     }
 
+
     /// <summary>
     /// Plugin method to clear memories for the current agent/thread/user.
     /// </summary>
@@ -173,9 +182,12 @@ public sealed class Mem0Provider : AIContextProvider
         return _mem0Client.ClearMemoryAsync(
             _applicationId,
             _agentId,
-            _scopeToPerOperationThreadId ? _perOperationThreadId : _threadId,
+            _scopeToPerOperationThreadId
+                ? _perOperationThreadId
+                : _threadId,
             _userId);
     }
+
 
     /// <summary>
     /// Validate that we are not receiving a new thread id when the component has already received one before.

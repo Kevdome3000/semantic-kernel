@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.Grpc;
-
-using System.Linq;
 using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.Grpc;
 
 public class GrpcOperationExtensionsTests
 {
@@ -19,11 +17,14 @@ public class GrpcOperationExtensionsTests
 
     public GrpcOperationExtensionsTests()
     {
-        this._request = new GrpcOperationDataContractType("fake-name", []);
+        _request = new GrpcOperationDataContractType("fake-name", []);
 
-        this._response = new GrpcOperationDataContractType("fake-name", []);
+        _response = new GrpcOperationDataContractType("fake-name", []);
 
-        this._operation = new GrpcOperation("fake-service-name", "fake-operation-name", this._response, this._response);
+        _operation = new GrpcOperation("fake-service-name",
+            "fake-operation-name",
+            _response,
+            _response);
     }
 
 

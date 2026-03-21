@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Content type to support file references.
 /// </summary>
@@ -24,6 +25,7 @@ public class FileReferenceContent : KernelContent
     /// </remarks>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<string>? Tools { get; init; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FileReferenceContent"/> class.

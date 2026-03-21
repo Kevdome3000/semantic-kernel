@@ -59,8 +59,8 @@ internal sealed class RestApiOperationRunner
     {
         { "image", async (context, cancellationToken) => await context.Response.Content.ReadAsByteArrayAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false) },
         { "text", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false) },
-        { "application/json", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false)},
-        { "application/xml", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false)}
+        { "application/json", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false) },
+        { "application/xml", async (context, cancellationToken) => await context.Response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false) }
     };
 
     /// <summary>
@@ -116,6 +116,17 @@ internal sealed class RestApiOperationRunner
     private readonly RestApiOperationPayloadFactory? _payloadFactory;
 
     /// <summary>
+    /// Options for validating server URLs before making HTTP requests.
+    /// </summary>
+    private readonly RestApiOperationServerUrlValidationOptions? _serverUrlValidationOptions;
+
+    /// <summary>
+    /// Default allowed schemes when none are explicitly configured.
+    /// </summary>
+    private static readonly IReadOnlyList<string> s_defaultAllowedSchemes = ["https"];
+
+
+    /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
     /// </summary>
     /// <param name="httpClient">An instance of the HttpClient class.</param>
@@ -131,6 +142,7 @@ internal sealed class RestApiOperationRunner
     /// <param name="urlFactory">The external URL factory to use if provided if provided instead of the default one.</param>
     /// <param name="headersFactory">The external headers factory to use if provided instead of the default one.</param>
     /// <param name="payloadFactory">The external payload factory to use if provided instead of the default one.</param>
+    /// <param name="serverUrlValidationOptions">Options for validating server URLs before making HTTP requests.</param>
     public RestApiOperationRunner(
         HttpClient httpClient,
         AuthenticateRequestAsyncCallback? authCallback = null,
@@ -141,7 +153,8 @@ internal sealed class RestApiOperationRunner
         RestApiOperationResponseFactory? responseFactory = null,
         RestApiOperationUrlFactory? urlFactory = null,
         RestApiOperationHeadersFactory? headersFactory = null,
-        RestApiOperationPayloadFactory? payloadFactory = null)
+        RestApiOperationPayloadFactory? payloadFactory = null,
+        RestApiOperationServerUrlValidationOptions? serverUrlValidationOptions = null)
     {
         _httpClient = httpClient;
         _userAgent = userAgent ?? HttpHeaderConstant.Values.UserAgent;
@@ -152,6 +165,7 @@ internal sealed class RestApiOperationRunner
         _urlFactory = urlFactory;
         _headersFactory = headersFactory;
         _payloadFactory = payloadFactory;
+        _serverUrlValidationOptions = serverUrlValidationOptions;
 
         // If no auth callback provided, use empty function
         if (authCallback is null)
@@ -163,12 +177,13 @@ internal sealed class RestApiOperationRunner
             _authCallback = authCallback;
         }
 
-        _payloadFactoryByMediaType = new()
+        _payloadFactoryByMediaType = new Dictionary<string, HttpContentFactory>
         {
             { MediaTypeApplicationJson, BuildJsonPayload },
             { MediaTypeTextPlain, BuildPlainTextPayload }
         };
     }
+
 
     /// <summary>
     /// Executes the specified <paramref name="operation"/> asynchronously, using the provided <paramref name="arguments"/>.
@@ -184,16 +199,95 @@ internal sealed class RestApiOperationRunner
         RestApiOperationRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var url = _urlFactory?.Invoke(operation, arguments, options) ?? BuildsOperationUrl(operation, arguments, options?.ServerUrlOverride, options?.ApiHostUrl);
+        var url = _urlFactory?.Invoke(operation, arguments, options)
+        ?? BuildsOperationUrl(operation,
+            arguments,
+            options?.ServerUrlOverride,
+            options?.ApiHostUrl);
+
+        ValidateUrl(url);
 
         var headers = _headersFactory?.Invoke(operation, arguments, options) ?? operation.BuildHeaders(arguments);
 
-        var (Payload, Content) = _payloadFactory?.Invoke(operation, arguments, _enableDynamicPayload, _enablePayloadNamespacing, options) ?? BuildOperationPayload(operation, arguments);
+        var (Payload, Content) = _payloadFactory?.Invoke(operation,
+                arguments,
+                _enableDynamicPayload,
+                _enablePayloadNamespacing,
+                options)
+            ?? BuildOperationPayload(operation, arguments);
 
-        return SendAsync(operation, url, headers, Payload, Content, options, cancellationToken);
+        return SendAsync(operation,
+            url,
+            headers,
+            Payload,
+            Content,
+            options,
+            cancellationToken);
     }
 
+
     #region private
+
+    /// <summary>
+    /// Validates the resolved URL against the configured server URL validation options.
+    /// </summary>
+    /// <param name="url">The resolved URL to validate.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the URL violates the validation rules.</exception>
+    private void ValidateUrl(Uri url)
+    {
+        if (_serverUrlValidationOptions is null)
+        {
+            return;
+        }
+
+        // Validate the URI scheme.
+        var allowedSchemes = _serverUrlValidationOptions.AllowedSchemes ?? s_defaultAllowedSchemes;
+
+        if (allowedSchemes.Count > 0)
+        {
+            bool schemeAllowed = false;
+
+            foreach (var scheme in allowedSchemes)
+            {
+                if (string.Equals(url.Scheme, scheme, StringComparison.OrdinalIgnoreCase))
+                {
+                    schemeAllowed = true;
+                    break;
+                }
+            }
+
+            if (!schemeAllowed)
+            {
+                throw new InvalidOperationException(
+                    $"The request URI scheme '{url.Scheme}' is not allowed. Allowed schemes: {string.Join(", ", allowedSchemes)}.");
+            }
+        }
+
+        // Validate the URL against the allowed base URLs.
+        if (_serverUrlValidationOptions.AllowedBaseUrls is { Count: > 0 } allowedBaseUrls)
+        {
+            bool baseUrlAllowed = false;
+            var urlString = url.AbsoluteUri;
+
+            foreach (var baseUrl in allowedBaseUrls)
+            {
+                var baseUrlString = baseUrl.AbsoluteUri;
+
+                if (urlString.StartsWith(baseUrlString, StringComparison.OrdinalIgnoreCase))
+                {
+                    baseUrlAllowed = true;
+                    break;
+                }
+            }
+
+            if (!baseUrlAllowed)
+            {
+                throw new InvalidOperationException(
+                    $"The request URI '{url}' is not allowed. It does not match any of the allowed base URLs.");
+            }
+        }
+    }
+
 
     /// <summary>
     /// Sends an HTTP request.
@@ -230,9 +324,10 @@ internal sealed class RestApiOperationRunner
             requestMessage.Content = requestContent;
         }
 
-        requestMessage.Headers.Add("User-Agent", !string.IsNullOrWhiteSpace(_userAgent)
-            ? _userAgent
-            : HttpHeaderConstant.Values.UserAgent);
+        requestMessage.Headers.Add("User-Agent",
+            !string.IsNullOrWhiteSpace(_userAgent)
+                ? _userAgent
+                : HttpHeaderConstant.Values.UserAgent);
         requestMessage.Headers.Add(HttpHeaderConstant.Names.SemanticKernelVersion, HttpHeaderConstant.Values.GetAssemblyVersion(typeof(RestApiOperationRunner)));
 
         if (headers is not null)
@@ -250,13 +345,18 @@ internal sealed class RestApiOperationRunner
         {
             responseMessage = await _httpClient.SendWithSuccessCheckAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
-            response = await BuildResponseAsync(operation, requestMessage, responseMessage, payload, cancellationToken).ConfigureAwait(false);
+            response = await BuildResponseAsync(operation,
+                    requestMessage,
+                    responseMessage,
+                    payload,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             return response;
         }
         catch (HttpRequestException ex)
         {
-            var exception = new HttpOperationException(message: ex.Message, innerException: ex);
+            var exception = new HttpOperationException(ex.Message, ex);
             exception.Data.Add(HttpRequestMethod, requestMessage.Method.Method);
             exception.Data.Add(UrlFull, requestMessage.RequestUri?.ToString());
             exception.Data.Add(HttpRequestBody, payload);
@@ -308,6 +408,7 @@ internal sealed class RestApiOperationRunner
         }
     }
 
+
     /// <summary>
     /// Reads the response content of an HTTP request and creates an operation response.
     /// </summary>
@@ -316,17 +417,19 @@ internal sealed class RestApiOperationRunner
     /// <param name="payload">The payload sent in the HTTP request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The operation response.</returns>
-    private async Task<RestApiOperationResponse> ReadContentAndCreateOperationResponseAsync(HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, object? payload, CancellationToken cancellationToken)
+    private async Task<RestApiOperationResponse> ReadContentAndCreateOperationResponseAsync(
+        HttpRequestMessage requestMessage,
+        HttpResponseMessage responseMessage,
+        object? payload,
+        CancellationToken cancellationToken)
     {
-        if (responseMessage.StatusCode == HttpStatusCode.NoContent ||
-         (string.IsNullOrEmpty(responseMessage.Content.Headers.ContentType?.MediaType) &&
-            (responseMessage.StatusCode is HttpStatusCode.Accepted or HttpStatusCode.Created)))
+        if (responseMessage.StatusCode == HttpStatusCode.NoContent || string.IsNullOrEmpty(responseMessage.Content.Headers.ContentType?.MediaType) && responseMessage.StatusCode is HttpStatusCode.Accepted or HttpStatusCode.Created)
         {
             return new RestApiOperationResponse(null, null)
             {
                 RequestMethod = requestMessage.Method.Method,
                 RequestUri = requestMessage.RequestUri,
-                RequestPayload = payload,
+                RequestPayload = payload
             };
         }
 
@@ -334,15 +437,20 @@ internal sealed class RestApiOperationRunner
 
         var mediaType = contentType?.MediaType ?? throw new KernelException("No media type available.");
 
-        var content = await ReadHttpContentAsync(requestMessage, responseMessage, mediaType, cancellationToken).ConfigureAwait(false);
+        var content = await ReadHttpContentAsync(requestMessage,
+                responseMessage,
+                mediaType,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         return new RestApiOperationResponse(content, contentType.ToString())
         {
             RequestMethod = requestMessage.Method.Method,
             RequestUri = requestMessage.RequestUri,
-            RequestPayload = payload,
+            RequestPayload = payload
         };
     }
+
 
     /// <summary>
     /// Builds operation payload.
@@ -358,6 +466,7 @@ internal sealed class RestApiOperationRunner
         }
 
         var mediaType = operation.Payload?.MediaType;
+
         if (string.IsNullOrEmpty(mediaType))
         {
             if (!arguments.TryGetValue(RestApiOperation.ContentTypeArgumentName, out object? fallback) || fallback is not string mediaTypeFallback)
@@ -383,6 +492,7 @@ internal sealed class RestApiOperationRunner
 
         return payloadFactory.Invoke(operation.Payload, arguments);
     }
+
 
     /// <summary>
     /// Builds "application/json" payload.
@@ -414,6 +524,7 @@ internal sealed class RestApiOperationRunner
         return (content, new StringContent(content, Encoding.UTF8, MediaTypeApplicationJson));
     }
 
+
     /// <summary>
     /// Builds a JSON object from a list of RestAPI operation payload properties.
     /// </summary>
@@ -439,13 +550,22 @@ internal sealed class RestApiOperationRunner
             // Use property argument name to look up the property value
             if (!string.IsNullOrEmpty(propertyMetadata.ArgumentName) && arguments.TryGetValue(propertyMetadata.ArgumentName!, out object? argument) && argument is not null)
             {
-                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, argument, propertyMetadata.Schema));
+                result.Add(propertyMetadata.Name,
+                OpenApiTypeConverter.Convert(propertyMetadata.Name,
+                    propertyMetadata.Type,
+                    argument,
+                    propertyMetadata.Schema));
                 continue;
             }
             // Use property name to look up the property value
-            else if (arguments.TryGetValue(argumentName, out argument) && argument is not null)
+
+            if (arguments.TryGetValue(argumentName, out argument) && argument is not null)
             {
-                result.Add(propertyMetadata.Name, OpenApiTypeConverter.Convert(propertyMetadata.Name, propertyMetadata.Type, argument, propertyMetadata.Schema));
+                result.Add(propertyMetadata.Name,
+                OpenApiTypeConverter.Convert(propertyMetadata.Name,
+                    propertyMetadata.Type,
+                    argument,
+                    propertyMetadata.Schema));
                 continue;
             }
 
@@ -458,6 +578,7 @@ internal sealed class RestApiOperationRunner
         return result;
     }
 
+
     /// <summary>
     /// Gets the expected schema for the specified status code.
     /// </summary>
@@ -467,6 +588,7 @@ internal sealed class RestApiOperationRunner
     private static KernelJsonSchema? GetExpectedSchema(IDictionary<string, KernelJsonSchema?>? expectedSchemas, HttpStatusCode statusCode)
     {
         KernelJsonSchema? matchingResponse = null;
+
         if (expectedSchemas is not null)
         {
             var statusCodeKey = ((int)statusCode).ToString(CultureInfo.InvariantCulture);
@@ -484,6 +606,7 @@ internal sealed class RestApiOperationRunner
         return matchingResponse;
     }
 
+
     /// <summary>
     /// Builds "text/plain" payload.
     /// </summary>
@@ -500,6 +623,7 @@ internal sealed class RestApiOperationRunner
         return (payload, new StringContent(payload, Encoding.UTF8, MediaTypeTextPlain));
     }
 
+
     /// <summary>
     /// Retrieves the argument name for a payload property.
     /// </summary>
@@ -513,8 +637,11 @@ internal sealed class RestApiOperationRunner
             return propertyName;
         }
 
-        return string.IsNullOrEmpty(propertyNamespace) ? propertyName : $"{propertyNamespace}.{propertyName}";
+        return string.IsNullOrEmpty(propertyNamespace)
+            ? propertyName
+            : $"{propertyNamespace}.{propertyName}";
     }
+
 
     /// <summary>
     /// Builds operation Url.
@@ -524,12 +651,17 @@ internal sealed class RestApiOperationRunner
     /// <param name="serverUrlOverride">Override for REST API operation server url.</param>
     /// <param name="apiHostUrl">The URL of REST API host.</param>
     /// <returns>The operation Url.</returns>
-    private Uri BuildsOperationUrl(RestApiOperation operation, IDictionary<string, object?> arguments, Uri? serverUrlOverride = null, Uri? apiHostUrl = null)
+    private Uri BuildsOperationUrl(
+        RestApiOperation operation,
+        IDictionary<string, object?> arguments,
+        Uri? serverUrlOverride = null,
+        Uri? apiHostUrl = null)
     {
         var url = operation.BuildOperationUrl(arguments, serverUrlOverride, apiHostUrl);
 
         return new UriBuilder(url) { Query = operation.BuildQueryString(arguments) }.Uri;
     }
+
 
     /// <summary>
     /// Reads the HTTP content.
@@ -539,14 +671,18 @@ internal sealed class RestApiOperationRunner
     /// <param name="mediaType">The media type of the content.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The HTTP content.</returns>
-    private async Task<object?> ReadHttpContentAsync(HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, string mediaType, CancellationToken cancellationToken)
+    private async Task<object?> ReadHttpContentAsync(
+        HttpRequestMessage requestMessage,
+        HttpResponseMessage responseMessage,
+        string mediaType,
+        CancellationToken cancellationToken)
     {
         object? content = null;
 
         // Read content using the custom reader if provided.
         if (_httpResponseContentReader is not null)
         {
-            content = await _httpResponseContentReader.Invoke(new(requestMessage, responseMessage), cancellationToken).ConfigureAwait(false);
+            content = await _httpResponseContentReader.Invoke(new HttpResponseContentReaderContext(requestMessage, responseMessage), cancellationToken).ConfigureAwait(false);
         }
 
         // If no custom reader is provided or the custom reader did not return any content, read the content using the default readers.
@@ -557,6 +693,7 @@ internal sealed class RestApiOperationRunner
             {
                 // Split the media type into a primary-type and a sub-type
                 var mediaTypeParts = mediaType.Split('/');
+
                 if (mediaTypeParts.Length != 2)
                 {
                     throw new KernelException($"The string `{mediaType}` is not a valid media type.");
@@ -571,7 +708,7 @@ internal sealed class RestApiOperationRunner
                 }
             }
 
-            content = await reader.Invoke(new(requestMessage, responseMessage), cancellationToken).ConfigureAwait(false);
+            content = await reader.Invoke(new HttpResponseContentReaderContext(requestMessage, responseMessage), cancellationToken).ConfigureAwait(false);
         }
 
         // Handling the case when the content is a stream
@@ -586,6 +723,7 @@ internal sealed class RestApiOperationRunner
         return content;
     }
 
+
     /// <summary>
     /// Builds the operation response.
     /// </summary>
@@ -595,11 +733,20 @@ internal sealed class RestApiOperationRunner
     /// <param name="payload">The payload sent in the HTTP request.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The operation response.</returns>
-    private async Task<RestApiOperationResponse> BuildResponseAsync(RestApiOperation operation, HttpRequestMessage requestMessage, HttpResponseMessage responseMessage, object? payload, CancellationToken cancellationToken)
+    private async Task<RestApiOperationResponse> BuildResponseAsync(
+        RestApiOperation operation,
+        HttpRequestMessage requestMessage,
+        HttpResponseMessage responseMessage,
+        object? payload,
+        CancellationToken cancellationToken)
     {
         async Task<RestApiOperationResponse> Build(RestApiOperationResponseFactoryContext context, CancellationToken ct)
         {
-            var response = await ReadContentAndCreateOperationResponseAsync(context.Request, context.Response, payload, ct).ConfigureAwait(false);
+            var response = await ReadContentAndCreateOperationResponseAsync(context.Request,
+                    context.Response,
+                    payload,
+                    ct)
+                .ConfigureAwait(false);
 
             response.ExpectedSchema ??= GetExpectedSchema(context.Operation.Responses.ToDictionary(item => item.Key, item => item.Value.Schema), context.Response.StatusCode);
 
@@ -609,7 +756,12 @@ internal sealed class RestApiOperationRunner
         // Delegate the response building to the custom response factory if provided.
         if (_responseFactory is not null)
         {
-            var response = await _responseFactory(new(operation: operation, request: requestMessage, response: responseMessage, internalFactory: Build), cancellationToken).ConfigureAwait(false);
+            var response = await _responseFactory(new RestApiOperationResponseFactoryContext(operation,
+                        requestMessage,
+                        responseMessage,
+                        Build),
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             // Handling the case when the content is a stream
             if (response.Content is Stream stream and not HttpResponseStream)
@@ -621,8 +773,14 @@ internal sealed class RestApiOperationRunner
             return response;
         }
 
-        return await Build(new(operation: operation, request: requestMessage, response: responseMessage, internalFactory: null!), cancellationToken).ConfigureAwait(false);
+        return await Build(new RestApiOperationResponseFactoryContext(operation,
+                    requestMessage,
+                    responseMessage,
+                    null!),
+                cancellationToken)
+            .ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Adds the request options to the exception Data collection.
@@ -646,4 +804,6 @@ internal sealed class RestApiOperationRunner
     }
 
     #endregion
+
+
 }

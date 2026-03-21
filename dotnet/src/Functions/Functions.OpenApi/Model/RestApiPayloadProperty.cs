@@ -55,6 +55,7 @@ public sealed class RestApiPayloadProperty
     /// The properties.
     /// </summary>
     public IList<RestApiPayloadProperty> Properties { get; private set; }
+
     /// <summary>
     /// The schema of the parameter.
     /// </summary>
@@ -99,12 +100,14 @@ public sealed class RestApiPayloadProperty
         DefaultValue = defaultValue;
     }
 
+
     /// <summary>
     /// Makes the current instance unmodifiable.
     /// </summary>
     internal void Freeze()
     {
         Properties = new ReadOnlyCollection<RestApiPayloadProperty>(Properties);
+
         foreach (var property in Properties)
         {
             property.Freeze();
@@ -112,6 +115,8 @@ public sealed class RestApiPayloadProperty
 
         _freezable.Freeze();
     }
+
+
     private readonly Freezable _freezable = new();
     private string? _argumentName;
 }

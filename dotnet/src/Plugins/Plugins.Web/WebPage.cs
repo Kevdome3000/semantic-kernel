@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.Web;
-
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Plugins.Web;
 
 /// <summary>
 /// A sealed class containing the deserialized response from the respective Web Search API.
 /// </summary>
 /// <returns>A WebPage object containing the Web Search API response data.</returns>
-[SuppressMessage("Performance", "CA1056:Change the type of parameter 'uri'...",
+[SuppressMessage("Performance",
+    "CA1056:Change the type of parameter 'uri'...",
     Justification = "A constant Uri cannot be defined, as required by this class")]
 public sealed class WebPage
 {

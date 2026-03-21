@@ -25,7 +25,7 @@ public class ChatCompletionAgentFactoryTests
             Name = "ChatCompletionAgent",
             Description = "ChatCompletionAgent Description",
             Instructions = "ChatCompletionAgent Instructions",
-            Model = new()
+            Model = new ModelDefinition
             {
                 Id = "gpt-4o-mini"
             }

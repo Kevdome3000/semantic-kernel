@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,11 +15,23 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// <summary>
 /// A plugin that provides HTTP functionality.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings",
+/// <remarks>
+/// <para>
+/// This plugin is secure by default. <see cref="AllowedDomains"/> must be explicitly configured
+/// before any HTTP requests are permitted. By default, all domains are denied.
+/// </para>
+/// <para>
+/// When exposing this plugin to an LLM via auto function calling, ensure that
+/// <see cref="AllowedDomains"/> is restricted to trusted values only.
+/// </para>
+/// </remarks>
+[SuppressMessage("Design",
+    "CA1054:URI-like parameters should not be strings",
     Justification = "Semantic Kernel operates on strings")]
 public sealed class HttpPlugin
 {
     private readonly HttpClient _client;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpPlugin"/> class.
@@ -26,6 +39,7 @@ public sealed class HttpPlugin
     public HttpPlugin() : this(null)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpPlugin"/> class.
@@ -35,17 +49,27 @@ public sealed class HttpPlugin
     /// <see cref="HttpPlugin"/> assumes ownership of the <see cref="HttpClient"/> instance and will dispose it when the plugin is disposed.
     /// </remarks>
     [ActivatorUtilitiesConstructor]
-    public HttpPlugin(HttpClient? client = null) =>
+    public HttpPlugin(HttpClient? client = null)
+    {
         _client = client ?? HttpClientProvider.GetHttpClient();
+    }
+
 
     /// <summary>
-    /// List of allowed domains to download from.
+    /// List of allowed domains to send requests to.
     /// </summary>
+    /// <remarks>
+    /// Defaults to an empty collection (no domains allowed). Must be explicitly populated
+    /// with trusted domains before any requests will succeed.
+    /// </remarks>
     public IEnumerable<string>? AllowedDomains
     {
         get => _allowedDomains;
-        set => _allowedDomains = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+        set => _allowedDomains = value is null
+            ? null
+            : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
+
 
     /// <summary>
     /// Sends an HTTP GET request to the specified URI and returns the response body as a string.
@@ -53,11 +77,18 @@ public sealed class HttpPlugin
     /// <param name="uri">URI of the request</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [KernelFunction, Description("Makes a GET request to a uri")]
+    [KernelFunction] [Description("Makes a GET request to a uri")]
     public Task<string> GetAsync(
-        [Description("The URI of the request")] string uri,
-        CancellationToken cancellationToken = default) =>
-        SendRequestAsync(uri, HttpMethod.Get, requestContent: null, cancellationToken);
+        [Description("The URI of the request")]
+        string uri,
+        CancellationToken cancellationToken = default)
+    {
+        return SendRequestAsync(uri,
+            HttpMethod.Get,
+            null,
+            cancellationToken);
+    }
+
 
     /// <summary>
     /// Sends an HTTP POST request to the specified URI and returns the response body as a string.
@@ -66,12 +97,20 @@ public sealed class HttpPlugin
     /// <param name="body">The body of the request</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [KernelFunction, Description("Makes a POST request to a uri")]
+    [KernelFunction] [Description("Makes a POST request to a uri")]
     public Task<string> PostAsync(
-        [Description("The URI of the request")] string uri,
-        [Description("The body of the request")] string body,
-        CancellationToken cancellationToken = default) =>
-        SendRequestAsync(uri, HttpMethod.Post, new StringContent(body), cancellationToken);
+        [Description("The URI of the request")]
+        string uri,
+        [Description("The body of the request")]
+        string body,
+        CancellationToken cancellationToken = default)
+    {
+        return SendRequestAsync(uri,
+            HttpMethod.Post,
+            new StringContent(body),
+            cancellationToken);
+    }
+
 
     /// <summary>
     /// Sends an HTTP PUT request to the specified URI and returns the response body as a string.
@@ -80,12 +119,20 @@ public sealed class HttpPlugin
     /// <param name="body">The body of the request</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [KernelFunction, Description("Makes a PUT request to a uri")]
+    [KernelFunction] [Description("Makes a PUT request to a uri")]
     public Task<string> PutAsync(
-        [Description("The URI of the request")] string uri,
-        [Description("The body of the request")] string body,
-        CancellationToken cancellationToken = default) =>
-        SendRequestAsync(uri, HttpMethod.Put, new StringContent(body), cancellationToken);
+        [Description("The URI of the request")]
+        string uri,
+        [Description("The body of the request")]
+        string body,
+        CancellationToken cancellationToken = default)
+    {
+        return SendRequestAsync(uri,
+            HttpMethod.Put,
+            new StringContent(body),
+            cancellationToken);
+    }
+
 
     /// <summary>
     /// Sends an HTTP DELETE request to the specified URI and returns the response body as a string.
@@ -93,14 +140,23 @@ public sealed class HttpPlugin
     /// <param name="uri">URI of the request</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [KernelFunction, Description("Makes a DELETE request to a uri")]
+    [KernelFunction] [Description("Makes a DELETE request to a uri")]
     public Task<string> DeleteAsync(
-        [Description("The URI of the request")] string uri,
-        CancellationToken cancellationToken = default) =>
-        SendRequestAsync(uri, HttpMethod.Delete, requestContent: null, cancellationToken);
+        [Description("The URI of the request")]
+        string uri,
+        CancellationToken cancellationToken = default)
+    {
+        return SendRequestAsync(uri,
+            HttpMethod.Delete,
+            null,
+            cancellationToken);
+    }
+
 
     #region private
-    private HashSet<string>? _allowedDomains;
+
+    private HashSet<string>? _allowedDomains = [];
+
 
     /// <summary>
     /// If a list of allowed domains has been provided, the host of the provided uri is checked
@@ -110,17 +166,25 @@ public sealed class HttpPlugin
     {
         Verify.NotNull(uri);
 
-        return _allowedDomains is null || _allowedDomains.Contains(uri.Host);
+        return _allowedDomains is not null
+            && _allowedDomains.Count > 0
+            && _allowedDomains.Contains(uri.Host);
     }
+
 
     /// <summary>Sends an HTTP request and returns the response content as a string.</summary>
     /// <param name="uriStr">The URI of the request.</param>
     /// <param name="method">The HTTP method for the request.</param>
     /// <param name="requestContent">Optional request content.</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
-    private async Task<string> SendRequestAsync(string uriStr, HttpMethod method, HttpContent? requestContent, CancellationToken cancellationToken)
+    private async Task<string> SendRequestAsync(
+        string uriStr,
+        HttpMethod method,
+        HttpContent? requestContent,
+        CancellationToken cancellationToken)
     {
         var uri = new Uri(uriStr);
+
         if (!IsUriAllowed(uri))
         {
             throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
@@ -132,5 +196,8 @@ public sealed class HttpPlugin
         using var response = await _client.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
         return await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
     }
+
     #endregion
+
+
 }

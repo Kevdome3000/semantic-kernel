@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// A class to describe an KernelFunctionFactory in a JSON Schema friendly way.
@@ -28,7 +27,7 @@ internal sealed class JsonSchemaFunctionView
     /// The function parameters.
     /// </summary>
     [JsonPropertyName("parameters")]
-    public JsonSchemaFunctionParameters Parameters { get; set; } = new JsonSchemaFunctionParameters();
+    public JsonSchemaFunctionParameters Parameters { get; set; } = new();
 
     /// <summary>
     /// The function response.

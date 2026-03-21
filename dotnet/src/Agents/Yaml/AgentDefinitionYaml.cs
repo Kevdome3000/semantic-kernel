@@ -34,6 +34,7 @@ public static class AgentDefinitionYaml
         return Normalize(agentDefinition, configuration);
     }
 
+
     /// <summary>
     /// Normalizing the <see cref="AgentDefinition"/> makes the following changes:
     /// <ul>

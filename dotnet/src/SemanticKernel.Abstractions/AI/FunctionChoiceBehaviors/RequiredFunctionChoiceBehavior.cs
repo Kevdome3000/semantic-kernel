@@ -17,6 +17,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     /// </summary>
     internal readonly bool AutoInvoke = true;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.
     /// </summary>
@@ -24,6 +25,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     internal RequiredFunctionChoiceBehavior()
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="RequiredFunctionChoiceBehavior"/> class.
@@ -46,6 +48,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
         Options = options;
     }
 
+
     /// <summary>
     /// Fully qualified names of the functions to provide to AI model.
     /// If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
@@ -62,6 +65,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
     [JsonPropertyName("options")]
     public FunctionChoiceBehaviorOptions? Options { get; set; }
 
+
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
@@ -73,7 +77,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
             {
                 Choice = FunctionChoice.Required,
                 Functions = null,
-                AutoInvoke = AutoInvoke,
+                AutoInvoke = AutoInvoke
             };
         }
 
@@ -83,7 +87,7 @@ public sealed class RequiredFunctionChoiceBehavior : FunctionChoiceBehavior
         {
             Choice = FunctionChoice.Required,
             Functions = functions,
-            AutoInvoke = AutoInvoke,
+            AutoInvoke = AutoInvoke
         };
     }
 }

@@ -20,6 +20,7 @@ public sealed class BraveWebResult
     {
     }
 
+
     /// <summary>
     /// A type identifying a web search result.
     /// </summary>

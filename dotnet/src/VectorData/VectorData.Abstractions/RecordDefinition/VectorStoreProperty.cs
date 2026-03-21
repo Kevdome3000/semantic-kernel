@@ -25,19 +25,21 @@ public abstract class VectorStoreProperty
             throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
         }
 
-        this.Name = name;
-        this.Type = type;
+        Name = name;
+        Type = type;
     }
+
 
     private protected VectorStoreProperty(VectorStoreProperty source)
     {
-        this.Name = source.Name;
-        this.StorageName = source.StorageName;
-        this.Type = source.Type;
-        this.ProviderAnnotations = source.ProviderAnnotations is not null
+        Name = source.Name;
+        StorageName = source.StorageName;
+        Type = source.Type;
+        ProviderAnnotations = source.ProviderAnnotations is not null
             ? new Dictionary<string, object?>(source.ProviderAnnotations)
             : null;
     }
+
 
     /// <summary>
     /// Gets or sets the name of the property on the data model.

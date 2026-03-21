@@ -54,7 +54,7 @@ public static class AssistantClientExtensions
                 Instructions = instructions,
                 Temperature = temperature,
                 NucleusSamplingFactor = topP,
-                ResponseFormat = responseFormat,
+                ResponseFormat = responseFormat
             };
 
         if (metadata != null)
@@ -81,6 +81,7 @@ public static class AssistantClientExtensions
 
         return assistant;
     }
+
 
     /// <summary>
     /// Creates an assistant from a template asynchronously with the specified options.
@@ -128,6 +129,7 @@ public static class AssistantClientExtensions
                 metadata,
                 cancellationToken);
     }
+
 
     /// <summary>
     /// Creates a thread asynchronously with the specified options.

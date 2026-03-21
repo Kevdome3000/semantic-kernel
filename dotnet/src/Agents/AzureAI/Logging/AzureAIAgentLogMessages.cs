@@ -6,6 +6,7 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI;
 
 #pragma warning disable SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
 
+
 /// <summary>
 /// Extensions for logging <see cref="AzureAIAgent"/> invocations.
 /// </summary>
@@ -28,6 +29,7 @@ internal static partial class AzureAIAgentLogMessages
         string methodName,
         string channelType);
 
+
     /// <summary>
     /// Logs <see cref="AzureAIAgent"/> created channel (complete).
     /// </summary>
@@ -41,6 +43,7 @@ internal static partial class AzureAIAgentLogMessages
         string channelType,
         string threadId);
 
+
     /// <summary>
     /// Logs <see cref="AzureAIAgent"/> restoring serialized channel (started).
     /// </summary>
@@ -53,6 +56,7 @@ internal static partial class AzureAIAgentLogMessages
         string methodName,
         string channelType,
         string threadId);
+
 
     /// <summary>
     /// Logs <see cref="AzureAIAgent"/> restored serialized channel (complete).

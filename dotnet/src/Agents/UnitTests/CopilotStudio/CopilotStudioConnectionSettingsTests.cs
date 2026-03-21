@@ -37,6 +37,7 @@ public class CopilotStudioConnectionSettingsTests
         Assert.True(settings.UseInteractiveAuthentication);
     }
 
+
     /// <summary>
     /// Verifies that the constructor with required parameters sets properties correctly.
     /// </summary>
@@ -58,6 +59,7 @@ public class CopilotStudioConnectionSettingsTests
         Assert.Equal(AgentType.Published, settings.CopilotAgentType);
         Assert.True(settings.UseInteractiveAuthentication);
     }
+
 
     /// <summary>
     /// Verifies that the constructor with configuration sets properties correctly.
@@ -85,6 +87,7 @@ public class CopilotStudioConnectionSettingsTests
         Assert.True(settings.UseInteractiveAuthentication);
     }
 
+
     /// <summary>
     /// Verifies that the constructor throws an exception when AppClientId is missing in configuration.
     /// </summary>
@@ -104,6 +107,7 @@ public class CopilotStudioConnectionSettingsTests
         Assert.Contains("AppClientId", exception.Message);
     }
 
+
     /// <summary>
     /// Verifies that the constructor throws an exception when TenantId is missing in configuration.
     /// </summary>
@@ -122,6 +126,7 @@ public class CopilotStudioConnectionSettingsTests
             new CopilotStudioConnectionSettings(mockConfig.Object));
         Assert.Contains("TenantId", exception.Message);
     }
+
 
     /// <summary>
     /// Verifies that the constructor does not throw when AppClientSecret is missing in configuration.
@@ -147,6 +152,7 @@ public class CopilotStudioConnectionSettingsTests
         Assert.Null(settings.AppClientSecret);
     }
 
+
     /// <summary>
     /// Verifies that the default value of UseInteractiveAuthentication is true.
     /// </summary>
@@ -159,6 +165,7 @@ public class CopilotStudioConnectionSettingsTests
         // Assert
         Assert.True(settings.UseInteractiveAuthentication);
     }
+
 
     /// <summary>
     /// Verifies that UseInteractiveAuthentication property can be modified.
@@ -176,6 +183,7 @@ public class CopilotStudioConnectionSettingsTests
         Assert.False(settings.UseInteractiveAuthentication);
     }
 
+
     /// <summary>
     /// Verifies that the default value of Cloud property is Prod.
     /// </summary>
@@ -188,6 +196,7 @@ public class CopilotStudioConnectionSettingsTests
         // Assert
         Assert.Equal(PowerPlatformCloud.Prod, settings.Cloud);
     }
+
 
     /// <summary>
     /// Verifies that the default value of CopilotAgentType property is Published.

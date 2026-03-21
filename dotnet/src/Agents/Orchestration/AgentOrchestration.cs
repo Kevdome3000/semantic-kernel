@@ -19,6 +19,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration;
 /// <param name="response">The agent response</param>
 public delegate ValueTask OrchestrationResponseCallback(ChatMessageContent response);
 
+
 /// <summary>
 /// Called to expose the streamed response produced by any agent.
 /// </summary>
@@ -26,10 +27,12 @@ public delegate ValueTask OrchestrationResponseCallback(ChatMessageContent respo
 /// <param name="isFinal">Indicates if streamed content is final chunk of the message.</param>
 public delegate ValueTask OrchestrationStreamingCallback(StreamingChatMessageContent response, bool isFinal);
 
+
 /// <summary>
 /// Called when human interaction is requested.
 /// </summary>
 public delegate ValueTask<ChatMessageContent> OrchestrationInteractiveCallback();
+
 
 /// <summary>
 /// Base class for multi-agent agent orchestration patterns.
@@ -46,10 +49,11 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     {
         // Capture orchestration root name without generic parameters for use in
         // agent type and topic formatting as well as logging.
-        this.OrchestrationLabel = this.GetType().Name.Split('`').First();
+        OrchestrationLabel = GetType().Name.Split('`').First();
 
-        this.Members = members;
+        Members = members;
     }
+
 
     /// <summary>
     /// Gets the description of the orchestration.
@@ -69,7 +73,7 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     /// <summary>
     /// Transforms the orchestration input into a source input suitable for processing.
     /// </summary>
-    public OrchestrationInputTransform<TInput> InputTransform { get; init; } = DefaultTransforms.FromInput<TInput>;
+    public OrchestrationInputTransform<TInput> InputTransform { get; init; } = DefaultTransforms.FromInput;
 
     /// <summary>
     /// Transforms the processed result into the final output form.
@@ -97,6 +101,7 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     /// </summary>
     protected string OrchestrationLabel { get; }
 
+
     /// <summary>
     /// Initiates processing of the orchestration.
     /// </summary>
@@ -110,35 +115,43 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     {
         Verify.NotNull(input, nameof(input));
 
-        TopicId topic = new($"{this.OrchestrationLabel}_{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
+        TopicId topic = new($"{OrchestrationLabel}_{Guid.NewGuid().ToString().Replace("-", string.Empty)}");
 
         CancellationTokenSource orchestrationCancelSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         TaskCompletionSource<TOutput> completion = new();
 
         OrchestrationContext context =
-            new(this.OrchestrationLabel,
+            new(OrchestrationLabel,
                 topic,
-                this.ResponseCallback,
-                this.StreamingResponseCallback,
+                ResponseCallback,
+                StreamingResponseCallback,
                 exception => completion.SetException(exception),
-                this.LoggerFactory,
+                LoggerFactory,
                 cancellationToken);
 
-        ILogger logger = this.LoggerFactory.CreateLogger(this.GetType());
+        ILogger logger = LoggerFactory.CreateLogger(GetType());
 
-        AgentType orchestrationType = await this.RegisterAsync(runtime, context, completion, handoff: null).ConfigureAwait(false);
+        AgentType orchestrationType = await RegisterAsync(runtime,
+                context,
+                completion,
+                null)
+            .ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        logger.LogOrchestrationInvoke(this.OrchestrationLabel, topic);
+        logger.LogOrchestrationInvoke(OrchestrationLabel, topic);
 
         Task task = runtime.PublishMessageAsync(input, orchestrationType, cancellationToken).AsTask();
 
-        logger.LogOrchestrationYield(this.OrchestrationLabel, topic);
+        logger.LogOrchestrationYield(OrchestrationLabel, topic);
 
-        return new OrchestrationResult<TOutput>(context, completion, orchestrationCancelSource, logger);
+        return new OrchestrationResult<TOutput>(context,
+            completion,
+            orchestrationCancelSource,
+            logger);
     }
+
 
     /// <summary>
     /// Initiates processing according to the orchestration pattern.
@@ -147,7 +160,12 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     /// <param name="topic">The unique identifier for the orchestration session.</param>
     /// <param name="input">The input to be transformed and processed.</param>
     /// <param name="entryAgent">The initial agent type used for starting the orchestration.</param>
-    protected abstract ValueTask StartAsync(IAgentRuntime runtime, TopicId topic, IEnumerable<ChatMessageContent> input, AgentType? entryAgent);
+    protected abstract ValueTask StartAsync(
+        IAgentRuntime runtime,
+        TopicId topic,
+        IEnumerable<ChatMessageContent> input,
+        AgentType? entryAgent);
+
 
     /// <summary>
     /// Orchestration specific registration, including members and returns an optional entry agent.
@@ -157,7 +175,12 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     /// <param name="registrar">A registration context.</param>
     /// <param name="logger">The logger to use during registration</param>
     /// <returns>The entry AgentType for the orchestration, if any.</returns>
-    protected abstract ValueTask<AgentType?> RegisterOrchestrationAsync(IAgentRuntime runtime, OrchestrationContext context, RegistrationContext registrar, ILogger logger);
+    protected abstract ValueTask<AgentType?> RegisterOrchestrationAsync(
+        IAgentRuntime runtime,
+        OrchestrationContext context,
+        RegistrationContext registrar,
+        ILogger logger);
+
 
     /// <summary>
     /// Formats and returns a unique AgentType based on the provided topic and suffix.
@@ -165,7 +188,11 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     /// <param name="topic">The topic identifier used in formatting the agent type.</param>
     /// <param name="suffix">A suffix to differentiate the agent type.</param>
     /// <returns>A formatted AgentType object.</returns>
-    protected AgentType FormatAgentType(TopicId topic, string suffix) => new($"{topic.Type}_{suffix}");
+    protected AgentType FormatAgentType(TopicId topic, string suffix)
+    {
+        return new AgentType($"{topic.Type}_{suffix}");
+    }
+
 
     /// <summary>
     /// Registers the orchestration's root and boot agents, setting up completion and target routing.
@@ -175,27 +202,39 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     /// <param name="completion">A TaskCompletionSource for the orchestration.</param>
     /// <param name="handoff">The actor type used for handoff.  Only defined for nested orchestrations.</param>
     /// <returns>The AgentType representing the orchestration entry point.</returns>
-    private async ValueTask<AgentType> RegisterAsync(IAgentRuntime runtime, OrchestrationContext context, TaskCompletionSource<TOutput> completion, AgentType? handoff)
+    private async ValueTask<AgentType> RegisterAsync(
+        IAgentRuntime runtime,
+        OrchestrationContext context,
+        TaskCompletionSource<TOutput> completion,
+        AgentType? handoff)
     {
         // Create a logger for the orchestration registration.
-        ILogger logger = context.LoggerFactory.CreateLogger(this.GetType());
+        ILogger logger = context.LoggerFactory.CreateLogger(GetType());
         logger.LogOrchestrationRegistrationStart(context.Orchestration, context.Topic);
 
         // Register orchestration
-        RegistrationContext registrar = new(this.FormatAgentType(context.Topic, "Root"), runtime, context, completion, this.ResultTransform);
-        AgentType? entryAgent = await this.RegisterOrchestrationAsync(runtime, context, registrar, logger).ConfigureAwait(false);
+        RegistrationContext registrar = new(FormatAgentType(context.Topic, "Root"),
+            runtime,
+            context,
+            completion,
+            ResultTransform);
+        AgentType? entryAgent = await RegisterOrchestrationAsync(runtime,
+                context,
+                registrar,
+                logger)
+            .ConfigureAwait(false);
 
         // Register actor for orchestration entry-point
         AgentType orchestrationEntry =
             await runtime.RegisterOrchestrationAgentAsync(
-                this.FormatAgentType(context.Topic, "Boot"),
+                    FormatAgentType(context.Topic, "Boot"),
                     (agentId, runtime) =>
                     {
                         RequestActor actor =
                             new(agentId,
                                 runtime,
                                 context,
-                                this.InputTransform,
+                                InputTransform,
                                 completion,
                                 StartAsync,
                                 context.LoggerFactory.CreateLogger<RequestActor>());
@@ -204,14 +243,22 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
 #else
                         return ValueTask.FromResult<IHostableAgent>(actor);
 #endif
-                    }).ConfigureAwait(false);
+                    })
+                .ConfigureAwait(false);
 
         logger.LogOrchestrationRegistrationDone(context.Orchestration, context.Topic);
 
         return orchestrationEntry;
 
-        ValueTask StartAsync(IEnumerable<ChatMessageContent> input) => this.StartAsync(runtime, context.Topic, input, entryAgent);
+        ValueTask StartAsync(IEnumerable<ChatMessageContent> input)
+        {
+            return this.StartAsync(runtime,
+                context.Topic,
+                input,
+                entryAgent);
+        }
     }
+
 
     /// <summary>
     /// A context used during registration (<see cref="RegisterAsync"/>).
@@ -231,23 +278,24 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
             // Register actor for final result
             AgentType registeredType =
                 await runtime.RegisterOrchestrationAgentAsync(
-                    agentType,
-                    (agentId, runtime) =>
-                    {
-                        ResultActor<TResult> actor =
-                            new(agentId,
-                                runtime,
-                                context,
-                                resultTransform,
-                                outputTransform,
-                                completion,
-                                context.LoggerFactory.CreateLogger<ResultActor<TResult>>());
+                        agentType,
+                        (agentId, runtime) =>
+                        {
+                            ResultActor<TResult> actor =
+                                new(agentId,
+                                    runtime,
+                                    context,
+                                    resultTransform,
+                                    outputTransform,
+                                    completion,
+                                    context.LoggerFactory.CreateLogger<ResultActor<TResult>>());
 #if !NETCOREAPP
-                        return actor.AsValueTask<IHostableAgent>();
+                            return actor.AsValueTask<IHostableAgent>();
 #else
                         return ValueTask.FromResult<IHostableAgent>(actor);
 #endif
-                    }).ConfigureAwait(false);
+                        })
+                    .ConfigureAwait(false);
 
             return registeredType;
         }

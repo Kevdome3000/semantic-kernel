@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents;
+
 /// <summary>
 /// Content type to support message annotations.
 /// </summary>
@@ -16,12 +17,9 @@ public class AnnotationContent : KernelContent
     /// </summary>
     [JsonIgnore]
     [Obsolete("Use `ReferenceId` property instead.")]
-    public string? FileId
-    {
-        get => ReferenceId;
-        //init => this.ReferenceId = value ?? string.Empty;
-    }
+    public string? FileId => ReferenceId;
 
+    //init => this.ReferenceId = value ?? string.Empty;
     /// <summary>
     /// The citation label in the associated response.
     /// </summary>
@@ -67,6 +65,7 @@ public class AnnotationContent : KernelContent
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? EndIndex { get; init; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AnnotationContent"/> class.

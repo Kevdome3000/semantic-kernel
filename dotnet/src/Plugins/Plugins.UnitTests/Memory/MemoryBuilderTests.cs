@@ -29,6 +29,7 @@ public sealed class MemoryBuilderTests
         Assert.Equal("IMemoryStore dependency was not provided. Use WithMemoryStore method.", exception.Message);
     }
 
+
     [Fact]
     public void ItThrowsExceptionWhenEmbeddingGenerationIsNotProvided()
     {
@@ -42,6 +43,7 @@ public sealed class MemoryBuilderTests
         // Assert
         Assert.Equal("ITextEmbeddingGenerationService dependency was not provided. Use WithTextEmbeddingGeneration method.", exception.Message);
     }
+
 
     [Fact]
     [Obsolete("Temporary test for obsolete ITextEmbeddingGenerationService MemoryBuilder extensions.")]
@@ -59,6 +61,7 @@ public sealed class MemoryBuilderTests
         Assert.NotNull(memory);
     }
 
+
     [Fact]
     [Obsolete("Temporary test for obsolete ITextEmbeddingGenerationService MemoryBuilder extensions.")]
     public void ItUsesProvidedLoggerFactory()
@@ -70,7 +73,7 @@ public sealed class MemoryBuilderTests
         // Act & Assert
         var builder = new MemoryBuilder()
             .WithLoggerFactory(loggerFactoryUsed)
-            .WithMemoryStore((loggerFactory) =>
+            .WithMemoryStore(loggerFactory =>
             {
                 Assert.Same(loggerFactoryUsed, loggerFactory);
                 Assert.NotSame(loggerFactoryUnused, loggerFactory);
@@ -86,6 +89,7 @@ public sealed class MemoryBuilderTests
             })
             .Build();
     }
+
 
     [Fact]
     [Obsolete("Temporary test for obsolete ITextEmbeddingGenerationService MemoryBuilder extensions.")]

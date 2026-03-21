@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
 
 /// <summary>
@@ -19,7 +15,12 @@ public interface ICloudDriveConnector
     /// <param name="scope">Scope of the link.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Shareable link.</returns>
-    Task<string> CreateShareLinkAsync(string filePath, string type = "view", string scope = "anonymous", CancellationToken cancellationToken = default);
+    Task<string> CreateShareLinkAsync(
+        string filePath,
+        string type = "view",
+        string scope = "anonymous",
+        CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Get the content of a file.
@@ -27,6 +28,7 @@ public interface ICloudDriveConnector
     /// <param name="filePath">Path to the remote file.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<Stream?> GetFileContentStreamAsync(string filePath, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Upload a small file (less than 4MB).

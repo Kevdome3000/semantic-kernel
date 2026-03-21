@@ -18,16 +18,17 @@ internal static class StreamingResponseOutputTextDeltaUpdateExtensions
     public static StreamingChatMessageContent ToStreamingChatMessageContent(this StreamingResponseOutputTextDeltaUpdate update, string? modelId, AuthorRole? role)
     {
         StreamingChatMessageContent content =
-            new(role ?? AuthorRole.Assistant, content: null)
+            new(role ?? AuthorRole.Assistant, null)
             {
                 ModelId = modelId,
-                InnerContent = update,
+                InnerContent = update
             };
 
         content.Items.Add(new StreamingTextContent(update.Delta));
 
         return content;
     }
+
 
     /// <summary>
     /// Converts a <see cref="StreamingResponseErrorUpdate"/> instance to a <see cref="StreamingChatMessageContent"/>.
@@ -38,16 +39,17 @@ internal static class StreamingResponseOutputTextDeltaUpdateExtensions
     public static StreamingChatMessageContent ToStreamingChatMessageContent(this StreamingResponseErrorUpdate update, string? modelId, AuthorRole? role)
     {
         StreamingChatMessageContent content =
-            new(role ?? AuthorRole.Assistant, content: null)
+            new(role ?? AuthorRole.Assistant, null)
             {
                 ModelId = modelId,
-                InnerContent = update,
+                InnerContent = update
             };
 
         content.Items.Add(new StreamingTextContent(update.Message));
 
         return content;
     }
+
 
     /// <summary>
     /// Converts a <see cref="StreamingResponseRefusalDoneUpdate"/> instance to a <see cref="StreamingChatMessageContent"/>.
@@ -58,10 +60,10 @@ internal static class StreamingResponseOutputTextDeltaUpdateExtensions
     public static StreamingChatMessageContent ToStreamingChatMessageContent(this StreamingResponseRefusalDoneUpdate update, string? modelId, AuthorRole? role)
     {
         StreamingChatMessageContent content =
-            new(role ?? AuthorRole.Assistant, content: null)
+            new(role ?? AuthorRole.Assistant, null)
             {
                 ModelId = modelId,
-                InnerContent = update,
+                InnerContent = update
             };
 
         content.Items.Add(new StreamingTextContent(update.Refusal));

@@ -42,6 +42,7 @@ public class OpenAIAssistantInvocationOptionsTests
         ValidateSerialization(options);
     }
 
+
     /// <summary>
     /// Verify initialization.
     /// </summary>
@@ -54,10 +55,11 @@ public class OpenAIAssistantInvocationOptionsTests
             {
                 ModelName = "testmodel",
                 AdditionalInstructions = "test instructions",
-                AdditionalMessages = [
+                AdditionalMessages =
+                [
                     new ChatMessageContent(AuthorRole.User, "test message")
                 ],
-                Metadata = new Dictionary<string, string>() { { "a", "1" } },
+                Metadata = new Dictionary<string, string> { { "a", "1" } },
                 MaxCompletionTokens = 1000,
                 MaxPromptTokens = 1000,
                 ParallelToolCallsEnabled = false,
@@ -66,7 +68,7 @@ public class OpenAIAssistantInvocationOptionsTests
                 TopP = 0,
                 EnableCodeInterpreter = true,
                 EnableJsonResponse = true,
-                EnableFileSearch = true,
+                EnableFileSearch = true
             };
 
         // Assert
@@ -87,6 +89,7 @@ public class OpenAIAssistantInvocationOptionsTests
         // Act and Assert
         ValidateSerialization(options);
     }
+
 
     private static void ValidateSerialization(OpenAIAssistantInvocationOptions source)
     {

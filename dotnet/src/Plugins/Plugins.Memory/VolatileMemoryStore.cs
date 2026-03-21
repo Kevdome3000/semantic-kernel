@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Memory;
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,6 +10,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// A simple volatile memory embeddings store.
@@ -24,7 +23,7 @@ public class VolatileMemoryStore : IMemoryStore
     {
         Verify.NotNullOrWhiteSpace(collectionName);
 
-        this._store.TryAdd(collectionName, new ConcurrentDictionary<string, MemoryRecord>());
+        _store.TryAdd(collectionName, new ConcurrentDictionary<string, MemoryRecord>());
 
         return Task.CompletedTask;
     }
@@ -33,21 +32,21 @@ public class VolatileMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(this._store.ContainsKey(collectionName));
+        return Task.FromResult(_store.ContainsKey(collectionName));
     }
 
 
     /// <inheritdoc/>
     public IAsyncEnumerable<string> GetCollectionsAsync(CancellationToken cancellationToken = default)
     {
-        return this._store.Keys.ToAsyncEnumerable();
+        return _store.Keys.ToAsyncEnumerable();
     }
 
 
     /// <inheritdoc/>
     public Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        if (!this._store.TryRemove(collectionName, out _))
+        if (!_store.TryRemove(collectionName, out _))
         {
             return Task.FromException(new KernelException($"Could not delete collection {collectionName}"));
         }
@@ -62,7 +61,7 @@ public class VolatileMemoryStore : IMemoryStore
         Verify.NotNull(record);
         Verify.NotNull(record.Metadata.Id);
 
-        if (this.TryGetCollection(collectionName, out var collectionDict, create: false))
+        if (TryGetCollection(collectionName, out var collectionDict, false))
         {
             record.Key = record.Metadata.Id;
             collectionDict[record.Key] = record;
@@ -84,8 +83,7 @@ public class VolatileMemoryStore : IMemoryStore
     {
         foreach (var r in records)
         {
-            yield return await this.UpsertAsync(collectionName, r, cancellationToken).
-                ConfigureAwait(false);
+            yield return await UpsertAsync(collectionName, r, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -97,12 +95,15 @@ public class VolatileMemoryStore : IMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        if (this.TryGetCollection(collectionName, out var collectionDict)
+        if (TryGetCollection(collectionName, out var collectionDict)
             && collectionDict.TryGetValue(key, out var dataEntry))
         {
             return Task.FromResult<MemoryRecord?>(withEmbedding
                 ? dataEntry
-                : MemoryRecord.FromMetadata(dataEntry.Metadata, embedding: null, key: dataEntry.Key, timestamp: dataEntry.Timestamp));
+                : MemoryRecord.FromMetadata(dataEntry.Metadata,
+                    null,
+                    dataEntry.Key,
+                    dataEntry.Timestamp));
         }
 
         return Task.FromResult<MemoryRecord?>(null);
@@ -118,8 +119,11 @@ public class VolatileMemoryStore : IMemoryStore
     {
         foreach (var key in keys)
         {
-            var record = await this.GetAsync(collectionName, key, withEmbeddings, cancellationToken).
-                ConfigureAwait(false);
+            var record = await GetAsync(collectionName,
+                    key,
+                    withEmbeddings,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             if (record is not null)
             {
@@ -132,7 +136,7 @@ public class VolatileMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
     {
-        if (this.TryGetCollection(collectionName, out var collectionDict))
+        if (TryGetCollection(collectionName, out var collectionDict))
         {
             collectionDict.TryRemove(key, out _);
         }
@@ -144,7 +148,7 @@ public class VolatileMemoryStore : IMemoryStore
     /// <inheritdoc/>
     public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        return Task.WhenAll(keys.Select(k => this.RemoveAsync(collectionName, k, cancellationToken)));
+        return Task.WhenAll(keys.Select(k => RemoveAsync(collectionName, k, cancellationToken)));
     }
 
 
@@ -173,7 +177,7 @@ public class VolatileMemoryStore : IMemoryStore
 
         ICollection<MemoryRecord>? embeddingCollection = null;
 
-        if (this.TryGetCollection(collectionName, out var collectionDict))
+        if (TryGetCollection(collectionName, out var collectionDict))
         {
             embeddingCollection = collectionDict.Values;
         }
@@ -195,17 +199,19 @@ public class VolatileMemoryStore : IMemoryStore
                 {
                     var entry = withEmbeddings
                         ? record
-                        : MemoryRecord.FromMetadata(record.Metadata, ReadOnlyMemory<float>.Empty, record.Key, record.Timestamp);
+                        : MemoryRecord.FromMetadata(record.Metadata,
+                            ReadOnlyMemory<float>.Empty,
+                            record.Key,
+                            record.Timestamp);
 
-                    embeddings.Add(new(entry, similarity));
+                    embeddings.Add(new ScoredValue<MemoryRecord>(entry, similarity));
                 }
             }
         }
 
         embeddings.SortByScore();
 
-        return embeddings.Select(x => (x.Value, x.Score)).
-            ToAsyncEnumerable();
+        return embeddings.Select(x => (x.Value, x.Score)).ToAsyncEnumerable();
     }
 
 
@@ -217,15 +223,15 @@ public class VolatileMemoryStore : IMemoryStore
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        return await this.GetNearestMatchesAsync(
-                collectionName: collectionName,
-                embedding: embedding,
-                limit: 1,
-                minRelevanceScore: minRelevanceScore,
-                withEmbeddings: withEmbedding,
-                cancellationToken: cancellationToken).
-            FirstOrDefaultAsync(cancellationToken).
-            ConfigureAwait(false);
+        return await GetNearestMatchesAsync(
+                collectionName,
+                embedding,
+                1,
+                minRelevanceScore,
+                withEmbedding,
+                cancellationToken)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 
 
@@ -244,7 +250,7 @@ public class VolatileMemoryStore : IMemoryStore
             MemoryRecord>? collection,
         bool create = false)
     {
-        if (this._store.TryGetValue(name, out collection))
+        if (_store.TryGetValue(name, out collection))
         {
             return true;
         }
@@ -253,7 +259,7 @@ public class VolatileMemoryStore : IMemoryStore
         {
             collection = new ConcurrentDictionary<string, MemoryRecord>();
 
-            return this._store.TryAdd(name, collection);
+            return _store.TryAdd(name, collection);
         }
 
         collection = null;

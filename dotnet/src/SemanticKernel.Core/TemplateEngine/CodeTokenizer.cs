@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -8,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
+
 /// <summary>
 /// Simple tokenizer used for default SK template code language.
 ///
@@ -44,10 +44,12 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
 
         FunctionId = 3,
 
-        NamedArg = 4,
+        NamedArg = 4
     }
 
+
     private readonly ILoggerFactory _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
+
 
     /// <summary>
     /// Tokenize a code block, without checking for syntax errors
@@ -88,7 +90,7 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
             {
                 Symbols.VarPrefix => new VarBlock(text, _loggerFactory),
                 Symbols.DblQuote or Symbols.SglQuote => new ValBlock(text, _loggerFactory),
-                _ => new FunctionIdBlock(text, _loggerFactory),
+                _ => new FunctionIdBlock(text, _loggerFactory)
             });
 
             return blocks;
@@ -131,7 +133,7 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
             }
 
             // While reading a values between quotes
-            if (currentTokenType == TokenTypes.Value || (currentTokenType == TokenTypes.NamedArg && IsQuote(namedArgValuePrefix)))
+            if (currentTokenType == TokenTypes.Value || currentTokenType == TokenTypes.NamedArg && IsQuote(namedArgValuePrefix))
             {
                 // If the current char is escaping the next special char:
                 // - skip the current char (escape char)
@@ -224,7 +226,7 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
                 {
                     namedArgValuePrefix = currentChar;
 
-                    if (!IsQuote((char)namedArgValuePrefix) && namedArgValuePrefix != Symbols.VarPrefix)
+                    if (!IsQuote(namedArgValuePrefix) && namedArgValuePrefix != Symbols.VarPrefix)
                     {
                         throw new KernelException($"Named argument values need to be prefixed with a quote or {Symbols.VarPrefix}.");
                     }
@@ -312,27 +314,33 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
         return blocks;
     }
 
+
     private static bool IsVarPrefix(char c)
     {
-        return (c == Symbols.VarPrefix);
+        return c == Symbols.VarPrefix;
     }
+
 
     private static bool IsBlankSpace(char c)
     {
         return c is Symbols.Space or Symbols.NewLine or Symbols.CarriageReturn or Symbols.Tab;
     }
 
+
     private static bool IsQuote(char c)
     {
         return c is Symbols.DblQuote or Symbols.SglQuote;
     }
+
 
     private static bool CanBeEscaped(char c)
     {
         return c is Symbols.DblQuote or Symbols.SglQuote or Symbols.EscapeChar;
     }
 
-    [SuppressMessage("Design", "CA1031:Modify to catch a more specific allowed exception type, or rethrow exception",
+
+    [SuppressMessage("Design",
+        "CA1031:Modify to catch a more specific allowed exception type, or rethrow exception",
         Justification = "Does not throw an exception by design.")]
     private static bool IsValidNamedArg(string tokenContent)
     {

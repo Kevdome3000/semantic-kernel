@@ -29,16 +29,14 @@ internal sealed class HandlerInvoker
 
         IEnumerable<Type> candidateInterfaces =
             realType.GetInterfaces()
-                .Where(i => i.IsGenericType &&
-                    (i.GetGenericTypeDefinition() == typeof(IHandle<>) ||
-                    (i.GetGenericTypeDefinition() == typeof(IHandle<,>))));
+                .Where(i => i.IsGenericType && (i.GetGenericTypeDefinition() == typeof(IHandle<>) || i.GetGenericTypeDefinition() == typeof(IHandle<,>)));
 
         Dictionary<Type, HandlerInvoker> invokers = [];
+
         foreach (Type interface_ in candidateInterfaces)
         {
             MethodInfo handleAsync =
-                interface_.GetMethod(nameof(IHandle<object>.HandleAsync), BindingFlags.Instance | BindingFlags.Public) ??
-                throw new InvalidOperationException($"No handler method found for interface {interface_.FullName}");
+                interface_.GetMethod(nameof(IHandle<object>.HandleAsync), BindingFlags.Instance | BindingFlags.Public) ?? throw new InvalidOperationException($"No handler method found for interface {interface_.FullName}");
 
             HandlerInvoker invoker = new(handleAsync, agent);
             invokers.Add(interface_.GetGenericArguments()[0], invoker);
@@ -47,10 +45,12 @@ internal sealed class HandlerInvoker
         return invokers;
     }
 
+
     /// <summary>
     /// Represents the asynchronous invocation function.
     /// </summary>
     private Func<object?, MessageContext, ValueTask<object?>> Invocation { get; }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandlerInvoker"/> class with the specified method information and target object.
@@ -60,9 +60,13 @@ internal sealed class HandlerInvoker
     /// <exception cref="InvalidOperationException">Thrown if the target is missing for a non-static method or if the method's return type is not supported.</exception>
     private HandlerInvoker(MethodInfo methodInfo, BaseAgent target)
     {
-        object? invocation(object? message, MessageContext messageContext) => methodInfo.Invoke(target, [message, messageContext]);
+        object? invocation(object? message, MessageContext messageContext)
+        {
+            return methodInfo.Invoke(target, [message, messageContext]);
+        }
 
         Func<object?, MessageContext, ValueTask<object?>> getResultAsync;
+
         // Check if the method returns a non-generic ValueTask
         if (methodInfo.ReturnType.IsAssignableFrom(typeof(ValueTask)))
         {
@@ -78,8 +82,8 @@ internal sealed class HandlerInvoker
         {
             // Obtain the generic type argument for ValueTask<T>
             MethodInfo typeEraseAwait = typeof(HandlerInvoker)
-                    .GetMethod(nameof(TypeEraseAwaitAsync), BindingFlags.NonPublic | BindingFlags.Static)!
-                    .MakeGenericMethod(methodInfo.ReturnType.GetGenericArguments()[0]);
+                .GetMethod(nameof(TypeEraseAwaitAsync), BindingFlags.NonPublic | BindingFlags.Static)!
+                .MakeGenericMethod(methodInfo.ReturnType.GetGenericArguments()[0]);
 
             getResultAsync = async (message, messageContext) =>
             {
@@ -97,8 +101,9 @@ internal sealed class HandlerInvoker
             throw new InvalidOperationException($"Method {methodInfo.Name} must return a ValueTask or ValueTask<T>");
         }
 
-        this.Invocation = getResultAsync;
+        Invocation = getResultAsync;
     }
+
 
     /// <summary>
     /// Invokes the handler method asynchronously with the provided message and context.
@@ -110,12 +115,13 @@ internal sealed class HandlerInvoker
     {
         try
         {
-            return await this.Invocation.Invoke(obj, messageContext).ConfigureAwait(false);
+            return await Invocation.Invoke(obj, messageContext).ConfigureAwait(false);
         }
         catch (TargetInvocationException ex)
         {
             // Unwrap the exception to get the original exception thrown by the handler method.
             Exception? innerException = ex.InnerException;
+
             if (innerException != null)
             {
                 throw innerException;
@@ -123,6 +129,7 @@ internal sealed class HandlerInvoker
             throw;
         }
     }
+
 
     /// <summary>
     /// Awaits a generic ValueTask and returns its result as an object.

@@ -10,15 +10,17 @@ internal readonly struct InMemoryRecordWrapper<TRecord>
 {
     public InMemoryRecordWrapper(TRecord record)
     {
-        this.Record = record;
+        Record = record;
     }
+
 
     [JsonConstructor]
     public InMemoryRecordWrapper(TRecord record, Dictionary<string, ReadOnlyMemory<float>> embeddingGeneratedVectors)
     {
-        this.Record = record;
-        this.EmbeddingGeneratedVectors = embeddingGeneratedVectors;
+        Record = record;
+        EmbeddingGeneratedVectors = embeddingGeneratedVectors;
     }
+
 
     public TRecord Record { get; }
     public Dictionary<string, ReadOnlyMemory<float>> EmbeddingGeneratedVectors { get; } = [];

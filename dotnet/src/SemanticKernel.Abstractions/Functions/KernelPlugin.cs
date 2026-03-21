@@ -11,6 +11,7 @@ using Microsoft.Extensions.AI;
 #pragma warning disable CA1716 // Identifiers should not match keywords
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>Represents a plugin that may be registered with a <see cref="Kernel"/>.</summary>
 /// <remarks>
 /// A plugin is a named read-only collection of functions. There is a many-to-many relationship between
@@ -37,6 +38,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
             : "";
     }
 
+
     /// <summary>Gets the name of the plugin.</summary>
     public string Name { get; }
 
@@ -52,6 +54,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
             ? function
             : throw new KeyNotFoundException($"The plugin does not contain a function with the specified name. Plugin name - '{Name}', function name - '{functionName}'.");
 
+
     /// <summary>Gets whether the plugin contains a function with the specified name.</summary>
     /// <param name="functionName">The name of the function.</param>
     /// <returns>true if the plugin contains the specified function; otherwise, false.</returns>
@@ -61,6 +64,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
 
         return TryGetFunction(functionName, out _);
     }
+
 
     /// <summary>Gets whether the plugin contains a function.</summary>
     /// <param name="function">The function.</param>
@@ -72,14 +76,17 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
         return Contains(function.Name);
     }
 
+
     /// <summary>Gets the number of functions in this plugin.</summary>
     public abstract int FunctionCount { get; }
+
 
     /// <summary>Finds a function in the plugin by name.</summary>
     /// <param name="name">The name of the function to find.</param>
     /// <param name="function">If the plugin contains the requested function, the found function instance; otherwise, null.</param>
     /// <returns>true if the function was found in the plugin; otherwise, false.</returns>
     public abstract bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function);
+
 
     /// <summary>Gets a collection of <see cref="KernelFunctionMetadata"/> instances, one for every function in this plugin.</summary>
     /// <returns>A list of metadata over every function in this plugin.</returns>
@@ -95,8 +102,10 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
         return metadata;
     }
 
+
     /// <inheritdoc/>
     public abstract IEnumerator<KernelFunction> GetEnumerator();
+
 
     /// <summary>Produces a clone of every <see cref="KernelFunction"/> in the <see cref="KernelPlugin"/> to be used as a lower-level <see cref="AIFunction"/> abstraction.</summary>
     /// <remarks>
@@ -112,6 +121,7 @@ public abstract class KernelPlugin : IEnumerable<KernelFunction>
             yield return functionClone;
         }
     }
+
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator()

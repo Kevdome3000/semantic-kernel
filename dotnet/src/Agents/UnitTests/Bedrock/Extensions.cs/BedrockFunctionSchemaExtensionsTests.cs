@@ -2,10 +2,12 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using Amazon.BedrockAgent;
 using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents.Bedrock;
 using Xunit;
+using FunctionSchema = Amazon.BedrockAgent.Model.FunctionSchema;
 
 namespace SemanticKernel.Agents.UnitTests.Bedrock.Extensions;
 
@@ -23,11 +25,11 @@ public class BedrockFunctionSchemaExtensionsTests
         // Arrange
         List<FunctionParameter> parameters =
         [
-            new FunctionParameter()
+            new()
             {
                 Name = "TestParameter",
-                Type = Amazon.BedrockAgent.Type.String,
-            },
+                Type = Type.String
+            }
         ];
 
         // Act
@@ -38,6 +40,7 @@ public class BedrockFunctionSchemaExtensionsTests
         Assert.True(arguments.ContainsName("TestParameter"));
     }
 
+
     /// <summary>
     /// Verify the conversion of a <see cref="FunctionParameter"/> to a <see cref="KernelArguments"/> with existing arguments.
     /// </summary>
@@ -47,11 +50,11 @@ public class BedrockFunctionSchemaExtensionsTests
         // Arrange
         List<FunctionParameter> parameters =
         [
-            new FunctionParameter()
+            new()
             {
                 Name = "TestParameter",
-                Type = Amazon.BedrockAgent.Type.String,
-            },
+                Type = Type.String
+            }
         ];
 
         KernelArguments arguments = new()
@@ -68,6 +71,7 @@ public class BedrockFunctionSchemaExtensionsTests
         Assert.True(updatedArguments.ContainsName("ExistingParameter"));
     }
 
+
     /// <summary>
     /// Verify the conversion of a <see cref="Kernel"/> plugin to a <see cref="Amazon.BedrockAgent.Model.FunctionSchema"/>.
     /// </summary>
@@ -75,10 +79,10 @@ public class BedrockFunctionSchemaExtensionsTests
     public void VerifyToFunctionSchema()
     {
         // Arrange
-        (Kernel kernel, KernelFunction function, KernelParameterMetadata parameter) = this.CreateKernelPlugin();
+        (Kernel kernel, KernelFunction function, KernelParameterMetadata parameter) = CreateKernelPlugin();
 
         // Act
-        Amazon.BedrockAgent.Model.FunctionSchema schema = kernel.ToFunctionSchema();
+        FunctionSchema schema = kernel.ToFunctionSchema();
 
         // Assert
         Assert.Single(schema.Functions);
@@ -87,9 +91,10 @@ public class BedrockFunctionSchemaExtensionsTests
         Assert.True(schema.Functions[0].Parameters.ContainsKey(parameter.Name));
         Assert.Equal(parameter.Description, schema.Functions[0].Parameters[parameter.Name].Description);
         Assert.True(schema.Functions[0].Parameters[parameter.Name].Required);
-        Assert.Equal(Amazon.BedrockAgent.Type.String, schema.Functions[0].Parameters[parameter.Name].Type);
-        Assert.Equal(Amazon.BedrockAgent.RequireConfirmation.DISABLED, schema.Functions[0].RequireConfirmation);
+        Assert.Equal(Type.String, schema.Functions[0].Parameters[parameter.Name].Type);
+        Assert.Equal(RequireConfirmation.DISABLED, schema.Functions[0].RequireConfirmation);
     }
+
 
     private (Kernel, KernelFunction, KernelParameterMetadata) CreateKernelPlugin()
     {
@@ -100,9 +105,10 @@ public class BedrockFunctionSchemaExtensionsTests
         return (kernel, function, parameter);
     }
 
+
     private sealed class WeatherPlugin
     {
-        [KernelFunction, Description("Provides realtime weather information.")]
+        [KernelFunction] [Description("Provides realtime weather information.")]
         public string Current([Description("The location to get the weather for.")] string location)
         {
             return $"The current weather in {location} is 72 degrees.";

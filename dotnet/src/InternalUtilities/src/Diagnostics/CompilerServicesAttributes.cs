@@ -7,9 +7,6 @@
 #if !NETCOREAPP
 #pragma warning disable IDE0005 // Using directive is unnecessary.
 
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-
 namespace System.Runtime.CompilerServices;
 
 [AttributeUsage(AttributeTargets.Parameter)]

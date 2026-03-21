@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-
 namespace Microsoft.SemanticKernel.Text;
+
 /// <summary>Caches common configurations of <see cref="JsonSerializerOptions"/>.</summary>\
 /// <remarks>
 /// All of the instances include a converter for <see cref="ReadOnlyMemory{T}"/>.
@@ -24,7 +21,7 @@ internal static class JsonOptionsCache
     /// </summary>
     public static JsonSerializerOptions WriteIndented { get; } = new()
     {
-        WriteIndented = true,
+        WriteIndented = true
     };
 
     /// <summary>
@@ -35,7 +32,7 @@ internal static class JsonOptionsCache
     {
         AllowTrailingCommas = true,
         PropertyNameCaseInsensitive = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
+        ReadCommentHandling = JsonCommentHandling.Skip
     };
 
     /// <summary>

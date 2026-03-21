@@ -78,6 +78,7 @@ public class AgentDefinitionYamlTests
         Assert.NotNull(agentDefinition);
     }
 
+
     /// <summary>
     /// Verify can create an instance of <see cref="AgentDefinition"/> from YAML text.
     /// </summary>
@@ -120,6 +121,7 @@ public class AgentDefinitionYamlTests
         Assert.Equal("2025-02-21", agentDefinition.Metadata.ExtensionData["created"]);
     }
 
+
     /// <summary>
     /// Verify can create an instance of <see cref="AgentDefinition"/> from YAML text
     /// and values are resolved successfully from an <see cref="IConfiguration"/> instance.
@@ -159,14 +161,14 @@ public class AgentDefinitionYamlTests
 
         var configData = new Dictionary<string, string?>
         {
-            {"OpenAI:AgentName", "My Agent"},
-            {"OpenAI:VectorStoreId1", "VECTOR-STORE-ID-1"},
-            {"OpenAI:VectorStoreId2", "VECTOR-STORE-ID-2"},
-            {"AzureAI.ConnectionString", "CONNECTION-STRING"},
-            {"AzureAI.BingConnectionId", "BING-CONNECTION-ID"},
-            {"BedrockAgent:ChatModelId", "CHAT-MODEL-ID"},
-            {"BedrockAgent.AgentResourceRoleArn", "AGENT-RESOURCE-ROLE-ARN"},
-            {"BedrockAgent.KnowledgeBaseId", "KNOWLEDGE-BASE-ID"},
+            { "OpenAI:AgentName", "My Agent" },
+            { "OpenAI:VectorStoreId1", "VECTOR-STORE-ID-1" },
+            { "OpenAI:VectorStoreId2", "VECTOR-STORE-ID-2" },
+            { "AzureAI.ConnectionString", "CONNECTION-STRING" },
+            { "AzureAI.BingConnectionId", "BING-CONNECTION-ID" },
+            { "BedrockAgent:ChatModelId", "CHAT-MODEL-ID" },
+            { "BedrockAgent.AgentResourceRoleArn", "AGENT-RESOURCE-ROLE-ARN" },
+            { "BedrockAgent.KnowledgeBaseId", "KNOWLEDGE-BASE-ID" }
         };
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(configData).Build();
 

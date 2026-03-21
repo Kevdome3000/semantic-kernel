@@ -20,6 +20,7 @@ public interface IAgent : ISaveState
     /// </summary>
     AgentMetadata Metadata { get; }
 
+
     /// <summary>
     /// Handles an incoming message for the agent.
     /// This should only be called by the runtime, not by other agents.

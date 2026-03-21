@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Handoff;
 
-internal sealed class HandoffInvocationFilter() : IAutoFunctionInvocationFilter
+internal sealed class HandoffInvocationFilter : IAutoFunctionInvocationFilter
 {
     public const string HandoffPlugin = nameof(HandoffPlugin);
+
 
     public async Task OnAutoFunctionInvocationAsync(AutoFunctionInvocationContext context, Func<AutoFunctionInvocationContext, Task> next)
     {

@@ -15,6 +15,7 @@ internal static class TestConsoleLogger
     internal static ILoggerFactory LoggerFactory => s_loggerFactory.Value;
     private static readonly Lazy<ILoggerFactory> s_loggerFactory = new(LogBuilder);
 
+
     private static ILoggerFactory LogBuilder()
     {
         return Microsoft.Extensions.Logging.LoggerFactory.Create(builder =>

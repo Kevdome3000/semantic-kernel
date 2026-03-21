@@ -21,6 +21,7 @@ public interface ISaveState
     /// </returns>
     ValueTask<JsonElement> SaveStateAsync();
 
+
     /// <summary>
     /// Loads a previously saved state into the object.
     /// </summary>

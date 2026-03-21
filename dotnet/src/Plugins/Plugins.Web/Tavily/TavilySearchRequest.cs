@@ -106,6 +106,7 @@ internal sealed class TavilySearchRequest
     [JsonExtensionData]
     public IDictionary<string, object> AdditionalProperties { get; set; } = new Dictionary<string, object>();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TavilySearchRequest" /> class.
     /// </summary>

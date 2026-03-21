@@ -23,32 +23,34 @@ public class AgentTests
     private readonly List<AgentResponseItem<ChatMessageContent>> _invokeResponses = [];
     private readonly List<AgentResponseItem<StreamingChatMessageContent>> _invokeStreamingResponses = [];
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentTests"/> class.
     /// </summary>
     public AgentTests()
     {
-        this._agentThreadMock = new Mock<AgentThread>(MockBehavior.Strict);
+        _agentThreadMock = new Mock<AgentThread>(MockBehavior.Strict);
 
-        this._invokeResponses.Add(new AgentResponseItem<ChatMessageContent>(new ChatMessageContent(AuthorRole.Assistant, "Hi"), this._agentThreadMock.Object));
-        this._invokeStreamingResponses.Add(new AgentResponseItem<StreamingChatMessageContent>(new StreamingChatMessageContent(AuthorRole.Assistant, "Hi"), this._agentThreadMock.Object));
+        _invokeResponses.Add(new AgentResponseItem<ChatMessageContent>(new ChatMessageContent(AuthorRole.Assistant, "Hi"), _agentThreadMock.Object));
+        _invokeStreamingResponses.Add(new AgentResponseItem<StreamingChatMessageContent>(new StreamingChatMessageContent(AuthorRole.Assistant, "Hi"), _agentThreadMock.Object));
 
-        this._agentMock = new Mock<Agent>() { CallBase = true };
-        this._agentMock
+        _agentMock = new Mock<Agent> { CallBase = true };
+        _agentMock
             .Setup(x => x.InvokeAsync(
                 It.IsAny<ICollection<ChatMessageContent>>(),
-                this._agentThreadMock.Object,
+                _agentThreadMock.Object,
                 It.IsAny<AgentInvokeOptions?>(),
                 It.IsAny<CancellationToken>()))
-            .Returns(this._invokeResponses.ToAsyncEnumerable());
-        this._agentMock
+            .Returns(_invokeResponses.ToAsyncEnumerable());
+        _agentMock
             .Setup(x => x.InvokeStreamingAsync(
                 It.IsAny<ICollection<ChatMessageContent>>(),
-                this._agentThreadMock.Object,
+                _agentThreadMock.Object,
                 It.IsAny<AgentInvokeOptions?>(),
                 It.IsAny<CancellationToken>()))
-            .Returns(this._invokeStreamingResponses.ToAsyncEnumerable());
+            .Returns(_invokeStreamingResponses.ToAsyncEnumerable());
     }
+
 
     /// <summary>
     /// Tests that invoking without a message calls the mocked invoke method with an empty array.
@@ -62,21 +64,22 @@ public class AgentTests
         var cancellationToken = new CancellationToken();
 
         // Act
-        await foreach (var response in this._agentMock.Object.InvokeAsync(this._agentThreadMock.Object, options, cancellationToken))
+        await foreach (var response in _agentMock.Object.InvokeAsync(_agentThreadMock.Object, options, cancellationToken))
         {
             // Assert
-            Assert.Contains(response, this._invokeResponses);
+            Assert.Contains(response, _invokeResponses);
         }
 
         // Verify that the mocked method was called with the expected parameters
-        this._agentMock.Verify(
+        _agentMock.Verify(
             x => x.InvokeAsync(
                 It.Is<ICollection<ChatMessageContent>>(messages => messages.Count == 0),
-                this._agentThreadMock.Object,
+                _agentThreadMock.Object,
                 options,
                 cancellationToken),
             Times.Once);
     }
+
 
     /// <summary>
     /// Tests that invoking with a string message calls the mocked invoke method with the message in the ICollection of messages.
@@ -91,21 +94,25 @@ public class AgentTests
         var cancellationToken = new CancellationToken();
 
         // Act
-        await foreach (var response in this._agentMock.Object.InvokeAsync(message, this._agentThreadMock.Object, options, cancellationToken))
+        await foreach (var response in _agentMock.Object.InvokeAsync(message,
+            _agentThreadMock.Object,
+            options,
+            cancellationToken))
         {
             // Assert
-            Assert.Contains(response, this._invokeResponses);
+            Assert.Contains(response, _invokeResponses);
         }
 
         // Verify that the mocked method was called with the expected parameters
-        this._agentMock.Verify(
+        _agentMock.Verify(
             x => x.InvokeAsync(
                 It.Is<ICollection<ChatMessageContent>>(messages => messages.Count == 1 && messages.First().Content == message),
-                this._agentThreadMock.Object,
+                _agentThreadMock.Object,
                 options,
                 cancellationToken),
             Times.Once);
     }
+
 
     /// <summary>
     /// Tests that invoking with a single message calls the mocked invoke method with the message in the ICollection of messages.
@@ -120,21 +127,25 @@ public class AgentTests
         var cancellationToken = new CancellationToken();
 
         // Act
-        await foreach (var response in this._agentMock.Object.InvokeAsync(message, this._agentThreadMock.Object, options, cancellationToken))
+        await foreach (var response in _agentMock.Object.InvokeAsync(message,
+            _agentThreadMock.Object,
+            options,
+            cancellationToken))
         {
             // Assert
-            Assert.Contains(response, this._invokeResponses);
+            Assert.Contains(response, _invokeResponses);
         }
 
         // Verify that the mocked method was called with the expected parameters
-        this._agentMock.Verify(
+        _agentMock.Verify(
             x => x.InvokeAsync(
                 It.Is<ICollection<ChatMessageContent>>(messages => messages.Count == 1 && messages.First() == message),
-                this._agentThreadMock.Object,
+                _agentThreadMock.Object,
                 options,
                 cancellationToken),
             Times.Once);
     }
+
 
     /// <summary>
     /// Tests that invoking streaming without a message calls the mocked invoke method with an empty array.
@@ -148,21 +159,22 @@ public class AgentTests
         var cancellationToken = new CancellationToken();
 
         // Act
-        await foreach (var response in this._agentMock.Object.InvokeStreamingAsync(this._agentThreadMock.Object, options, cancellationToken))
+        await foreach (var response in _agentMock.Object.InvokeStreamingAsync(_agentThreadMock.Object, options, cancellationToken))
         {
             // Assert
-            Assert.Contains(response, this._invokeStreamingResponses);
+            Assert.Contains(response, _invokeStreamingResponses);
         }
 
         // Verify that the mocked method was called with the expected parameters
-        this._agentMock.Verify(
+        _agentMock.Verify(
             x => x.InvokeStreamingAsync(
                 It.Is<ICollection<ChatMessageContent>>(messages => messages.Count == 0),
-                this._agentThreadMock.Object,
+                _agentThreadMock.Object,
                 options,
                 cancellationToken),
             Times.Once);
     }
+
 
     /// <summary>
     /// Tests that invoking streaming with a string message calls the mocked invoke method with the message in the ICollection of messages.
@@ -177,21 +189,25 @@ public class AgentTests
         var cancellationToken = new CancellationToken();
 
         // Act
-        await foreach (var response in this._agentMock.Object.InvokeStreamingAsync(message, this._agentThreadMock.Object, options, cancellationToken))
+        await foreach (var response in _agentMock.Object.InvokeStreamingAsync(message,
+            _agentThreadMock.Object,
+            options,
+            cancellationToken))
         {
             // Assert
-            Assert.Contains(response, this._invokeStreamingResponses);
+            Assert.Contains(response, _invokeStreamingResponses);
         }
 
         // Verify that the mocked method was called with the expected parameters
-        this._agentMock.Verify(
+        _agentMock.Verify(
             x => x.InvokeStreamingAsync(
                 It.Is<ICollection<ChatMessageContent>>(messages => messages.Count == 1 && messages.First().Content == message),
-                this._agentThreadMock.Object,
+                _agentThreadMock.Object,
                 options,
                 cancellationToken),
             Times.Once);
     }
+
 
     /// <summary>
     /// Tests that invoking streaming with a single message calls the mocked invoke method with the message in the ICollection of messages.
@@ -206,21 +222,25 @@ public class AgentTests
         var cancellationToken = new CancellationToken();
 
         // Act
-        await foreach (var response in this._agentMock.Object.InvokeStreamingAsync(message, this._agentThreadMock.Object, options, cancellationToken))
+        await foreach (var response in _agentMock.Object.InvokeStreamingAsync(message,
+            _agentThreadMock.Object,
+            options,
+            cancellationToken))
         {
             // Assert
-            Assert.Contains(response, this._invokeStreamingResponses);
+            Assert.Contains(response, _invokeStreamingResponses);
         }
 
         // Verify that the mocked method was called with the expected parameters
-        this._agentMock.Verify(
+        _agentMock.Verify(
             x => x.InvokeStreamingAsync(
                 It.Is<ICollection<ChatMessageContent>>(messages => messages.Count == 1 && messages.First() == message),
-                this._agentThreadMock.Object,
+                _agentThreadMock.Object,
                 options,
                 cancellationToken),
             Times.Once);
     }
+
 
     /// <summary>
     /// Verify ability to merge null <see cref="KernelArguments"/>.
@@ -242,6 +262,7 @@ public class AgentTests
         // Assert
         Assert.StrictEqual(1, arguments.Count);
     }
+
 
     /// <summary>
     /// Verify ability to merge <see cref="KernelArguments"/> parameters.
@@ -277,6 +298,7 @@ public class AgentTests
         Assert.Equal(3, arguments["c"]);
     }
 
+
     /// <summary>
     /// Verify ability to merge <see cref="KernelArguments.ExecutionSettings"/>.
     /// </summary>
@@ -286,7 +308,7 @@ public class AgentTests
         // Arrange
         FunctionChoiceBehavior autoInvoke = FunctionChoiceBehavior.Auto();
         PromptExecutionSettings promptExecutionSettings = new() { FunctionChoiceBehavior = autoInvoke };
-        KernelArguments primaryArgument = new() { ExecutionSettings = new Dictionary<string, PromptExecutionSettings>() { { PromptExecutionSettings.DefaultServiceId, promptExecutionSettings } } };
+        KernelArguments primaryArgument = new() { ExecutionSettings = new Dictionary<string, PromptExecutionSettings> { { PromptExecutionSettings.DefaultServiceId, promptExecutionSettings } } };
         KernelArguments overrideArgumentsNoSettings = [];
 
         // Act
@@ -300,7 +322,7 @@ public class AgentTests
 
         // Arrange
         FunctionChoiceBehavior noInvoke = FunctionChoiceBehavior.None();
-        KernelArguments overrideArgumentsWithSettings = new(new PromptExecutionSettings() { FunctionChoiceBehavior = noInvoke });
+        KernelArguments overrideArgumentsWithSettings = new(new PromptExecutionSettings { FunctionChoiceBehavior = noInvoke });
 
         // Act
         arguments = primaryArgument.Merge(overrideArgumentsWithSettings);

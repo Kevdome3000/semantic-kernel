@@ -3,17 +3,20 @@
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>Provides a builder for constructing instances of <see cref="Kernel"/>.</summary>
 public sealed class KernelBuilder : IKernelBuilder, IKernelBuilderPlugins
 {
     /// <summary>The collection of services to be available through the <see cref="Kernel"/>.</summary>
     private IServiceCollection? _services;
 
+
     /// <summary>Initializes a new instance of the <see cref="KernelBuilder"/>.</summary>
     public KernelBuilder()
     {
         AllowBuild = true;
     }
+
 
     /// <summary>Initializes a new instance of the <see cref="KernelBuilder"/>.</summary>
     /// <param name="services">
@@ -26,6 +29,7 @@ public sealed class KernelBuilder : IKernelBuilder, IKernelBuilderPlugins
         _services = services;
         AllowBuild = true;
     }
+
 
     /// <summary>Whether to allow a call to Build.</summary>
     /// <remarks>As a minor aid to help avoid misuse, we try to prevent Build from being called on instances returned from AddKernel.</remarks>

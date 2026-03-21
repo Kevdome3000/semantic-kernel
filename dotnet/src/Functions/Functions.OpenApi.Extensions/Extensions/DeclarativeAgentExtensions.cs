@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Plugins.Manifest;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
 namespace Microsoft.SemanticKernel;
@@ -45,10 +44,12 @@ public static class DeclarativeAgentExtensions
         using var declarativeAgentFileJsonContents = DocumentLoader.LoadDocumentFromFilePathAsStream(filePath,
             logger);
 
-        var results = await DCManifestDocument.LoadAsync(declarativeAgentFileJsonContents, new ReaderOptions
-        {
-            ValidationRules = [] // Disable validation rules
-        }).ConfigureAwait(false);
+        var results = await DCManifestDocument.LoadAsync(declarativeAgentFileJsonContents,
+                new ReaderOptions
+                {
+                    ValidationRules = [] // Disable validation rules
+                })
+            .ConfigureAwait(false);
 
         if (!results.IsValid)
         {
@@ -58,20 +59,27 @@ public static class DeclarativeAgentExtensions
 
         var document = results.Document ?? throw new InvalidOperationException("Error loading the manifest");
         var manifestDirectory = Path.GetDirectoryName(filePath);
-        document.Instructions = await GetEffectiveInstructionsAsync(manifestDirectory, document.Instructions, logger, cancellationToken).ConfigureAwait(false);
+        document.Instructions = await GetEffectiveInstructionsAsync(manifestDirectory,
+                document.Instructions,
+                logger,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         var agent = new T
         {
             Name = document.Name,
             Instructions = document.Instructions,
             Kernel = kernel,
-            Arguments = new KernelArguments(promptExecutionSettings ?? new PromptExecutionSettings()
-            {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
-            }),
+            Arguments = new KernelArguments(promptExecutionSettings
+                ?? new PromptExecutionSettings
+                {
+                    FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+                }),
             Description = document.Description,
             LoggerFactory = loggerFactory,
-            Id = string.IsNullOrEmpty(document.Id) ? Guid.NewGuid().ToString() : document.Id!,
+            Id = string.IsNullOrEmpty(document.Id)
+                ? Guid.NewGuid().ToString()
+                : document.Id!
         };
 
         if (document.Capabilities is { Count: > 0 })
@@ -82,17 +90,35 @@ public static class DeclarativeAgentExtensions
         if (document.Actions is { Count: > 0 })
         {
             logger.LogInformation("Importing {ActionsCount} actions from declarative agent.", document.Actions.Count);
-            await Task.WhenAll(document.Actions.Select(action => ImportCAPFromActionAsync(action, manifestDirectory, kernel, pluginParameters, logger, cancellationToken))).ConfigureAwait(false);
+            await Task.WhenAll(document.Actions.Select(action => ImportCAPFromActionAsync(action,
+                    manifestDirectory,
+                    kernel,
+                    pluginParameters,
+                    logger,
+                    cancellationToken)))
+                .ConfigureAwait(false);
         }
         return agent;
     }
-    private static async Task ImportCAPFromActionAsync(DCAction action, string? manifestDirectory, Kernel kernel, CopilotAgentPluginParameters? pluginParameters, ILogger logger, CancellationToken cancellationToken)
+
+
+    private static async Task ImportCAPFromActionAsync(
+        DCAction action,
+        string? manifestDirectory,
+        Kernel kernel,
+        CopilotAgentPluginParameters? pluginParameters,
+        ILogger logger,
+        CancellationToken cancellationToken)
     {
         try
         {
             var capManifestPath = GetFullPath(manifestDirectory, action.File);
             logger.LogInformation("Importing action {ActionName} from declarative agent from path {Path}.", action.Id, capManifestPath);
-            await kernel.ImportPluginFromCopilotAgentPluginAsync(action.Id, capManifestPath, pluginParameters, cancellationToken).ConfigureAwait(false);
+            await kernel.ImportPluginFromCopilotAgentPluginAsync(action.Id,
+                    capManifestPath,
+                    pluginParameters,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is FileNotFoundException or InvalidOperationException)
         {
@@ -104,11 +130,15 @@ public static class DeclarativeAgentExtensions
             throw;
         }
     }
-    private static async Task<string?> GetEffectiveInstructionsAsync(string? manifestFilePath, string? source, ILogger logger, CancellationToken cancellationToken)
+
+
+    private static async Task<string?> GetEffectiveInstructionsAsync(
+        string? manifestFilePath,
+        string? source,
+        ILogger logger,
+        CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(source) ||
-            !source!.StartsWith("$[file('", StringComparison.OrdinalIgnoreCase) ||
-            !source.EndsWith("')]", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrEmpty(source) || !source!.StartsWith("$[file('", StringComparison.OrdinalIgnoreCase) || !source.EndsWith("')]", StringComparison.OrdinalIgnoreCase))
         {
             return source;
         }
@@ -120,6 +150,8 @@ public static class DeclarativeAgentExtensions
         filePath = GetFullPath(manifestFilePath, filePath);
         return await DocumentLoader.LoadDocumentFromFilePathAsync(filePath, logger, cancellationToken).ConfigureAwait(false);
     }
+
+
     private static string GetFullPath(string? manifestDirectory, string relativeOrAbsolutePath)
     {
         return !Path.IsPathRooted(relativeOrAbsolutePath) && !relativeOrAbsolutePath.StartsWith("http", StringComparison.OrdinalIgnoreCase)

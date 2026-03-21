@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Abstraction of text content chunks when using streaming from <see cref="ITextGenerationService"/> interface.
 /// </summary>
@@ -21,6 +22,7 @@ public class StreamingTextContent : StreamingKernelContent
     /// </summary>
     [JsonIgnore]
     public Encoding Encoding { get; set; }
+
 
     /// <summary>
     /// Create a new instance of the <see cref="StreamingTextContent"/> class.
@@ -38,17 +40,22 @@ public class StreamingTextContent : StreamingKernelContent
         string? modelId = null,
         object? innerContent = null,
         Encoding? encoding = null,
-        IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent, choiceIndex, modelId, metadata)
+        IReadOnlyDictionary<string, object?>? metadata = null) : base(innerContent,
+        choiceIndex,
+        modelId,
+        metadata)
     {
         Text = text;
         Encoding = encoding ?? Encoding.UTF8;
     }
+
 
     /// <inheritdoc/>
     public override string ToString()
     {
         return Text ?? string.Empty;
     }
+
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()

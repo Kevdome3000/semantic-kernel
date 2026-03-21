@@ -3,12 +3,14 @@
 using System.Threading;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Class with data related to prompt rendering.
 /// </summary>
 public sealed class PromptRenderContext
 {
     private string? _renderedPrompt;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderContext"/> class.
@@ -26,6 +28,7 @@ public sealed class PromptRenderContext
         Function = function;
         Arguments = arguments;
     }
+
 
     /// <summary>
     /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.

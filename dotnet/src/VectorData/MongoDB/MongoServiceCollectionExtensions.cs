@@ -1,14 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using Microsoft.SemanticKernel.Http;
-using MongoDB.Driver;
-using MongoDB.Driver.Core.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -19,6 +13,7 @@ public static class MongoServiceCollectionExtensions
 {
     private const string DynamicCodeMessage = "This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
     private const string UnreferencedCodeMessage = "This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
+
 
     /// <summary>
     /// Registers a <see cref="MongoVectorStore"/> as <see cref="VectorStore"/>
@@ -31,7 +26,13 @@ public static class MongoServiceCollectionExtensions
         this IServiceCollection services,
         MongoVectorStoreOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedMongoVectorStore(services, serviceKey: null, options, lifetime);
+    {
+        return AddKeyedMongoVectorStore(services,
+            null,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="MongoVectorStore"/> as <see cref="VectorStore"/>
@@ -52,19 +53,25 @@ public static class MongoServiceCollectionExtensions
     {
         Verify.NotNull(services);
 
-        services.Add(new ServiceDescriptor(typeof(MongoVectorStore), serviceKey, (sp, _) =>
-        {
-            var database = sp.GetRequiredService<IMongoDatabase>();
-            options = GetStoreOptions(sp, _ => options);
+        services.Add(new ServiceDescriptor(typeof(MongoVectorStore),
+            serviceKey,
+            (sp, _) =>
+            {
+                var database = sp.GetRequiredService<IMongoDatabase>();
+                options = GetStoreOptions(sp, _ => options);
 
-            return new MongoVectorStore(database, options);
-        }, lifetime));
+                return new MongoVectorStore(database, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<MongoVectorStore>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStore),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<MongoVectorStore>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="MongoVectorStore"/> as <see cref="VectorStore"/>
@@ -79,7 +86,15 @@ public static class MongoServiceCollectionExtensions
         string databaseName,
         MongoVectorStoreOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedMongoVectorStore(services, serviceKey: null, connectionString, databaseName, options, lifetime);
+    {
+        return AddKeyedMongoVectorStore(services,
+            null,
+            connectionString,
+            databaseName,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="MongoVectorStore"/> as <see cref="VectorStore"/>
@@ -106,20 +121,26 @@ public static class MongoServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNullOrWhiteSpace(databaseName);
 
-        services.Add(new ServiceDescriptor(typeof(MongoVectorStore), serviceKey, (sp, _) =>
-        {
-            options = GetStoreOptions(sp, _ => options);
-            MongoClient mongoClient = new(CreateClientSettings(connectionString));
-            var database = mongoClient.GetDatabase(databaseName);
+        services.Add(new ServiceDescriptor(typeof(MongoVectorStore),
+            serviceKey,
+            (sp, _) =>
+            {
+                options = GetStoreOptions(sp, _ => options);
+                MongoClient mongoClient = new(CreateClientSettings(connectionString));
+                var database = mongoClient.GetDatabase(databaseName);
 
-            return new MongoVectorStore(database, options);
-        }, lifetime));
+                return new MongoVectorStore(database, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<MongoVectorStore>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStore),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<MongoVectorStore>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="MongoCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -134,7 +155,14 @@ public static class MongoServiceCollectionExtensions
         MongoCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedMongoCollection<TRecord>(services, serviceKey: null, name, options, lifetime);
+    {
+        return AddKeyedMongoCollection<TRecord>(services,
+            null,
+            name,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="MongoCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -160,18 +188,22 @@ public static class MongoServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(name);
 
-        services.Add(new ServiceDescriptor(typeof(MongoCollection<string, TRecord>), serviceKey, (sp, _) =>
-        {
-            var database = sp.GetRequiredService<IMongoDatabase>();
-            options = GetCollectionOptions(sp, _ => options);
+        services.Add(new ServiceDescriptor(typeof(MongoCollection<string, TRecord>),
+            serviceKey,
+            (sp, _) =>
+            {
+                var database = sp.GetRequiredService<IMongoDatabase>();
+                options = GetCollectionOptions(sp, _ => options);
 
-            return new MongoCollection<string, TRecord>(database, name, options);
-        }, lifetime));
+                return new MongoCollection<string, TRecord>(database, name, options);
+            },
+            lifetime));
 
         AddAbstractions<string, TRecord>(services, serviceKey, lifetime);
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="MongoCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
@@ -188,7 +220,16 @@ public static class MongoServiceCollectionExtensions
         MongoCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedMongoCollection<TRecord>(services, serviceKey: null, name, connectionString, databaseName, options, lifetime);
+    {
+        return AddKeyedMongoCollection<TRecord>(services,
+            null,
+            name,
+            connectionString,
+            databaseName,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="MongoCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
@@ -218,8 +259,15 @@ public static class MongoServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNullOrWhiteSpace(databaseName);
 
-        return AddKeyedMongoCollection<TRecord>(services, serviceKey, name, _ => connectionString, _ => databaseName, _ => options!, lifetime);
+        return AddKeyedMongoCollection<TRecord>(services,
+            serviceKey,
+            name,
+            _ => connectionString,
+            _ => databaseName,
+            _ => options!,
+            lifetime);
     }
+
 
     /// <summary>
     /// Registers a <see cref="MongoCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
@@ -236,7 +284,16 @@ public static class MongoServiceCollectionExtensions
         Func<IServiceProvider, MongoCollectionOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedMongoCollection<TRecord>(services, serviceKey: null, name, connectionStringProvider, databaseNameProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedMongoCollection<TRecord>(services,
+            null,
+            name,
+            connectionStringProvider,
+            databaseNameProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="MongoCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
@@ -268,37 +325,49 @@ public static class MongoServiceCollectionExtensions
         Verify.NotNull(connectionStringProvider);
         Verify.NotNull(databaseNameProvider);
 
-        services.Add(new ServiceDescriptor(typeof(MongoCollection<string, TRecord>), serviceKey, (sp, _) =>
-        {
-            var options = GetCollectionOptions(sp, optionsProvider);
-            MongoClient mongoClient = new(CreateClientSettings(connectionStringProvider(sp)));
-            var database = mongoClient.GetDatabase(databaseNameProvider(sp));
+        services.Add(new ServiceDescriptor(typeof(MongoCollection<string, TRecord>),
+            serviceKey,
+            (sp, _) =>
+            {
+                var options = GetCollectionOptions(sp, optionsProvider);
+                MongoClient mongoClient = new(CreateClientSettings(connectionStringProvider(sp)));
+                var database = mongoClient.GetDatabase(databaseNameProvider(sp));
 
-            return new MongoCollection<string, TRecord>(database, name, options);
-        }, lifetime));
+                return new MongoCollection<string, TRecord>(database, name, options);
+            },
+            lifetime));
 
         AddAbstractions<string, TRecord>(services, serviceKey, lifetime);
 
         return services;
     }
 
+
     private static void AddAbstractions<TKey, TRecord>(IServiceCollection services, object? serviceKey, ServiceLifetime lifetime)
         where TKey : notnull
         where TRecord : class
     {
-        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<MongoCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<MongoCollection<TKey, TRecord>>(key),
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<MongoCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<MongoCollection<TKey, TRecord>>(key),
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IKeywordHybridSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<MongoCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IKeywordHybridSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<MongoCollection<TKey, TRecord>>(key),
+            lifetime));
     }
+
 
     private static MongoVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, MongoVectorStoreOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.
@@ -309,10 +378,12 @@ public static class MongoServiceCollectionExtensions
             ? options // There is nothing to change.
             : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
+
 
     private static MongoCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, MongoCollectionOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.
@@ -323,6 +394,7 @@ public static class MongoServiceCollectionExtensions
             ? options // There is nothing to change.
             : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
+
 
     private static MongoClientSettings CreateClientSettings(string connectionString)
     {

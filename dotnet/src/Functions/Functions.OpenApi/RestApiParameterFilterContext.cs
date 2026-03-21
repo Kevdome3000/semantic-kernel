@@ -24,6 +24,7 @@ public sealed class RestApiParameterFilterContext
     /// </summary>
     public object? Parent { get; set; }
 
+
     /// <summary>
     /// Creates a new instance of the <see cref="RestApiParameterFilterContext"/> class.
     /// </summary>

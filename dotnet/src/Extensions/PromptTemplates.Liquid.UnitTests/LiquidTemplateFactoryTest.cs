@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Extensions.PromptTemplates.Liquid.UnitTests;
-
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
 using Xunit;
 
+namespace SemanticKernel.Extensions.PromptTemplates.Liquid.UnitTests;
 
 public class LiquidTemplateFactoryTest
 {
@@ -18,7 +17,7 @@ public class LiquidTemplateFactoryTest
         // Arrange
         var promptConfig = new PromptTemplateConfig("UnknownFormat")
         {
-            TemplateFormat = format,
+            TemplateFormat = format
         };
 
         var target = new LiquidPromptTemplateFactory();
@@ -36,7 +35,7 @@ public class LiquidTemplateFactoryTest
         // Arrange
         var promptConfig = new PromptTemplateConfig("Liquid")
         {
-            TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
+            TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat
         };
 
         var target = new LiquidPromptTemplateFactory();

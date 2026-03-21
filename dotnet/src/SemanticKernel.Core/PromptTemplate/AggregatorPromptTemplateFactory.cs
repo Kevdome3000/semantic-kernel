@@ -3,6 +3,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides a <see cref="IPromptTemplateFactory"/> which aggregates multiple prompt template factories.
 /// </summary>
@@ -14,6 +15,7 @@ namespace Microsoft.SemanticKernel;
 public sealed class AggregatorPromptTemplateFactory : IPromptTemplateFactory
 {
     private readonly IPromptTemplateFactory?[] _promptTemplateFactories;
+
 
     /// <summary>Initializes the instance.</summary>
     /// <param name="promptTemplateFactories">Ordered <see cref="IPromptTemplateFactory"/> instances to aggregate.</param>
@@ -28,6 +30,7 @@ public sealed class AggregatorPromptTemplateFactory : IPromptTemplateFactory
 
         _promptTemplateFactories = promptTemplateFactories;
     }
+
 
     /// <inheritdoc/>
     public bool TryCreate(PromptTemplateConfig templateConfig, [NotNullWhen(true)] out IPromptTemplate? result)

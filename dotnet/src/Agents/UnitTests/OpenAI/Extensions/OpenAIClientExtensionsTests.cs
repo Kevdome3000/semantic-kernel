@@ -23,6 +23,7 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
     private readonly HttpClient _httpClient;
     private readonly OpenAIClient _client;
 
+
     /// <summary>
     /// Verify the default creation of vector-store.
     /// </summary>
@@ -31,14 +32,15 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
     {
         // Arrange
         string[] fileIds = ["file-1", "file-2"];
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateVectorStore);
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateVectorStore);
 
         // Act
-        string storeId = await this._client.CreateVectorStoreAsync(fileIds);
+        string storeId = await _client.CreateVectorStoreAsync(fileIds);
 
         // Assert
         Assert.NotNull(storeId);
     }
+
 
     /// <summary>
     /// Verify the custom creation of vector-store.
@@ -52,21 +54,22 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
             new()
             {
                 { "a", "1" },
-                { "b", "2" },
+                { "b", "2" }
             };
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateVectorStore);
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateVectorStore);
 
         // Act
-        string storeId = await this._client.CreateVectorStoreAsync(
+        string storeId = await _client.CreateVectorStoreAsync(
             fileIds,
-            storeName: "test-store",
-            expirationPolicy: new VectorStoreExpirationPolicy(VectorStoreExpirationAnchor.LastActiveAt, 30),
-            chunkingStrategy: FileChunkingStrategy.Auto,
-            metadata: metadata);
+            "test-store",
+            new VectorStoreExpirationPolicy(VectorStoreExpirationAnchor.LastActiveAt, 30),
+            FileChunkingStrategy.Auto,
+            metadata);
 
         // Assert
         Assert.NotNull(storeId);
     }
+
 
     /// <summary>
     /// Verify the uploading an assistant file.
@@ -75,15 +78,16 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
     public async Task VerifyUploadFileAsync()
     {
         // Arrange
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.UploadFile);
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.UploadFile);
 
         // Act
         await using MemoryStream stream = new(Encoding.UTF8.GetBytes("test"));
-        string fileId = await this._client.UploadAssistantFileAsync(stream, "text.txt");
+        string fileId = await _client.UploadAssistantFileAsync(stream, "text.txt");
 
         // Assert
         Assert.NotNull(fileId);
     }
+
 
     /// <summary>
     /// Verify the deleting a file.
@@ -92,14 +96,15 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
     public async Task VerifyDeleteFileAsync()
     {
         // Arrange
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteFile);
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteFile);
 
         // Act
-        bool isDeleted = await this._client.DeleteFileAsync("file-id");
+        bool isDeleted = await _client.DeleteFileAsync("file-id");
 
         // Assert
         Assert.True(isDeleted);
     }
+
 
     /// <summary>
     /// Verify the deleting a vector-store.
@@ -108,32 +113,37 @@ public sealed class OpenAIClientExtensionsTests : IDisposable
     public async Task VerifyDeleteVectorStoreAsync()
     {
         // Arrange
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteVectorStore);
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteVectorStore);
 
         // Act
-        bool isDeleted = await this._client.DeleteVectorStoreAsync("store-id");
+        bool isDeleted = await _client.DeleteVectorStoreAsync("store-id");
 
         // Assert
         Assert.True(isDeleted);
     }
 
+
     /// <inheritdoc/>
     public void Dispose()
     {
-        this._messageHandlerStub.Dispose();
-        this._httpClient.Dispose();
+        _messageHandlerStub.Dispose();
+        _httpClient.Dispose();
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgentTests"/> class.
     /// </summary>
     public OpenAIClientExtensionsTests()
     {
-        this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
-        this._client = OpenAIAssistantAgent.CreateOpenAIClient(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient);
+        _messageHandlerStub = new HttpMessageHandlerStub();
+        _httpClient = new HttpClient(_messageHandlerStub, false);
+        _client = OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential("fakekey"), null, _httpClient);
     }
 
-    private void SetupResponse(HttpStatusCode statusCode, string content) =>
-        this._messageHandlerStub.SetupResponses(statusCode, content);
+
+    private void SetupResponse(HttpStatusCode statusCode, string content)
+    {
+        _messageHandlerStub.SetupResponses(statusCode, content);
+    }
 }

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +7,11 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Http;
 
+namespace Microsoft.SemanticKernel.Plugins.Web.Bing;
 
 /// <summary>
 /// Bing API connector.
@@ -26,7 +25,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
 
     private readonly string? _apiKey;
 
-    private readonly Uri? _uri = null;
+    private readonly Uri? _uri;
 
     private const string DefaultUri = "https://api.bing.microsoft.com/v7.0/search?q";
 
@@ -38,7 +37,10 @@ public sealed class BingConnector : IWebSearchEngineConnector
     /// <param name="uri">The URI of the Bing Search instance. Defaults to "https://api.bing.microsoft.com/v7.0/search?q".</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public BingConnector(string apiKey, Uri? uri = null, ILoggerFactory? loggerFactory = null) :
-        this(apiKey, HttpClientProvider.GetHttpClient(), uri, loggerFactory)
+        this(apiKey,
+            HttpClientProvider.GetHttpClient(),
+            uri,
+            loggerFactory)
     {
     }
 
@@ -83,13 +85,11 @@ public sealed class BingConnector : IWebSearchEngineConnector
 
         _logger.LogDebug("Sending request: {Uri}", uri);
 
-        using HttpResponseMessage response = await SendGetRequestAsync(uri, cancellationToken).
-            ConfigureAwait(false);
+        using HttpResponseMessage response = await SendGetRequestAsync(uri, cancellationToken).ConfigureAwait(false);
 
         _logger.LogDebug("Response received: {StatusCode}", response.StatusCode);
 
-        string json = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).
-            ConfigureAwait(false);
+        string json = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         // Sensitive data, logging as trace, disabled by default
         _logger.LogTrace("Response content received: {Data}", json);
@@ -104,15 +104,13 @@ public sealed class BingConnector : IWebSearchEngineConnector
             {
                 WebPage[]? results = data?.WebPages?.Value;
 
-                returnValues = results?.Select(x => x.Snippet).
-                    ToList() as List<T>;
+                returnValues = results?.Select(x => x.Snippet).ToList() as List<T>;
             }
             else if (typeof(T) == typeof(WebPage))
             {
                 List<WebPage>? webPages = [.. data.WebPages.Value];
 
-                returnValues = webPages.Take(count).
-                    ToList() as List<T>;
+                returnValues = webPages.Take(count).ToList() as List<T>;
             }
             else
             {
@@ -121,9 +119,11 @@ public sealed class BingConnector : IWebSearchEngineConnector
         }
 
         return
-            returnValues is null ? [] :
-            returnValues.Count <= count ? returnValues :
-            returnValues.Take(count);
+            returnValues is null
+                ? []
+                : returnValues.Count <= count
+                    ? returnValues
+                    : returnValues.Take(count);
     }
 
 
@@ -142,8 +142,7 @@ public sealed class BingConnector : IWebSearchEngineConnector
             httpRequestMessage.Headers.Add("Ocp-Apim-Subscription-Key", _apiKey);
         }
 
-        return await _httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).
-            ConfigureAwait(false);
+        return await _httpClient.SendWithSuccessCheckAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
     }
 
 }

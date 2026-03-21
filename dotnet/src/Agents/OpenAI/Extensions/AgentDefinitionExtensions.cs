@@ -26,6 +26,7 @@ internal static class AgentDefinitionExtensions
     private const string OpenAI = "openai";
     private const string AzureOpenAI = "azure_openai";
 
+
     /// <summary>
     /// Create the <see cref="AssistantCreationOptions"/> which corresponds with the provided <see cref="AgentDefinition"/>.
     /// </summary>
@@ -36,13 +37,13 @@ internal static class AgentDefinitionExtensions
         Verify.NotNull(agentDefinition.Model, nameof(agentDefinition.Model));
         Verify.NotNull(agentDefinition.Model.Id, nameof(agentDefinition.Model.Id));
 
-        var assistantCreationOptions = new AssistantCreationOptions()
+        var assistantCreationOptions = new AssistantCreationOptions
         {
             Name = agentDefinition.Name,
             Description = agentDefinition.Description,
             Instructions = agentDefinition.Instructions,
             Temperature = agentDefinition.GetTemperature(),
-            NucleusSamplingFactor = agentDefinition.GetTopP(),
+            NucleusSamplingFactor = agentDefinition.GetTopP()
         };
 
         // TODO: Implement
@@ -65,13 +66,14 @@ internal static class AgentDefinitionExtensions
                         assistantCreationOptions.Tools.Add(ToolDefinition.CreateFileSearch());
                         break;
                     default:
-                        throw new System.NotSupportedException($"Tool type '{tool.Type}' is not supported.");
+                        throw new NotSupportedException($"Tool type '{tool.Type}' is not supported.");
                 }
             }
         }
 
         return assistantCreationOptions;
     }
+
 
     /// <summary>
     /// Retrieve the code interpreter file IDs from the agent definition.
@@ -82,14 +84,16 @@ internal static class AgentDefinitionExtensions
         Verify.NotNull(agentDefinition);
 
         var toolDefinition = agentDefinition.GetFirstToolDefinition(CodeInterpreterType);
+
         if ((toolDefinition?.Options?.TryGetValue(FileIds, out var value) ?? false) && value is List<string> fileIds)
         {
             // TODO: Verify that the fileIds are strings
-            return (IReadOnlyList<string>)fileIds;
+            return fileIds;
         }
 
         return null;
     }
+
 
     /// <summary>
     /// Retrieve the vector store ID from the agent definition.
@@ -103,6 +107,7 @@ internal static class AgentDefinitionExtensions
         return null;
     }
 
+
     /// <summary>
     /// Retrieve the metadata from the agent definition.
     /// </summary>
@@ -115,6 +120,7 @@ internal static class AgentDefinitionExtensions
         return null;
     }
 
+
     /// <summary>
     /// Return the <see cref="OpenAIClient"/> to be used with the specified <see cref="AgentDefinition"/>.
     /// </summary>
@@ -126,6 +132,7 @@ internal static class AgentDefinitionExtensions
 
         // Use the agent connection as the first option
         var connection = agentDefinition?.Model?.Connection;
+
         if (connection is not null)
         {
             if (connection.Type is null)
@@ -141,7 +148,8 @@ internal static class AgentDefinitionExtensions
             {
                 return OpenAIAssistantAgent.CreateOpenAIClient(connection.GetApiKeyCredential(), connection.TryGetEndpoint(), httpClient);
             }
-            else if (connection.Type.Equals(AzureOpenAI, StringComparison.OrdinalIgnoreCase))
+
+            if (connection.Type.Equals(AzureOpenAI, StringComparison.OrdinalIgnoreCase))
             {
                 var endpoint = connection.TryGetEndpoint();
                 Verify.NotNull(endpoint, "Endpoint must be specified when using Azure OpenAI.");
@@ -160,12 +168,15 @@ internal static class AgentDefinitionExtensions
 
         // Use the client registered on the kernel
         var client = kernel.GetAllServices<OpenAIClient>().FirstOrDefault();
-        return (OpenAIClient?)client ?? throw new InvalidOperationException("OpenAI client not found.");
+        return client ?? throw new InvalidOperationException("OpenAI client not found.");
     }
 
+
     #region private
+
     private const string Temperature = "temperature";
     private const string TopP = "top_p";
+
 
     private static float? GetTemperature(this AgentDefinition agentDefinition)
     {
@@ -178,6 +189,7 @@ internal static class AgentDefinitionExtensions
         return null;
     }
 
+
     private static float? GetTopP(this AgentDefinition agentDefinition)
     {
         Verify.NotNull(agentDefinition);
@@ -188,5 +200,8 @@ internal static class AgentDefinitionExtensions
         }
         return null;
     }
+
     #endregion
+
+
 }

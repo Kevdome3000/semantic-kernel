@@ -21,12 +21,13 @@ public static class TextToImageServiceExtensions
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Generated image in base64 format or image URL</returns>
-    public static async Task<string> GenerateImageAsync(this ITextToImageService service,
-    string description,
-    int width,
-    int height,
-    Kernel? kernel = null,
-    CancellationToken cancellationToken = default)
+    public static async Task<string> GenerateImageAsync(
+        this ITextToImageService service,
+        string description,
+        int width,
+        int height,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
     {
         var executionSettings = new PromptExecutionSettings
         {
@@ -37,7 +38,11 @@ public static class TextToImageServiceExtensions
             }
         };
 
-        var result = await service.GetImageContentsAsync(new TextContent(description), executionSettings, kernel, cancellationToken).ConfigureAwait(false);
+        var result = await service.GetImageContentsAsync(new TextContent(description),
+                executionSettings,
+                kernel,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         return result[0].Uri!.ToString();
     }

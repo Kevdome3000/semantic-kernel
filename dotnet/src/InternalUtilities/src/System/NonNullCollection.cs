@@ -2,12 +2,6 @@
 
 namespace Microsoft.SemanticKernel;
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
-
 /// <summary>
 /// Provides a collection of non-null items.
 /// </summary>
@@ -25,7 +19,10 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     /// <summary>
     /// Initializes a new instance of the <see cref="NonNullCollection{T}"/> class.
     /// </summary>
-    public NonNullCollection() => _items = [];
+    public NonNullCollection()
+    {
+        _items = [];
+    }
 
 
     /// <summary>
@@ -77,7 +74,10 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     /// <summary>
     /// Removes all items from the collection.
     /// </summary>
-    public void Clear() => _items.Clear();
+    public void Clear()
+    {
+        _items.Clear();
+    }
 
 
     /// <summary>
@@ -102,7 +102,10 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     /// <exception cref="ArgumentNullException"><paramref name="array"/> is null.</exception>
     /// <exception cref="ArgumentException">The number of items in the collection is greater than the available space from <paramref name="arrayIndex"/> to the end of <paramref name="array"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception>
-    public void CopyTo(T[] array, int arrayIndex) => _items.CopyTo(array, arrayIndex);
+    public void CopyTo(T[] array, int arrayIndex)
+    {
+        _items.CopyTo(array, arrayIndex);
+    }
 
 
     /// <summary>
@@ -149,13 +152,24 @@ internal sealed class NonNullCollection<T> : IList<T>, IReadOnlyList<T>
     /// Removes the item at the specified index from the collection.
     /// </summary>
     /// <param name="index">The index of the item to remove.</param>
-    public void RemoveAt(int index) => _items.RemoveAt(index);
+    public void RemoveAt(int index)
+    {
+        _items.RemoveAt(index);
+    }
 
 
     bool ICollection<T>.IsReadOnly => false;
 
-    IEnumerator IEnumerable.GetEnumerator() => _items.GetEnumerator();
 
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => _items.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return _items.GetEnumerator();
+    }
+
+
+    IEnumerator<T> IEnumerable<T>.GetEnumerator()
+    {
+        return _items.GetEnumerator();
+    }
 
 }

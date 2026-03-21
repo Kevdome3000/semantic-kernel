@@ -1,14 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.InteropServices;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using NRedisStack.Search;
-
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
@@ -25,7 +16,8 @@ internal static class RedisCollectionSearchMapping
     /// <returns>The vector converted to a byte array.</returns>
     /// <exception cref="NotSupportedException">Thrown if the vector type is not supported.</exception>
     public static byte[] ValidateVectorAndConvertToBytes<TVector>(TVector vector, string connectorTypeName)
-        => vector switch
+    {
+        return vector switch
         {
             ReadOnlyMemory<float> m => MemoryMarshal.AsBytes(m.Span).ToArray(),
             Embedding<float> e => MemoryMarshal.AsBytes(e.Vector.Span).ToArray(),
@@ -37,6 +29,8 @@ internal static class RedisCollectionSearchMapping
 
             _ => throw new NotSupportedException($"The provided vector type {vector?.GetType().FullName} is not supported by the Redis {connectorTypeName} connector.")
         };
+    }
+
 
     /// <summary>
     /// Build a Redis <see cref="Query"/> object from the given vector and options.
@@ -48,7 +42,13 @@ internal static class RedisCollectionSearchMapping
     /// <param name="vectorProperty">The vector property.</param>
     /// <param name="selectFields">The set of fields to limit the results to. Null for all.</param>
     /// <returns>The <see cref="Query"/>.</returns>
-    public static Query BuildQuery<TRecord>(byte[] vectorBytes, int top, VectorSearchOptions<TRecord> options, CollectionModel model, VectorPropertyModel vectorProperty, string[]? selectFields)
+    public static Query BuildQuery<TRecord>(
+        byte[] vectorBytes,
+        int top,
+        VectorSearchOptions<TRecord> options,
+        CollectionModel model,
+        VectorPropertyModel vectorProperty,
+        string[]? selectFields)
     {
         // Build search query.
         var redisLimit = top + options.Skip;
@@ -78,7 +78,12 @@ internal static class RedisCollectionSearchMapping
         return query;
     }
 
-    internal static Query BuildQuery<TRecord>(Expression<Func<TRecord, bool>> filter, int top, FilteredRecordRetrievalOptions<TRecord> options, CollectionModel model)
+
+    internal static Query BuildQuery<TRecord>(
+        Expression<Func<TRecord, bool>> filter,
+        int top,
+        FilteredRecordRetrievalOptions<TRecord> options,
+        CollectionModel model)
     {
         var translatedFilter = new RedisFilterTranslator().Translate(filter, model);
         Query query = new Query(translatedFilter)
@@ -101,6 +106,7 @@ internal static class RedisCollectionSearchMapping
 
         return query;
     }
+
 
     /// <summary>
     /// Build a redis filter string from the provided <see cref="VectorSearchFilter"/>.
@@ -128,20 +134,19 @@ internal static class RedisCollectionSearchMapping
                     _ => throw new InvalidOperationException($"Unsupported filter value type '{equalityFilterClause.Value.GetType().Name}'.")
                 };
             }
-            else if (clause is AnyTagEqualToFilterClause tagListContainsClause)
+
+            if (clause is AnyTagEqualToFilterClause tagListContainsClause)
             {
                 var storagePropertyName = GetStoragePropertyName(model, tagListContainsClause.FieldName);
                 return $"@{storagePropertyName}:{{{tagListContainsClause.Value}}}";
             }
-            else
-            {
-                throw new InvalidOperationException($"Unsupported filter clause type '{clause.GetType().Name}'.");
-            }
+            throw new InvalidOperationException($"Unsupported filter clause type '{clause.GetType().Name}'.");
         });
 
         return $"({string.Join(" ", filterClauses)})";
     }
 #pragma warning restore CS0618 // Type or member is obsolete
+
 
     /// <summary>
     /// Resolve the distance function to use for a search by checking the distance function of the vector property specified in options
@@ -150,7 +155,10 @@ internal static class RedisCollectionSearchMapping
     /// <param name="vectorProperty">The vector property to be used.</param>
     /// <returns>The distance function for the vector we want to search.</returns>
     public static string ResolveDistanceFunction(VectorPropertyModel vectorProperty)
-        => vectorProperty.DistanceFunction ?? DistanceFunction.CosineSimilarity;
+    {
+        return vectorProperty.DistanceFunction ?? DistanceFunction.CosineSimilarity;
+    }
+
 
     /// <summary>
     /// Convert the score from redis into the appropriate output score based on the distance function.
@@ -173,9 +181,10 @@ internal static class RedisCollectionSearchMapping
             DistanceFunction.CosineDistance => redisScore,
             DistanceFunction.DotProductSimilarity => redisScore,
             DistanceFunction.EuclideanSquaredDistance => redisScore,
-            _ => throw new InvalidOperationException($"The distance function '{distanceFunction}' is not supported."),
+            _ => throw new InvalidOperationException($"The distance function '{distanceFunction}' is not supported.")
         };
     }
+
 
     /// <summary>
     /// Gets the name of the name under which the property with the given name is stored.

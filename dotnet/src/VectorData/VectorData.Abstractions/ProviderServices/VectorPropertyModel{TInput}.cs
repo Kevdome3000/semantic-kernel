@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -16,8 +15,17 @@ namespace Microsoft.Extensions.VectorData.ProviderServices;
 public sealed class VectorPropertyModel<TInput>(string modelName) : VectorPropertyModel(modelName, typeof(TInput))
 {
     /// <inheritdoc />
+    public override bool CanGenerateEmbedding<TEmbedding>(IEmbeddingGenerator embeddingGenerator)
+    {
+        return embeddingGenerator is IEmbeddingGenerator<TInput, TEmbedding>
+            || base.CanGenerateEmbedding<TEmbedding>(embeddingGenerator);
+    }
+
+
+    /// <inheritdoc />
     public override Type? ResolveEmbeddingType<TEmbedding>(IEmbeddingGenerator embeddingGenerator, Type? userRequestedEmbeddingType)
-        => embeddingGenerator switch
+    {
+        return embeddingGenerator switch
         {
             IEmbeddingGenerator<TInput, TEmbedding> when this.Type == typeof(TInput) && (userRequestedEmbeddingType is null || userRequestedEmbeddingType == typeof(TEmbedding))
                 => typeof(TEmbedding),
@@ -25,53 +33,49 @@ public sealed class VectorPropertyModel<TInput>(string modelName) : VectorProper
             null => throw new ArgumentNullException(nameof(embeddingGenerator), "This method should only be called when an embedding generator is configured."),
             _ => null
         };
+    }
+
 
     /// <inheritdoc />
-    public override bool TryGenerateEmbedding<TRecord, TEmbedding>(TRecord record, CancellationToken cancellationToken, [NotNullWhen(true)] out Task<TEmbedding>? task)
+    internal override async Task<IReadOnlyList<Embedding>> GenerateEmbeddingsCoreAsync<TEmbedding>(IEnumerable<object?> values, CancellationToken cancellationToken)
     {
-        switch (this.EmbeddingGenerator)
+        switch (EmbeddingGenerator)
         {
-            case IEmbeddingGenerator<TInput, TEmbedding> generator when this.EmbeddingType == typeof(TEmbedding):
-                task = generator.GenerateAsync(
-                    this.GetValueAsObject(record) is var value && value is TInput s
-                        ? s
-                        : throw new InvalidOperationException($"Property '{this.ModelName}' was configured with an embedding generator accepting a {nameof(TInput)}, but {value?.GetType().Name ?? "null"} was provided."),
-                    options: null,
-                    cancellationToken);
-                return true;
+            case IEmbeddingGenerator<TInput, TEmbedding> generator when EmbeddingType == typeof(TEmbedding):
+                return await generator.GenerateAsync(
+                        values.Select(v => v is TInput s
+                            ? s
+                            : throw new InvalidOperationException($"Property '{ModelName}' was configured with an embedding generator accepting a {typeof(TInput).Name}, but {v?.GetType().Name ?? "null"} was provided.")),
+                        options: null,
+                        cancellationToken)
+                    .ConfigureAwait(false);
 
             case null:
                 throw new UnreachableException("This method should only be called when an embedding generator is configured.");
 
             default:
-                task = null;
-                return false;
+                throw new InvalidOperationException(
+                    $"The embedding generator configured on property '{ModelName}' cannot produce an embedding of type '{typeof(TEmbedding).Name}' for the given input type.");
         }
     }
 
+
     /// <inheritdoc />
-    public override bool TryGenerateEmbeddings<TRecord, TEmbedding>(IEnumerable<TRecord> records, CancellationToken cancellationToken, [NotNullWhen(true)] out Task<GeneratedEmbeddings<TEmbedding>>? task)
+    internal override async Task<Embedding> GenerateEmbeddingCoreAsync<TEmbedding>(object? value, CancellationToken cancellationToken)
     {
-        switch (this.EmbeddingGenerator)
+        if (EmbeddingGenerator is IEmbeddingGenerator<TInput, TEmbedding> generator && value is TInput t)
         {
-            case IEmbeddingGenerator<TInput, TEmbedding> generator when this.EmbeddingType == typeof(TEmbedding):
-                task = generator.GenerateAsync(
-                    records.Select(r => this.GetValueAsObject(r) is var value && value is TInput s
-                        ? s
-                        : throw new InvalidOperationException($"Property '{this.ModelName}' was configured with an embedding generator accepting a string, but {value?.GetType().Name ?? "null"} was provided.")),
-                    options: null,
-                    cancellationToken);
-                return true;
-
-            case null:
-                throw new UnreachableException("This method should only be called when an embedding generator is configured.");
-
-            default:
-                task = null;
-                return false;
+            return await generator.GenerateAsync(t, options: null, cancellationToken).ConfigureAwait(false);
         }
+
+        // Fall through to base class which checks for string and DataContent input types.
+        return await base.GenerateEmbeddingCoreAsync<TEmbedding>(value, cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc />
-    public override Type[] GetSupportedInputTypes() => [typeof(TInput)];
+    public override Type[] GetSupportedInputTypes()
+    {
+        return [typeof(TInput)];
+    }
 }

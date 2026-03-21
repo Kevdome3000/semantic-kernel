@@ -16,6 +16,7 @@ public class VectorStoreException : Exception
     {
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreException"/> class with a specified error message.
     /// </summary>
@@ -23,6 +24,7 @@ public class VectorStoreException : Exception
     public VectorStoreException(string? message) : base(message)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreException"/> class with a specified error message and a reference to the inner exception that's the cause of this exception.
@@ -32,6 +34,7 @@ public class VectorStoreException : Exception
     public VectorStoreException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
+
 
     /// <summary>Gets or sets the name of the vector store system.</summary>
     /// <remarks>

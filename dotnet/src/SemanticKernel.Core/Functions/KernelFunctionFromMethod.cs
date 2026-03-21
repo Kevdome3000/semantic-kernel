@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides factory methods for creating <see cref="KernelFunction"/> instances backed by a .NET method.
 /// </summary>
@@ -43,6 +44,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         { typeof(byte), s => byte.Parse(s) },
         { typeof(sbyte), s => sbyte.Parse(s) }
     };
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -79,6 +81,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                 LoggerFactory = loggerFactory
             });
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -118,27 +121,27 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     }
 
 
-/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
-Before:
-    /// <summary>
-After:
-    /// <summary>
-*/
+    /* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
+    Before:
+        /// <summary>
+    After:
+        /// <summary>
+    */
 
-/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
-Before:
-    /// <inheritdoc/>
-After:
-    /// <inheritdoc/>
-*/
+    /* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
+    Before:
+        /// <inheritdoc/>
+    After:
+        /// <inheritdoc/>
+    */
 
 
-/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
-Before:
-    /// <inheritdoc/>
-After:
-    /// <inheritdoc/>
-*/
+    /* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
+    Before:
+        /// <inheritdoc/>
+    After:
+        /// <inheritdoc/>
+    */
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
@@ -172,14 +175,14 @@ After:
             options?.ReturnParameter ?? methodDetails.ReturnParameter,
             options?.AdditionalMetadata);
 
-        if (options?.LoggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger &&
-            logger.IsEnabled(LogLevel.Trace))
+        if (options?.LoggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger && logger.IsEnabled(LogLevel.Trace))
         {
             logger.LogTrace("Created KernelFunction '{Name}' for '{MethodName}'", result.Name, method.Name);
         }
 
         return result;
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -198,12 +201,16 @@ After:
     {
         Verify.NotNull(method);
         Verify.NotNull(jsonSerializerOptions);
+
         if (!method.IsStatic && target is null)
         {
             throw new ArgumentNullException(nameof(target), "Target must not be null for an instance method.");
         }
 
-        MethodDetails methodDetails = GetMethodDetails(options?.FunctionName, method, jsonSerializerOptions, target);
+        MethodDetails methodDetails = GetMethodDetails(options?.FunctionName,
+            method,
+            jsonSerializerOptions,
+            target);
         var result = new KernelFunctionFromMethod(
             method,
             methodDetails.Function,
@@ -214,14 +221,14 @@ After:
             jsonSerializerOptions,
             options?.AdditionalMetadata);
 
-        if (options?.LoggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger &&
-            logger.IsEnabled(LogLevel.Trace))
+        if (options?.LoggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger && logger.IsEnabled(LogLevel.Trace))
         {
             logger.LogTrace("Created KernelFunction '{Name}' for '{MethodName}'", result.Name, method.Name);
         }
 
         return result;
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunctionMetadata"/> instance for a method, specified via an <see cref="MethodInfo"/> instance.
@@ -242,7 +249,8 @@ After:
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null)
-        => CreateMetadata(
+    {
+        return CreateMetadata(
             method,
             new KernelFunctionFromMethodOptions
             {
@@ -252,6 +260,8 @@ After:
                 ReturnParameter = returnParameter,
                 LoggerFactory = loggerFactory
             });
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunctionMetadata"/> instance for a method, specified via an <see cref="MethodInfo"/> instance.
@@ -272,7 +282,8 @@ After:
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
         ILoggerFactory? loggerFactory = null)
-        => CreateMetadata(
+    {
+        return CreateMetadata(
             method,
             jsonSerializerOptions,
             new KernelFunctionFromMethodOptions
@@ -283,6 +294,8 @@ After:
                 ReturnParameter = returnParameter,
                 LoggerFactory = loggerFactory
             });
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunctionMetadata"/> instance for a method, specified via an <see cref="MethodInfo"/> instance.
@@ -308,14 +321,14 @@ After:
             options?.ReturnParameter ?? methodDetails.ReturnParameter,
             options?.AdditionalMetadata);
 
-        if (options?.LoggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger &&
-            logger.IsEnabled(LogLevel.Trace))
+        if (options?.LoggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger && logger.IsEnabled(LogLevel.Trace))
         {
             logger.LogTrace("Created KernelFunctionMetadata '{Name}' for '{MethodName}'", result.Name, method.Name);
         }
 
         return result.Metadata;
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunctionMetadata"/> instance for a method, specified via an <see cref="MethodInfo"/> instance.
@@ -331,7 +344,10 @@ After:
     {
         Verify.NotNull(method);
 
-        MethodDetails methodDetails = GetMethodDetails(options?.FunctionName, method, jsonSerializerOptions, target: null);
+        MethodDetails methodDetails = GetMethodDetails(options?.FunctionName,
+            method,
+            jsonSerializerOptions,
+            target: null);
         var result = new KernelFunctionFromMethod(
             method,
             methodDetails.Function,
@@ -342,8 +358,7 @@ After:
             jsonSerializerOptions,
             options?.AdditionalMetadata);
 
-        if (options?.LoggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger &&
-            logger.IsEnabled(LogLevel.Trace))
+        if (options?.LoggerFactory?.CreateLogger(method.DeclaringType ?? typeof(KernelFunctionFromPrompt)) is ILogger logger && logger.IsEnabled(LogLevel.Trace))
         {
             logger.LogTrace("Created KernelFunctionMetadata '{Name}' for '{MethodName}'", result.Name, method.Name);
         }
@@ -351,14 +366,19 @@ After:
         return result.Metadata;
     }
 
+
     /// <inheritdoc/>
     protected override ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken)
     {
-        return _function(kernel, this, arguments, cancellationToken);
+        return _function(kernel,
+            this,
+            arguments,
+            cancellationToken);
     }
+
 
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
@@ -366,8 +386,7 @@ After:
         KernelArguments arguments,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        FunctionResult functionResult = await InvokeCoreAsync(kernel, arguments, cancellationToken).
-            ConfigureAwait(false);
+        FunctionResult functionResult = await InvokeCoreAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
 
         if (functionResult.Value is TResult result)
         {
@@ -381,8 +400,7 @@ After:
         // Invoke{Prompt}StreamingAsync and returns its result enumerable directly.
         if (functionResult.Value is IAsyncEnumerable<TResult> asyncEnumerable)
         {
-            await foreach (TResult item in asyncEnumerable.WithCancellation(cancellationToken).
-                               ConfigureAwait(false))
+            await foreach (TResult item in asyncEnumerable.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
                 yield return item;
             }
@@ -391,8 +409,7 @@ After:
         }
 
         // Supports the following provided T types for Method streaming
-        if (typeof(TResult) == typeof(StreamingKernelContent) ||
-            typeof(TResult) == typeof(StreamingMethodContent))
+        if (typeof(TResult) == typeof(StreamingKernelContent) || typeof(TResult) == typeof(StreamingMethodContent))
         {
             if (functionResult.Value is not null)
             {
@@ -404,6 +421,8 @@ After:
 
         throw new NotSupportedException($"Streaming function {Name} does not support type {typeof(TResult)}");
     }
+
+
     /// <inheritdoc/>
     public override KernelFunction Clone(string? pluginName = null)
     {
@@ -424,6 +443,7 @@ After:
             Metadata.AdditionalProperties);
     }
 
+
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         Kernel kernel,
@@ -431,9 +451,11 @@ After:
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
+
     private static readonly object[] s_cancellationTokenNoneArray = [CancellationToken.None];
 
     private readonly ImplementationFunc _function;
+
 
     private record struct MethodDetails(
         string Name,
@@ -442,6 +464,7 @@ After:
         List<KernelParameterMetadata> Parameters,
         KernelReturnParameterMetadata ReturnParameter);
 
+
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     private KernelFunctionFromMethod(
@@ -452,10 +475,17 @@ After:
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter,
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
-        this(method, implementationFunc, functionName, null, description,
-            parameters, returnParameter, additionalMetadata)
+        this(method,
+            implementationFunc,
+            functionName,
+            null,
+            description,
+            parameters,
+            returnParameter,
+            additionalMetadata)
     {
     }
+
 
     private KernelFunctionFromMethod(
         MethodInfo method,
@@ -466,9 +496,18 @@ After:
         KernelReturnParameterMetadata returnParameter,
         JsonSerializerOptions jsonSerializerOptions,
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
-        this(method, implementationFunc, functionName, null, description, parameters, returnParameter, jsonSerializerOptions, additionalMetadata)
+        this(method,
+            implementationFunc,
+            functionName,
+            null,
+            description,
+            parameters,
+            returnParameter,
+            jsonSerializerOptions,
+            additionalMetadata)
     {
     }
+
 
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
@@ -481,14 +520,19 @@ After:
         IReadOnlyList<KernelParameterMetadata> parameters,
         KernelReturnParameterMetadata returnParameter,
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
-        base(functionName, pluginName, description, parameters,
-            returnParameter, additionalMetadata: additionalMetadata)
+        base(functionName,
+            pluginName,
+            description,
+            parameters,
+            returnParameter,
+            additionalMetadata: additionalMetadata)
     {
         KernelVerify.ValidFunctionName(functionName);
 
         _function = implementationFunc;
         _underlyingMethod = method;
     }
+
 
     private KernelFunctionFromMethod(
         MethodInfo method,
@@ -500,25 +544,44 @@ After:
         KernelReturnParameterMetadata returnParameter,
         JsonSerializerOptions jsonSerializerOptions,
         ReadOnlyDictionary<string, object?>? additionalMetadata = null) :
-        base(functionName, pluginName, description, parameters, jsonSerializerOptions, returnParameter, additionalMetadata: additionalMetadata)
+        base(functionName,
+            pluginName,
+            description,
+            parameters,
+            jsonSerializerOptions,
+            returnParameter,
+            additionalMetadata: additionalMetadata)
     {
         KernelVerify.ValidFunctionName(functionName);
 
         _function = implementationFunc;
         _underlyingMethod = method;
     }
+
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
-    private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, JsonSerializerOptions jsonSerializerOptions, object? target)
+    private static MethodDetails GetMethodDetails(
+        string? functionName,
+        MethodInfo method,
+        JsonSerializerOptions jsonSerializerOptions,
+        object? target)
     {
         Verify.NotNull(jsonSerializerOptions);
-        return GetMethodDetails(functionName, method, target, jsonSerializerOptions);
+        return GetMethodDetails(functionName,
+            method,
+            target,
+            jsonSerializerOptions);
     }
+
 
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-    private static MethodDetails GetMethodDetails(string? functionName, MethodInfo method, object? target, JsonSerializerOptions? jsonSerializerOptions = null)
+    private static MethodDetails GetMethodDetails(
+        string? functionName,
+        MethodInfo method,
+        object? target,
+        JsonSerializerOptions? jsonSerializerOptions = null)
     {
         ThrowForInvalidSignatureIf(method.ContainsGenericParameters, method, "Open generic methods are not supported");
 
@@ -528,16 +591,13 @@ After:
             // Otherwise, we use the name of the method, but strip off any "Async" suffix if it's {Value}Task-returning.
             // We don't apply any heuristics to the value supplied by KernelFunction's Name so that it can always be used
             // as a definitive override.
-            functionName = method.GetCustomAttribute<KernelFunctionAttribute>(inherit: true)?.
-                Name?.Trim();
+            functionName = method.GetCustomAttribute<KernelFunctionAttribute>(true)?.Name?.Trim();
 
             if (string.IsNullOrEmpty(functionName))
             {
                 functionName = SanitizeMetadataName(method.Name!);
 
-                if (IsAsyncMethod(method) &&
-                    functionName.EndsWith("Async", StringComparison.Ordinal) &&
-                    functionName.Length > "Async".Length)
+                if (IsAsyncMethod(method) && functionName.EndsWith("Async", StringComparison.Ordinal) && functionName.Length > "Async".Length)
                 {
                     functionName = functionName.Substring(0, functionName.Length - "Async".Length);
                 }
@@ -558,7 +618,11 @@ After:
 
         for (int i = 0; i < parameters.Length; i++)
         {
-            (parameterFuncs[i], KernelParameterMetadata? parameterView) = GetParameterMarshalerDelegate(method, parameters[i], ref sawFirstParameter, jsonSerializerOptions);
+            (parameterFuncs[i], KernelParameterMetadata? parameterView) = GetParameterMarshalerDelegate(method,
+                parameters[i],
+                ref sawFirstParameter,
+                jsonSerializerOptions);
+
             if (parameterView is not null)
             {
                 argParameterViews.Add(parameterView);
@@ -591,7 +655,10 @@ After:
 
             for (int i = 0; i < args.Length; i++)
             {
-                args[i] = parameterFuncs[i](function, kernel, arguments, cancellationToken);
+                args[i] = parameterFuncs[i](function,
+                    kernel,
+                    arguments,
+                    cancellationToken);
             }
 
             // Invoke the method.
@@ -608,15 +675,15 @@ After:
             returnParameterMetadata = new KernelReturnParameterMetadata(jsonSerializerOptions)
             {
                 ParameterType = returnType,
-                Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
+                Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(true)?.Description
             };
         }
         else
         {
-            returnParameterMetadata = new KernelReturnParameterMetadata()
+            returnParameterMetadata = new KernelReturnParameterMetadata
             {
                 ParameterType = returnType,
-                Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
+                Description = method.ReturnParameter.GetCustomAttribute<DescriptionAttribute>(true)?.Description
             };
         }
 
@@ -625,12 +692,12 @@ After:
         {
             Function = Function,
             Name = functionName!,
-            Description = method.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.
-                Description ?? "",
+            Description = method.GetCustomAttribute<DescriptionAttribute>(true)?.Description ?? "",
             Parameters = argParameterViews,
             ReturnParameter = returnParameterMetadata
         };
     }
+
 
     /// <summary>Gets whether a method has a known async return type.</summary>
     private static bool IsAsyncMethod(MethodInfo method)
@@ -655,6 +722,7 @@ After:
         return false;
     }
 
+
     /// <summary>
     /// Gets a delegate for handling the marshaling of a parameter.
     /// </summary>
@@ -663,7 +731,8 @@ After:
     private static (Func<KernelFunction, Kernel, KernelArguments, CancellationToken, object?>, KernelParameterMetadata?) GetParameterMarshalerDelegate(
         MethodInfo method,
         ParameterInfo parameter,
-        ref bool sawFirstParameter, JsonSerializerOptions? jsonSerializerOptions)
+        ref bool sawFirstParameter,
+        JsonSerializerOptions? jsonSerializerOptions)
     {
         Type type = parameter.ParameterType;
 
@@ -673,73 +742,73 @@ After:
         if (type == typeof(KernelFunction))
         {
             return (static (
-                KernelFunction func,
-                Kernel _,
-                KernelArguments _,
-                CancellationToken _) => func, null);
+                func,
+                _,
+                _,
+                _) => func, null);
         }
 
         if (type == typeof(Kernel))
         {
             return (static (
-                KernelFunction _,
-                Kernel kernel,
-                KernelArguments _,
-                CancellationToken _) => kernel, null);
+                _,
+                kernel,
+                _,
+                _) => kernel, null);
         }
 
         if (type == typeof(KernelArguments))
         {
             return (static (
-                KernelFunction _,
-                Kernel _,
-                KernelArguments arguments,
-                CancellationToken _) => arguments, null);
+                _,
+                _,
+                arguments,
+                _) => arguments, null);
         }
 
         if (type == typeof(ILoggerFactory))
         {
             return ((
-                KernelFunction _,
-                Kernel kernel,
-                KernelArguments _,
-                CancellationToken _) => kernel.LoggerFactory, null);
+                _,
+                kernel,
+                _,
+                _) => kernel.LoggerFactory, null);
         }
 
         if (type == typeof(ILogger))
         {
             return ((
-                KernelFunction _,
-                Kernel kernel,
-                KernelArguments _,
-                CancellationToken _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)) ?? NullLogger.Instance, null);
+                _,
+                kernel,
+                _,
+                _) => kernel.LoggerFactory.CreateLogger(method?.DeclaringType ?? typeof(KernelFunctionFromPrompt)) ?? NullLogger.Instance, null);
         }
 
         if (type == typeof(IAIServiceSelector))
         {
             return ((
-                KernelFunction _,
-                Kernel kernel,
-                KernelArguments _,
-                CancellationToken _) => kernel.ServiceSelector, null);
+                _,
+                kernel,
+                _,
+                _) => kernel.ServiceSelector, null);
         }
 
         if (type == typeof(CultureInfo) || type == typeof(IFormatProvider))
         {
             return (static (
-                KernelFunction _,
-                Kernel kernel,
-                KernelArguments _,
-                CancellationToken _) => kernel.Culture, null);
+                _,
+                kernel,
+                _,
+                _) => kernel.Culture, null);
         }
 
         if (type == typeof(CancellationToken))
         {
             return (static (
-                KernelFunction _,
-                Kernel _,
-                KernelArguments _,
-                CancellationToken cancellationToken) => cancellationToken, null);
+                _,
+                _,
+                _,
+                cancellationToken) => cancellationToken, null);
         }
 
         // Handle the special FromKernelServicesAttribute, which indicates that the parameter should be sourced from the kernel's services.
@@ -747,10 +816,10 @@ After:
         if (parameter.GetCustomAttribute<FromKernelServicesAttribute>() is FromKernelServicesAttribute fromKernelAttr)
         {
             return ((
-                KernelFunction _,
-                Kernel kernel,
-                KernelArguments _,
-                CancellationToken _) =>
+                _,
+                kernel,
+                _,
+                _) =>
             {
                 // Try to resolve the service from kernel.Services, using the attribute's key if one was provided.
                 object? service = kernel.Services is IKeyedServiceProvider keyedServiceProvider
@@ -822,13 +891,18 @@ After:
                     }
                 }
 
-                if (value is JsonElement element && element.ValueKind == JsonValueKind.String
+                if (value is JsonElement element
+                    && element.ValueKind == JsonValueKind.String
                     && s_jsonStringParsers.TryGetValue(type, out var jsonStringParser))
                 {
                     return jsonStringParser(element.GetString()!);
                 }
 
-                if (value is not null && TryToDeserializeValue(value, type, jsonSerializerOptions, out var deserializedValue))
+                if (value is not null
+                    && TryToDeserializeValue(value,
+                        type,
+                        jsonSerializerOptions,
+                        out var deserializedValue))
                 {
                     return deserializedValue;
                 }
@@ -845,28 +919,30 @@ After:
         {
             parameterView = new KernelParameterMetadata(name, jsonSerializerOptions)
             {
-            Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.
-                Description,
-            DefaultValue = parameter.HasDefaultValue
-                ? parameter.DefaultValue?.ToString()
-                : null,
+                Description = parameter.GetCustomAttribute<DescriptionAttribute>(true)?.Description,
+                DefaultValue = parameter.HasDefaultValue
+                    ? parameter.DefaultValue?.ToString()
+                    : null,
                 IsRequired = !parameter.IsOptional,
-                ParameterType = type,
+                ParameterType = type
             };
         }
         else
         {
             parameterView = new KernelParameterMetadata(name)
             {
-                Description = parameter.GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description,
-                DefaultValue = parameter.HasDefaultValue ? parameter.DefaultValue?.ToString() : null,
+                Description = parameter.GetCustomAttribute<DescriptionAttribute>(true)?.Description,
+                DefaultValue = parameter.HasDefaultValue
+                    ? parameter.DefaultValue?.ToString()
+                    : null,
                 IsRequired = !parameter.IsOptional,
-                ParameterType = type,
+                ParameterType = type
             };
         }
 
         return (parameterFunc, parameterView);
     }
+
 
     /// <summary>
     /// Tries to deserialize the given value into an object of the specified target type.
@@ -878,7 +954,11 @@ After:
     /// <returns>true if the value is successfully deserialized; otherwise, false.</returns>
     [RequiresUnreferencedCode("Uses reflection to deserialize given value if no source generated metadata provided via JSOs, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to deserialize given value if no source generated metadata provided via JSOs, making it incompatible with AOT scenarios.")]
-    private static bool TryToDeserializeValue(object value, Type targetType, JsonSerializerOptions? jsonSerializerOptions, out object? deserializedValue)
+    private static bool TryToDeserializeValue(
+        object value,
+        Type targetType,
+        JsonSerializerOptions? jsonSerializerOptions,
+        out object? deserializedValue)
     {
         try
         {
@@ -912,6 +992,7 @@ After:
         return false;
     }
 
+
     /// <summary>
     /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{FunctionResult}"/> to return from the invocation.
     /// </summary>
@@ -924,8 +1005,8 @@ After:
 
         if (returnType == typeof(void))
         {
-            return (typeof(void), (static (_, function, _) =>
-                new ValueTask<FunctionResult>(new FunctionResult(function))));
+            return (typeof(void), static (_, function, _) =>
+                new ValueTask<FunctionResult>(new FunctionResult(function)));
         }
 
         if (returnType == typeof(Task))
@@ -1023,9 +1104,7 @@ After:
         {
             // Task<T>
 #if NET
-            if (returnType.GetGenericTypeDefinition() == typeof(Task<>) &&
-                ((PropertyInfo)returnType.GetMemberWithSameMetadataDefinitionAs(s_taskGetResultPropertyInfo)) is PropertyInfo taskPropertyInfo &&
-                taskPropertyInfo.GetGetMethod() is MethodInfo taskResultGetter)
+            if (returnType.GetGenericTypeDefinition() == typeof(Task<>) && (PropertyInfo)returnType.GetMemberWithSameMetadataDefinitionAs(s_taskGetResultPropertyInfo) is PropertyInfo taskPropertyInfo && taskPropertyInfo.GetGetMethod() is MethodInfo taskResultGetter)
 #else
             if (returnType.GetGenericTypeDefinition() == typeof(Task<>) &&
                 returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.
@@ -1045,10 +1124,7 @@ After:
 
             // ValueTask<T>
 #if NET
-            if (returnType.GetGenericTypeDefinition() == typeof(ValueTask<>) &&
-                   returnType.GetMemberWithSameMetadataDefinitionAs(s_valueTaskGetAsTaskMethodInfo) is MethodInfo valueTaskAsTask &&
-                   valueTaskAsTask.ReturnType.GetMemberWithSameMetadataDefinitionAs(s_taskGetResultPropertyInfo) is PropertyInfo valueTaskPropertyInfo &&
-                   valueTaskPropertyInfo.GetGetMethod() is MethodInfo asTaskResultGetter)
+            if (returnType.GetGenericTypeDefinition() == typeof(ValueTask<>) && returnType.GetMemberWithSameMetadataDefinitionAs(s_valueTaskGetAsTaskMethodInfo) is MethodInfo valueTaskAsTask && valueTaskAsTask.ReturnType.GetMemberWithSameMetadataDefinitionAs(s_taskGetResultPropertyInfo) is PropertyInfo valueTaskPropertyInfo && valueTaskPropertyInfo.GetGetMethod() is MethodInfo asTaskResultGetter)
 #else
             if (returnType.GetGenericTypeDefinition() == typeof(ValueTask<>) &&
                     returnType.GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance) is MethodInfo valueTaskAsTask &&
@@ -1106,10 +1182,12 @@ After:
             );
 
         // Throws an exception if a result is found to be null unexpectedly
-        static object ThrowIfNullResult(object? result) =>
-            result ??
-            throw new KernelException("Function returned null unexpectedly.");
+        static object ThrowIfNullResult(object? result)
+        {
+            return result ?? throw new KernelException("Function returned null unexpectedly.");
+        }
     }
+
 
     /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>
     private static object? Invoke(MethodInfo method, object? target, object?[]? arguments)
@@ -1120,25 +1198,31 @@ After:
         {
             const BindingFlags BindingFlagsDoNotWrapExceptions = (BindingFlags)0x02000000; // BindingFlags.DoNotWrapExceptions on .NET Core 2.1+, ignored before then
 
-            result = method.Invoke(target, BindingFlagsDoNotWrapExceptions, binder: null, arguments,
-                culture: null);
+            result = method.Invoke(target,
+                BindingFlagsDoNotWrapExceptions,
+                null,
+                arguments,
+                null);
         }
         catch (TargetInvocationException e) when (e.InnerException is not null)
         {
             // If we're targeting .NET Framework, such that BindingFlags.DoNotWrapExceptions
             // is ignored, the original exception will be wrapped in a TargetInvocationException.
             // Unwrap it and throw that original exception, maintaining its stack information.
-            ExceptionDispatchInfo.Capture(e.InnerException).
-                Throw();
+            ExceptionDispatchInfo.Capture(e.InnerException).Throw();
         }
 
         return result;
     }
 
+
     /// <summary>Gets an exception that can be thrown indicating an invalid signature.</summary>
     [DoesNotReturn]
-    private static Exception GetExceptionForInvalidSignature(MethodInfo method, string reason) =>
+    private static Exception GetExceptionForInvalidSignature(MethodInfo method, string reason)
+    {
         throw new KernelException($"Function '{method.Name}' is not supported by the kernel. {reason}");
+    }
+
 
     /// <summary>Throws an exception indicating an invalid KernelFunctionFactory signature if the specified condition is not met.</summary>
     private static void ThrowForInvalidSignatureIf([DoesNotReturnIf(true)] bool condition, MethodInfo method, string reason)
@@ -1148,6 +1232,7 @@ After:
             throw GetExceptionForInvalidSignature(method, reason);
         }
     }
+
 
     /// <summary>
     /// Gets a converter for type to ty conversion. For example, string to int, string to Guid, double to int, CustomType to string, etc.
@@ -1159,90 +1244,92 @@ After:
     /// Conversion is first attempted using the current culture, and if that fails, it tries again
     /// with the invariant culture. If both fail, an exception is thrown.
     /// </remarks>
-    private static Func<object?, CultureInfo, object?>? GetConverter(Type targetType) =>
-        s_parsers.GetOrAdd(targetType, static targetType =>
-        {
-            // For nullables, parse as the inner type.  We then just need to be careful to treat null as null,
-            // as the underlying parser might not be expecting null.
-            bool wasNullable = !targetType.IsValueType;
-
-            if (!wasNullable && targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
+    private static Func<object?, CultureInfo, object?>? GetConverter(Type targetType)
+    {
+        return s_parsers.GetOrAdd(targetType,
+            static targetType =>
             {
-                wasNullable = true;
-                targetType = Nullable.GetUnderlyingType(targetType)!;
-            }
+                // For nullables, parse as the inner type.  We then just need to be careful to treat null as null,
+                // as the underlying parser might not be expecting null.
+                bool wasNullable = !targetType.IsValueType;
 
-            // Finally, look up and use a type converter. Again, special-case null if it was actually Nullable<T>.
-            if (TypeConverterFactory.GetTypeConverter(targetType) is TypeConverter converter)
-            {
-                return (input, cultureInfo) =>
+                if (!wasNullable && targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
                 {
-                    // This if block returns null if the target ValueType is nullable, or if the target type is a ReferenceType, which is inherently nullable.
-                    // This prevents null from being handled by converters below, which may fail when converting from nulls or to the target type from nulls.
-                    if (input is null && wasNullable)
-                    {
-                        return null;
-                    }
+                    wasNullable = true;
+                    targetType = Nullable.GetUnderlyingType(targetType)!;
+                }
 
-                    object? Convert(CultureInfo culture)
+                // Finally, look up and use a type converter. Again, special-case null if it was actually Nullable<T>.
+                if (TypeConverterFactory.GetTypeConverter(targetType) is TypeConverter converter)
+                {
+                    return (input, cultureInfo) =>
                     {
-                        if (input?.GetType() is Type type && converter.CanConvertFrom(type))
+                        // This if block returns null if the target ValueType is nullable, or if the target type is a ReferenceType, which is inherently nullable.
+                        // This prevents null from being handled by converters below, which may fail when converting from nulls or to the target type from nulls.
+                        if (input is null && wasNullable)
                         {
-                            // This line performs string to type conversion
-                            return converter.ConvertFrom(context: null, culture, input);
+                            return null;
                         }
 
-                        // This line performs implicit type conversion, e.g., int to long, byte to int, Guid to string, etc.
-                        if (converter.CanConvertTo(targetType))
+                        object? Convert(CultureInfo culture)
                         {
-                            return converter.ConvertTo(context: null, culture, input, targetType);
+                            if (input?.GetType() is Type type && converter.CanConvertFrom(type))
+                            {
+                                // This line performs string to type conversion
+                                return converter.ConvertFrom(null, culture, input);
+                            }
+
+                            // This line performs implicit type conversion, e.g., int to long, byte to int, Guid to string, etc.
+                            if (converter.CanConvertTo(targetType))
+                            {
+                                return converter.ConvertTo(null,
+                                    culture,
+                                    input,
+                                    targetType);
+                            }
+
+                            // EnumConverter cannot convert integer, so we verify manually
+                            if (targetType.IsEnum && (input is int || input is uint || input is long || input is ulong || input is short || input is ushort || input is byte || input is sbyte))
+                            {
+                                return Enum.ToObject(targetType, input);
+                            }
+
+                            throw new InvalidOperationException($"No converter found to convert from {targetType} to {input?.GetType()}.");
                         }
 
-                        // EnumConverter cannot convert integer, so we verify manually
-                        if (targetType.IsEnum &&
-                            (input is int ||
-                             input is uint ||
-                             input is long ||
-                             input is ulong ||
-                             input is short ||
-                             input is ushort ||
-                             input is byte ||
-                             input is sbyte))
+                        // First try to parse using the supplied culture (or current if none was supplied).
+                        // If that fails, try with the invariant culture and allow any exception to propagate.
+                        try
                         {
-                            return Enum.ToObject(targetType, input);
+                            return Convert(cultureInfo);
                         }
+                        catch (Exception e) when (!e.IsCriticalException() && cultureInfo != CultureInfo.InvariantCulture)
+                        {
+                            return Convert(CultureInfo.InvariantCulture);
+                        }
+                    };
+                }
 
-                        throw new InvalidOperationException($"No converter found to convert from {targetType} to {input?.GetType()}.");
-                    }
+                // Unsupported type.
+                return null;
+            });
+    }
 
-                    // First try to parse using the supplied culture (or current if none was supplied).
-                    // If that fails, try with the invariant culture and allow any exception to propagate.
-                    try
-                    {
-                        return Convert(cultureInfo);
-                    }
-                    catch (Exception e) when (!e.IsCriticalException() && cultureInfo != CultureInfo.InvariantCulture)
-                    {
-                        return Convert(CultureInfo.InvariantCulture);
-                    }
-                };
-            }
-
-            // Unsupported type.
-            return null;
-        });
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(Description)
         ? Name
         : $"{Name} ({Description})";
 
+
     /// <summary>
     /// Remove characters from method name that are valid in metadata but invalid for SK.
     /// </summary>
-    internal static string SanitizeMetadataName(string methodName) =>
-        InvalidNameCharsRegex().
-            Replace(methodName, "_");
+    internal static string SanitizeMetadataName(string methodName)
+    {
+        return InvalidNameCharsRegex().Replace(methodName, "_");
+    }
+
 
     /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
 #if NET

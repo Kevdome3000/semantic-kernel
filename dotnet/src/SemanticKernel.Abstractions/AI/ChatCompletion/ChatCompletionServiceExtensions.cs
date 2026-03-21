@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
+
 /// <summary>
 /// Class sponsor that holds extension methods for <see cref="IChatCompletionService"/> interface.
 /// </summary>
@@ -35,15 +36,22 @@ public static class ChatCompletionServiceExtensions
         // Try to parse the text as a chat history
         if (ChatPromptParser.TryParse(prompt, out var chatHistoryFromPrompt))
         {
-            return chatCompletionService.GetChatMessageContentsAsync(chatHistoryFromPrompt, executionSettings, kernel, cancellationToken);
+            return chatCompletionService.GetChatMessageContentsAsync(chatHistoryFromPrompt,
+                executionSettings,
+                kernel,
+                cancellationToken);
         }
 
         // Otherwise, use the prompt as the chat user message
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage(prompt);
 
-        return chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        return chatCompletionService.GetChatMessageContentsAsync(chatHistory,
+            executionSettings,
+            kernel,
+            cancellationToken);
     }
+
 
     /// <summary>
     /// Get a single chat message content for the prompt and settings.
@@ -60,8 +68,14 @@ public static class ChatCompletionServiceExtensions
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => (await chatCompletionService.GetChatMessageContentsAsync(prompt, executionSettings, kernel, cancellationToken).
-            ConfigureAwait(false)).Single();
+    {
+        return (await chatCompletionService.GetChatMessageContentsAsync(prompt,
+                executionSettings,
+                kernel,
+                cancellationToken)
+            .ConfigureAwait(false)).Single();
+    }
+
 
     /// <summary>
     /// Get a single chat message content for the chat history and settings provided.
@@ -78,8 +92,14 @@ public static class ChatCompletionServiceExtensions
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => (await chatCompletionService.GetChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken).
-            ConfigureAwait(false)).Single();
+    {
+        return (await chatCompletionService.GetChatMessageContentsAsync(chatHistory,
+                executionSettings,
+                kernel,
+                cancellationToken)
+            .ConfigureAwait(false)).Single();
+    }
+
 
     /// <summary>
     /// Get streaming chat message contents for the chat history provided using the specified settings.
@@ -101,15 +121,22 @@ public static class ChatCompletionServiceExtensions
         // Try to parse the text as a chat history
         if (ChatPromptParser.TryParse(prompt, out var chatHistoryFromPrompt))
         {
-            return chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistoryFromPrompt, executionSettings, kernel, cancellationToken);
+            return chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistoryFromPrompt,
+                executionSettings,
+                kernel,
+                cancellationToken);
         }
 
         // Otherwise, use the prompt as the chat user message
         var chatHistory = new ChatHistory();
         chatHistory.AddUserMessage(prompt);
 
-        return chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory, executionSettings, kernel, cancellationToken);
+        return chatCompletionService.GetStreamingChatMessageContentsAsync(chatHistory,
+            executionSettings,
+            kernel,
+            cancellationToken);
     }
+
 
     /// <summary>Creates an <see cref="IChatClient"/> for the specified <see cref="IChatCompletionService"/>.</summary>
     /// <param name="service">The chat completion service to be represented as a chat client.</param>
@@ -121,8 +148,8 @@ public static class ChatCompletionServiceExtensions
     {
         Verify.NotNull(service);
 
-        return service is IChatClient chatClient ?
-            chatClient :
-            new ChatCompletionServiceChatClient(service);
+        return service is IChatClient chatClient
+            ? chatClient
+            : new ChatCompletionServiceChatClient(service);
     }
 }

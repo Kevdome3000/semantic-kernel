@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Agents.UnitTests.Internal;
-
 using System.Linq;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Internal;
 using Xunit;
 
+namespace SemanticKernel.Agents.UnitTests.Internal;
 
 /// <summary>
 /// Unit testing of <see cref="KeyEncoder"/>.
@@ -20,9 +19,9 @@ public class KeyEncoderTests
     public void VerifyKeyEncoderUniqueness()
     {
         // Act
-        this.VerifyHashEquivalancy([]);
-        this.VerifyHashEquivalancy(nameof(KeyEncoderTests));
-        this.VerifyHashEquivalancy(nameof(KeyEncoderTests), "http://localhost", "zoo");
+        VerifyHashEquivalancy();
+        VerifyHashEquivalancy(nameof(KeyEncoderTests));
+        VerifyHashEquivalancy(nameof(KeyEncoderTests), "http://localhost", "zoo");
 
         // Assert: Verify "well-known" value
         string localHash = KeyEncoder.GenerateHash([typeof(ChatHistoryChannel).FullName!]);

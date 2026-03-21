@@ -30,5 +30,5 @@ public enum RestApiParameterLocation
     /// <summary>
     /// Body parameter.
     /// </summary>
-    Body,
+    Body
 }

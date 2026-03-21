@@ -1,13 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 using Microsoft.SemanticKernel.Http;
-using MongoDB.Driver;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +13,7 @@ public static class CosmosMongoServiceCollectionExtensions
 {
     private const string DynamicCodeMessage = "This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
     private const string UnreferencedCodeMessage = "This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
+
 
     /// <summary>
     /// Registers a <see cref="CosmosMongoVectorStore"/> as <see cref="VectorStore"/>
@@ -30,7 +26,13 @@ public static class CosmosMongoServiceCollectionExtensions
         this IServiceCollection services,
         CosmosMongoVectorStoreOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedCosmosMongoVectorStore(services, serviceKey: null, options, lifetime);
+    {
+        return AddKeyedCosmosMongoVectorStore(services,
+            null,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="CosmosMongoVectorStore"/> as <see cref="VectorStore"/>
@@ -51,19 +53,25 @@ public static class CosmosMongoServiceCollectionExtensions
     {
         Verify.NotNull(services);
 
-        services.Add(new ServiceDescriptor(typeof(CosmosMongoVectorStore), serviceKey, (sp, _) =>
-        {
-            var database = sp.GetRequiredService<IMongoDatabase>();
-            options = GetStoreOptions(sp, _ => options);
+        services.Add(new ServiceDescriptor(typeof(CosmosMongoVectorStore),
+            serviceKey,
+            (sp, _) =>
+            {
+                var database = sp.GetRequiredService<IMongoDatabase>();
+                options = GetStoreOptions(sp, _ => options);
 
-            return new CosmosMongoVectorStore(database, options);
-        }, lifetime));
+                return new CosmosMongoVectorStore(database, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<CosmosMongoVectorStore>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStore),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<CosmosMongoVectorStore>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="CosmosMongoVectorStore"/> as <see cref="VectorStore"/>
@@ -78,7 +86,15 @@ public static class CosmosMongoServiceCollectionExtensions
         string databaseName,
         CosmosMongoVectorStoreOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedCosmosMongoVectorStore(services, serviceKey: null, connectionString, databaseName, options, lifetime);
+    {
+        return AddKeyedCosmosMongoVectorStore(services,
+            null,
+            connectionString,
+            databaseName,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="CosmosMongoVectorStore"/> as <see cref="VectorStore"/>
@@ -105,20 +121,26 @@ public static class CosmosMongoServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNullOrWhiteSpace(databaseName);
 
-        services.Add(new ServiceDescriptor(typeof(CosmosMongoVectorStore), serviceKey, (sp, _) =>
-        {
-            options = GetStoreOptions(sp, _ => options);
-            MongoClient mongoClient = new(CreateClientSettings(connectionString));
-            var database = mongoClient.GetDatabase(databaseName);
+        services.Add(new ServiceDescriptor(typeof(CosmosMongoVectorStore),
+            serviceKey,
+            (sp, _) =>
+            {
+                options = GetStoreOptions(sp, _ => options);
+                MongoClient mongoClient = new(CreateClientSettings(connectionString));
+                var database = mongoClient.GetDatabase(databaseName);
 
-            return new CosmosMongoVectorStore(database, options);
-        }, lifetime));
+                return new CosmosMongoVectorStore(database, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<CosmosMongoVectorStore>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStore),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<CosmosMongoVectorStore>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="CosmosMongoCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -133,7 +155,14 @@ public static class CosmosMongoServiceCollectionExtensions
         CosmosMongoCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedCosmosMongoCollection<TRecord>(services, serviceKey: null, name, options, lifetime);
+    {
+        return AddKeyedCosmosMongoCollection<TRecord>(services,
+            null,
+            name,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="CosmosMongoCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -159,18 +188,22 @@ public static class CosmosMongoServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(name);
 
-        services.Add(new ServiceDescriptor(typeof(CosmosMongoCollection<string, TRecord>), serviceKey, (sp, _) =>
-        {
-            var database = sp.GetRequiredService<IMongoDatabase>();
-            options = GetCollectionOptions(sp, _ => options);
+        services.Add(new ServiceDescriptor(typeof(CosmosMongoCollection<string, TRecord>),
+            serviceKey,
+            (sp, _) =>
+            {
+                var database = sp.GetRequiredService<IMongoDatabase>();
+                options = GetCollectionOptions(sp, _ => options);
 
-            return new CosmosMongoCollection<string, TRecord>(database, name, options);
-        }, lifetime));
+                return new CosmosMongoCollection<string, TRecord>(database, name, options);
+            },
+            lifetime));
 
         AddAbstractions<string, TRecord>(services, serviceKey, lifetime);
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="CosmosMongoCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
@@ -187,7 +220,16 @@ public static class CosmosMongoServiceCollectionExtensions
         CosmosMongoCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedCosmosMongoCollection<TRecord>(services, serviceKey: null, name, connectionString, databaseName, options, lifetime);
+    {
+        return AddKeyedCosmosMongoCollection<TRecord>(services,
+            null,
+            name,
+            connectionString,
+            databaseName,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="CosmosMongoCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
@@ -217,8 +259,15 @@ public static class CosmosMongoServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNullOrWhiteSpace(databaseName);
 
-        return AddKeyedCosmosMongoCollection<TRecord>(services, serviceKey, name, _ => connectionString, _ => databaseName, _ => options!, lifetime);
+        return AddKeyedCosmosMongoCollection<TRecord>(services,
+            serviceKey,
+            name,
+            _ => connectionString,
+            _ => databaseName,
+            _ => options!,
+            lifetime);
     }
+
 
     /// <summary>
     /// Registers a <see cref="CosmosMongoCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
@@ -235,7 +284,16 @@ public static class CosmosMongoServiceCollectionExtensions
         Func<IServiceProvider, CosmosMongoCollectionOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedCosmosMongoCollection<TRecord>(services, serviceKey: null, name, connectionStringProvider, databaseNameProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedCosmosMongoCollection<TRecord>(services,
+            null,
+            name,
+            connectionStringProvider,
+            databaseNameProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="CosmosMongoCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
@@ -267,37 +325,47 @@ public static class CosmosMongoServiceCollectionExtensions
         Verify.NotNull(connectionStringProvider);
         Verify.NotNull(databaseNameProvider);
 
-        services.Add(new ServiceDescriptor(typeof(CosmosMongoCollection<string, TRecord>), serviceKey, (sp, _) =>
-        {
-            var options = GetCollectionOptions(sp, optionsProvider);
-            MongoClient mongoClient = new(CreateClientSettings(connectionStringProvider(sp)));
-            var database = mongoClient.GetDatabase(databaseNameProvider(sp));
+        services.Add(new ServiceDescriptor(typeof(CosmosMongoCollection<string, TRecord>),
+            serviceKey,
+            (sp, _) =>
+            {
+                var options = GetCollectionOptions(sp, optionsProvider);
+                MongoClient mongoClient = new(CreateClientSettings(connectionStringProvider(sp)));
+                var database = mongoClient.GetDatabase(databaseNameProvider(sp));
 
-            return new CosmosMongoCollection<string, TRecord>(database, name, options);
-        }, lifetime));
+                return new CosmosMongoCollection<string, TRecord>(database, name, options);
+            },
+            lifetime));
 
         AddAbstractions<string, TRecord>(services, serviceKey, lifetime);
 
         return services;
     }
 
+
     private static void AddAbstractions<TKey, TRecord>(IServiceCollection services, object? serviceKey, ServiceLifetime lifetime)
         where TKey : notnull
         where TRecord : class
     {
-        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<CosmosMongoCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<CosmosMongoCollection<TKey, TRecord>>(key),
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<CosmosMongoCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<CosmosMongoCollection<TKey, TRecord>>(key),
+            lifetime));
 
         // Once HybridSearch supports get implemented by CosmosMongoCollection,
         // we need to add IKeywordHybridSearchable abstraction here as well.
     }
 
+
     private static CosmosMongoVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, CosmosMongoVectorStoreOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.
@@ -308,10 +376,12 @@ public static class CosmosMongoServiceCollectionExtensions
             ? options // There is nothing to change.
             : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
+
 
     private static CosmosMongoCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, CosmosMongoCollectionOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.
@@ -322,6 +392,7 @@ public static class CosmosMongoServiceCollectionExtensions
             ? options // There is nothing to change.
             : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
+
 
     private static MongoClientSettings CreateClientSettings(string connectionString)
     {

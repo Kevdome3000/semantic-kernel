@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.TextGeneration;
+
 /// <summary>
 /// Interface for text generation services
 /// </summary>
@@ -25,6 +26,7 @@ public interface ITextGenerationService : IAIService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Get streaming results for the prompt using the specified execution settings.

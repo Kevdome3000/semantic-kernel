@@ -26,6 +26,7 @@ public class ContentProcessorTests
         Assert.Empty(result);
     }
 
+
     [Fact]
     public void ConvertToStreaming_TextContent_ReturnsStreamingTextContent()
     {
@@ -41,6 +42,7 @@ public class ContentProcessorTests
         StreamingKernelContent streamingContent = Assert.Single(result);
         Assert.IsType<StreamingTextContent>(streamingContent);
     }
+
 
     [Fact]
     public void ConvertToStreaming_ReasoningContent_ReturnsStreamingReasoningContent()
@@ -58,6 +60,7 @@ public class ContentProcessorTests
         Assert.IsType<StreamingReasoningContent>(streamingContent);
     }
 
+
     [Fact]
     public void ConvertToStreaming_ActionContent_ReturnsStreamingActionContent()
     {
@@ -73,6 +76,7 @@ public class ContentProcessorTests
         StreamingKernelContent streamingContent = Assert.Single(result);
         Assert.IsType<StreamingActionContent>(streamingContent);
     }
+
 
     [Fact]
     public void ConvertToStreaming_MixedContentTypes_ReturnsCorrespondingStreamingTypes()
@@ -96,6 +100,7 @@ public class ContentProcessorTests
         Assert.IsType<StreamingActionContent>(result[2]);
     }
 
+
     [Fact]
     public void ConvertToStreaming_UnknownContentType_LogsWarningAndSkipsContent()
     {
@@ -116,23 +121,39 @@ public class ContentProcessorTests
         Assert.Contains("Unknown content type 'TestUnknownContent' received.", testLogger.LoggedWarnings[0]);
     }
 
+
     // Test helper classes
     private sealed class TestUnknownContent : KernelContent;
+
 
     private sealed class TestLogger : ILogger
     {
         public List<string> LoggedWarnings { get; } = [];
 
-        public bool IsEnabled(LogLevel logLevel) => true;
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            return true;
+        }
+
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter)
         {
             if (logLevel == LogLevel.Warning)
             {
-                this.LoggedWarnings.Add(formatter(state, exception));
+                LoggedWarnings.Add(formatter(state, exception));
             }
         }
 
-        IDisposable? ILogger.BeginScope<TState>(TState state) => null;
+
+        IDisposable? ILogger.BeginScope<TState>(TState state)
+        {
+            return null;
+        }
     }
 }

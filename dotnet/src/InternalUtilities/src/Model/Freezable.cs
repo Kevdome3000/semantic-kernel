@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -13,6 +10,7 @@ namespace Microsoft.SemanticKernel;
 internal sealed class Freezable
 {
     public bool IsFrozen { get; private set; }
+
 
     /// <summary>
     /// Makes the current instance unmodifiable.
@@ -26,6 +24,7 @@ internal sealed class Freezable
 
         IsFrozen = true;
     }
+
 
     /// <summary>
     /// Throws an <see cref="InvalidOperationException"/> if the object is frozen.

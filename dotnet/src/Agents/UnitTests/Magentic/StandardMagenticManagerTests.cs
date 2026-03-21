@@ -33,6 +33,7 @@ public class StandardMagenticManagerTests
         Assert.Contains("TaskLedgerResponse", ledgerMessage.Content);
     }
 
+
     [Fact]
     public async Task ReplanAsync_ReturnsLedgerAsync()
     {
@@ -52,6 +53,7 @@ public class StandardMagenticManagerTests
         Assert.Equal(AuthorRole.System, ledgerMessage.Role);
         Assert.Contains("TaskLedgerResponse", ledgerMessage.Content);
     }
+
 
     [Fact]
     public async Task EvaluateTaskProgressAsync_ReturnsLedgerObjectAsync()
@@ -98,6 +100,7 @@ public class StandardMagenticManagerTests
         Assert.False(result.IsTaskInLoop);
     }
 
+
     [Fact]
     public async Task PrepareFinalAnswerAsync_ReturnsFinalAnswerAsync()
     {
@@ -116,12 +119,12 @@ public class StandardMagenticManagerTests
         Assert.Equal("FinalAnswerResponse", result.Content);
     }
 
+
     private static Mock<IChatCompletionService> CreateMockChatCompletionService(string response)
     {
         Mock<IChatCompletionService> chatServiceMock = new(MockBehavior.Strict);
 
-        chatServiceMock.Setup(
-            (service) => service.GetChatMessageContentsAsync(
+        chatServiceMock.Setup(service => service.GetChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 null,
@@ -131,20 +134,27 @@ public class StandardMagenticManagerTests
         return chatServiceMock;
     }
 
-    private static MagenticManagerContext CreateMagenticContext(MagenticTeam team, string inputTask, string history) =>
-        new(team,
+
+    private static MagenticManagerContext CreateMagenticContext(MagenticTeam team, string inputTask, string history)
+    {
+        return new MagenticManagerContext(team,
             [new ChatMessageContent(AuthorRole.User, inputTask)],
             [new ChatMessageContent(AuthorRole.User, history)],
-            responseCount: 5,
-            stallCount: 1,
-            resetCount: 0);
+            5,
+            1,
+            0);
+    }
 
-    private static MagenticTeam CreateMagenticTeam() =>
-        new()
+
+    private static MagenticTeam CreateMagenticTeam()
+    {
+        return new MagenticTeam
         {
             { "Agent1", ("AgentType1", "Description1") },
-            { "Agent2", ("AgentType2", "Description2") },
+            { "Agent2", ("AgentType2", "Description2") }
         };
+    }
+
 
     private sealed class FakePromptExecutionSettings : PromptExecutionSettings
     {
@@ -152,6 +162,7 @@ public class StandardMagenticManagerTests
         {
             return this;
         }
+
 
         public object? ResponseFormat { get; set; }
     }

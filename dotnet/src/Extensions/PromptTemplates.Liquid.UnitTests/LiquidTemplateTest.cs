@@ -4,12 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
 using Xunit;
+
 namespace SemanticKernel.Extensions.PromptTemplates.Liquid.UnitTests;
 
 public class LiquidTemplateTest
@@ -17,8 +19,9 @@ public class LiquidTemplateTest
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         WriteIndented = true,
-        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
+
 
     [Fact]
     public async Task ItRenderChatTestAsync()
@@ -27,15 +30,15 @@ public class LiquidTemplateTest
         var liquidTemplatePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData", "chat.txt");
         var liquidTemplate = File.ReadAllText(liquidTemplatePath);
 
-        var config = new PromptTemplateConfig()
+        var config = new PromptTemplateConfig
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
             Template = liquidTemplate,
             InputVariables =
             [
-                new() { Name = "customer", AllowDangerouslySetContent = true },
-                new() { Name = "documentation", AllowDangerouslySetContent = true },
-                new() { Name = "history", AllowDangerouslySetContent = true }
+                new InputVariable { Name = "customer", AllowDangerouslySetContent = true },
+                new InputVariable { Name = "documentation", AllowDangerouslySetContent = true },
+                new InputVariable { Name = "history", AllowDangerouslySetContent = true }
             ]
         };
 
@@ -57,8 +60,8 @@ public class LiquidTemplateTest
             orders = new[]
             {
                 new { name = "apple", description = "2 fuji apples", date = "2024/04/01" },
-                new { name = "banana", description = "1 free banana from amazon banana hub", date = "2024/04/03" },
-            },
+                new { name = "banana", description = "1 free banana from amazon banana hub", date = "2024/04/03" }
+            }
         };
 
         // create a list of documents
@@ -68,8 +71,8 @@ public class LiquidTemplateTest
         // - content
         var documents = new[]
         {
-            new { id = "1", title = "apple", content = "2 apples"},
-            new { id = "2", title = "banana", content = "3 bananas"},
+            new { id = "1", title = "apple", content = "2 apples" },
+            new { id = "2", title = "banana", content = "3 bananas" }
         };
 
         // create chat history
@@ -79,14 +82,14 @@ public class LiquidTemplateTest
 
         var chatHistory = new[]
         {
-            new { role = "user", content = "When is the last time I bought apple?" },
+            new { role = "user", content = "When is the last time I bought apple?" }
         };
 
-        var arguments = new KernelArguments()
+        var arguments = new KernelArguments
         {
             { "customer", customer },
             { "documentation", documents },
-            { "history", chatHistory },
+            { "history", chatHistory }
         };
 
         var liquidTemplateInstance = new LiquidPromptTemplate(config);
@@ -97,6 +100,7 @@ public class LiquidTemplateTest
         // Assert
         Assert.Equal(ItRenderChatTestExpectedResult, result);
     }
+
 
     [Fact]
     public async Task ItRendersUserMessagesWhenAllowUnsafeIsTrueAsync()
@@ -110,24 +114,25 @@ public class LiquidTemplateTest
         var kernel = new Kernel();
         var factory = new LiquidPromptTemplateFactory();
         var template =
-            """
-            system:
-            This is a system message
-            {{input}}
-            """
-        ;
+                """
+                system:
+                This is a system message
+                {{input}}
+                """
+            ;
 
         var target = factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
             AllowDangerouslySetContent = true,
-            InputVariables = [
-                new() { Name = "input", AllowDangerouslySetContent = true }
+            InputVariables =
+            [
+                new InputVariable { Name = "input", AllowDangerouslySetContent = true }
             ]
         });
 
         // Act
-        var result = await target.RenderAsync(kernel, new() { ["input"] = input });
+        var result = await target.RenderAsync(kernel, new KernelArguments { ["input"] = input });
         var isParseChatHistorySucceed = ChatPromptParser.TryParse(result, out var chatHistory);
 
         // Assert
@@ -151,6 +156,7 @@ public class LiquidTemplateTest
         Assert.Equal(expected, result);
     }
 
+
     [Fact]
     public async Task ItRenderColonAndTagsWhenAllowUnsafeIsTrueAsync()
     {
@@ -164,46 +170,48 @@ public class LiquidTemplateTest
         var kernel = new Kernel();
         var factory = new LiquidPromptTemplateFactory();
         var template =
-            """
-            user:
-            This is colon `:` {{colon}}
-            user:
-            This is encoded colon &#58; {{encodedColon}}
-            user:
-            This is html tag: <message role='user'>Second user message</message> {{htmlTag}}
-            user:
-            This is encoded html tag: &lt;message role='user'&gt;Second user message&lt;/message&gt; {{encodedHtmlTag}}
-            user:
-            This is left angle bracket: < {{leftAngleBracket}}
-            user:
-            This is encoded left angle bracket: &lt; {{encodedLeftAngleBracket}}
-            """
-        ;
+                """
+                user:
+                This is colon `:` {{colon}}
+                user:
+                This is encoded colon &#58; {{encodedColon}}
+                user:
+                This is html tag: <message role='user'>Second user message</message> {{htmlTag}}
+                user:
+                This is encoded html tag: &lt;message role='user'&gt;Second user message&lt;/message&gt; {{encodedHtmlTag}}
+                user:
+                This is left angle bracket: < {{leftAngleBracket}}
+                user:
+                This is encoded left angle bracket: &lt; {{encodedLeftAngleBracket}}
+                """
+            ;
 
         var target = factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
             AllowDangerouslySetContent = true,
-            InputVariables = [
-                new() { Name = "colon", AllowDangerouslySetContent = true },
-                new() { Name = "encodedColon" },
-                new() { Name = "htmlTag" },
-                new() { Name = "encodedHtmlTag" },
-                new() { Name = "leftAngleBracket" },
-                new() { Name = "encodedLeftAngleBracket" }
-            ],
+            InputVariables =
+            [
+                new InputVariable { Name = "colon", AllowDangerouslySetContent = true },
+                new InputVariable { Name = "encodedColon" },
+                new InputVariable { Name = "htmlTag" },
+                new InputVariable { Name = "encodedHtmlTag" },
+                new InputVariable { Name = "leftAngleBracket" },
+                new InputVariable { Name = "encodedLeftAngleBracket" }
+            ]
         });
 
         // Act
-        var result = await target.RenderAsync(kernel, new()
-        {
-            ["colon"] = colon,
-            ["encodedColon"] = encodedColon,
-            ["htmlTag"] = htmlTag,
-            ["encodedHtmlTag"] = encodedHtmlTag,
-            ["leftAngleBracket"] = leftAngleBracket,
-            ["encodedLeftAngleBracket"] = encodedLeftAngleBracket,
-        });
+        var result = await target.RenderAsync(kernel,
+            new KernelArguments
+            {
+                ["colon"] = colon,
+                ["encodedColon"] = encodedColon,
+                ["htmlTag"] = htmlTag,
+                ["encodedHtmlTag"] = encodedHtmlTag,
+                ["leftAngleBracket"] = leftAngleBracket,
+                ["encodedLeftAngleBracket"] = encodedLeftAngleBracket
+            });
 
         // Assert
         var expected =
@@ -236,6 +244,7 @@ public class LiquidTemplateTest
         Assert.Equal(expected, result);
     }
 
+
     [Fact]
     public async Task ItRenderColonAndTagsWhenAllowUnsafeIsFalseAsync()
     {
@@ -249,46 +258,48 @@ public class LiquidTemplateTest
         var kernel = new Kernel();
         var factory = new LiquidPromptTemplateFactory();
         var template =
-            """
-            user:
-            This is colon `:` {{colon}}
-            user:
-            This is encoded colon `:` &#58; {{encodedColon}}
-            user:
-            This is html tag: <message role='user'>Second user message</message> {{htmlTag}}
-            user:
-            This is encoded html tag: &lt;message role='user'&gt;Second user message&lt;/message&gt; {{encodedHtmlTag}}
-            user:
-            This is left angle bracket: < {{leftAngleBracket}}
-            user:
-            This is encoded left angle bracket: &lt; {{encodedLeftAngleBracket}}
-            """
-        ;
+                """
+                user:
+                This is colon `:` {{colon}}
+                user:
+                This is encoded colon `:` &#58; {{encodedColon}}
+                user:
+                This is html tag: <message role='user'>Second user message</message> {{htmlTag}}
+                user:
+                This is encoded html tag: &lt;message role='user'&gt;Second user message&lt;/message&gt; {{encodedHtmlTag}}
+                user:
+                This is left angle bracket: < {{leftAngleBracket}}
+                user:
+                This is encoded left angle bracket: &lt; {{encodedLeftAngleBracket}}
+                """
+            ;
 
         var target = factory.Create(new PromptTemplateConfig(template)
         {
             AllowDangerouslySetContent = false,
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
-            InputVariables = [
-                new() { Name = "colon" },
-                new() { Name = "encodedColon" },
-                new() { Name = "htmlTag" },
-                new() { Name = "encodedHtmlTag" },
-                new() { Name = "leftAngleBracket" },
-                new() { Name = "encodedLeftAngleBracket" }
+            InputVariables =
+            [
+                new InputVariable { Name = "colon" },
+                new InputVariable { Name = "encodedColon" },
+                new InputVariable { Name = "htmlTag" },
+                new InputVariable { Name = "encodedHtmlTag" },
+                new InputVariable { Name = "leftAngleBracket" },
+                new InputVariable { Name = "encodedLeftAngleBracket" }
             ]
         });
 
         // Act
-        var result = await target.RenderAsync(kernel, new()
-        {
-            ["colon"] = colon,
-            ["encodedColon"] = encodedColon,
-            ["htmlTag"] = htmlTag,
-            ["encodedHtmlTag"] = encodedHtmlTag,
-            ["leftAngleBracket"] = leftAngleBracket,
-            ["encodedLeftAngleBracket"] = encodedLeftAngleBracket,
-        });
+        var result = await target.RenderAsync(kernel,
+            new KernelArguments
+            {
+                ["colon"] = colon,
+                ["encodedColon"] = encodedColon,
+                ["htmlTag"] = htmlTag,
+                ["encodedHtmlTag"] = encodedHtmlTag,
+                ["leftAngleBracket"] = leftAngleBracket,
+                ["encodedLeftAngleBracket"] = encodedLeftAngleBracket
+            });
 
         // Assert
         var expected =
@@ -321,6 +332,7 @@ public class LiquidTemplateTest
         Assert.Equal(expected, result);
     }
 
+
     [Fact]
     public async Task ItDoesNotRendersUserMessagesWhenAllowUnsafeIsFalseAsync()
     {
@@ -335,26 +347,28 @@ public class LiquidTemplateTest
         var kernel = new Kernel();
         var factory = new LiquidPromptTemplateFactory();
         var template =
-            """
-            system:
-            This is a system message
-            {{input}}
-            """
-        ;
+                """
+                system:
+                This is a system message
+                {{input}}
+                """
+            ;
 
         var target = factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
-            InputVariables = [
-                new() { Name = "input" },
+            InputVariables =
+            [
+                new InputVariable { Name = "input" }
             ]
         });
 
         // Act
-        var result = await target.RenderAsync(kernel, new()
-        {
-            ["input"] = input,
-        });
+        var result = await target.RenderAsync(kernel,
+            new KernelArguments
+            {
+                ["input"] = input
+            });
 
         var isParseChatHistorySucceed = ChatPromptParser.TryParse(result, out var chatHistory);
 
@@ -382,8 +396,9 @@ public class LiquidTemplateTest
               }
             ]
             """;
-        Assert.Equal(expectedChatPromptParserResult, this.SerializeChatHistory(chatHistory!));
+        Assert.Equal(expectedChatPromptParserResult, SerializeChatHistory(chatHistory!));
     }
+
 
     [Fact]
     public async Task ItRendersUserMessagesAndDisallowsMessageInjectionAsync()
@@ -404,26 +419,27 @@ public class LiquidTemplateTest
         var kernel = new Kernel();
         var factory = new LiquidPromptTemplateFactory();
         var template =
-            """
-            system:
-            This is a system message
-            {{safeInput}}
-            user:
-            {{unsafeInput}}
-            """
-        ;
+                """
+                system:
+                This is a system message
+                {{safeInput}}
+                user:
+                {{unsafeInput}}
+                """
+            ;
 
         var target = factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
-            InputVariables = [
-                new() { Name = nameof(safeInput), AllowDangerouslySetContent = true },
-                new() { Name = nameof(unsafeInput) },
+            InputVariables =
+            [
+                new InputVariable { Name = nameof(safeInput), AllowDangerouslySetContent = true },
+                new InputVariable { Name = nameof(unsafeInput) }
             ]
         });
 
         // Act
-        var result = await target.RenderAsync(kernel, new() { [nameof(safeInput)] = safeInput, [nameof(unsafeInput)] = unsafeInput, });
+        var result = await target.RenderAsync(kernel, new KernelArguments { [nameof(safeInput)] = safeInput, [nameof(unsafeInput)] = unsafeInput });
 
         // Assert
         var expected =
@@ -446,6 +462,7 @@ public class LiquidTemplateTest
 
         Assert.Equal(expected, result);
     }
+
 
     [Fact]
     public async Task ItRendersContentWithCodeAsync()
@@ -491,6 +508,7 @@ public class LiquidTemplateTest
             c => Assert.Equal(content, c.Content));
     }
 
+
     [Fact]
     public async Task ItRendersAndCanBeParsedAsync()
     {
@@ -512,13 +530,13 @@ public class LiquidTemplateTest
         var target = factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
-            InputVariables = [new() { Name = "safe_input", AllowDangerouslySetContent = false }]
+            InputVariables = [new InputVariable { Name = "safe_input", AllowDangerouslySetContent = false }]
         });
 
         // Act
-        var prompt = await target.RenderAsync(kernel, new() { ["unsafe_input"] = unsafe_input, ["safe_input"] = safe_input });
+        var prompt = await target.RenderAsync(kernel, new KernelArguments { ["unsafe_input"] = unsafe_input, ["safe_input"] = safe_input });
         bool result = ChatPromptParser.TryParse(prompt, out var chatHistory);
-        var chatHistoryString = this.SerializeChatHistory(chatHistory!);
+        var chatHistoryString = SerializeChatHistory(chatHistory!);
 
         // Assert
         Assert.True(result);
@@ -550,6 +568,7 @@ public class LiquidTemplateTest
         Assert.Equal(expected, chatHistoryString);
     }
 
+
     [Fact]
     public async Task ItEncodesTagsWhenArgumentIsObjectAsync()
     {
@@ -568,17 +587,18 @@ public class LiquidTemplateTest
         var target = factory.Create(new PromptTemplateConfig(template)
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
-            InputVariables = [new() { Name = "unsafe_input", AllowDangerouslySetContent = false }]
+            InputVariables = [new InputVariable { Name = "unsafe_input", AllowDangerouslySetContent = false }]
         });
 
         // Instead of passing argument as string, wrap it to anonymous object.
         var argumentValue = new { prompt = unsafeInput };
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotSupportedException>(() => target.RenderAsync(kernel, new() { ["unsafe_input"] = argumentValue }));
+        var exception = await Assert.ThrowsAsync<NotSupportedException>(() => target.RenderAsync(kernel, new KernelArguments { ["unsafe_input"] = argumentValue }));
 
         Assert.Contains("Argument 'unsafe_input'", exception.Message);
     }
+
 
     [Fact]
     public async Task ItRendersVariablesAsync()
@@ -586,21 +606,21 @@ public class LiquidTemplateTest
         // Arrange
         var template = "My name is {{person.name}} and my email address is {{email}}";
 
-        var config = new PromptTemplateConfig()
+        var config = new PromptTemplateConfig
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
             Template = template,
             InputVariables =
             [
-                new() { Name = "person", AllowDangerouslySetContent = true },
-                new() { Name = "email" }
+                new InputVariable { Name = "person", AllowDangerouslySetContent = true },
+                new InputVariable { Name = "email" }
             ]
         };
 
-        var arguments = new KernelArguments()
+        var arguments = new KernelArguments
         {
             { "person", new { name = "John Doe" } },
-            { "email", "123456@gmail.com"}
+            { "email", "123456@gmail.com" }
         };
 
         var liquidTemplateInstance = new LiquidPromptTemplate(config);
@@ -613,21 +633,22 @@ public class LiquidTemplateTest
         Assert.Equal(expected, result);
     }
 
+
     [Fact]
     public async Task ItUsesDefaultValuesAsync()
     {
         // Arrange
         var template = "Foo {{bar}} {{baz}}{{null}}{{empty}}";
-        var config = new PromptTemplateConfig()
+        var config = new PromptTemplateConfig
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
-            Template = template,
+            Template = template
         };
 
-        config.InputVariables.Add(new() { Name = "bar", Description = "Bar", Default = "Bar" });
-        config.InputVariables.Add(new() { Name = "baz", Description = "Baz", Default = "Baz" });
-        config.InputVariables.Add(new() { Name = "null", Description = "Null", Default = null });
-        config.InputVariables.Add(new() { Name = "empty", Description = "empty", Default = string.Empty });
+        config.InputVariables.Add(new InputVariable { Name = "bar", Description = "Bar", Default = "Bar" });
+        config.InputVariables.Add(new InputVariable { Name = "baz", Description = "Baz", Default = "Baz" });
+        config.InputVariables.Add(new InputVariable { Name = "null", Description = "Null", Default = null });
+        config.InputVariables.Add(new InputVariable { Name = "empty", Description = "empty", Default = string.Empty });
 
         var target = new LiquidPromptTemplate(config);
 
@@ -638,15 +659,16 @@ public class LiquidTemplateTest
         Assert.Equal("Foo Bar Baz", prompt);
     }
 
+
     [Fact]
     public async Task ItRendersConditionalStatementsAsync()
     {
         // Arrange
         var template = "Foo {% if bar %}{{bar}}{% else %}No Bar{% endif %}";
-        var promptConfig = new PromptTemplateConfig()
+        var promptConfig = new PromptTemplateConfig
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
-            Template = template,
+            Template = template
         };
 
         var target = new LiquidPromptTemplate(promptConfig);
@@ -668,18 +690,19 @@ public class LiquidTemplateTest
         Assert.Equal("Foo No Bar", prompt);
     }
 
+
     [Fact]
     public async Task ItRendersLoopsAsync()
     {
         // Arrange
         var template = "List: {% for item in items %}{{item}}{% endfor %}";
-        var promptConfig = new PromptTemplateConfig()
+        var promptConfig = new PromptTemplateConfig
         {
             TemplateFormat = LiquidPromptTemplateFactory.LiquidTemplateFormat,
             Template = template,
             InputVariables =
             [
-                new() { Name = "items", AllowDangerouslySetContent = true }
+                new InputVariable { Name = "items", AllowDangerouslySetContent = true }
             ]
         };
 
@@ -695,7 +718,9 @@ public class LiquidTemplateTest
         Assert.Equal("List: item1item2item3", prompt);
     }
 
+
     #region Private
+
     private const string ItRenderChatTestExpectedResult =
         """
         <message role="system">
@@ -761,11 +786,19 @@ public class LiquidTemplateTest
         </message>
         """;
 
+
     private string SerializeChatHistory(ChatHistory chatHistory)
     {
-        var chatObject = chatHistory.Select(chat => new { Role = chat.Role.ToString(), Content = chat.Content });
+        var chatObject = chatHistory.Select(chat => new
+        {
+            Role = chat.Role.ToString(),
+            chat.Content
+        });
 
-        return JsonSerializer.Serialize(chatObject, this._jsonSerializerOptions).Replace(Environment.NewLine, "\n", StringComparison.InvariantCulture);
+        return JsonSerializer.Serialize(chatObject, _jsonSerializerOptions).Replace(Environment.NewLine, "\n", StringComparison.InvariantCulture);
     }
+
     #endregion Private
+
+
 }

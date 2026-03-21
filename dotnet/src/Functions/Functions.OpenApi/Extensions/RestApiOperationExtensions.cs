@@ -32,14 +32,17 @@ internal static partial class RestApiOperationExtensions
         bool enablePayloadNamespacing = false,
         RestApiParameterFilter? parameterFilter = null)
     {
-        var parameters = new List<RestApiParameter>(parameterFilter is null ?
-        operation.Parameters :
-            operation.Parameters.Select(p => parameterFilter(new(operation, p))).Where(p => p != null).Cast<RestApiParameter>().ToList());
+        var parameters = new List<RestApiParameter>(parameterFilter is null
+            ? operation.Parameters
+            : operation.Parameters.Select(p => parameterFilter(new RestApiParameterFilterContext(operation, p))).Where(p => p != null).Cast<RestApiParameter>().ToList());
 
         // Add payload parameters
         if (operation.Payload is not null)
         {
-            parameters.AddRange(GetPayloadParameters(operation, addPayloadParamsFromMetadata, enablePayloadNamespacing, parameterFilter));
+            parameters.AddRange(GetPayloadParameters(operation,
+                addPayloadParamsFromMetadata,
+                enablePayloadNamespacing,
+                parameterFilter));
         }
 
         foreach (var parameter in parameters)
@@ -55,6 +58,7 @@ internal static partial class RestApiOperationExtensions
         return parameters;
     }
 
+
     /// <summary>
     /// Returns the default return parameter metadata for a given REST API operation.
     /// </summary>
@@ -66,10 +70,13 @@ internal static partial class RestApiOperationExtensions
         RestApiExpectedResponse? restOperationResponse = GetDefaultResponse(operation.Responses, preferredResponses ??= s_preferredResponses);
 
         var returnParameter =
-            restOperationResponse is not null ? new KernelReturnParameterMetadata { Description = restOperationResponse.Description, Schema = restOperationResponse.Schema } : null;
+            restOperationResponse is not null
+                ? new KernelReturnParameterMetadata { Description = restOperationResponse.Description, Schema = restOperationResponse.Schema }
+                : null;
 
         return returnParameter;
     }
+
 
     /// <summary>
     /// Retrieves the default response.
@@ -91,6 +98,7 @@ internal static partial class RestApiOperationExtensions
         return null;
     }
 
+
     /// <summary>
     /// Retrieves the payload parameters for a given REST API operation.
     /// </summary>
@@ -100,7 +108,11 @@ internal static partial class RestApiOperationExtensions
     /// <param name="enableNamespacing">Flag indicating whether to namespace payload parameter names.</param>
     /// <param name="parameterFilter">Filter which can be used to eliminate or modify RestApiParameters.</param>
     /// <returns>A list of <see cref="RestApiParameter"/> representing the payload parameters.</returns>
-    private static List<RestApiParameter> GetPayloadParameters(RestApiOperation operation, bool useParametersFromMetadata, bool enableNamespacing, RestApiParameterFilter? parameterFilter)
+    private static List<RestApiParameter> GetPayloadParameters(
+        RestApiOperation operation,
+        bool useParametersFromMetadata,
+        bool enableNamespacing,
+        RestApiParameterFilter? parameterFilter)
     {
         if (useParametersFromMetadata)
         {
@@ -116,17 +128,22 @@ internal static partial class RestApiOperationExtensions
                 return [CreatePayloadArtificialParameter(operation)];
             }
 
-            return GetParametersFromPayloadMetadata(operation, operation.Payload, operation.Payload.Properties, enableNamespacing, parameterFilter);
+            return GetParametersFromPayloadMetadata(operation,
+                operation.Payload,
+                operation.Payload.Properties,
+                enableNamespacing,
+                parameterFilter);
         }
 
         // Adding artificial 'payload' and 'content-type' in case parameters from payload metadata are not required.
         if (parameterFilter is not null)
         {
-            return new RestApiParameter[]
-            {
-                CreatePayloadArtificialParameter(operation),
-                CreateContentTypeArtificialParameter(operation)
-            }.Where(p => parameterFilter(new(operation, p)) is not null).ToList();
+            return new[]
+                {
+                    CreatePayloadArtificialParameter(operation),
+                    CreateContentTypeArtificialParameter(operation)
+                }.Where(p => parameterFilter(new RestApiParameterFilterContext(operation, p)) is not null)
+                .ToList();
         }
         return
         [
@@ -134,6 +151,7 @@ internal static partial class RestApiOperationExtensions
             CreateContentTypeArtificialParameter(operation)
         ];
     }
+
 
     /// <summary>
     /// Creates the 'content-type' artificial parameter for a REST API operation.
@@ -145,12 +163,13 @@ internal static partial class RestApiOperationExtensions
         return new RestApiParameter(
             RestApiOperation.ContentTypeArgumentName,
             "string",
-            isRequired: false,
-            expand: false,
+            false,
+            false,
             RestApiParameterLocation.Body,
             RestApiParameterStyle.Simple,
             description: "Content type of REST API request body.");
     }
+
 
     /// <summary>
     /// Creates the 'payload' artificial parameter for a REST API operation.
@@ -161,14 +180,17 @@ internal static partial class RestApiOperationExtensions
     {
         return new RestApiParameter(
             RestApiOperation.PayloadArgumentName,
-            operation.Payload?.MediaType == MediaTypeTextPlain ? "string" : "object",
-            isRequired: true,
-            expand: false,
+            operation.Payload?.MediaType == MediaTypeTextPlain
+                ? "string"
+                : "object",
+            true,
+            false,
             RestApiParameterLocation.Body,
             RestApiParameterStyle.Simple,
             description: operation.Payload?.Description ?? "REST API request body.",
             schema: operation.Payload?.Schema);
     }
+
 
     /// <summary>
     /// Retrieves parameters from REST API payload metadata.
@@ -182,7 +204,13 @@ internal static partial class RestApiOperationExtensions
     /// <param name="parameterFilter">Filter which can be used to eliminate or modify RestApiParameters.</param>
     /// <param name="rootPropertyName">The root property name.</param>
     /// <returns>The list of payload parameters.</returns>
-    private static List<RestApiParameter> GetParametersFromPayloadMetadata(RestApiOperation operation, object parent, IList<RestApiPayloadProperty> properties, bool enableNamespacing = false, RestApiParameterFilter? parameterFilter = null, string? rootPropertyName = null)
+    private static List<RestApiParameter> GetParametersFromPayloadMetadata(
+        RestApiOperation operation,
+        object parent,
+        IList<RestApiPayloadProperty> properties,
+        bool enableNamespacing = false,
+        RestApiParameterFilter? parameterFilter = null,
+        string? rootPropertyName = null)
     {
         var parameters = new List<RestApiParameter>();
 
@@ -199,12 +227,12 @@ internal static partial class RestApiOperationExtensions
                 property.ArgumentName ??= InvalidSymbolsRegex().Replace(parameterName, "_");
 
                 var parameter = new RestApiParameter(
-                    name: parameterName,
-                    type: property.Type,
-                    isRequired: property.IsRequired,
-                    expand: false,
-                    location: RestApiParameterLocation.Body,
-                    style: RestApiParameterStyle.Simple,
+                    parameterName,
+                    property.Type,
+                    property.IsRequired,
+                    false,
+                    RestApiParameterLocation.Body,
+                    RestApiParameterStyle.Simple,
                     defaultValue: property.DefaultValue,
                     description: property.Description,
                     format: property.Format,
@@ -212,18 +240,27 @@ internal static partial class RestApiOperationExtensions
                 {
                     ArgumentName = property.ArgumentName
                 };
-                parameter = parameterFilter is null ? parameter : parameterFilter(new(operation, parameter) { Parent = parent });
+                parameter = parameterFilter is null
+                    ? parameter
+                    : parameterFilter(new RestApiParameterFilterContext(operation, parameter) { Parent = parent });
+
                 if (parameter is not null)
                 {
                     parameters.Add(parameter);
                 }
             }
 
-            parameters.AddRange(GetParametersFromPayloadMetadata(operation, property, property.Properties, enableNamespacing, parameterFilter, parameterName));
+            parameters.AddRange(GetParametersFromPayloadMetadata(operation,
+                property,
+                property.Properties,
+                enableNamespacing,
+                parameterFilter,
+                parameterName));
         }
 
         return parameters;
     }
+
 
     /// <summary>
     /// Gets the property name based on the provided parameters.
@@ -236,11 +273,14 @@ internal static partial class RestApiOperationExtensions
     {
         if (enableNamespacing)
         {
-            return string.IsNullOrEmpty(rootPropertyName) ? property.Name : $"{rootPropertyName}.{property.Name}";
+            return string.IsNullOrEmpty(rootPropertyName)
+                ? property.Name
+                : $"{rootPropertyName}.{property.Name}";
         }
 
         return property.Name;
     }
+
 
     private const string MediaTypeTextPlain = "text/plain";
     private static readonly string[] s_preferredResponses = ["200", "201", "202", "203", "204", "205", "206", "207", "208", "226", "2XX", "default"];

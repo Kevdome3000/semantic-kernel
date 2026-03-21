@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.SemanticKernel;
@@ -30,6 +29,7 @@ public class AgentDefinitionExtensionsTests
         Assert.NotNull(kernelArguments);
     }
 
+
     /// <summary>
     ///  Verify default instance of <see cref="KernelArguments"/> has function calling enabled.
     /// </summary>
@@ -39,7 +39,7 @@ public class AgentDefinitionExtensionsTests
         // Arrange
         var agentDefinition = new AgentDefinition
         {
-            Tools = [new() { Type = "function", Id = "MyPlugin.Function1" }]
+            Tools = [new AgentToolDefinition { Type = "function", Id = "MyPlugin.Function1" }]
         };
         var kernel = new Kernel();
         var kernelPlugin = kernel.Plugins.AddFromType<MyPlugin>();
@@ -58,6 +58,7 @@ public class AgentDefinitionExtensionsTests
         Assert.Single(autoFunctionChoiceBehavior.Functions);
     }
 
+
     /// <summary>
     ///  Verify instance of <see cref="KernelArguments"/> cannot be created if function is not available.
     /// </summary>
@@ -67,7 +68,7 @@ public class AgentDefinitionExtensionsTests
         // Arrange
         var agentDefinition = new AgentDefinition
         {
-            Tools = [new() { Type = "function", Id = "MyPlugin.Function2" }]
+            Tools = [new AgentToolDefinition { Type = "function", Id = "MyPlugin.Function2" }]
         };
         var kernel = new Kernel();
         var kernelPlugin = kernel.Plugins.AddFromType<MyPlugin>();
@@ -75,6 +76,7 @@ public class AgentDefinitionExtensionsTests
         // Act & Assert
         Assert.Throws<KernelException>(() => agentDefinition.GetDefaultKernelArguments(kernel));
     }
+
 
     /// <summary>
     /// Verify GetPromptTemplate returns null if there is no template factory, template or instructions.
@@ -90,6 +92,7 @@ public class AgentDefinitionExtensionsTests
         Assert.Null(agentDefinition.GetPromptTemplate(kernel, null));
     }
 
+
     /// <summary>
     /// Verify GetPromptTemplate returns null if there is no template factory, template or instructions.
     /// </summary>
@@ -97,10 +100,10 @@ public class AgentDefinitionExtensionsTests
     public void VerifyGetPromptTemplate()
     {
         // Arrange
-        var agentDefinition = new AgentDefinition()
+        var agentDefinition = new AgentDefinition
         {
             Instructions = "instructions",
-            Template = new() { Format = "semantic-kernel" }
+            Template = new TemplateOptions { Format = "semantic-kernel" }
         };
         var kernel = new Kernel();
         var templateFactory = new KernelPromptTemplateFactory();
@@ -111,6 +114,7 @@ public class AgentDefinitionExtensionsTests
         // Assert
         Assert.NotNull(promptTemplate);
     }
+
 
     /// <summary>
     ///  Verify GetFirstToolDefinition returns the correct tool.
@@ -123,8 +127,8 @@ public class AgentDefinitionExtensionsTests
         {
             Tools =
             [
-                new() { Type = "function", Id = "MyPlugin.Function1" },
-                new() { Type = "code_interpreter" }
+                new AgentToolDefinition { Type = "function", Id = "MyPlugin.Function1" },
+                new AgentToolDefinition { Type = "code_interpreter" }
             ]
         };
         var kernel = new Kernel();
@@ -138,6 +142,7 @@ public class AgentDefinitionExtensionsTests
         Assert.Equal("function", toolDefinition.Type);
     }
 
+
     /// <summary>
     ///  Verify GetToolDefinitions returns the correct tools.
     /// </summary>
@@ -149,9 +154,9 @@ public class AgentDefinitionExtensionsTests
         {
             Tools =
             [
-                new() { Type = "function", Id = "MyPlugin.Function1" },
-                new() { Type = "function", Id = "MyPlugin.Function2" },
-                new() { Type = "code_interpreter" }
+                new AgentToolDefinition { Type = "function", Id = "MyPlugin.Function1" },
+                new AgentToolDefinition { Type = "function", Id = "MyPlugin.Function2" },
+                new AgentToolDefinition { Type = "code_interpreter" }
             ]
         };
         var kernel = new Kernel();
@@ -165,6 +170,7 @@ public class AgentDefinitionExtensionsTests
         Assert.Equal(2, toolDefinitions.Count());
     }
 
+
     /// <summary>
     ///  Verify HasToolType returns the correct values.
     /// </summary>
@@ -176,8 +182,8 @@ public class AgentDefinitionExtensionsTests
         {
             Tools =
             [
-                new() { Type = "function", Id = "MyPlugin.Function1" },
-                new() { Type = "code_interpreter" }
+                new AgentToolDefinition { Type = "function", Id = "MyPlugin.Function1" },
+                new AgentToolDefinition { Type = "code_interpreter" }
             ]
         };
         var kernel = new Kernel();
@@ -189,12 +195,20 @@ public class AgentDefinitionExtensionsTests
         Assert.False(agentDefinition.HasToolType("file_search"));
     }
 
+
     #region private
+
     private sealed class MyPlugin
     {
         [KernelFunction("Function1")]
         [Description("Description for function 1.")]
-        public string Function1([Description("Description for parameter 1")] string param1) => $"Function1: {param1}";
+        public string Function1([Description("Description for parameter 1")] string param1)
+        {
+            return $"Function1: {param1}";
+        }
     }
+
     #endregion
+
+
 }

@@ -21,6 +21,7 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
         private readonly Func<IEnumerable<ChatMessageContent>, ValueTask> _action;
         private readonly TaskCompletionSource<TOutput> _completionSource;
 
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TOutput}"/> class.
         /// </summary>
@@ -39,12 +40,17 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
             TaskCompletionSource<TOutput> completionSource,
             Func<IEnumerable<ChatMessageContent>, ValueTask> action,
             ILogger<RequestActor>? logger = null)
-            : base(id, runtime, context, $"{id.Type}_Actor", logger)
+            : base(id,
+                runtime,
+                context,
+                $"{id.Type}_Actor",
+                logger)
         {
-            this._transform = transform;
-            this._action = action;
-            this._completionSource = completionSource;
+            _transform = transform;
+            _action = action;
+            _completionSource = completionSource;
         }
+
 
         /// <summary>
         /// Handles the incoming message by transforming the input and executing the corresponding action asynchronously.
@@ -54,19 +60,20 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
         /// <returns>A ValueTask representing the asynchronous operation.</returns>
         public async ValueTask HandleAsync(TInput item, MessageContext messageContext)
         {
-            this.Logger.LogOrchestrationRequestInvoke(this.Context.Orchestration, this.Id);
+            Logger.LogOrchestrationRequestInvoke(Context.Orchestration, Id);
+
             try
             {
-                IEnumerable<ChatMessageContent> input = await this._transform.Invoke(item).ConfigureAwait(false);
-                Task task = this._action.Invoke(input).AsTask();
-                this.Logger.LogOrchestrationStart(this.Context.Orchestration, this.Id);
+                IEnumerable<ChatMessageContent> input = await _transform.Invoke(item).ConfigureAwait(false);
+                Task task = _action.Invoke(input).AsTask();
+                Logger.LogOrchestrationStart(Context.Orchestration, Id);
                 await task.ConfigureAwait(false);
             }
             catch (Exception exception) when (!exception.IsCriticalException())
             {
                 // Log exception details and allow orchestration to fail
-                this.Logger.LogOrchestrationRequestFailure(this.Context.Orchestration, this.Id, exception);
-                this._completionSource.SetException(exception);
+                Logger.LogOrchestrationRequestFailure(Context.Orchestration, Id, exception);
+                _completionSource.SetException(exception);
                 throw;
             }
         }

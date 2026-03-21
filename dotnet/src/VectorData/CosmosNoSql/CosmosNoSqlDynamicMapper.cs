@@ -1,13 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ProviderServices;
 using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
@@ -25,24 +18,24 @@ internal sealed class CosmosNoSqlDynamicMapper(CollectionModel model, JsonSerial
         var jsonObject = new JsonObject
         {
             [CosmosNoSqlConstants.ReservedKeyPropertyName] = !dataModel.TryGetValue(model.KeyProperty.ModelName, out var keyValue)
-            ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
-            : keyValue switch
-            {
-                string s => s,
-                Guid g => g.ToString(),
+                ? throw new InvalidOperationException($"Missing value for key property '{model.KeyProperty.ModelName}")
+                : keyValue switch
+                {
+                    string s => s,
+                    Guid g => g.ToString(),
 
-                null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
-                _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
-            }
+                    null => throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' is null."),
+                    _ => throw new InvalidCastException($"Key property '{model.KeyProperty.ModelName}' must be a string.")
+                }
         };
 
         foreach (var dataProperty in model.DataProperties)
         {
             if (dataModel.TryGetValue(dataProperty.ModelName, out var dataValue))
             {
-                jsonObject[dataProperty.StorageName] = dataValue is not null ?
-                    JsonSerializer.SerializeToNode(dataValue, dataProperty.Type, jsonSerializerOptions) :
-                    null;
+                jsonObject[dataProperty.StorageName] = dataValue is not null
+                    ? JsonSerializer.SerializeToNode(dataValue, dataProperty.Type, jsonSerializerOptions)
+                    : null;
             }
         }
 
@@ -111,6 +104,7 @@ internal sealed class CosmosNoSqlDynamicMapper(CollectionModel model, JsonSerial
             return memory is not null;
         }
     }
+
 
     public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {

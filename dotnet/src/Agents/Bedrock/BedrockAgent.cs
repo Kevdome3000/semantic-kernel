@@ -11,8 +11,8 @@ using Amazon.BedrockAgent;
 using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel.Agents.Extensions;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
+using ConversationRole = Amazon.BedrockAgentRuntime.ConversationRole;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
 
@@ -41,6 +41,7 @@ public sealed class BedrockAgent : Agent
     /// </summary>
     public static readonly string WorkingDraftAgentAlias = "TSTALIASID";
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="BedrockAgent"/> class.
     /// Unlike other types of agents in Semantic Kernel, prompt templates are not supported for Bedrock agents,
@@ -54,15 +55,16 @@ public sealed class BedrockAgent : Agent
         IAmazonBedrockAgent client,
         IAmazonBedrockAgentRuntime runtimeClient)
     {
-        this.AgentModel = agentModel;
-        this.Client = client;
-        this.RuntimeClient = runtimeClient;
+        AgentModel = agentModel;
+        Client = client;
+        RuntimeClient = runtimeClient;
 
-        this.Id = agentModel.AgentId;
-        this.Name = agentModel.AgentName;
-        this.Description = agentModel.Description;
-        this.Instructions = agentModel.Instruction;
+        Id = agentModel.AgentId;
+        Name = agentModel.AgentName;
+        Description = agentModel.Description;
+        Instructions = agentModel.Instruction;
     }
+
 
     #region static methods
 
@@ -75,6 +77,7 @@ public sealed class BedrockAgent : Agent
     }
 
     #endregion
+
 
     #region public methods
 
@@ -97,8 +100,12 @@ public sealed class BedrockAgent : Agent
         BedrockAgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeAsync(messages, thread, (AgentInvokeOptions?)options, cancellationToken);
+        return InvokeAsync(messages,
+            thread,
+            (AgentInvokeOptions?)options,
+            cancellationToken);
     }
+
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
@@ -114,52 +121,62 @@ public sealed class BedrockAgent : Agent
 
         // Create a thread if needed
         BedrockAgentThread bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
-            messages,
-            thread,
-            () => new BedrockAgentThread(this.RuntimeClient),
-            cancellationToken).ConfigureAwait(false);
+                messages,
+                thread,
+                () => new BedrockAgentThread(RuntimeClient),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         // Get the context contributions from the AIContextProviders.
-#pragma warning disable SKEXP0110, SKEXP0130  // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         AIContext providersContext = await bedrockThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Ensure that the last message provided is a user message
-        string message = this.ExtractUserMessage(messages.Last());
+        string message = ExtractUserMessage(messages.Last());
 
         // Build session state with conversation history and override instructions if needed
-        SessionState sessionState = this.ExtractSessionState(messages);
+        SessionState sessionState = ExtractSessionState(messages);
         string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
-        sessionState.PromptSessionAttributes = new() { [AdditionalInstructionsSessionAttributeName] = mergedAdditionalInstructions };
+        sessionState.PromptSessionAttributes = new Dictionary<string, string> { [AdditionalInstructionsSessionAttributeName] = mergedAdditionalInstructions };
 
         // Configure the agent request with the provided options
-        var invokeAgentRequest = this.ConfigureAgentRequest(options, () =>
-        {
-            return new InvokeAgentRequest
+        var invokeAgentRequest = ConfigureAgentRequest(options,
+            () =>
             {
-                SessionState = sessionState,
-                AgentId = this.Id,
-                SessionId = bedrockThread.Id,
-                InputText = message,
-            };
-        });
+                return new InvokeAgentRequest
+                {
+                    SessionState = sessionState,
+                    AgentId = Id,
+                    SessionId = bedrockThread.Id,
+                    InputText = message
+                };
+            });
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, this.Kernel, messages);
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(Id,
+            this.GetDisplayName(),
+            Description,
+            Kernel,
+            messages);
 
         // Invoke the agent
-        var invokeResults = this.InvokeInternalAsync(invokeAgentRequest, options?.KernelArguments, cancellationToken);
-        List<ChatMessageContent>? chatMessageContents = activity is not null ? [] : null;
+        var invokeResults = InvokeInternalAsync(invokeAgentRequest, options?.KernelArguments, cancellationToken);
+        List<ChatMessageContent>? chatMessageContents = activity is not null
+            ? []
+            : null;
 
         // Return the results to the caller in AgentResponseItems.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
             await this.NotifyThreadOfNewMessage(bedrockThread, result, cancellationToken).ConfigureAwait(false);
-            yield return new(result, bedrockThread);
+            yield return new AgentResponseItem<ChatMessageContent>(result, bedrockThread);
+
             chatMessageContents?.Add(result);
         }
 
         activity?.SetAgentResponse(chatMessageContents);
     }
+
 
     /// <summary>
     /// Invoke the Bedrock agent with the given request. Use this method when you want to customize the request.
@@ -176,8 +193,12 @@ public sealed class BedrockAgent : Agent
         BedrockAgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeAsync(invokeAgentRequest, thread, (AgentInvokeOptions?)options, cancellationToken);
+        return InvokeAsync(invokeAgentRequest,
+            thread,
+            (AgentInvokeOptions?)options,
+            cancellationToken);
     }
+
 
     /// <summary>
     /// Invoke the Bedrock agent with the given request. Use this method when you want to customize the request.
@@ -198,30 +219,38 @@ public sealed class BedrockAgent : Agent
         // a new thread is created with the provided session id. If neither is provided, a new thread is created.
         if (thread is null && invokeAgentRequest.SessionId is not null)
         {
-            thread = new BedrockAgentThread(this.RuntimeClient, invokeAgentRequest.SessionId);
+            thread = new BedrockAgentThread(RuntimeClient, invokeAgentRequest.SessionId);
         }
 
         BedrockAgentThread bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
-            [],
-            thread,
-            () => new BedrockAgentThread(this.RuntimeClient),
-            cancellationToken).ConfigureAwait(false);
+                [],
+                thread,
+                () => new BedrockAgentThread(RuntimeClient),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         // Configure the agent request with the provided options
         invokeAgentRequest.SessionId = bedrockThread.Id;
-        invokeAgentRequest = this.ConfigureAgentRequest(options, () => invokeAgentRequest);
+        invokeAgentRequest = ConfigureAgentRequest(options, () => invokeAgentRequest);
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, this.Kernel, []);
-        List<ChatMessageContent>? chatMessageContents = activity is not null ? [] : null;
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(Id,
+            this.GetDisplayName(),
+            Description,
+            Kernel,
+            []);
+        List<ChatMessageContent>? chatMessageContents = activity is not null
+            ? []
+            : null;
 
         // Invoke the agent
-        var invokeResults = this.InvokeInternalAsync(invokeAgentRequest, options?.KernelArguments, cancellationToken);
+        var invokeResults = InvokeInternalAsync(invokeAgentRequest, options?.KernelArguments, cancellationToken);
 
         // Return the results to the caller in AgentResponseItems.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
             await this.NotifyThreadOfNewMessage(bedrockThread, result, cancellationToken).ConfigureAwait(false);
-            yield return new(result, bedrockThread);
+            yield return new AgentResponseItem<ChatMessageContent>(result, bedrockThread);
+
             chatMessageContents?.Add(result);
         }
 
@@ -229,6 +258,7 @@ public sealed class BedrockAgent : Agent
     }
 
     #endregion
+
 
     #region InvokeStreamingAsync
 
@@ -249,8 +279,12 @@ public sealed class BedrockAgent : Agent
         BedrockAgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeStreamingAsync(messages, thread, options as AgentInvokeOptions, cancellationToken);
+        return InvokeStreamingAsync(messages,
+            thread,
+            options as AgentInvokeOptions,
+            cancellationToken);
     }
+
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
@@ -260,6 +294,7 @@ public sealed class BedrockAgent : Agent
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages, nameof(messages));
+
         if (messages.Count == 0)
         {
             throw new InvalidOperationException("The Bedrock agent requires a message to be invoked.");
@@ -267,10 +302,11 @@ public sealed class BedrockAgent : Agent
 
         // Create a thread if needed
         BedrockAgentThread bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
-            messages,
-            thread,
-            () => new BedrockAgentThread(this.RuntimeClient),
-            cancellationToken).ConfigureAwait(false);
+                messages,
+                thread,
+                () => new BedrockAgentThread(RuntimeClient),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         // Get the context contributions from the AIContextProviders.
 #pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -278,40 +314,52 @@ public sealed class BedrockAgent : Agent
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // Ensure that the last message provided is a user message
-        string? message = this.ExtractUserMessage(messages.Last());
+        string? message = ExtractUserMessage(messages.Last());
 
         // Build session state with conversation history and override instructions if needed
-        SessionState sessionState = this.ExtractSessionState(messages);
+        SessionState sessionState = ExtractSessionState(messages);
         string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
-        sessionState.PromptSessionAttributes = new() { [AdditionalInstructionsSessionAttributeName] = mergedAdditionalInstructions };
+        sessionState.PromptSessionAttributes = new Dictionary<string, string> { [AdditionalInstructionsSessionAttributeName] = mergedAdditionalInstructions };
 
         // Configure the agent request with the provided options
-        var invokeAgentRequest = this.ConfigureAgentRequest(options, () =>
-        {
-            return new InvokeAgentRequest
+        var invokeAgentRequest = ConfigureAgentRequest(options,
+            () =>
             {
-                SessionState = sessionState,
-                AgentId = this.Id,
-                SessionId = bedrockThread.Id,
-                InputText = message,
-            };
-        });
+                return new InvokeAgentRequest
+                {
+                    SessionState = sessionState,
+                    AgentId = Id,
+                    SessionId = bedrockThread.Id,
+                    InputText = message
+                };
+            });
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, this.Kernel, []);
-        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(Id,
+            this.GetDisplayName(),
+            Description,
+            Kernel,
+            []);
+        List<StreamingChatMessageContent>? streamedContents = activity is not null
+            ? []
+            : null;
 
         // Invoke the agent
-        var invokeResults = this.InvokeStreamingInternalAsync(invokeAgentRequest, bedrockThread, options?.KernelArguments, cancellationToken);
+        var invokeResults = InvokeStreamingInternalAsync(invokeAgentRequest,
+            bedrockThread,
+            options?.KernelArguments,
+            cancellationToken);
 
         // Return the results to the caller in AgentResponseItems.
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
-            yield return new(result, bedrockThread);
+            yield return new AgentResponseItem<StreamingChatMessageContent>(result, bedrockThread);
+
             streamedContents?.Add(result);
         }
 
         activity?.EndAgentStreamingResponse(streamedContents);
     }
+
 
     /// <summary>
     /// Invoke the Bedrock agent with the given request. Use this method when you want to customize the request.
@@ -329,8 +377,12 @@ public sealed class BedrockAgent : Agent
         BedrockAgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeStreamingAsync(invokeAgentRequest, thread, options as AgentInvokeOptions, cancellationToken);
+        return InvokeStreamingAsync(invokeAgentRequest,
+            thread,
+            options as AgentInvokeOptions,
+            cancellationToken);
     }
+
 
     /// <summary>
     /// Invoke the Bedrock agent with the given request. Use this method when you want to customize the request.
@@ -352,38 +404,49 @@ public sealed class BedrockAgent : Agent
         // a new thread is created with the provided session id. If neither is provided, a new thread is created.
         if (thread is null && invokeAgentRequest.SessionId is not null)
         {
-            thread = new BedrockAgentThread(this.RuntimeClient, invokeAgentRequest.SessionId);
+            thread = new BedrockAgentThread(RuntimeClient, invokeAgentRequest.SessionId);
         }
 
         var bedrockThread = await this.EnsureThreadExistsWithMessagesAsync(
-            [],
-            thread,
-            () => new BedrockAgentThread(this.RuntimeClient),
-            cancellationToken).ConfigureAwait(false);
+                [],
+                thread,
+                () => new BedrockAgentThread(RuntimeClient),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         // Configure the agent request with the provided options
         invokeAgentRequest.SessionId = bedrockThread.Id;
-        invokeAgentRequest = this.ConfigureAgentRequest(options, () => invokeAgentRequest);
+        invokeAgentRequest = ConfigureAgentRequest(options, () => invokeAgentRequest);
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, this.Kernel, []);
-        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(Id,
+            this.GetDisplayName(),
+            Description,
+            Kernel,
+            []);
+        List<StreamingChatMessageContent>? streamedContents = activity is not null
+            ? []
+            : null;
 
-        var invokeResults = this.InvokeStreamingInternalAsync(invokeAgentRequest, bedrockThread, options?.KernelArguments, cancellationToken);
+        var invokeResults = InvokeStreamingInternalAsync(invokeAgentRequest,
+            bedrockThread,
+            options?.KernelArguments,
+            cancellationToken);
 
         // The Bedrock agent service has the same API for both streaming and non-streaming responses.
         // We are invoking the same method as the non-streaming response with the streaming configuration set,
         // and converting the chat message content to streaming chat message content.
         await foreach (StreamingChatMessageContent chatMessageContent in invokeResults.ConfigureAwait(false))
         {
-            yield return new(
-                message: new StreamingChatMessageContent(chatMessageContent.Role, chatMessageContent.Content)
+            yield return new AgentResponseItem<StreamingChatMessageContent>(
+                new StreamingChatMessageContent(chatMessageContent.Role, chatMessageContent.Content)
                 {
                     AuthorName = chatMessageContent.AuthorName,
                     ModelId = chatMessageContent.ModelId,
                     InnerContent = chatMessageContent.InnerContent,
-                    Metadata = chatMessageContent.Metadata,
+                    Metadata = chatMessageContent.Metadata
                 },
-                thread: bedrockThread);
+                bedrockThread);
+
             streamedContents?.Add(chatMessageContent);
         }
 
@@ -394,12 +457,14 @@ public sealed class BedrockAgent : Agent
 
     #endregion
 
+
     /// <inheritdoc/>
     protected override IEnumerable<string> GetChannelKeys()
     {
         // Return the channel keys for the BedrockAgent
         yield return typeof(BedrockAgentChannel).FullName!;
     }
+
 
     /// <inheritdoc/>
     protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
@@ -408,6 +473,7 @@ public sealed class BedrockAgent : Agent
         return Task.FromResult<AgentChannel>(new BedrockAgentChannel());
     }
 
+
     /// <inheritdoc/>
     protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
@@ -415,13 +481,17 @@ public sealed class BedrockAgent : Agent
         return Task.FromResult<AgentChannel>(new BedrockAgentChannel());
     }
 
+
     #region internal methods
 
-    internal string CodeInterpreterActionGroupSignature { get => $"{this.GetDisplayName()}_CodeInterpreter"; }
-    internal string KernelFunctionActionGroupSignature { get => $"{this.GetDisplayName()}_KernelFunctions"; }
-    internal string UseInputActionGroupSignature { get => $"{this.GetDisplayName()}_UserInput"; }
+    internal string CodeInterpreterActionGroupSignature => $"{this.GetDisplayName()}_CodeInterpreter";
+
+    internal string KernelFunctionActionGroupSignature => $"{this.GetDisplayName()}_KernelFunctions";
+
+    internal string UseInputActionGroupSignature => $"{this.GetDisplayName()}_UserInput";
 
     #endregion
+
 
     #region private methods
 
@@ -450,6 +520,7 @@ public sealed class BedrockAgent : Agent
             {
                 items.AddRange(message.Items);
                 content += message.Content ?? "";
+
                 if (message.Metadata != null)
                 {
                     foreach (var key in message.Metadata.Keys)
@@ -464,14 +535,15 @@ public sealed class BedrockAgent : Agent
             {
                 AuthorName = this.GetDisplayName(),
                 Items = items,
-                ModelId = this.AgentModel.FoundationModel,
+                ModelId = AgentModel.FoundationModel,
                 Metadata = metadata,
-                InnerContent = innerContents,
+                InnerContent = innerContents
             };
 
             yield return chatMessageContent;
         }
     }
+
 
     private IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingInternalAsync(
         InvokeAgentRequest invokeAgentRequest,
@@ -481,9 +553,9 @@ public sealed class BedrockAgent : Agent
     {
         if (invokeAgentRequest.StreamingConfigurations == null)
         {
-            invokeAgentRequest.StreamingConfigurations = new()
+            invokeAgentRequest.StreamingConfigurations = new StreamingConfigurations
             {
-                StreamFinalResponse = true,
+                StreamFinalResponse = true
             };
         }
         else if (!(invokeAgentRequest.StreamingConfigurations.StreamFinalResponse ?? false))
@@ -508,7 +580,7 @@ public sealed class BedrockAgent : Agent
                     AuthorName = chatMessageContent.AuthorName,
                     ModelId = chatMessageContent.ModelId,
                     InnerContent = chatMessageContent.InnerContent,
-                    Metadata = chatMessageContent.Metadata,
+                    Metadata = chatMessageContent.Metadata
                 };
                 yield return lastMessage;
 
@@ -521,16 +593,18 @@ public sealed class BedrockAgent : Agent
             {
                 AuthorName = lastMessage?.AuthorName,
                 ModelId = lastMessage?.ModelId,
-                Metadata = lastMessage?.Metadata,
+                Metadata = lastMessage?.Metadata
             };
             await this.NotifyThreadOfNewMessage(thread, combinedMessage, cancellationToken).ConfigureAwait(false);
         }
     }
 
+
     private InvokeAgentRequest ConfigureAgentRequest(AgentInvokeOptions? options, Func<InvokeAgentRequest> createRequest)
     {
         string agentAlias = WorkingDraftAgentAlias;
         bool enableTrace = false;
+
         if (options is BedrockAgentInvokeOptions bedrockOption)
         {
             agentAlias = bedrockOption.AgentAliasId ?? WorkingDraftAgentAlias;
@@ -543,6 +617,7 @@ public sealed class BedrockAgent : Agent
         return invokeRequest;
     }
 
+
     private string ExtractUserMessage(ChatMessageContent chatMessageContent)
     {
         if (!chatMessageContent.Role.Equals(AuthorRole.User))
@@ -553,48 +628,55 @@ public sealed class BedrockAgent : Agent
         return chatMessageContent.Content ?? "";
     }
 
+
     private SessionState ExtractSessionState(ICollection<ChatMessageContent> messages)
     {
         // If there is more than one message provided, add all but the last message to the session state
         SessionState sessionState = new();
+
         if (messages.Count > 1)
         {
-            List<Amazon.BedrockAgentRuntime.Model.Message> messageHistory = [];
+            List<Message> messageHistory = [];
+
             for (int i = 0; i < messages.Count - 1; i++)
             {
                 var currentMessage = messages.ElementAt(i);
-                messageHistory.Add(this.ToBedrockMessage(currentMessage));
+                messageHistory.Add(ToBedrockMessage(currentMessage));
             }
 
-            sessionState.ConversationHistory = new ConversationHistory() { Messages = messageHistory };
+            sessionState.ConversationHistory = new ConversationHistory { Messages = messageHistory };
         }
 
         return sessionState;
     }
 
-    private Amazon.BedrockAgentRuntime.Model.Message ToBedrockMessage(ChatMessageContent chatMessageContent)
+
+    private Message ToBedrockMessage(ChatMessageContent chatMessageContent)
     {
-        return new Amazon.BedrockAgentRuntime.Model.Message()
+        return new Message
         {
-            Role = this.MapBedrockAgentUser(chatMessageContent.Role),
-            Content = [new() { Text = chatMessageContent.Content }]
+            Role = MapBedrockAgentUser(chatMessageContent.Role),
+            Content = [new ContentBlock { Text = chatMessageContent.Content }]
         };
     }
 
-    private Amazon.BedrockAgentRuntime.ConversationRole MapBedrockAgentUser(AuthorRole authorRole)
+
+    private ConversationRole MapBedrockAgentUser(AuthorRole authorRole)
     {
         if (authorRole == AuthorRole.User)
         {
-            return Amazon.BedrockAgentRuntime.ConversationRole.User;
+            return ConversationRole.User;
         }
 
         if (authorRole == AuthorRole.Assistant)
         {
-            return Amazon.BedrockAgentRuntime.ConversationRole.Assistant;
+            return ConversationRole.Assistant;
         }
 
         throw new ArgumentOutOfRangeException($"Invalid role: {authorRole}");
     }
 
     #endregion
+
+
 }

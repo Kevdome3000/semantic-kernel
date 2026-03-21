@@ -21,8 +21,10 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
         _dictionary = dictionary ?? new Dictionary<RestApiSecurityScheme, IList<string>>();
     }
 
+
     /// <summary>Gets the number of elements contained in the <see cref="RestApiSecurityRequirement"/>.</summary>
     public int Count => _dictionary.Count;
+
 
     /// <summary>Adds the specified security scheme to the <see cref="RestApiSecurityRequirement"/>.</summary>
     /// <param name="key">The security scheme to add.</param>
@@ -33,6 +35,7 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
         _dictionary.Add(key, value);
     }
 
+
     /// <summary>Removes the security scheme with the specified key from the <see cref="RestApiSecurityRequirement"/>.</summary>
     /// <param name="key">The security scheme to remove.</param>
     public bool Remove(RestApiSecurityScheme key)
@@ -41,12 +44,14 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
         return _dictionary.Remove(key);
     }
 
+
     /// <summary>Removes all the security schemes from the <see cref="RestApiSecurityRequirement"/>.</summary>
     public void Clear()
     {
         _freezable.ThrowIfFrozen();
         _dictionary.Clear();
     }
+
 
     /// <summary>Determines whether the <see cref="RestApiSecurityRequirement"/> contains a specific security scheme.</summary>
     /// <param name="key">The security scheme to locate in the <see cref="RestApiSecurityRequirement"/>.</param>
@@ -55,6 +60,7 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
     {
         return _dictionary.ContainsKey(key);
     }
+
 
     /// <summary>Get the security scheme scopes associated with the specified security scheme.</summary>
     /// <param name="key">The security scheme to get the scopes for.</param>
@@ -67,6 +73,7 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
     {
         return _dictionary.TryGetValue(key, out value);
     }
+
 
     /// <summary>Gets or sets the security scheme scopes associated with the specified security scheme.</summary>
     /// <param name="key">The security scheme to get or set the scopes for.</param>
@@ -88,6 +95,7 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
     /// <summary>Gets an <see cref="ICollection{IList}"/> of all of the security scheme scopes.</summary>
     public ICollection<IList<string>> Values => _dictionary.Values;
 
+
     internal void Freeze()
     {
         foreach (var item in this)
@@ -103,7 +111,9 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
         _freezable.Freeze();
     }
 
+
     #region Interface implementations
+
     /// <inheritdoc/>
     ICollection<RestApiSecurityScheme> IDictionary<RestApiSecurityScheme, IList<string>>.Keys => _dictionary.Keys;
 
@@ -130,6 +140,7 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
         }
     }
 
+
     /// <inheritdoc/>
     void IDictionary<RestApiSecurityScheme, IList<string>>.Add(RestApiSecurityScheme key, IList<string> value)
     {
@@ -137,11 +148,13 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
         _dictionary.Add(key, value);
     }
 
+
     /// <inheritdoc/>
     bool IDictionary<RestApiSecurityScheme, IList<string>>.ContainsKey(RestApiSecurityScheme key)
     {
         return _dictionary.ContainsKey(key);
     }
+
 
     /// <inheritdoc/>
     bool IDictionary<RestApiSecurityScheme, IList<string>>.Remove(RestApiSecurityScheme key)
@@ -149,6 +162,7 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
         _freezable.ThrowIfFrozen();
         return _dictionary.Remove(key);
     }
+
 
     /// <inheritdoc/>
 #pragma warning disable CS8769 // Nullability of reference types in value of type does not match target type.
@@ -158,6 +172,7 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
     }
 #pragma warning restore CS8769 // Nullability of reference types in value of type does not match target type.
 
+
     /// <inheritdoc/>
     void ICollection<KeyValuePair<RestApiSecurityScheme, IList<string>>>.Add(KeyValuePair<RestApiSecurityScheme, IList<string>> item)
     {
@@ -165,17 +180,20 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
         _dictionary.Add(item.Key, item.Value);
     }
 
+
     /// <inheritdoc/>
     bool ICollection<KeyValuePair<RestApiSecurityScheme, IList<string>>>.Contains(KeyValuePair<RestApiSecurityScheme, IList<string>> item)
     {
-        return ((ICollection<KeyValuePair<RestApiSecurityScheme, IList<string>>>)_dictionary).Contains(item);
+        return _dictionary.Contains(item);
     }
+
 
     /// <inheritdoc/>
     void ICollection<KeyValuePair<RestApiSecurityScheme, IList<string>>>.CopyTo(KeyValuePair<RestApiSecurityScheme, IList<string>>[] array, int arrayIndex)
     {
-        ((ICollection<KeyValuePair<RestApiSecurityScheme, IList<string>>>)_dictionary).CopyTo(array, arrayIndex);
+        _dictionary.CopyTo(array, arrayIndex);
     }
+
 
     /// <inheritdoc/>
     bool ICollection<KeyValuePair<RestApiSecurityScheme, IList<string>>>.Remove(KeyValuePair<RestApiSecurityScheme, IList<string>> item)
@@ -184,11 +202,13 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
         return _dictionary.Remove(item.Key);
     }
 
+
     /// <inheritdoc/>
     IEnumerator<KeyValuePair<RestApiSecurityScheme, IList<string>>> IEnumerable<KeyValuePair<RestApiSecurityScheme, IList<string>>>.GetEnumerator()
     {
         return _dictionary.GetEnumerator();
     }
+
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator()
@@ -196,11 +216,13 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
         return _dictionary.GetEnumerator();
     }
 
+
     /// <inheritdoc/>
     bool IReadOnlyDictionary<RestApiSecurityScheme, IList<string>>.ContainsKey(RestApiSecurityScheme key)
     {
         return _dictionary.ContainsKey(key);
     }
+
 
     /// <inheritdoc/>
 #pragma warning disable CS8769 // Nullability of reference types in value of type does not match target type.
@@ -214,4 +236,6 @@ public sealed class RestApiSecurityRequirement : IDictionary<RestApiSecuritySche
     private readonly Freezable _freezable = new();
 
     #endregion
+
+
 }

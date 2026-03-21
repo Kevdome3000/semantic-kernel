@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
 using System.Net.Http;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Class with data related to an Open API <see cref="KernelFunction"/> invocation.

@@ -1,12 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
+using System.Text.Json.Nodes;
 using System.Web;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
-using System.Text.Json.Nodes;
-
 
 /// <summary>
 /// This class provides methods for serializing values of array parameters.
@@ -32,6 +30,7 @@ internal static class ArrayParameterValueSerializer
         return string.Join(delimiter, segments); //id=1&id=2&id=3
     }
 
+
     /// <summary>
     /// Serializes the items of an array as one parameter with delimited values.
     /// </summary>
@@ -45,7 +44,9 @@ internal static class ArrayParameterValueSerializer
 
         foreach (var item in array)
         {
-            values.Add(encode ? HttpUtility.UrlEncode(item?.ToString()) : item?.ToString());
+            values.Add(encode
+                ? HttpUtility.UrlEncode(item?.ToString())
+                : item?.ToString());
         }
 
         return string.Join(delimiter, values);

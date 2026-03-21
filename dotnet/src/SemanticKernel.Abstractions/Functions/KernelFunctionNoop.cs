@@ -21,9 +21,14 @@ internal sealed class KernelFunctionNoop : KernelFunction
     /// </summary>
     /// <param name="executionSettings">Option: Prompt execution settings.</param>
     internal KernelFunctionNoop(IReadOnlyDictionary<string, PromptExecutionSettings>? executionSettings) :
-        base($"Function_{Guid.NewGuid():N}", string.Empty, [], null, executionSettings?.ToDictionary(static kv => kv.Key, static kv => kv.Value))
+        base($"Function_{Guid.NewGuid():N}",
+            string.Empty,
+            [],
+            null,
+            executionSettings?.ToDictionary(static kv => kv.Key, static kv => kv.Value))
     {
     }
+
 
     /// <inheritdoc/>
     public override KernelFunction Clone(string? pluginName = null)
@@ -32,11 +37,13 @@ internal sealed class KernelFunctionNoop : KernelFunction
         return new KernelFunctionNoop(executionSettings);
     }
 
+
     /// <inheritdoc/>
     protected override ValueTask<FunctionResult> InvokeCoreAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
-        return new(new FunctionResult(this));
+        return new ValueTask<FunctionResult>(new FunctionResult(this));
     }
+
 
     /// <inheritdoc/>
     protected override IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)

@@ -1,14 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.SemanticKernel.Text;
 
 /// <summary>
@@ -39,21 +30,25 @@ internal static class SseJsonParser
         try
         {
             using SseReader sseReader = new(stream);
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 SseLine? sseLine = await sseReader.ReadSingleDataEventAsync(cancellationToken).ConfigureAwait(false);
+
                 if (sseLine is null)
                 {
                     break; // end of stream
                 }
 
                 ReadOnlyMemory<char> value = sseLine.Value.FieldValue;
+
                 if (value.Span.SequenceEqual("[DONE]".AsSpan()))
                 {
                     break;
                 }
 
                 var sseData = parser(sseLine.Value);
+
                 if (sseData is not null)
                 {
                     yield return sseData;
@@ -70,6 +65,7 @@ internal static class SseJsonParser
 #endif
         }
     }
+
 
     /// <summary>
     /// Parses Server-Sent Events (SSE) data asynchronously from a stream and deserializes the data into the specified type.

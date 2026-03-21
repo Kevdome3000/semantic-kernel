@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
@@ -14,6 +10,7 @@ public static class AgentDefinitionExtensions
 {
     private const string FunctionType = "function";
     private const string FunctionNameSeparator = ".";
+
 
     /// <summary>
     /// Creates default <see cref="KernelArguments"/> from the <see cref="AgentDefinition"/>.
@@ -32,9 +29,11 @@ public static class AgentDefinitionExtensions
 
         // Enable automatic function calling if functions are defined.
         var functions = agentDefinition.GetToolDefinitions(FunctionType);
+
         if (functions is not null)
         {
             List<KernelFunction> kernelFunctions = [];
+
             foreach (var function in functions)
             {
                 var nameParts = FunctionName.Parse(function.Id!, FunctionNameSeparator);
@@ -52,6 +51,7 @@ public static class AgentDefinitionExtensions
         }
 
         var arguments = new KernelArguments(executionSettings);
+
         if (agentDefinition?.Inputs is not null)
         {
             // Add default arguments for the agent
@@ -66,6 +66,7 @@ public static class AgentDefinitionExtensions
 
         return arguments;
     }
+
 
     /// <summary>
     /// Creates a <see cref="IPromptTemplate"/> from the <see cref="AgentDefinition"/> if required.
@@ -84,11 +85,12 @@ public static class AgentDefinitionExtensions
 
         PromptTemplateConfig templateConfig = new(agentDefinition.Instructions)
         {
-            TemplateFormat = agentDefinition.Template.Format,
+            TemplateFormat = agentDefinition.Template.Format
         };
 
         return templateFactory.Create(templateConfig);
     }
+
 
     /// <summary>
     /// Get the first tool definition of the specified type.
@@ -102,6 +104,7 @@ public static class AgentDefinitionExtensions
         return agentDefinition.Tools?.FirstOrDefault(tool => tool.Type == toolType);
     }
 
+
     /// <summary>
     /// Get all of the tool definitions of the specified type.
     /// </summary>
@@ -113,6 +116,7 @@ public static class AgentDefinitionExtensions
         Verify.NotNull(toolType);
         return agentDefinition.Tools?.Where(tool => tool.Type == toolType);
     }
+
 
     /// <summary>
     /// Determines if the agent definition has a tool of the specified type.

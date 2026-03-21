@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.VectorData;
-using Pinecone;
-
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>

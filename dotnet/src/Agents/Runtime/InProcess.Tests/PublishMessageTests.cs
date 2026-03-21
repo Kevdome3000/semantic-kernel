@@ -16,17 +16,21 @@ public class PublishMessageTests
         MessagingTestFixture fixture = new();
 
         await fixture.RegisterReceiverAgent(topicTypes: "TestTopic");
-        await fixture.RegisterReceiverAgent("2", topicTypes: "TestTopic");
+        await fixture.RegisterReceiverAgent("2", "TestTopic");
 
         await fixture.RunPublishTestAsync(new TopicId("TestTopic"), new BasicMessage { Content = "1" });
 
-        fixture.GetAgentInstances<ReceiverAgent>().Values
-            .Should().HaveCount(2, "Two agents should have been created")
-                 .And.AllSatisfy(receiverAgent => receiverAgent.Messages
-                                                               .Should().NotBeNull()
-                                                                    .And.HaveCount(1)
-                                                                    .And.ContainSingle(m => m.Content == "1"));
+        fixture.GetAgentInstances<ReceiverAgent>()
+            .Values
+            .Should()
+            .HaveCount(2, "Two agents should have been created")
+            .And.AllSatisfy(receiverAgent => receiverAgent.Messages
+                .Should()
+                .NotBeNull()
+                .And.HaveCount(1)
+                .And.ContainSingle(m => m.Content == "1"));
     }
+
 
     [Fact]
     public async Task Test_PublishMessage_SingleFailure()
@@ -40,9 +44,13 @@ public class PublishMessageTests
         // Publish is fire and forget, so we expect no exception to be thrown
         await publishTask.Should().NotThrowAsync();
 
-        fixture.GetAgentInstances<ErrorAgent>().Values.Should().ContainSingle()
-                                                .Which.DidThrow.Should().BeTrue("Agent should have thrown an exception");
+        fixture.GetAgentInstances<ErrorAgent>()
+            .Values.Should()
+            .ContainSingle()
+            .Which.DidThrow.Should()
+            .BeTrue("Agent should have thrown an exception");
     }
+
 
     [Fact]
     public async Task Test_PublishMessage_MultipleFailures()
@@ -50,18 +58,20 @@ public class PublishMessageTests
         MessagingTestFixture fixture = new();
 
         await fixture.RegisterErrorAgent(topicTypes: "TestTopic");
-        await fixture.RegisterErrorAgent("2", topicTypes: "TestTopic");
+        await fixture.RegisterErrorAgent("2", "TestTopic");
 
         Func<Task> publishTask = async () => await fixture.RunPublishTestAsync(new TopicId("TestTopic"), new BasicMessage { Content = "1" });
 
         // Publish is fire and forget, so we expect no exception to be thrown
         await publishTask.Should().NotThrowAsync();
 
-        fixture.GetAgentInstances<ErrorAgent>().Values
-            .Should().HaveCount(2)
-                 .And.AllSatisfy(
-                    agent => agent.DidThrow.Should().BeTrue("Agent should have thrown an exception"));
+        fixture.GetAgentInstances<ErrorAgent>()
+            .Values
+            .Should()
+            .HaveCount(2)
+            .And.AllSatisfy(agent => agent.DidThrow.Should().BeTrue("Agent should have thrown an exception"));
     }
+
 
     [Fact]
     public async Task Test_PublishMessage_MixedSuccessFailure()
@@ -69,28 +79,34 @@ public class PublishMessageTests
         MessagingTestFixture fixture = new();
 
         await fixture.RegisterReceiverAgent(topicTypes: "TestTopic");
-        await fixture.RegisterReceiverAgent("2", topicTypes: "TestTopic");
+        await fixture.RegisterReceiverAgent("2", "TestTopic");
 
         await fixture.RegisterErrorAgent(topicTypes: "TestTopic");
-        await fixture.RegisterErrorAgent("2", topicTypes: "TestTopic");
+        await fixture.RegisterErrorAgent("2", "TestTopic");
 
         Func<Task> publicTask = async () => await fixture.RunPublishTestAsync(new TopicId("TestTopic"), new BasicMessage { Content = "1" });
 
         // Publish is fire and forget, so we expect no exception to be thrown
         await publicTask.Should().NotThrowAsync();
 
-        fixture.GetAgentInstances<ReceiverAgent>().Values
-            .Should().HaveCount(2, "Two ReceiverAgents should have been created")
-                 .And.AllSatisfy(receiverAgent => receiverAgent.Messages
-                                                               .Should().NotBeNull()
-                                                                    .And.HaveCount(1)
-                                                                    .And.ContainSingle(m => m.Content == "1"),
-                                 "ReceiverAgents should get published message regardless of ErrorAgents throwing exception.");
+        fixture.GetAgentInstances<ReceiverAgent>()
+            .Values
+            .Should()
+            .HaveCount(2, "Two ReceiverAgents should have been created")
+            .And.AllSatisfy(receiverAgent => receiverAgent.Messages
+                    .Should()
+                    .NotBeNull()
+                    .And.HaveCount(1)
+                    .And.ContainSingle(m => m.Content == "1"),
+                "ReceiverAgents should get published message regardless of ErrorAgents throwing exception.");
 
-        fixture.GetAgentInstances<ErrorAgent>().Values
-            .Should().HaveCount(2, "Two ErrorAgents should have been created")
-                 .And.AllSatisfy(agent => agent.DidThrow.Should().BeTrue("ErrorAgent should have thrown an exception"));
+        fixture.GetAgentInstances<ErrorAgent>()
+            .Values
+            .Should()
+            .HaveCount(2, "Two ErrorAgents should have been created")
+            .And.AllSatisfy(agent => agent.DidThrow.Should().BeTrue("ErrorAgent should have thrown an exception"));
     }
+
 
     [Fact]
     public async Task Test_PublishMessage_RecurrentPublishSucceeds()
@@ -99,21 +115,27 @@ public class PublishMessageTests
 
         await fixture.RegisterFactoryMapInstances(
             nameof(PublisherAgent),
-            (id, runtime) => ValueTask.FromResult(new PublisherAgent(id, runtime, string.Empty, [new TopicId("TestTopic")])));
+            (id, runtime) => ValueTask.FromResult(new PublisherAgent(id,
+                runtime,
+                string.Empty,
+                [new TopicId("TestTopic")])));
 
         await fixture.Runtime.AddSubscriptionAsync(new TestSubscription("RunTest", nameof(PublisherAgent)));
 
         await fixture.RegisterReceiverAgent(topicTypes: "TestTopic");
-        await fixture.RegisterReceiverAgent("2", topicTypes: "TestTopic");
+        await fixture.RegisterReceiverAgent("2", "TestTopic");
 
         await fixture.RunPublishTestAsync(new TopicId("RunTest"), new BasicMessage { Content = "1" });
 
         TopicId testTopicId = new("TestTopic");
-        fixture.GetAgentInstances<ReceiverAgent>().Values
-            .Should().HaveCount(2, "Two ReceiverAgents should have been created")
-                 .And.AllSatisfy(receiverAgent => receiverAgent.Messages
-                                                               .Should().NotBeNull()
-                                                                    .And.HaveCount(1)
-                                                                    .And.ContainSingle(m => m.Content == $"@{testTopicId}: 1"));
+        fixture.GetAgentInstances<ReceiverAgent>()
+            .Values
+            .Should()
+            .HaveCount(2, "Two ReceiverAgents should have been created")
+            .And.AllSatisfy(receiverAgent => receiverAgent.Messages
+                .Should()
+                .NotBeNull()
+                .And.HaveCount(1)
+                .And.ContainSingle(m => m.Content == $"@{testTopicId}: 1"));
     }
 }

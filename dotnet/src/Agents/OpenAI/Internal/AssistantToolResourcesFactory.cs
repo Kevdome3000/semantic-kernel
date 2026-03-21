@@ -27,17 +27,17 @@ internal static class AssistantToolResourcesFactory
         if (hasVectorStore || hasCodeInterpreterFiles)
         {
             FileSearchToolResources? fileSearch =
-                hasVectorStore ?
-                    new()
+                hasVectorStore
+                    ? new FileSearchToolResources
                     {
                         VectorStoreIds = { vectorStoreId! }
-                    } :
-                    null;
+                    }
+                    : null;
 
             CodeInterpreterToolResources? codeInterpreter =
-                hasCodeInterpreterFiles ?
-                    new() :
-                    null;
+                hasCodeInterpreterFiles
+                    ? new CodeInterpreterToolResources()
+                    : null;
             codeInterpreter?.FileIds.AddRange(codeInterpreterFileIds!);
 
             toolResources = new ToolResources

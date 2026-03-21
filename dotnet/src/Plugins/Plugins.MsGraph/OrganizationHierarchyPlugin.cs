@@ -1,14 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
+
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
-
-using System.ComponentModel;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
-using Diagnostics;
-
 
 /// <summary>
 /// Organizational Hierarchy plugin.
@@ -18,10 +12,11 @@ public sealed class OrganizationHierarchyPlugin
 {
     private readonly IOrganizationHierarchyConnector _connector;
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
+
     private static readonly JsonSerializerOptions s_options = new()
     {
         WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
 
@@ -34,8 +29,8 @@ public sealed class OrganizationHierarchyPlugin
     {
         Ensure.NotNull(connector, nameof(connector));
 
-        this._jsonSerializerOptions = jsonSerializerOptions ?? s_options;
-        this._connector = connector;
+        _jsonSerializerOptions = jsonSerializerOptions ?? s_options;
+        _connector = connector;
     }
 
 
@@ -44,9 +39,11 @@ public sealed class OrganizationHierarchyPlugin
     /// </summary>
     /// <param name="cancellationToken">An optional <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     /// <returns>A JSON string containing the email addresses of the direct reports of the current user.</returns>
-    [KernelFunction, Description("Get my direct report's email addresses.")]
+    [KernelFunction] [Description("Get my direct report's email addresses.")]
     public async Task<string> GetMyDirectReportsEmailAsync(CancellationToken cancellationToken = default)
-        => JsonSerializer.Serialize(await this._connector.GetDirectReportsEmailAsync(cancellationToken).ConfigureAwait(false), this._jsonSerializerOptions);
+    {
+        return JsonSerializer.Serialize(await _connector.GetDirectReportsEmailAsync(cancellationToken).ConfigureAwait(false), _jsonSerializerOptions);
+    }
 
 
     /// <summary>
@@ -54,9 +51,11 @@ public sealed class OrganizationHierarchyPlugin
     /// </summary>
     /// <param name="cancellationToken">An optional <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     /// <returns>A string containing the email address of the manager of the current user.</returns>
-    [KernelFunction, Description("Get my manager's email address.")]
+    [KernelFunction] [Description("Get my manager's email address.")]
     public async Task<string?> GetMyManagerEmailAsync(CancellationToken cancellationToken = default)
-        => await this._connector.GetManagerEmailAsync(cancellationToken).ConfigureAwait(false);
+    {
+        return await _connector.GetManagerEmailAsync(cancellationToken).ConfigureAwait(false);
+    }
 
 
     /// <summary>
@@ -64,7 +63,9 @@ public sealed class OrganizationHierarchyPlugin
     /// </summary>
     /// <param name="cancellationToken">An optional <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     /// <returns>A string containing the name of the manager of the current user.</returns>
-    [KernelFunction, Description("Get my manager's name.")]
+    [KernelFunction] [Description("Get my manager's name.")]
     public async Task<string?> GetMyManagerNameAsync(CancellationToken cancellationToken = default)
-        => await this._connector.GetManagerNameAsync(cancellationToken).ConfigureAwait(false);
+    {
+        return await _connector.GetManagerNameAsync(cancellationToken).ConfigureAwait(false);
+    }
 }

@@ -36,12 +36,15 @@ public static class AgentKernelPluginFactory
         return KernelPluginFactory.CreateFromFunctions(pluginName, description, functions);
     }
 
+
     /// <summary>
     /// Creates a plugin from an array of agents. Each agent is converted into a KernelFunction via AgentKernelFunctionFactory.
     /// </summary>
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="agents">The agents to include in the plugin.</param>
     /// <returns>A KernelPlugin with functions derived from the provided agents.</returns>
-    public static KernelPlugin CreateFromAgents(string pluginName, params Agent[] agents) =>
-        CreateFromAgents(pluginName, description: null, agents);
+    public static KernelPlugin CreateFromAgents(string pluginName, params Agent[] agents)
+    {
+        return CreateFromAgents(pluginName, null, agents);
+    }
 }

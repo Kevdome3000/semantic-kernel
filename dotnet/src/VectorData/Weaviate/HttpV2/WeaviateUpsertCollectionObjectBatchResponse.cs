@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateUpsertCollectionObjectBatchResponse

@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi;
-
 using Microsoft.SemanticKernel;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 public class RestApiOperationResponseConverterTests
 {
@@ -13,7 +12,7 @@ public class RestApiOperationResponseConverterTests
 
     public RestApiOperationResponseConverterTests()
     {
-        this._sut = new RestApiOperationResponseConverter();
+        _sut = new RestApiOperationResponseConverter();
     }
 
 
@@ -24,7 +23,7 @@ public class RestApiOperationResponseConverterTests
         var response = new RestApiOperationResponse("fake-content", "fake-content-type");
 
         //Act
-        var result = this._sut.ConvertToString(response);
+        var result = _sut.ConvertToString(response);
 
         //Assert
         Assert.Equal("fake-content", result);
@@ -38,7 +37,7 @@ public class RestApiOperationResponseConverterTests
         var response = new RestApiOperationResponse(new byte[] { 00, 01, 02 }, "fake-content-type");
 
         //Act
-        var result = this._sut.ConvertToString(response);
+        var result = _sut.ConvertToString(response);
 
         //Assert
         Assert.Equal("AAEC", result);

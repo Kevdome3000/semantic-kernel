@@ -24,6 +24,7 @@ public sealed class StreamingReasoningContent : StreamingKernelContent
         init => _text = value;
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingReasoningContent"/> class.
     /// </summary>
@@ -34,8 +35,13 @@ public sealed class StreamingReasoningContent : StreamingKernelContent
         _text = text;
     }
 
+
     /// <inheritdoc/>
-    public override string ToString() => Text;
+    public override string ToString()
+    {
+        return Text;
+    }
+
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()

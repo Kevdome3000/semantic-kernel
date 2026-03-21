@@ -34,6 +34,7 @@ public class OpenAIAssistantAgentInvokeOptionsTests
         Assert.Equal(originalOptions.AdditionalInstructions, clonedOptions.AdditionalInstructions);
     }
 
+
     /// <summary>
     /// Tests the constructor of <see cref="OpenAIAssistantAgentInvokeOptions"/> to ensure it correctly clones properties from an instance of <see cref="AgentInvokeOptions"/>.
     /// </summary>

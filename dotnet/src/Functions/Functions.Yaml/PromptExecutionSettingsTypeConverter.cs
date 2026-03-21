@@ -1,16 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization;
-using YamlDotNet.Core;
-using YamlDotNet.Core.Events;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.BufferedDeserialization;
-using YamlDotNet.Serialization.NamingConventions;
-using YamlDotNet.Serialization.ObjectFactories;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -23,6 +12,7 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
     {
         return type == typeof(PromptExecutionSettings);
     }
+
 
     /// <inheritdoc/>
     public object? ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
@@ -37,9 +27,11 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
         parser.MoveNext(); // Move to the first property  
 
         var executionSettings = new PromptExecutionSettings();
+
         while (parser.Current is not MappingEnd)
         {
             var propertyName = parser.Consume<Scalar>().Value;
+
             switch (propertyName)
             {
                 case "model_id":
@@ -57,11 +49,17 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
         return executionSettings;
     }
 
+
     /// <inheritdoc/>
-    public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
+    public void WriteYaml(
+        IEmitter emitter,
+        object? value,
+        Type type,
+        ObjectSerializer serializer)
     {
         throw new NotImplementedException();
     }
+
 
     /// <summary>
     /// Creates and register a <see cref="TypeDiscriminatingNodeDeserializer" /> for polymorphic deserialization of <see cref="FunctionChoiceBehavior" />.
@@ -73,6 +71,7 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
 
         // Getting the type discriminator property name - "type" from the JsonPolymorphicAttribute.
         var discriminatorKey = attributes.OfType<JsonPolymorphicAttribute>().Single().TypeDiscriminatorPropertyName;
+
         if (string.IsNullOrEmpty(discriminatorKey))
         {
             throw new InvalidOperationException("Type discriminator property name is not specified.");
@@ -82,9 +81,11 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
 
         // Getting FunctionChoiceBehavior subtypes and their type discriminators registered for polymorphic deserialization.
         var derivedTypeAttributes = attributes.OfType<JsonDerivedTypeAttribute>();
+
         foreach (var derivedTypeAttribute in derivedTypeAttributes)
         {
             var discriminator = derivedTypeAttribute.TypeDiscriminator?.ToString();
+
             if (string.IsNullOrEmpty(discriminator))
             {
                 throw new InvalidOperationException($"Type discriminator is not specified for the {derivedTypeAttribute.DerivedType} type.");
@@ -96,20 +97,21 @@ internal sealed class PromptExecutionSettingsTypeConverter : IYamlTypeConverter
         options.AddKeyValueTypeDiscriminator<FunctionChoiceBehavior>(discriminatorKey!, discriminatorTypeMapping);
     }
 
+
     /// <summary>
     /// The YamlDotNet deserializer instance.
     /// </summary>
     private static IDeserializer? s_deserializer;
 
+
     private sealed class FunctionChoiceBehaviorsObjectFactory : ObjectFactoryBase
     {
         private static DefaultObjectFactory? s_defaultFactory = null;
 
+
         public override object Create(Type type)
         {
-            if (type == typeof(AutoFunctionChoiceBehavior) ||
-                type == typeof(NoneFunctionChoiceBehavior) ||
-                type == typeof(RequiredFunctionChoiceBehavior))
+            if (type == typeof(AutoFunctionChoiceBehavior) || type == typeof(NoneFunctionChoiceBehavior) || type == typeof(RequiredFunctionChoiceBehavior))
             {
                 return Activator.CreateInstance(type, nonPublic: true)!;
             }

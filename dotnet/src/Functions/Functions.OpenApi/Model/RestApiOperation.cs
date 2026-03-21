@@ -115,6 +115,7 @@ public sealed class RestApiOperation
         init => _extensions = value;
     }
 
+
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOperation"/> class.
     /// </summary>
@@ -155,6 +156,7 @@ public sealed class RestApiOperation
         OperationServers = operationServers ?? [];
     }
 
+
     /// <summary>
     /// Builds operation Url.
     /// </summary>
@@ -171,6 +173,7 @@ public sealed class RestApiOperation
         return new Uri(serverUrl, $"{path.TrimStart('/')}");
     }
 
+
     /// <summary>
     /// Builds operation request headers.
     /// </summary>
@@ -185,6 +188,7 @@ public sealed class RestApiOperation
         foreach (var parameter in parameters)
         {
             var argument = GetArgumentForParameter(arguments, parameter);
+
             if (argument == null)
             {
                 // Skipping not required parameter if no argument provided for it.    
@@ -198,7 +202,10 @@ public sealed class RestApiOperation
                 throw new KernelException($"The headers parameter '{parameterStyle}' serialization style is not supported.");
             }
 
-            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument, parameter.Schema);
+            var node = OpenApiTypeConverter.Convert(parameter.Name,
+                parameter.Type,
+                argument,
+                parameter.Schema);
 
             //Serializing the parameter and adding it to the headers.
             headers.Add(parameter.Name, serializer.Invoke(parameter, node));
@@ -206,6 +213,7 @@ public sealed class RestApiOperation
 
         return headers;
     }
+
 
     /// <summary>
     /// Builds the operation query string.
@@ -221,6 +229,7 @@ public sealed class RestApiOperation
         foreach (var parameter in parameters)
         {
             var argument = GetArgumentForParameter(arguments, parameter);
+
             if (argument == null)
             {
                 // Skipping not required parameter if no argument provided for it.    
@@ -234,7 +243,10 @@ public sealed class RestApiOperation
                 throw new KernelException($"The query string parameter '{parameterStyle}' serialization style is not supported.");
             }
 
-            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument, parameter.Schema);
+            var node = OpenApiTypeConverter.Convert(parameter.Name,
+                parameter.Type,
+                argument,
+                parameter.Schema);
 
             // Serializing the parameter and adding it to the query string if there's an argument for it.
             segments.Add(serializer.Invoke(parameter, node));
@@ -242,6 +254,7 @@ public sealed class RestApiOperation
 
         return string.Join("&", segments);
     }
+
 
     /// <summary>
     /// Makes the current instance unmodifiable.
@@ -252,18 +265,21 @@ public sealed class RestApiOperation
         Payload?.Freeze();
 
         Parameters = new ReadOnlyCollection<RestApiParameter>(Parameters);
+
         foreach (var parameter in Parameters)
         {
             parameter.Freeze();
         }
 
         Servers = new ReadOnlyCollection<RestApiServer>(Servers);
+
         foreach (var server in Servers)
         {
             server.Freeze();
         }
 
         SecurityRequirements = new ReadOnlyCollection<RestApiSecurityRequirement>(SecurityRequirements);
+
         foreach (var securityRequirement in SecurityRequirements)
         {
             securityRequirement.Freeze();
@@ -273,6 +289,7 @@ public sealed class RestApiOperation
 
         _extensions = new ReadOnlyDictionary<string, object?>(_extensions);
     }
+
 
     #region private
 
@@ -289,6 +306,7 @@ public sealed class RestApiOperation
         foreach (var parameter in parameters)
         {
             var argument = GetArgumentForParameter(arguments, parameter);
+
             if (argument == null)
             {
                 // Skipping not required parameter if no argument provided for it.    
@@ -302,7 +320,10 @@ public sealed class RestApiOperation
                 throw new KernelException($"The path parameter '{parameterStyle}' serialization style is not supported.");
             }
 
-            var node = OpenApiTypeConverter.Convert(parameter.Name, parameter.Type, argument, parameter.Schema);
+            var node = OpenApiTypeConverter.Convert(parameter.Name,
+                parameter.Type,
+                argument,
+                parameter.Schema);
 
             // Serializing the parameter and adding it to the path.
             pathTemplate = pathTemplate.Replace($"{{{parameter.Name}}}", HttpUtility.UrlEncode(serializer.Invoke(parameter, node)));
@@ -311,19 +332,17 @@ public sealed class RestApiOperation
         return pathTemplate;
     }
 
+
     private object? GetArgumentForParameter(IDictionary<string, object?> arguments, RestApiParameter parameter)
     {
         // Try to get the parameter value by the argument name.
-        if (!string.IsNullOrEmpty(parameter.ArgumentName) &&
-            arguments.TryGetValue(parameter.ArgumentName!, out object? argument) &&
-            argument is not null)
+        if (!string.IsNullOrEmpty(parameter.ArgumentName) && arguments.TryGetValue(parameter.ArgumentName!, out object? argument) && argument is not null)
         {
             return argument;
         }
 
         // Try to get the parameter value by the parameter name.
-        if (arguments.TryGetValue(parameter.Name, out argument) &&
-            argument is not null)
+        if (arguments.TryGetValue(parameter.Name, out argument) && argument is not null)
         {
             return argument;
         }
@@ -335,6 +354,7 @@ public sealed class RestApiOperation
 
         return null;
     }
+
 
     /// <summary>
     /// Returns operation server Url.
@@ -360,16 +380,12 @@ public sealed class RestApiOperation
                 var variableName = variable.Key;
 
                 // Try to get the variable value by the argument name.
-                if (!string.IsNullOrEmpty(variable.Value.ArgumentName) &&
-                    arguments.TryGetValue(variable.Value.ArgumentName!, out object? value) &&
-                    value is string { } argStrValue && variable.Value.IsValid(argStrValue))
+                if (!string.IsNullOrEmpty(variable.Value.ArgumentName) && arguments.TryGetValue(variable.Value.ArgumentName!, out object? value) && value is string { } argStrValue && variable.Value.IsValid(argStrValue))
                 {
                     serverUrlString = url.Replace($"{{{variableName}}}", argStrValue);
                 }
                 // Try to get the variable value by the variable name.
-                else if (arguments.TryGetValue(variableName, out value) &&
-                    value is string { } strValue &&
-                    variable.Value.IsValid(strValue))
+                else if (arguments.TryGetValue(variableName, out value) && value is string { } strValue && variable.Value.IsValid(strValue))
                 {
                     serverUrlString = url.Replace($"{{{variableName}}}", strValue);
                 }
@@ -388,8 +404,7 @@ public sealed class RestApiOperation
         else
         {
             serverUrlString =
-                apiHostUrl?.AbsoluteUri ??
-                throw new InvalidOperationException($"Server url is not defined for operation {Id}");
+                apiHostUrl?.AbsoluteUri ?? throw new InvalidOperationException($"Server url is not defined for operation {Id}");
         }
 
         // Make sure base url ends with trailing slash
@@ -400,6 +415,7 @@ public sealed class RestApiOperation
 
         return new Uri(serverUrlString);
     }
+
 
     private static readonly Dictionary<RestApiParameterStyle, Func<RestApiParameter, JsonNode, string>> s_parameterSerializers = new()
     {
@@ -415,4 +431,6 @@ public sealed class RestApiOperation
     private string? _summary;
 
     #endregion
+
+
 }

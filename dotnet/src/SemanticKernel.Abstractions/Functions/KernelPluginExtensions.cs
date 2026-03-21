@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>Provides extension methods for working with <see cref="KernelPlugin"/>s and collections of them.</summary>
 public static class KernelPluginExtensions
 {
@@ -19,6 +20,7 @@ public static class KernelPluginExtensions
         return plugins.TryGetPlugin(pluginName, out _);
     }
 
+
     /// <summary>Gets a function from the collection by plugin and function names.</summary>
     /// <param name="plugins">The collection.</param>
     /// <param name="pluginName">The name of the plugin storing the function.</param>
@@ -29,13 +31,14 @@ public static class KernelPluginExtensions
         Verify.NotNull(plugins);
         Verify.NotNull(functionName);
 
-        if (!TryGetFunction(plugins, pluginName, functionName, out KernelFunction? function))
+        if (!plugins.TryGetFunction(pluginName, functionName, out KernelFunction? function))
         {
             throw new KeyNotFoundException($"The plugin collection does not contain a plugin and/or function with the specified names. Plugin name - '{pluginName}', function name - '{functionName}'.");
         }
 
         return function;
     }
+
 
     /// <summary>Gets a function from the collection by plugin and function names.</summary>
     /// <param name="plugins">The collection.</param>
@@ -68,8 +71,7 @@ public static class KernelPluginExtensions
         }
         else
         {
-            if (plugins.TryGetPlugin(pluginName!, out KernelPlugin? plugin) &&
-                plugin.TryGetFunction(functionName, out func))
+            if (plugins.TryGetPlugin(pluginName!, out KernelPlugin? plugin) && plugin.TryGetFunction(functionName, out func))
             {
                 return true;
             }
@@ -79,6 +81,7 @@ public static class KernelPluginExtensions
 
         return false;
     }
+
 
     /// <summary>Gets a collection of <see cref="KernelFunctionMetadata"/> instances, one for every function in every plugin in the plugins collection.</summary>
     /// <param name="plugins">The plugins collection.</param>

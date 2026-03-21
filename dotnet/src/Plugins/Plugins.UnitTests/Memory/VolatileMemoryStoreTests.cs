@@ -15,12 +15,15 @@ public class VolatileMemoryStoreTests
 {
     private readonly VolatileMemoryStore _db;
 
+
     public VolatileMemoryStoreTests()
     {
-        this._db = new VolatileMemoryStore();
+        _db = new VolatileMemoryStore();
     }
 
-    private int _collectionNum = 0;
+
+    private int _collectionNum;
+
 
     private IEnumerable<MemoryRecord> CreateBatchRecords(int numRecords)
     {
@@ -28,51 +31,55 @@ public class VolatileMemoryStoreTests
         Assert.True(numRecords > 0, "Number of records must be greater than 0");
 
         IEnumerable<MemoryRecord> records = new List<MemoryRecord>(numRecords);
+
         for (int i = 0; i < numRecords / 2; i++)
         {
             var testRecord = MemoryRecord.LocalRecord(
-                id: "test" + i,
-                text: "text" + i,
-                description: "description" + i,
-                embedding: new float[] { 1, 1, 1 });
+                "test" + i,
+                "text" + i,
+                "description" + i,
+                new float[] { 1, 1, 1 });
             records = records.Append(testRecord);
         }
 
         for (int i = numRecords / 2; i < numRecords; i++)
         {
             var testRecord = MemoryRecord.ReferenceRecord(
-                externalId: "test" + i,
-                sourceName: "sourceName" + i,
-                description: "description" + i,
-                embedding: new float[] { 1, 2, 3 });
+                "test" + i,
+                "sourceName" + i,
+                "description" + i,
+                new float[] { 1, 2, 3 });
             records = records.Append(testRecord);
         }
 
         return records;
     }
 
+
     [Fact]
     public void InitializeDbConnectionSucceeds()
     {
         // Assert
-        Assert.NotNull(this._db);
+        Assert.NotNull(_db);
     }
+
 
     [Fact]
     public async Task ItCanCreateAndGetCollectionAsync()
     {
         // Arrange
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
-        await this._db.CreateCollectionAsync(collection);
-        var collections = this._db.GetCollectionsAsync();
+        await _db.CreateCollectionAsync(collection);
+        var collections = _db.GetCollectionsAsync();
 
         // Assert
         Assert.NotEmpty(await collections.ToArrayAsync());
         Assert.True(await collections.ContainsAsync(collection));
     }
+
 
     [Fact]
     public async Task ItHandlesExceptionsWhenCreatingCollectionAsync()
@@ -81,46 +88,48 @@ public class VolatileMemoryStoreTests
         string? collection = null;
 
         // Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(async () => await this._db.CreateCollectionAsync(collection!));
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await _db.CreateCollectionAsync(collection!));
     }
+
 
     [Fact]
     public async Task ItCannotInsertIntoNonExistentCollectionAsync()
     {
         // Arrange
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
-            id: "test",
-            text: "text",
-            description: "description",
-            embedding: new float[] { 1, 2, 3 },
+            "test",
+            "text",
+            "description",
+            new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Assert
-        await Assert.ThrowsAsync<KernelException>(async () => await this._db.UpsertAsync(collection, testRecord));
+        await Assert.ThrowsAsync<KernelException>(async () => await _db.UpsertAsync(collection, testRecord));
     }
+
 
     [Fact]
     public async Task GetAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
         // Arrange
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
-            id: "test",
-            text: "text",
-            description: "description",
-            embedding: new float[] { 1, 2, 3 },
+            "test",
+            "text",
+            "description",
+            new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
-        await this._db.CreateCollectionAsync(collection);
-        var key = await this._db.UpsertAsync(collection, testRecord);
-        var actualDefault = await this._db.GetAsync(collection, key);
-        var actualWithEmbedding = await this._db.GetAsync(collection, key, true);
+        await _db.CreateCollectionAsync(collection);
+        var key = await _db.UpsertAsync(collection, testRecord);
+        var actualDefault = await _db.GetAsync(collection, key);
+        var actualWithEmbedding = await _db.GetAsync(collection, key, true);
 
         // Assert
         Assert.NotNull(actualDefault);
@@ -131,53 +140,56 @@ public class VolatileMemoryStoreTests
         Assert.Equal(testRecord, actualWithEmbedding);
     }
 
+
     [Fact]
     public async Task ItCanUpsertAndRetrieveARecordWithNoTimestampAsync()
     {
         // Arrange
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
-            id: "test",
-            text: "text",
-            description: "description",
-            embedding: new float[] { 1, 2, 3 },
+            "test",
+            "text",
+            "description",
+            new float[] { 1, 2, 3 },
             key: null,
             timestamp: null);
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
-        await this._db.CreateCollectionAsync(collection);
-        var key = await this._db.UpsertAsync(collection, testRecord);
-        var actual = await this._db.GetAsync(collection, key, true);
+        await _db.CreateCollectionAsync(collection);
+        var key = await _db.UpsertAsync(collection, testRecord);
+        var actual = await _db.GetAsync(collection, key, true);
 
         // Assert
         Assert.NotNull(actual);
         Assert.Equal(testRecord, actual);
     }
+
 
     [Fact]
     public async Task ItCanUpsertAndRetrieveARecordWithTimestampAsync()
     {
         // Arrange
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
-            id: "test",
-            text: "text",
-            description: "description",
-            embedding: new float[] { 1, 2, 3 },
+            "test",
+            "text",
+            "description",
+            new float[] { 1, 2, 3 },
             key: null,
             timestamp: DateTimeOffset.UtcNow);
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
-        await this._db.CreateCollectionAsync(collection);
-        var key = await this._db.UpsertAsync(collection, testRecord);
-        var actual = await this._db.GetAsync(collection, key, true);
+        await _db.CreateCollectionAsync(collection);
+        var key = await _db.UpsertAsync(collection, testRecord);
+        var actual = await _db.GetAsync(collection, key, true);
 
         // Assert
         Assert.NotNull(actual);
         Assert.Equal(testRecord, actual);
     }
+
 
     [Fact]
     public async Task UpsertReplacesExistingRecordWithSameIdAsync()
@@ -185,23 +197,23 @@ public class VolatileMemoryStoreTests
         // Arrange
         string commonId = "test";
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
-            id: commonId,
-            text: "text",
-            description: "description",
-            embedding: new float[] { 1, 2, 3 });
+            commonId,
+            "text",
+            "description",
+            new float[] { 1, 2, 3 });
         MemoryRecord testRecord2 = MemoryRecord.LocalRecord(
-            id: commonId,
-            text: "text2",
-            description: "description2",
-            embedding: new float[] { 1, 2, 4 });
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+            commonId,
+            "text2",
+            "description2",
+            new float[] { 1, 2, 4 });
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
-        await this._db.CreateCollectionAsync(collection);
-        var key = await this._db.UpsertAsync(collection, testRecord);
-        var key2 = await this._db.UpsertAsync(collection, testRecord2);
-        var actual = await this._db.GetAsync(collection, key, true);
+        await _db.CreateCollectionAsync(collection);
+        var key = await _db.UpsertAsync(collection, testRecord);
+        var key2 = await _db.UpsertAsync(collection, testRecord2);
+        var actual = await _db.GetAsync(collection, key, true);
 
         // Assert
         Assert.NotNull(actual);
@@ -210,55 +222,58 @@ public class VolatileMemoryStoreTests
         Assert.Equal(testRecord2, actual);
     }
 
+
     [Fact]
     public async Task ExistingRecordCanBeRemovedAsync()
     {
         // Arrange
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
-            id: "test",
-            text: "text",
-            description: "description",
-            embedding: new float[] { 1, 2, 3 });
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+            "test",
+            "text",
+            "description",
+            new float[] { 1, 2, 3 });
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
-        await this._db.CreateCollectionAsync(collection);
-        var key = await this._db.UpsertAsync(collection, testRecord);
-        await this._db.RemoveAsync(collection, key);
-        var actual = await this._db.GetAsync(collection, key);
+        await _db.CreateCollectionAsync(collection);
+        var key = await _db.UpsertAsync(collection, testRecord);
+        await _db.RemoveAsync(collection, key);
+        var actual = await _db.GetAsync(collection, key);
 
         // Assert
         Assert.Null(actual);
     }
+
 
     [Fact]
     public async Task RemovingNonExistingRecordDoesNothingAsync()
     {
         // Arrange
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
-        await this._db.RemoveAsync(collection, "key");
-        var actual = await this._db.GetAsync(collection, "key");
+        await _db.RemoveAsync(collection, "key");
+        var actual = await _db.GetAsync(collection, "key");
 
         // Assert
         Assert.Null(actual);
     }
+
 
     [Fact]
     public async Task ItCanListAllDatabaseCollectionsAsync()
     {
         // Arrange
         string[] testCollections = ["test_collection5", "test_collection6", "test_collection7"];
-        this._collectionNum += 3;
-        await this._db.CreateCollectionAsync(testCollections[0]);
-        await this._db.CreateCollectionAsync(testCollections[1]);
-        await this._db.CreateCollectionAsync(testCollections[2]);
+        _collectionNum += 3;
+        await _db.CreateCollectionAsync(testCollections[0]);
+        await _db.CreateCollectionAsync(testCollections[1]);
+        await _db.CreateCollectionAsync(testCollections[2]);
 
         // Act
-        var collections = await this._db.GetCollectionsAsync().ToArrayAsync();
+        var collections = await _db.GetCollectionsAsync().ToArrayAsync();
 
 #pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
         // Assert
@@ -274,61 +289,67 @@ public class VolatileMemoryStoreTests
     }
 #pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
 
+
     [Fact]
     public async Task GetNearestMatchesReturnsAllResultsWithNoMinScoreAsync()
     {
         // Arrange
         var compareEmbedding = new float[] { 1, 1, 1 };
         int topN = 4;
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
-        await this._db.CreateCollectionAsync(collection);
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
+        await _db.CreateCollectionAsync(collection);
         int i = 0;
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { 1, 1, 1 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { 1, 1, 1 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         i++;
         testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { -1, -1, -1 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { -1, -1, -1 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         i++;
         testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { 1, 2, 3 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { 1, 2, 3 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         i++;
         testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { -1, -2, -3 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { -1, -2, -3 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         i++;
         testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { 1, -1, -2 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { 1, -1, -2 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         // Act
         double threshold = -1;
-        var topNResults = await this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: threshold).ToArrayAsync();
+        var topNResults = await _db.GetNearestMatchesAsync(collection,
+                compareEmbedding,
+                topN,
+                threshold)
+            .ToArrayAsync();
 
         // Assert
         Assert.Equal(topN, topNResults.Length);
+
         for (int j = 0; j < topN - 1; j++)
         {
             int compare = topNResults[j].Item2.CompareTo(topNResults[j + 1].Item2);
@@ -336,58 +357,62 @@ public class VolatileMemoryStoreTests
         }
     }
 
+
     [Fact]
     public async Task GetNearestMatchAsyncReturnsEmptyEmbeddingUnlessSpecifiedAsync()
     {
         // Arrange
         var compareEmbedding = new float[] { 1, 1, 1 };
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
-        await this._db.CreateCollectionAsync(collection);
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
+        await _db.CreateCollectionAsync(collection);
         int i = 0;
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { 1, 1, 1 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { 1, 1, 1 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         i++;
         testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { -1, -1, -1 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { -1, -1, -1 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         i++;
         testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { 1, 2, 3 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { 1, 2, 3 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         i++;
         testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { -1, -2, -3 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { -1, -2, -3 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         i++;
         testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { 1, -1, -2 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { 1, -1, -2 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         // Act
         double threshold = 0.75;
-        var topNResultDefault = await this._db.GetNearestMatchAsync(collection, compareEmbedding, minRelevanceScore: threshold);
-        var topNResultWithEmbedding = await this._db.GetNearestMatchAsync(collection, compareEmbedding, minRelevanceScore: threshold, withEmbedding: true);
+        var topNResultDefault = await _db.GetNearestMatchAsync(collection, compareEmbedding, threshold);
+        var topNResultWithEmbedding = await _db.GetNearestMatchAsync(collection,
+            compareEmbedding,
+            threshold,
+            true);
 
         // Assert
         Assert.NotNull(topNResultDefault);
@@ -396,57 +421,58 @@ public class VolatileMemoryStoreTests
         Assert.False(topNResultWithEmbedding.Value.Item1.Embedding.IsEmpty);
     }
 
+
     [Fact]
     public async Task GetNearestMatchAsyncReturnsExpectedAsync()
     {
         // Arrange
         var compareEmbedding = new float[] { 1, 1, 1 };
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
-        await this._db.CreateCollectionAsync(collection);
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
+        await _db.CreateCollectionAsync(collection);
         int i = 0;
         MemoryRecord testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { 1, 1, 1 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { 1, 1, 1 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         i++;
         testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { -1, -1, -1 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { -1, -1, -1 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         i++;
         testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { 1, 2, 3 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { 1, 2, 3 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         i++;
         testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { -1, -2, -3 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { -1, -2, -3 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         i++;
         testRecord = MemoryRecord.LocalRecord(
-            id: "test" + i,
-            text: "text" + i,
-            description: "description" + i,
-            embedding: new float[] { 1, -1, -2 });
-        _ = await this._db.UpsertAsync(collection, testRecord);
+            "test" + i,
+            "text" + i,
+            "description" + i,
+            new float[] { 1, -1, -2 });
+        _ = await _db.UpsertAsync(collection, testRecord);
 
         // Act
         double threshold = 0.75;
-        var topNResult = await this._db.GetNearestMatchAsync(collection, compareEmbedding, minRelevanceScore: threshold);
+        var topNResult = await _db.GetNearestMatchAsync(collection, compareEmbedding, threshold);
 
         // Assert
         Assert.NotNull(topNResult);
@@ -454,28 +480,33 @@ public class VolatileMemoryStoreTests
         Assert.True(topNResult.Value.Item2 >= threshold);
     }
 
+
     [Fact]
     public async Task GetNearestMatchesDifferentiatesIdenticalVectorsByKeyAsync()
     {
         // Arrange
         var compareEmbedding = new float[] { 1, 1, 1 };
         int topN = 4;
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
-        await this._db.CreateCollectionAsync(collection);
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
+        await _db.CreateCollectionAsync(collection);
 
         for (int i = 0; i < 10; i++)
         {
             MemoryRecord testRecord = MemoryRecord.LocalRecord(
-                id: "test" + i,
-                text: "text" + i,
-                description: "description" + i,
-                embedding: new float[] { 1, 1, 1 });
-            _ = await this._db.UpsertAsync(collection, testRecord);
+                "test" + i,
+                "text" + i,
+                "description" + i,
+                new float[] { 1, 1, 1 });
+            _ = await _db.UpsertAsync(collection, testRecord);
         }
 
         // Act
-        var topNResults = await this._db.GetNearestMatchesAsync(collection, compareEmbedding, limit: topN, minRelevanceScore: 0.75).ToArrayAsync();
+        var topNResults = await _db.GetNearestMatchesAsync(collection,
+                compareEmbedding,
+                topN,
+                0.75)
+            .ToArrayAsync();
         IEnumerable<string> topNKeys = topNResults.Select(x => x.Item1.Key).ToImmutableSortedSet();
 
         // Assert
@@ -489,19 +520,20 @@ public class VolatileMemoryStoreTests
         }
     }
 
+
     [Fact]
     public async Task ItCanBatchUpsertRecordsAsync()
     {
         // Arrange
         int numRecords = 10;
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
-        await this._db.CreateCollectionAsync(collection);
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
+        await _db.CreateCollectionAsync(collection);
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
 
         // Act
-        var keys = this._db.UpsertBatchAsync(collection, records);
-        var resultRecords = this._db.GetBatchAsync(collection, await keys.ToArrayAsync());
+        var keys = _db.UpsertBatchAsync(collection, records);
+        var resultRecords = _db.GetBatchAsync(collection, await keys.ToArrayAsync());
 
         // Assert
         Assert.NotNull(keys);
@@ -509,19 +541,20 @@ public class VolatileMemoryStoreTests
         Assert.Equal(numRecords, (await resultRecords.ToArrayAsync()).Length);
     }
 
+
     [Fact]
     public async Task ItCanBatchGetRecordsAsync()
     {
         // Arrange
         int numRecords = 10;
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
-        await this._db.CreateCollectionAsync(collection);
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
-        var keys = this._db.UpsertBatchAsync(collection, records);
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
+        await _db.CreateCollectionAsync(collection);
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
+        var keys = _db.UpsertBatchAsync(collection, records);
 
         // Act
-        var results = this._db.GetBatchAsync(collection, await keys.ToArrayAsync());
+        var results = _db.GetBatchAsync(collection, await keys.ToArrayAsync());
 
         // Assert
         Assert.NotNull(keys);
@@ -529,63 +562,67 @@ public class VolatileMemoryStoreTests
         Assert.Equal(numRecords, (await results.ToArrayAsync()).Length);
     }
 
+
     [Fact]
     public async Task ItCanBatchRemoveRecordsAsync()
     {
         // Arrange
         int numRecords = 10;
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
-        await this._db.CreateCollectionAsync(collection);
-        IEnumerable<MemoryRecord> records = this.CreateBatchRecords(numRecords);
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
+        await _db.CreateCollectionAsync(collection);
+        IEnumerable<MemoryRecord> records = CreateBatchRecords(numRecords);
 
         List<string> keys = [];
-        await foreach (var key in this._db.UpsertBatchAsync(collection, records))
+
+        await foreach (var key in _db.UpsertBatchAsync(collection, records))
         {
             keys.Add(key);
         }
 
         // Act
-        await this._db.RemoveBatchAsync(collection, keys);
+        await _db.RemoveBatchAsync(collection, keys);
 
         // Assert
-        await foreach (var result in this._db.GetBatchAsync(collection, keys))
+        await foreach (var result in _db.GetBatchAsync(collection, keys))
         {
             Assert.Null(result);
         }
     }
 
+
     [Fact]
     public async Task CollectionsCanBeDeletedAsync()
     {
         // Arrange
-        var collections = await this._db.GetCollectionsAsync().ToArrayAsync();
+        var collections = await _db.GetCollectionsAsync().ToArrayAsync();
 #pragma warning disable CA1851 // Possible multiple enumerations of 'IEnumerable' collection
         int numCollections = collections.Length;
-        Assert.True(numCollections == this._collectionNum);
+        Assert.True(numCollections == _collectionNum);
 
         // Act
         foreach (var collection in collections)
         {
-            await this._db.DeleteCollectionAsync(collection);
+            await _db.DeleteCollectionAsync(collection);
         }
 
         // Assert
-        collections = await this._db.GetCollectionsAsync().ToArrayAsync();
+        collections = await _db.GetCollectionsAsync().ToArrayAsync();
         numCollections = collections.Length;
         Assert.Equal(0, numCollections);
-        this._collectionNum = 0;
+        _collectionNum = 0;
     }
 #pragma warning restore CA1851 // Possible multiple enumerations of 'IEnumerable' collection
+
 
     [Fact]
     public async Task ItThrowsWhenDeletingNonExistentCollectionAsync()
     {
         // Arrange
-        string collection = "test_collection" + this._collectionNum;
-        this._collectionNum++;
+        string collection = "test_collection" + _collectionNum;
+        _collectionNum++;
 
         // Act
-        await Assert.ThrowsAsync<KernelException>(() => this._db.DeleteCollectionAsync(collection));
+        await Assert.ThrowsAsync<KernelException>(() => _db.DeleteCollectionAsync(collection));
     }
 }

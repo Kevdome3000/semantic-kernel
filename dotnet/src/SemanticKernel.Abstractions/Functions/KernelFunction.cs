@@ -302,7 +302,10 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         // Ensure arguments are initialized.
         arguments ??= [];
 
-        using var activity = StartFunctionActivity(Name, Description, arguments, _jsonSerializerOptions);
+        using var activity = StartFunctionActivity(Name,
+            Description,
+            arguments,
+            _jsonSerializerOptions);
         ILogger logger = kernel.LoggerFactory.CreateLogger(typeof(KernelFunction)) ?? NullLogger.Instance;
 
         logger.LogFunctionInvoking(PluginName, Name);
@@ -339,7 +342,10 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             logger.LogFunctionInvokedSuccess(PluginName, Name);
 
             SetFunctionResultTag(activity, functionResult, _jsonSerializerOptions);
-            LogFunctionResult(logger, PluginName, Name, functionResult);
+            LogFunctionResult(logger,
+                PluginName,
+                Name,
+                functionResult);
 
             return functionResult;
         }
@@ -385,7 +391,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
 
         return result.GetValue<TResult>();
     }
- 
+
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
@@ -431,7 +437,10 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         // Ensure arguments are initialized.
         arguments ??= [];
 
-        using var activity = StartFunctionActivity(Name, Description, arguments, _jsonSerializerOptions);
+        using var activity = StartFunctionActivity(Name,
+            Description,
+            arguments,
+            _jsonSerializerOptions);
         ILogger logger = kernel.LoggerFactory.CreateLogger(Name) ?? NullLogger.Instance;
 
         logger.LogFunctionStreamingInvoking(PluginName, Name);
@@ -445,7 +454,10 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         long startingTimestamp = Stopwatch.GetTimestamp();
 
         // Prepare to collect results if activity is enabled.
-        List<TResult>? results = (activity is not null || logger.IsEnabled(LogLevel.Trace)) ? [] : null;
+        List<TResult>? results = activity is not null || logger.IsEnabled(LogLevel.Trace)
+            ? []
+            : null;
+
         try
         {
             IAsyncEnumerator<TResult> enumerator;
@@ -534,7 +546,10 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             s_streamingDuration.Record(duration.TotalSeconds, in tags);
             logger.LogFunctionStreamingComplete(PluginName, Name, duration.TotalSeconds);
             SetFunctionResultTag(activity, new FunctionResult(this, results, kernel.Culture), _jsonSerializerOptions);
-            LogFunctionResult(logger, PluginName, Name, new FunctionResult(this, results, kernel.Culture));
+            LogFunctionResult(logger,
+                PluginName,
+                Name,
+                new FunctionResult(this, results, kernel.Culture));
         }
     }
 
@@ -571,6 +586,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     {
         return new KernelAIFunction(this, kernel);
     }
+
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
@@ -630,6 +646,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken);
+
 
     #region Private
 
@@ -759,9 +776,9 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
 
         List<KeyValuePair<string, object?>> tags =
         [
-            new KeyValuePair<string, object?>("gen_ai.operation.name", OperationName),
-            new KeyValuePair<string, object?>("gen_ai.tool.name", functionName),
-            new KeyValuePair<string, object?>("gen_ai.tool.description", functionDescription),
+            new("gen_ai.operation.name", OperationName),
+            new("gen_ai.tool.name", functionName),
+            new("gen_ai.tool.description", functionDescription)
         ];
 
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -785,8 +802,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
                     return JsonSerializer.Serialize(args, typeInfo);
                 }
 
-
-    return JsonSerializer.Serialize(args);
+                return JsonSerializer.Serialize(args);
             }
             catch (NotSupportedException)
             {
@@ -794,6 +810,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             }
         }
     }
+
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
@@ -836,6 +853,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             }
         }
     }
+
 
     private JsonElement _jsonSchema;
 

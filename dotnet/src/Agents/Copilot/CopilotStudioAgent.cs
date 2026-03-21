@@ -2,12 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Agents.CopilotStudio.Client;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.CopilotStudio.Internal;
 
 namespace Microsoft.SemanticKernel.Agents.Copilot;
@@ -22,6 +20,7 @@ public sealed partial class CopilotStudioAgent : Agent
     /// </summary>
     public CopilotClient Client { get; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CopilotStudioAgent"/> class.
     /// Unlike other types of agents in Semantic Kernel, prompt templates are not supported for Copilot agents,
@@ -30,13 +29,15 @@ public sealed partial class CopilotStudioAgent : Agent
     /// <param name="client">A client used to interact with the Copilot Agent service.</param>
     public CopilotStudioAgent(CopilotClient client)
     {
-        this.Client = client;
+        Client = client;
     }
+
 
     /// <summary>
     /// CopilotStudioAgent does not support instructions like other agents.
     /// </summary>
     internal new string? Instructions => null;
+
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
@@ -54,13 +55,14 @@ public sealed partial class CopilotStudioAgent : Agent
 
         // Create a thread if needed
         CopilotStudioAgentThread agentThread = await this.EnsureThreadExistsWithMessagesAsync(
-            messages,
-            thread,
-            () => new CopilotStudioAgentThread(this.Client) { Logger = this.ActiveLoggerFactory.CreateLogger<CopilotStudioAgentThread>() },
-            cancellationToken).ConfigureAwait(false);
+                messages,
+                thread,
+                () => new CopilotStudioAgentThread(Client) { Logger = ActiveLoggerFactory.CreateLogger<CopilotStudioAgentThread>() },
+                cancellationToken)
+            .ConfigureAwait(false);
 
         // Invoke the agent
-        IAsyncEnumerable<ChatMessageContent> invokeResults = this.InvokeInternalAsync(messages, agentThread, cancellationToken);
+        IAsyncEnumerable<ChatMessageContent> invokeResults = InvokeInternalAsync(messages, agentThread, cancellationToken);
 
         // Return the results to the caller in AgentResponseItems.
         await foreach (ChatMessageContent result in invokeResults.ConfigureAwait(false))
@@ -72,9 +74,10 @@ public sealed partial class CopilotStudioAgent : Agent
                 await options.OnIntermediateMessage(result).ConfigureAwait(false);
             }
 
-            yield return new(result, agentThread);
+            yield return new AgentResponseItem<ChatMessageContent>(result, agentThread);
         }
     }
+
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
@@ -92,13 +95,14 @@ public sealed partial class CopilotStudioAgent : Agent
 
         // Create a thread if needed
         CopilotStudioAgentThread agentThread = await this.EnsureThreadExistsWithMessagesAsync(
-            messages,
-            thread,
-            () => new CopilotStudioAgentThread(this.Client) { Logger = this.ActiveLoggerFactory.CreateLogger<CopilotStudioAgentThread>() },
-            cancellationToken).ConfigureAwait(false);
+                messages,
+                thread,
+                () => new CopilotStudioAgentThread(Client) { Logger = ActiveLoggerFactory.CreateLogger<CopilotStudioAgentThread>() },
+                cancellationToken)
+            .ConfigureAwait(false);
 
         // Invoke the agent
-        IAsyncEnumerable<ChatMessageContent> invokeResults = this.InvokeInternalAsync(messages, agentThread, cancellationToken);
+        IAsyncEnumerable<ChatMessageContent> invokeResults = InvokeInternalAsync(messages, agentThread, cancellationToken);
 
         // Return the results to the caller in AgentResponseItems.
         await foreach (ChatMessageContent result in invokeResults.ConfigureAwait(false))
@@ -112,14 +116,15 @@ public sealed partial class CopilotStudioAgent : Agent
 
             StreamingChatMessageContent streamedResult = new(result.Role, content: null)
             {
-                Items = [.. ContentProcessor.ConvertToStreaming(result.Items, this.Logger)],
+                Items = [.. ContentProcessor.ConvertToStreaming(result.Items, Logger)],
                 InnerContent = result.InnerContent,
-                Metadata = result.Metadata,
+                Metadata = result.Metadata
             };
 
-            yield return new(streamedResult, agentThread);
+            yield return new AgentResponseItem<StreamingChatMessageContent>(streamedResult, agentThread);
         }
     }
+
 
     /// <inheritdoc/>
     protected override IEnumerable<string> GetChannelKeys()
@@ -127,11 +132,13 @@ public sealed partial class CopilotStudioAgent : Agent
         throw new NotSupportedException($"{nameof(CopilotStudioAgent)} is not for use with {nameof(AgentChat)}.");
     }
 
+
     /// <inheritdoc/>
     protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
         throw new NotSupportedException($"{nameof(CopilotStudioAgent)} is not for use with {nameof(AgentChat)}.");
     }
+
 
     /// <inheritdoc/>
     protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
@@ -139,10 +146,11 @@ public sealed partial class CopilotStudioAgent : Agent
         throw new NotSupportedException($"{nameof(CopilotStudioAgent)} is not for use with {nameof(AgentChat)}.");
     }
 
+
     private IAsyncEnumerable<ChatMessageContent> InvokeInternalAsync(ICollection<ChatMessageContent> messages, CopilotStudioAgentThread thread, CancellationToken cancellationToken)
     {
-        string question = string.Join(Environment.NewLine, messages.Select(m => m.Content));
+        string question = string.Join<>(Environment.NewLine, messages.Select(m => m.Content));
 
-        return ActivityProcessor.ProcessActivity(this.Client.AskQuestionAsync(question, thread.Id, cancellationToken), this.Logger);
+        return ActivityProcessor.ProcessActivity(Client.AskQuestionAsync(question, thread.Id, cancellationToken), Logger);
     }
 }

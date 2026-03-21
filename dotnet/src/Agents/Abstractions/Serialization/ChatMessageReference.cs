@@ -1,10 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text.Json.Serialization;
-using Microsoft.SemanticKernel.ChatCompletion;
-
 namespace Microsoft.SemanticKernel.Agents.Serialization;
 
 /// <summary>
@@ -41,9 +35,12 @@ public sealed class ChatMessageReference(ChatMessageContent message)
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? MimeType => message.MimeType;
 
+
     /// <summary>
     /// Converts a set of messages to <see cref="ChatMessageReference"/> instances.
     /// </summary>
-    public static IEnumerable<ChatMessageReference> Prepare(IEnumerable<ChatMessageContent> messages) =>
-        messages.Select(m => new ChatMessageReference(m));
+    public static IEnumerable<ChatMessageReference> Prepare(IEnumerable<ChatMessageContent> messages)
+    {
+        return messages.Select(m => new ChatMessageReference(m));
+    }
 }

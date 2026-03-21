@@ -16,13 +16,18 @@ public sealed class RestApiOperationResponseFactoryContext
     /// <param name="request">The HTTP request message.</param>
     /// <param name="response">The HTTP response message.</param>
     /// <param name="internalFactory">The internal factory to create instances of the <see cref="RestApiOperationResponse"/>.</param>
-    internal RestApiOperationResponseFactoryContext(RestApiOperation operation, HttpRequestMessage request, HttpResponseMessage response, RestApiOperationResponseFactory internalFactory)
+    internal RestApiOperationResponseFactoryContext(
+        RestApiOperation operation,
+        HttpRequestMessage request,
+        HttpResponseMessage response,
+        RestApiOperationResponseFactory internalFactory)
     {
         InternalFactory = internalFactory;
         Operation = operation;
         Request = request;
         Response = response;
     }
+
 
     /// <summary>
     /// The REST API operation.

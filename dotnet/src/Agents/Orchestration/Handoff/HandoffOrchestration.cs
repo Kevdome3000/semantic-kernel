@@ -18,6 +18,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
 {
     private readonly OrchestrationHandoffs _handoffs;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HandoffOrchestration{TInput, TOutput}"/> class.
     /// </summary>
@@ -33,22 +34,29 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
         };
         // Extract names from handoffs that don't align with a member agent.
         string[] badNames = [.. handoffs.Keys.Concat(handoffs.Values.SelectMany(h => h.Keys)).Where(name => !agentNames.Contains(name))];
+
         // Fail fast if invalid names are present.
         if (badNames.Length > 0)
         {
             throw new ArgumentException($"The following agents are not defined in the orchestration: {string.Join(", ", badNames)}", nameof(handoffs));
         }
 
-        this._handoffs = handoffs;
+        _handoffs = handoffs;
     }
+
 
     /// <summary>
     /// Gets or sets the callback to be invoked for interactive input.
     /// </summary>
     public OrchestrationInteractiveCallback? InteractiveCallback { get; init; }
 
+
     /// <inheritdoc />
-    protected override async ValueTask StartAsync(IAgentRuntime runtime, TopicId topic, IEnumerable<ChatMessageContent> input, AgentType? entryAgent)
+    protected override async ValueTask StartAsync(
+        IAgentRuntime runtime,
+        TopicId topic,
+        IEnumerable<ChatMessageContent> input,
+        AgentType? entryAgent)
     {
         if (!entryAgent.HasValue)
         {
@@ -58,8 +66,13 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
         await runtime.PublishMessageAsync(new HandoffMessages.Request(), entryAgent.Value).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc />
-    protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(IAgentRuntime runtime, OrchestrationContext context, RegistrationContext registrar, ILogger logger)
+    protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(
+        IAgentRuntime runtime,
+        OrchestrationContext context,
+        RegistrationContext registrar,
+        ILogger logger)
     {
         AgentType outputType = await registrar.RegisterResultTypeAsync<HandoffMessages.Result>(response => [response.Message]).ConfigureAwait(false);
 
@@ -67,39 +80,51 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
         Dictionary<string, AgentType> agentMap = [];
         Dictionary<string, HandoffLookup> handoffMap = [];
         AgentType agentType = outputType;
-        for (int index = this.Members.Count - 1; index >= 0; --index)
+
+        for (int index = Members.Count - 1; index >= 0; --index)
         {
-            Agent agent = this.Members[index];
+            Agent agent = Members[index];
             HandoffLookup map = [];
             handoffMap[agent.Name ?? agent.Id] = map;
             agentType =
                 await runtime.RegisterOrchestrationAgentAsync(
-                    this.GetAgentType(context.Topic, index),
-                    (agentId, runtime) =>
-                    {
-                        HandoffActor actor =
-                            new(agentId, runtime, context, agent, map, outputType, context.LoggerFactory.CreateLogger<HandoffActor>())
-                            {
-                                InteractiveCallback = this.InteractiveCallback
-                            };
+                        GetAgentType(context.Topic, index),
+                        (agentId, runtime) =>
+                        {
+                            HandoffActor actor =
+                                new(agentId,
+                                    runtime,
+                                    context,
+                                    agent,
+                                    map,
+                                    outputType,
+                                    context.LoggerFactory.CreateLogger<HandoffActor>())
+                                {
+                                    InteractiveCallback = InteractiveCallback
+                                };
 #if !NETCOREAPP
-                        return actor.AsValueTask<IHostableAgent>();
+                            return actor.AsValueTask<IHostableAgent>();
 #else
                         return ValueTask.FromResult<IHostableAgent>(actor);
 #endif
-                    }).ConfigureAwait(false);
+                        })
+                    .ConfigureAwait(false);
             agentMap[agent.Name ?? agent.Id] = agentType;
 
             await runtime.SubscribeAsync(agentType, context.Topic).ConfigureAwait(false);
 
-            logger.LogRegisterActor(this.OrchestrationLabel, agentType, "MEMBER", index + 1);
+            logger.LogRegisterActor(OrchestrationLabel,
+                agentType,
+                "MEMBER",
+                index + 1);
         }
 
         // Complete the handoff model
-        foreach (KeyValuePair<string, AgentHandoffs> handoffs in this._handoffs)
+        foreach (KeyValuePair<string, AgentHandoffs> handoffs in _handoffs)
         {
             // Retrieve the map for the agent (every agent had an empty map created)
             HandoffLookup agentHandoffs = handoffMap[handoffs.Key];
+
             foreach (KeyValuePair<string, string> handoff in handoffs.Value)
             {
                 // name = (type,description)
@@ -107,8 +132,12 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
             }
         }
 
-        return agentMap[this._handoffs.FirstAgentName];
+        return agentMap[_handoffs.FirstAgentName];
     }
 
-    private AgentType GetAgentType(TopicId topic, int index) => this.FormatAgentType(topic, $"Agent_{index + 1}");
+
+    private AgentType GetAgentType(TopicId topic, int index)
+    {
+        return FormatAgentType(topic, $"Agent_{index + 1}");
+    }
 }

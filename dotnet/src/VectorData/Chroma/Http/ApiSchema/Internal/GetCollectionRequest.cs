@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Chroma;
-
 using System.Net.Http;
-using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 internal sealed class GetCollectionRequest
 {
@@ -20,7 +18,7 @@ internal sealed class GetCollectionRequest
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreateGetRequest($"collections/{this.CollectionName}");
+        return HttpRequest.CreateGetRequest($"collections/{CollectionName}");
     }
 
 
@@ -28,7 +26,7 @@ internal sealed class GetCollectionRequest
 
     private GetCollectionRequest(string collectionName)
     {
-        this.CollectionName = collectionName;
+        CollectionName = collectionName;
     }
 
     #endregion

@@ -1,16 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Data.Sqlite;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 /// <summary>
@@ -35,6 +24,7 @@ public sealed class SqliteVectorStore : VectorStore
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteVectorStore"/> class.
     /// </summary>
@@ -44,20 +34,21 @@ public sealed class SqliteVectorStore : VectorStore
     {
         Verify.NotNull(connectionString);
 
-        this._connectionString = connectionString;
+        _connectionString = connectionString;
 
         options ??= SqliteVectorStoreOptions.Default;
-        this._vectorVirtualTableName = options.VectorVirtualTableName;
-        this._embeddingGenerator = options.EmbeddingGenerator;
+        _vectorVirtualTableName = options.VectorVirtualTableName;
+        _embeddingGenerator = options.EmbeddingGenerator;
 
         var connectionStringBuilder = new SqliteConnectionStringBuilder(connectionString);
 
-        this._metadata = new()
+        _metadata = new()
         {
             VectorStoreSystemName = SqliteConstants.VectorStoreSystemName,
             VectorStoreName = connectionStringBuilder.DataSource
         };
     }
+
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
@@ -71,14 +62,15 @@ public sealed class SqliteVectorStore : VectorStore
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new SqliteCollection<TKey, TRecord>(
-                this._connectionString,
+                _connectionString,
                 name,
-                new()
+                new SqliteCollectionOptions
                 {
                     Definition = definition,
-                    VectorVirtualTableName = this._vectorVirtualTableName,
-                    EmbeddingGenerator = this._embeddingGenerator
+                    VectorVirtualTableName = _vectorVirtualTableName,
+                    EmbeddingGenerator = _embeddingGenerator
                 });
+
 
     /// <inheritdoc />
 #if NET
@@ -87,16 +79,17 @@ public sealed class SqliteVectorStore : VectorStore
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new SqliteDynamicCollection(
-            this._connectionString,
+            _connectionString,
             name,
-            new()
+            new SqliteCollectionOptions
             {
                 Definition = definition,
-                VectorVirtualTableName = this._vectorVirtualTableName,
-                EmbeddingGenerator = this._embeddingGenerator
+                VectorVirtualTableName = _vectorVirtualTableName,
+                EmbeddingGenerator = _embeddingGenerator
             }
         );
 #pragma warning restore IDE0090
+
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -105,41 +98,46 @@ public sealed class SqliteVectorStore : VectorStore
         const string TablePropertyName = "name";
         const string Query = $"SELECT {TablePropertyName} FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';";
 
-        using var connection = new SqliteConnection(this._connectionString);
+        using var connection = new SqliteConnection(_connectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
         using var command = connection.CreateCommand();
 
         command.CommandText = Query;
 
         using var reader = await connection.ExecuteWithErrorHandlingAsync(
-            this._metadata,
-            OperationName,
-            () => command.ExecuteReaderAsync(cancellationToken),
-            cancellationToken).ConfigureAwait(false);
+                _metadata,
+                OperationName,
+                () => command.ExecuteReaderAsync(cancellationToken),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         while (await reader.ReadWithErrorHandlingAsync(
-            this._metadata,
-            OperationName,
-            cancellationToken).ConfigureAwait(false))
+                _metadata,
+                OperationName,
+                cancellationToken)
+            .ConfigureAwait(false))
         {
             var ordinal = reader.GetOrdinal(TablePropertyName);
             yield return reader.GetString(ordinal);
         }
     }
 
+
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
@@ -147,9 +145,12 @@ public sealed class SqliteVectorStore : VectorStore
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreMetadata)
+                    ? _metadata
+                    : serviceType.IsInstanceOfType(this)
+                        ? this
+                        : null;
     }
 }

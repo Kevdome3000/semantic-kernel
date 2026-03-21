@@ -19,6 +19,7 @@ public sealed class OpenAIAssistantAgentFactory : AgentFactory
     /// </summary>
     public const string OpenAIAssistantAgentType = "openai_assistant";
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgentFactory"/> class.
     /// </summary>
@@ -27,17 +28,23 @@ public sealed class OpenAIAssistantAgentFactory : AgentFactory
     {
     }
 
+
     /// <inheritdoc/>
-    public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default)
+    public override async Task<Agent?> TryCreateAsync(
+        Kernel kernel,
+        AgentDefinition agentDefinition,
+        AgentCreationOptions? agentCreationOptions = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
-        if (this.IsSupported(agentDefinition))
+        if (IsSupported(agentDefinition))
         {
             var client = agentDefinition.GetOpenAIClient(kernel);
             AssistantClient assistantClient = client.GetAssistantClient();
 
             Assistant model;
+
             if (!string.IsNullOrEmpty(agentDefinition.Id))
             {
                 // Get an existing assistant
@@ -48,7 +55,7 @@ public sealed class OpenAIAssistantAgentFactory : AgentFactory
                     Kernel = kernel,
                     Arguments = agentDefinition.GetDefaultKernelArguments(kernel) ?? [],
                     Template = agentDefinition.GetPromptTemplate(kernel, agentCreationOptions?.PromptTemplateFactory),
-                    Instructions = agentDefinition.Instructions ?? model.Instructions,
+                    Instructions = agentDefinition.Instructions ?? model.Instructions
                 };
             }
 
@@ -63,7 +70,7 @@ public sealed class OpenAIAssistantAgentFactory : AgentFactory
             {
                 Kernel = kernel,
                 Arguments = agentDefinition.GetDefaultKernelArguments(kernel) ?? [],
-                Template = agentDefinition.GetPromptTemplate(kernel, agentCreationOptions?.PromptTemplateFactory),
+                Template = agentDefinition.GetPromptTemplate(kernel, agentCreationOptions?.PromptTemplateFactory)
             };
         }
 

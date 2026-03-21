@@ -8,6 +8,7 @@ using Microsoft.Extensions.AI;
 
 #pragma warning disable IDE0130
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Represents the result of a <see cref="KernelFunction"/> invocation.
 /// </summary>
@@ -34,6 +35,7 @@ public sealed class FunctionResult
         Metadata = metadata;
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
@@ -50,6 +52,7 @@ public sealed class FunctionResult
         Metadata = metadata ?? result.Metadata;
         RenderedPrompt = result.RenderedPrompt;
     }
+
 
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> whose result is represented by this instance.
@@ -79,6 +82,7 @@ public sealed class FunctionResult
     /// Gets the prompt used during function invocation if any was rendered.
     /// </summary>
     public string? RenderedPrompt { get; internal set; }
+
 
     /// <summary>
     /// Returns function result value.
@@ -134,6 +138,7 @@ public sealed class FunctionResult
             }
 
             var firstMessage = messageContentList[0];
+
             if (typeof(T) == typeof(ChatResponse))
             {
                 // Ignore multiple choices when converting to Microsoft.Extensions.AI.ChatResponse
@@ -155,6 +160,7 @@ public sealed class FunctionResult
             }
 
             var chatMessage = chatResponse.Messages.Last();
+
             if (typeof(T) == typeof(string))
             {
                 return (T?)(object?)chatMessage.ToString();
@@ -170,6 +176,7 @@ public sealed class FunctionResult
             {
                 // Return the first matching content type of a message if any
                 var updateContent = chatMessage.Contents.FirstOrDefault(c => c is T);
+
                 if (updateContent is not null)
                 {
                     return (T)(object)updateContent;
@@ -195,6 +202,7 @@ public sealed class FunctionResult
             {
                 // Return the first matching content type of a message if any
                 var updateContent = chatMessage.Contents.FirstOrDefault(c => c is T);
+
                 if (updateContent is not null)
                 {
                     return (T)(object)updateContent;
@@ -212,9 +220,13 @@ public sealed class FunctionResult
         throw new InvalidCastException($"Cannot cast {Value.GetType()} to {typeof(T)}");
     }
 
+
     /// <inheritdoc/>
-    public override string ToString() =>
-        InternalTypeConverter.ConvertToString(Value, Culture) ?? string.Empty;
+    public override string ToString()
+    {
+        return InternalTypeConverter.ConvertToString(Value, Culture) ?? string.Empty;
+    }
+
 
     /// <summary>
     /// Function result object.

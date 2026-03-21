@@ -17,6 +17,7 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
     {
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAIAgentInvokeOptions"/> class by cloning the provided options.
     /// </summary>
@@ -27,6 +28,7 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
         Verify.NotNull(options);
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAIAgentInvokeOptions"/> class by cloning the provided options.
     /// </summary>
@@ -36,20 +38,21 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
     {
         Verify.NotNull(options);
 
-        this.ModelName = options.ModelName;
-        this.OverrideInstructions = options.OverrideInstructions;
-        this.AdditionalMessages = options.AdditionalMessages;
-        this.EnableCodeInterpreter = options.EnableCodeInterpreter;
-        this.EnableFileSearch = options.EnableFileSearch;
-        this.EnableJsonResponse = options.EnableJsonResponse;
-        this.MaxCompletionTokens = options.MaxCompletionTokens;
-        this.MaxPromptTokens = options.MaxPromptTokens;
-        this.ParallelToolCallsEnabled = options.ParallelToolCallsEnabled;
-        this.TruncationMessageCount = options.TruncationMessageCount;
-        this.Temperature = options.Temperature;
-        this.TopP = options.TopP;
-        this.Metadata = options.Metadata;
+        ModelName = options.ModelName;
+        OverrideInstructions = options.OverrideInstructions;
+        AdditionalMessages = options.AdditionalMessages;
+        EnableCodeInterpreter = options.EnableCodeInterpreter;
+        EnableFileSearch = options.EnableFileSearch;
+        EnableJsonResponse = options.EnableJsonResponse;
+        MaxCompletionTokens = options.MaxCompletionTokens;
+        MaxPromptTokens = options.MaxPromptTokens;
+        ParallelToolCallsEnabled = options.ParallelToolCallsEnabled;
+        TruncationMessageCount = options.TruncationMessageCount;
+        Temperature = options.Temperature;
+        TopP = options.TopP;
+        Metadata = options.Metadata;
     }
+
 
     /// <summary>
     /// Gets or sets the AI model targeted by the agent.
@@ -152,6 +155,7 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 
+
     /// <summary>
     /// Converts the current options to an <see cref="AzureAIInvocationOptions"/> instance.
     /// </summary>
@@ -160,20 +164,20 @@ public sealed class AzureAIAgentInvokeOptions : AgentInvokeOptions
     {
         return new AzureAIInvocationOptions
         {
-            ModelName = this.ModelName,
-            OverrideInstructions = this.OverrideInstructions,
-            AdditionalInstructions = this.AdditionalInstructions,
-            AdditionalMessages = this.AdditionalMessages,
-            EnableCodeInterpreter = this.EnableCodeInterpreter,
-            EnableFileSearch = this.EnableFileSearch,
-            EnableJsonResponse = this.EnableJsonResponse,
-            MaxCompletionTokens = this.MaxCompletionTokens,
-            MaxPromptTokens = this.MaxPromptTokens,
-            ParallelToolCallsEnabled = this.ParallelToolCallsEnabled,
-            TruncationMessageCount = this.TruncationMessageCount,
-            Temperature = this.Temperature,
-            TopP = this.TopP,
-            Metadata = this.Metadata
+            ModelName = ModelName,
+            OverrideInstructions = OverrideInstructions,
+            AdditionalInstructions = AdditionalInstructions,
+            AdditionalMessages = AdditionalMessages,
+            EnableCodeInterpreter = EnableCodeInterpreter,
+            EnableFileSearch = EnableFileSearch,
+            EnableJsonResponse = EnableJsonResponse,
+            MaxCompletionTokens = MaxCompletionTokens,
+            MaxPromptTokens = MaxPromptTokens,
+            ParallelToolCallsEnabled = ParallelToolCallsEnabled,
+            TruncationMessageCount = TruncationMessageCount,
+            Temperature = Temperature,
+            TopP = TopP,
+            Metadata = Metadata
         };
     }
 }

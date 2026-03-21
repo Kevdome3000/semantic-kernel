@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides execution settings for an AI request.
 /// </summary>
@@ -78,7 +79,7 @@ public class PromptExecutionSettings
     /// </item>
     /// <item>
     /// To instruct the model to not call any functions and only generate a user-facing message, set the property to an instance returned
-    /// by the <see cref="FunctionChoiceBehavior.None(IEnumerable{KernelFunction}?, FunctionChoiceBehaviorOptions?)"/> method.
+    /// by the <see cref="FunctionChoiceBehavior.None(System.Collections.Generic.IEnumerable{Microsoft.SemanticKernel.KernelFunction}?, FunctionChoiceBehaviorOptions?)"/> method.
     /// </item>
     /// </list>
     /// For all the behaviors that presume the model to call functions, auto-invoke can be specified. If LLM
@@ -123,6 +124,7 @@ public class PromptExecutionSettings
     [JsonIgnore]
     public bool IsFrozen { get; protected set; }
 
+
     /// <summary>
     /// Makes the current <see cref="PromptExecutionSettings"/> unmodifiable and sets its IsFrozen property to true.
     /// </summary>
@@ -141,20 +143,22 @@ public class PromptExecutionSettings
         }
     }
 
+
     /// <summary>
     /// Creates a new <see cref="PromptExecutionSettings"/> object that is a copy of the current instance.
     /// </summary>
     public virtual PromptExecutionSettings Clone()
     {
-        return new()
-    {
-        ModelId = ModelId,
-        ServiceId = ServiceId,
-        FunctionChoiceBehavior = FunctionChoiceBehavior, ExtensionData = ExtensionData is not null
-            ? new Dictionary<string, object>(ExtensionData)
-            : null
-    };
+        return new PromptExecutionSettings
+        {
+            ModelId = ModelId,
+            ServiceId = ServiceId,
+            FunctionChoiceBehavior = FunctionChoiceBehavior, ExtensionData = ExtensionData is not null
+                ? new Dictionary<string, object>(ExtensionData)
+                : null
+        };
     }
+
 
     /// <summary>
     /// Throws an <see cref="InvalidOperationException"/> if the <see cref="PromptExecutionSettings"/> are frozen.
@@ -168,13 +172,18 @@ public class PromptExecutionSettings
         }
     }
 
+
     /// <summary>
     /// When some specialized <see cref="ChatHistory"/> is used, this method can be overridden to prepare the chat history before the request is sent based on the
     /// current settings configuration
     /// </summary>
     /// <param name="chatHistory">Chat history to prepare.</param>
     /// <returns>Returns the prepared chat history.</returns>
-    protected virtual ChatHistory PrepareChatHistoryForRequest(ChatHistory chatHistory) => chatHistory;
+    protected virtual ChatHistory PrepareChatHistoryForRequest(ChatHistory chatHistory)
+    {
+        return chatHistory;
+    }
+
 
     /// <summary>
     /// This method is intended to be used only by the <see cref="ChatClientChatCompletionService"/> for applying any pre-request transformation to the chat history
@@ -182,7 +191,11 @@ public class PromptExecutionSettings
     /// </summary>
     /// <param name="chatHistory">Target chat history to prepare.</param>
     /// <returns>Prepared chat history.</returns>
-    internal ChatHistory ChatClientPrepareChatHistoryForRequest(ChatHistory chatHistory) => PrepareChatHistoryForRequest(chatHistory);
+    internal ChatHistory ChatClientPrepareChatHistoryForRequest(ChatHistory chatHistory)
+    {
+        return PrepareChatHistoryForRequest(chatHistory);
+    }
+
 
     #region private ================================================================================
 
@@ -194,5 +207,6 @@ public class PromptExecutionSettings
     private FunctionChoiceBehavior? _functionChoiceBehavior;
 
     #endregion
+
 
 }

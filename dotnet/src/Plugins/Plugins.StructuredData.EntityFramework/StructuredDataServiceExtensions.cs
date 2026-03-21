@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -39,9 +33,9 @@ public static class StructuredDataServiceExtensions
                     Schema = KernelJsonSchemaBuilder.Build(typeof(TEntity)),
                     Description = "Entity record information",
                     IsRequired = true
-                },
+                }
             ],
-            ReturnParameter = new() { ParameterType = typeof(TEntity) },
+            ReturnParameter = new() { ParameterType = typeof(TEntity) }
         };
 
         async Task<TEntity> InsertAsync(TEntity entity, CancellationToken cancellationToken)
@@ -51,6 +45,7 @@ public static class StructuredDataServiceExtensions
 
         return KernelFunctionFactory.CreateFromMethod(InsertAsync, options);
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> from the entity select method.
@@ -86,16 +81,19 @@ public static class StructuredDataServiceExtensions
                         "Combine with 'and', 'or'. ",
                         "Wrap string values in single quotes."),
                     IsRequired = false
-                },
+                }
             ],
-            ReturnParameter = new() { ParameterType = typeof(IList<TEntity>) },
+            ReturnParameter = new() { ParameterType = typeof(IList<TEntity>) }
         };
 
         Task<IList<TEntity>> Select(string? filter = null, CancellationToken cancellationToken = default)
-            => Task.FromResult<IList<TEntity>>(service.Select<TEntity>(filter).ToList());
+        {
+            return Task.FromResult<IList<TEntity>>(service.Select<TEntity>(filter).ToList());
+        }
 
         return KernelFunctionFactory.CreateFromMethod(Select, options);
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> from the entity update method.
@@ -122,9 +120,9 @@ public static class StructuredDataServiceExtensions
                     ParameterType = typeof(TEntity),
                     Description = "Entity record information to update",
                     IsRequired = true
-                },
+                }
             ],
-            ReturnParameter = new() { ParameterType = typeof(int), Description = "Number of affected rows" },
+            ReturnParameter = new() { ParameterType = typeof(int), Description = "Number of affected rows" }
         };
 
         async Task<int> UpdateAsync(TEntity entity, CancellationToken cancellationToken)
@@ -134,6 +132,7 @@ public static class StructuredDataServiceExtensions
 
         return KernelFunctionFactory.CreateFromMethod(UpdateAsync, options);
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> from the entity delete method.
@@ -160,9 +159,9 @@ public static class StructuredDataServiceExtensions
                     ParameterType = typeof(TEntity),
                     Description = "Entity record to delete",
                     IsRequired = true
-                },
+                }
             ],
-            ReturnParameter = new() { ParameterType = typeof(int), Description = "Number of affected rows" },
+            ReturnParameter = new() { ParameterType = typeof(int), Description = "Number of affected rows" }
         };
 
         async Task<int> DeleteAsync(TEntity entity, CancellationToken cancellationToken)

@@ -41,6 +41,7 @@ public class SequentialSelectionStrategyTests
         await VerifyNextAgentAsync(agent1, agents, strategy);
     }
 
+
     /// <summary>
     /// Verify <see cref="SequentialSelectionStrategy"/> provides agents in expected order.
     /// </summary>
@@ -62,6 +63,7 @@ public class SequentialSelectionStrategyTests
         await VerifyNextAgentAsync(agent2, agents, strategy);
         await VerifyNextAgentAsync(agent1, agents, strategy);
     }
+
 
     /// <summary>
     /// Verify <see cref="SequentialSelectionStrategy"/> provides agents in expected order.
@@ -85,6 +87,7 @@ public class SequentialSelectionStrategyTests
         await VerifyNextAgentAsync(agent2, agents, strategy);
     }
 
+
     /// <summary>
     /// Verify <see cref="SequentialSelectionStrategy"/> behavior with no agents.
     /// </summary>
@@ -97,6 +100,7 @@ public class SequentialSelectionStrategyTests
         // Act and Assert
         await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([], []));
     }
+
 
     private static async Task VerifyNextAgentAsync(Agent expectedAgent, Agent[] agents, SequentialSelectionStrategy strategy)
     {

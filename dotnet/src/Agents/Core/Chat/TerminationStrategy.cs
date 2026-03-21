@@ -1,6 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents.Chat;
-
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -10,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Agents.Extensions;
 
+namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
 /// Provides a base strategy class for defining termination criteria for an <see cref="AgentGroupChat"/>.
@@ -67,21 +66,29 @@ public abstract class TerminationStrategy
     /// <returns><see langword="true"/> if the chat loop should be terminated.</returns>
     public async Task<bool> ShouldTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        this.Logger.LogTerminationStrategyEvaluatingCriteria(nameof(ShouldTerminateAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
+        Logger.LogTerminationStrategyEvaluatingCriteria(nameof(ShouldTerminateAsync),
+            agent.GetType(),
+            agent.Id,
+            agent.GetDisplayName());
 
         // `Agents` must contain `agent`, if `Agents` not empty.
-        if ((this.Agents?.Count ?? 0) > 0 && !this.Agents!.Any(a => a.Id == agent.Id))
+        if ((Agents?.Count ?? 0) > 0 && !Agents!.Any(a => a.Id == agent.Id))
         {
-            this.Logger.LogTerminationStrategyAgentOutOfScope(nameof(ShouldTerminateAsync), agent.GetType(), agent.Id, agent.GetDisplayName());
+            Logger.LogTerminationStrategyAgentOutOfScope(nameof(ShouldTerminateAsync),
+                agent.GetType(),
+                agent.Id,
+                agent.GetDisplayName());
 
             return false;
         }
 
-        bool shouldTerminate = await this.ShouldAgentTerminateAsync(agent, history, cancellationToken).
-            ConfigureAwait(false);
+        bool shouldTerminate = await ShouldAgentTerminateAsync(agent, history, cancellationToken).ConfigureAwait(false);
 
-        this.Logger.LogTerminationStrategyEvaluatedCriteria(nameof(ShouldTerminateAsync), agent.GetType(), agent.Id,
-           agent.GetDisplayName(), shouldTerminate);
+        Logger.LogTerminationStrategyEvaluatedCriteria(nameof(ShouldTerminateAsync),
+            agent.GetType(),
+            agent.Id,
+            agent.GetDisplayName(),
+            shouldTerminate);
 
         return shouldTerminate;
     }

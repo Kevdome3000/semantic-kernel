@@ -24,16 +24,17 @@ public class AgentDefinitionExtensionsTests
             Name = "OpenAIAssistantAgent",
             Description = "OpenAIAssistantAgent Description",
             Instructions = "OpenAIAssistantAgent Instructions",
-            Model = new()
+            Model = new ModelDefinition
             {
                 Id = "gpt-4o-mini"
             },
-            Tools = [
-                new AgentToolDefinition()
+            Tools =
+            [
+                new AgentToolDefinition
                 {
                     Id = "tool1",
-                    Type = "code_interpreter",
-                },
+                    Type = "code_interpreter"
+                }
             ]
         };
 
@@ -47,6 +48,7 @@ public class AgentDefinitionExtensionsTests
         Assert.Equal(agentDefinition.Instructions, creationOptions.Instructions);
         Assert.Single(creationOptions.Tools);
     }
+
 
     /// <summary>
     /// Verify GetCodeInterpreterFileIds
@@ -62,13 +64,14 @@ public class AgentDefinitionExtensionsTests
         };
         AgentDefinition agentDefinition = new()
         {
-            Tools = [
-                new AgentToolDefinition()
+            Tools =
+            [
+                new AgentToolDefinition
                 {
                     Id = "tool1",
                     Type = "code_interpreter",
-                    Options = options,
-                },
+                    Options = options
+                }
             ]
         };
 
@@ -80,6 +83,7 @@ public class AgentDefinitionExtensionsTests
         Assert.Equal(2, interpreterFileIds.Count);
     }
 
+
     /// <summary>
     /// Verify GetVectorStoreId
     /// </summary>
@@ -87,9 +91,7 @@ public class AgentDefinitionExtensionsTests
     public void VerifyGetVectorStoreId()
     {
         // Arrange
-        AgentDefinition agentDefinition = new()
-        {
-        };
+        AgentDefinition agentDefinition = new();
 
         // Act
         var vectorId = agentDefinition.GetVectorStoreId();
@@ -98,6 +100,7 @@ public class AgentDefinitionExtensionsTests
         Assert.Null(vectorId);
     }
 
+
     /// <summary>
     /// Verify GetMetadata
     /// </summary>
@@ -105,9 +108,7 @@ public class AgentDefinitionExtensionsTests
     public void VerifyGetMetadata()
     {
         // Arrange
-        AgentDefinition agentDefinition = new()
-        {
-        };
+        AgentDefinition agentDefinition = new();
 
         // Act
         var metadata = agentDefinition.GetMetadata();

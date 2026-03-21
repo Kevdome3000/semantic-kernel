@@ -43,6 +43,7 @@ public class ResponseItemExtensionsTests
         Assert.Equal(inputTextContent, ((TextContent)messageContent.Items[0]).Text);
     }
 
+
     [Fact]
     public void VerifyToChatMessageContentFromInputImage()
     {
@@ -60,6 +61,7 @@ public class ResponseItemExtensionsTests
         Assert.IsType<FileReferenceContent>(messageContent.Items[0]);
         Assert.Equal("imageFileId", ((FileReferenceContent)messageContent.Items[0]).FileId);
     }
+
 
     [Fact]
     public void VerifyToChatMessageContentFromInputFile()
@@ -80,6 +82,7 @@ public class ResponseItemExtensionsTests
         Assert.Equal(fileBytes.ToArray(), ((BinaryContent)messageContent.Items[0]).Data?.ToArray());
     }
 
+
     [Fact]
     public void VerifyToChatMessageContentFromRefusal()
     {
@@ -97,6 +100,7 @@ public class ResponseItemExtensionsTests
         Assert.IsType<TextContent>(messageContent.Items[0]);
         Assert.Equal("refusal", ((TextContent)messageContent.Items[0]).Text);
     }
+
 
     [Fact]
     public void VerifyToChatMessageContentFromReasoning()

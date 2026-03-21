@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Chroma;
-
-using System;
 using System.Net.Http;
-using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 internal sealed class QueryEmbeddingsRequest
 {
@@ -22,26 +19,37 @@ internal sealed class QueryEmbeddingsRequest
     public string[]? Include { get; set; }
 
 
-    public static QueryEmbeddingsRequest Create(string collectionId, ReadOnlyMemory<float>[] queryEmbeddings, int nResults, string[]? include = null)
+    public static QueryEmbeddingsRequest Create(
+        string collectionId,
+        ReadOnlyMemory<float>[] queryEmbeddings,
+        int nResults,
+        string[]? include = null)
     {
-        return new QueryEmbeddingsRequest(collectionId, queryEmbeddings, nResults, include);
+        return new QueryEmbeddingsRequest(collectionId,
+            queryEmbeddings,
+            nResults,
+            include);
     }
 
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreatePostRequest($"collections/{this.CollectionId}/query", this);
+        return HttpRequest.CreatePostRequest($"collections/{CollectionId}/query", this);
     }
 
 
     #region private ================================================================================
 
-    private QueryEmbeddingsRequest(string collectionId, ReadOnlyMemory<float>[] queryEmbeddings, int nResults, string[]? include = null)
+    private QueryEmbeddingsRequest(
+        string collectionId,
+        ReadOnlyMemory<float>[] queryEmbeddings,
+        int nResults,
+        string[]? include = null)
     {
-        this.CollectionId = collectionId;
-        this.QueryEmbeddings = queryEmbeddings;
-        this.NResults = nResults;
-        this.Include = include;
+        CollectionId = collectionId;
+        QueryEmbeddings = queryEmbeddings;
+        NResults = nResults;
+        Include = include;
     }
 
     #endregion

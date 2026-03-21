@@ -21,8 +21,9 @@ public sealed class HttpPluginTests : IDisposable
     private readonly HttpResponseMessage _response = new()
     {
         StatusCode = HttpStatusCode.OK,
-        Content = new StringContent("hello world"),
+        Content = new StringContent("hello world")
     };
+
 
     [Fact]
     public void ItCanBeInstantiated()
@@ -31,6 +32,7 @@ public sealed class HttpPluginTests : IDisposable
         var plugin = new HttpPlugin();
     }
 
+
     [Fact]
     public void ItCanBeImported()
     {
@@ -38,75 +40,93 @@ public sealed class HttpPluginTests : IDisposable
         Assert.NotNull(KernelPluginFactory.CreateFromType<HttpPlugin>("http"));
     }
 
+
     [Fact]
     public async Task ItCanGetAsync()
     {
         // Arrange
-        var mockHandler = this.CreateMock();
+        var mockHandler = CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
 
         // Act
-        var result = await plugin.GetAsync(this._uriString);
+        var result = await plugin.GetAsync(_uriString);
 
         // Assert
-        Assert.Equal(this._content, result);
-        this.VerifyMock(mockHandler, HttpMethod.Get);
+        Assert.Equal(_content, result);
+        VerifyMock(mockHandler, HttpMethod.Get);
     }
+
 
     [Fact]
     public async Task ItCanPostAsync()
     {
         // Arrange
-        var mockHandler = this.CreateMock();
+        var mockHandler = CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
 
         // Act
-        var result = await plugin.PostAsync(this._uriString, this._content);
+        var result = await plugin.PostAsync(_uriString, _content);
 
         // Assert
-        Assert.Equal(this._content, result);
-        this.VerifyMock(mockHandler, HttpMethod.Post);
+        Assert.Equal(_content, result);
+        VerifyMock(mockHandler, HttpMethod.Post);
     }
+
 
     [Fact]
     public async Task ItCanPutAsync()
     {
         // Arrange
-        var mockHandler = this.CreateMock();
+        var mockHandler = CreateMock();
         using var client = new HttpClient(mockHandler.Object);
-        var plugin = new HttpPlugin(client);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
 
         // Act
-        var result = await plugin.PutAsync(this._uriString, this._content);
+        var result = await plugin.PutAsync(_uriString, _content);
 
         // Assert
-        Assert.Equal(this._content, result);
-        this.VerifyMock(mockHandler, HttpMethod.Put);
+        Assert.Equal(_content, result);
+        VerifyMock(mockHandler, HttpMethod.Put);
     }
+
 
     [Fact]
     public async Task ItCanDeleteAsync()
     {
         // Arrange
-        var mockHandler = this.CreateMock();
+        var mockHandler = CreateMock();
+        using var client = new HttpClient(mockHandler.Object);
+        var plugin = new HttpPlugin(client) { AllowedDomains = ["www.example.com"] };
+
+        // Act
+        var result = await plugin.DeleteAsync(_uriString);
+
+        // Assert
+        Assert.Equal(_content, result);
+        VerifyMock(mockHandler, HttpMethod.Delete);
+    }
+
+
+    [Fact]
+    public async Task ItDeniesAllDomainsWithDefaultConfigAsync()
+    {
+        // Arrange
+        var mockHandler = CreateMock();
         using var client = new HttpClient(mockHandler.Object);
         var plugin = new HttpPlugin(client);
 
-        // Act
-        var result = await plugin.DeleteAsync(this._uriString);
-
-        // Assert
-        Assert.Equal(this._content, result);
-        this.VerifyMock(mockHandler, HttpMethod.Delete);
+        // Act & Assert - default config denies all domains
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.GetAsync(_uriString));
     }
+
 
     [Fact]
     public async Task ItThrowsInvalidOperationExceptionForInvalidDomainAsync()
     {
         // Arrange
-        var mockHandler = this.CreateMock();
+        var mockHandler = CreateMock();
         using var client = new HttpClient(mockHandler.Object);
         var plugin = new HttpPlugin(client)
         {
@@ -116,35 +136,39 @@ public sealed class HttpPluginTests : IDisposable
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.GetAsync(invalidUri));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.PostAsync(invalidUri, this._content));
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.PutAsync(invalidUri, this._content));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.PostAsync(invalidUri, _content));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.PutAsync(invalidUri, _content));
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await plugin.DeleteAsync(invalidUri));
     }
+
 
     private Mock<HttpMessageHandler> CreateMock()
     {
         var mockHandler = new Mock<HttpMessageHandler>();
         mockHandler.Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(this._response);
+            .ReturnsAsync(_response);
         return mockHandler;
     }
 
+
     private void VerifyMock(Mock<HttpMessageHandler> mockHandler, HttpMethod method)
     {
-        mockHandler.Protected().Verify(
-            "SendAsync",
-            Times.Exactly(1), // we expected a single external request
-            ItExpr.Is<HttpRequestMessage>(req =>
-                    req.Method == method // we expected a POST request
-                    && req.RequestUri == new Uri(this._uriString) // to this uri
-            ),
-            ItExpr.IsAny<CancellationToken>()
-        );
+        mockHandler.Protected()
+            .Verify(
+                "SendAsync",
+                Times.Exactly(1), // we expected a single external request
+                ItExpr.Is<HttpRequestMessage>(req =>
+                        req.Method == method // we expected a POST request
+                        && req.RequestUri == new Uri(_uriString) // to this uri
+                ),
+                ItExpr.IsAny<CancellationToken>()
+            );
     }
+
 
     public void Dispose()
     {
-        this._response.Dispose();
+        _response.Dispose();
     }
 }

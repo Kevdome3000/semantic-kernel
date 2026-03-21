@@ -29,6 +29,7 @@ public sealed class A2AAgentExtensionsTests
         Assert.IsType<SemanticKernelAIAgent>(result);
     }
 
+
     [Fact]
     public void AsAIAgent_WithNullA2AAgent_ThrowsArgumentNullException()
     {
@@ -38,6 +39,7 @@ public sealed class A2AAgentExtensionsTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => nullAgent.AsAIAgent());
     }
+
 
     [Fact]
     public void AsAIAgent_CreatesWorkingThreadFactory()
@@ -59,6 +61,7 @@ public sealed class A2AAgentExtensionsTests
         Assert.IsType<A2AAgentThread>(threadAdapter.InnerThread);
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
     {
@@ -79,6 +82,7 @@ public sealed class A2AAgentExtensionsTests
         var threadAdapter = (SemanticKernelAIAgentThread)thread;
         Assert.IsType<A2AAgentThread>(threadAdapter.InnerThread);
     }
+
 
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
@@ -102,6 +106,7 @@ public sealed class A2AAgentExtensionsTests
         Assert.IsType<A2AAgentThread>(threadAdapter.InnerThread);
         Assert.Equal(threadId, threadAdapter.InnerThread.Id);
     }
+
 
     [Fact]
     public void AsAIAgent_ThreadSerializer_SerializesThreadId()

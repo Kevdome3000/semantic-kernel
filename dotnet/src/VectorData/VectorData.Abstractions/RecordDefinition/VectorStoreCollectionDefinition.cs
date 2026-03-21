@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -22,8 +21,8 @@ public sealed class VectorStoreCollectionDefinition
     [AllowNull]
     public IList<VectorStoreProperty> Properties
     {
-        get => this._properties ??= [];
-        set => this._properties = value;
+        get => _properties ??= [];
+        set => _properties = value;
     }
 
     /// <summary>

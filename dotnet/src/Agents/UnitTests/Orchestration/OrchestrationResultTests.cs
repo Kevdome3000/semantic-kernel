@@ -17,12 +17,21 @@ public class OrchestrationResultTests
     {
         // Arrange
         Exception? captureException = null;
-        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, null, exception => captureException = exception, NullLoggerFactory.Instance, CancellationToken.None);
+        OrchestrationContext context = new("TestOrchestration",
+            new TopicId("testTopic"),
+            null,
+            null,
+            exception => captureException = exception,
+            NullLoggerFactory.Instance,
+            CancellationToken.None);
         TaskCompletionSource<string> tcs = new();
 
         // Act
         using CancellationTokenSource cancelSource = new();
-        using OrchestrationResult<string> result = new(context, tcs, cancelSource, NullLogger.Instance);
+        using OrchestrationResult<string> result = new(context,
+            tcs,
+            cancelSource,
+            NullLogger.Instance);
 
         // Assert
         Assert.Null(captureException);
@@ -30,15 +39,25 @@ public class OrchestrationResultTests
         Assert.Equal(new TopicId("testTopic"), result.Topic);
     }
 
+
     [Fact]
     public async Task GetValueAsync_ReturnsCompletedValue_WhenTaskIsCompletedAsync()
     {
         // Arrange
         Exception? captureException = null;
-        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, null, exception => captureException = exception, NullLoggerFactory.Instance, CancellationToken.None);
+        OrchestrationContext context = new("TestOrchestration",
+            new TopicId("testTopic"),
+            null,
+            null,
+            exception => captureException = exception,
+            NullLoggerFactory.Instance,
+            CancellationToken.None);
         TaskCompletionSource<string> tcs = new();
         using CancellationTokenSource cancelSource = new();
-        using OrchestrationResult<string> result = new(context, tcs, cancelSource, NullLogger.Instance);
+        using OrchestrationResult<string> result = new(context,
+            tcs,
+            cancelSource,
+            NullLogger.Instance);
         string expectedValue = "Result value";
 
         // Act
@@ -50,15 +69,25 @@ public class OrchestrationResultTests
         Assert.Equal(expectedValue, actualValue);
     }
 
+
     [Fact]
     public async Task GetValueAsync_WithTimeout_ReturnsCompletedValue_WhenTaskCompletesWithinTimeoutAsync()
     {
         // Arrange
         Exception? captureException = null;
-        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, null, exception => captureException = exception, NullLoggerFactory.Instance, CancellationToken.None);
+        OrchestrationContext context = new("TestOrchestration",
+            new TopicId("testTopic"),
+            null,
+            null,
+            exception => captureException = exception,
+            NullLoggerFactory.Instance,
+            CancellationToken.None);
         TaskCompletionSource<string> tcs = new();
         using CancellationTokenSource cancelSource = new();
-        using OrchestrationResult<string> result = new(context, tcs, cancelSource, NullLogger.Instance);
+        using OrchestrationResult<string> result = new(context,
+            tcs,
+            cancelSource,
+            NullLogger.Instance);
         string expectedValue = "Result value";
         TimeSpan timeout = TimeSpan.FromSeconds(1);
 
@@ -71,15 +100,25 @@ public class OrchestrationResultTests
         Assert.Equal(expectedValue, actualValue);
     }
 
+
     [Fact]
     public async Task GetValueAsync_WithTimeout_ThrowsTimeoutException_WhenTaskDoesNotCompleteWithinTimeoutAsync()
     {
         // Arrange
         Exception? captureException = null;
-        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, null, exception => captureException = exception, NullLoggerFactory.Instance, CancellationToken.None);
+        OrchestrationContext context = new("TestOrchestration",
+            new TopicId("testTopic"),
+            null,
+            null,
+            exception => captureException = exception,
+            NullLoggerFactory.Instance,
+            CancellationToken.None);
         TaskCompletionSource<string> tcs = new();
         using CancellationTokenSource cancelSource = new();
-        using OrchestrationResult<string> result = new(context, tcs, cancelSource, NullLogger.Instance);
+        using OrchestrationResult<string> result = new(context,
+            tcs,
+            cancelSource,
+            NullLogger.Instance);
         TimeSpan timeout = TimeSpan.FromMilliseconds(50);
 
         // Act & Assert
@@ -87,15 +126,25 @@ public class OrchestrationResultTests
         Assert.Null(captureException);
     }
 
+
     [Fact]
     public async Task GetValueAsync_ReturnsCompletedValue_WhenCompletionIsDelayedAsync()
     {
         // Arrange
         Exception? captureException = null;
-        OrchestrationContext context = new("TestOrchestration", new TopicId("testTopic"), null, null, exception => captureException = exception, NullLoggerFactory.Instance, CancellationToken.None);
+        OrchestrationContext context = new("TestOrchestration",
+            new TopicId("testTopic"),
+            null,
+            null,
+            exception => captureException = exception,
+            NullLoggerFactory.Instance,
+            CancellationToken.None);
         TaskCompletionSource<int> tcs = new();
         using CancellationTokenSource cancelSource = new();
-        using OrchestrationResult<int> result = new(context, tcs, cancelSource, NullLogger.Instance);
+        using OrchestrationResult<int> result = new(context,
+            tcs,
+            cancelSource,
+            NullLogger.Instance);
         int expectedValue = 42;
 
         // Act

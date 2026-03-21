@@ -19,6 +19,7 @@ public class TopicIdTests
         Assert.Equal(TopicId.DefaultSource, topicId.Source);
     }
 
+
     [Fact]
     public void ConstructWithTypeAndSourceTest()
     {
@@ -29,6 +30,7 @@ public class TopicIdTests
         Assert.Equal("testtype", topicId.Type);
         Assert.Equal("customsource", topicId.Source);
     }
+
 
     [Fact]
     public void ConstructWithTupleTest()
@@ -44,6 +46,7 @@ public class TopicIdTests
         Assert.Equal("customsource", topicId.Source);
     }
 
+
     [Fact]
     public void ConvertFromStringTest()
     {
@@ -58,6 +61,7 @@ public class TopicIdTests
         Assert.Equal("customsource", topicId.Source);
     }
 
+
     [Theory]
     [InlineData("invalid-format")]
     [InlineData("too/many/parts")]
@@ -67,6 +71,7 @@ public class TopicIdTests
         // Act & Assert
         Assert.Throws<FormatException>(() => TopicId.FromStr(invalidInput));
     }
+
 
     [Fact]
     public void ToStringTest()
@@ -81,6 +86,7 @@ public class TopicIdTests
         Assert.Equal("testtype/customsource", result);
     }
 
+
     [Fact]
     public void EqualityTest()
     {
@@ -92,6 +98,7 @@ public class TopicIdTests
         Assert.True(topicId1.Equals(topicId2));
         Assert.True(topicId1.Equals((object)topicId2));
     }
+
 
     [Fact]
     public void InequalityTest()
@@ -108,6 +115,7 @@ public class TopicIdTests
         Assert.False(topicId1.Equals(topicId4));
     }
 
+
     [Fact]
     public void NullEqualityTest()
     {
@@ -117,6 +125,7 @@ public class TopicIdTests
         // Act & Assert
         Assert.False(topicId.Equals(null));
     }
+
 
     [Fact]
     public void DifferentTypeEqualityTest()
@@ -128,6 +137,7 @@ public class TopicIdTests
         // Act & Assert
         Assert.False(topicId.Equals(differentType));
     }
+
 
     [Fact]
     public void GetHashCodeTest()
@@ -144,6 +154,7 @@ public class TopicIdTests
         Assert.Equal(hash1, hash2);
     }
 
+
     [Fact]
     public void ExplicitConversionTest()
     {
@@ -158,6 +169,7 @@ public class TopicIdTests
         Assert.Equal("customsource", topicId.Source);
     }
 
+
     [Fact]
     public void IsWildcardMatchTest()
     {
@@ -169,6 +181,7 @@ public class TopicIdTests
         Assert.True(topicId1.IsWildcardMatch(topicId2));
         Assert.True(topicId2.IsWildcardMatch(topicId1));
     }
+
 
     [Fact]
     public void IsWildcardMismatchTest()

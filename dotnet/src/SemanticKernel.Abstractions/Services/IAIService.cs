@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel.Services;
+
 /// <summary>
 /// Represents an AI service.
 /// </summary>

@@ -15,6 +15,7 @@ internal sealed class FakeTokenCredential : TokenCredential
         return new AccessToken("fakeToken", DateTimeOffset.Now.AddHours(1));
     }
 
+
     /// <inheritdoc/>
     public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
     {

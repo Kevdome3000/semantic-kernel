@@ -16,16 +16,26 @@ public abstract class OrchestrationActor : BaseAgent
     /// <summary>
     /// Initializes a new instance of the <see cref="OrchestrationActor"/> class.
     /// </summary>
-    protected OrchestrationActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, string description, ILogger? logger = null)
-        : base(id, runtime, description, logger)
+    protected OrchestrationActor(
+        AgentId id,
+        IAgentRuntime runtime,
+        OrchestrationContext context,
+        string description,
+        ILogger? logger = null)
+        : base(id,
+            runtime,
+            description,
+            logger)
     {
-        this.Context = context;
+        Context = context;
     }
+
 
     /// <summary>
     /// The orchestration context.
     /// </summary>
     protected OrchestrationContext Context { get; }
+
 
     /// <summary>
     /// Sends a message to a specified recipient agent-type through the runtime.
@@ -39,6 +49,10 @@ public abstract class OrchestrationActor : BaseAgent
         AgentType agentType,
         CancellationToken cancellationToken = default)
     {
-        await base.PublishMessageAsync(message, new TopicId(agentType), messageId: null, cancellationToken).ConfigureAwait(false);
+        await base.PublishMessageAsync(message,
+                new TopicId(agentType),
+                null,
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 }

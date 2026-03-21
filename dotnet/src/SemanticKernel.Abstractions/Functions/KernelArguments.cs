@@ -9,6 +9,7 @@ using Microsoft.Extensions.AI;
 #pragma warning disable CA1710 // Identifiers should have correct suffix
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides a collection of arguments for operations such as <see cref="KernelFunction"/>'s InvokeAsync
 /// and <see cref="IPromptTemplate"/>'s RenderAsync.
@@ -21,6 +22,7 @@ public class KernelArguments : AIFunctionArguments
 {
     private IReadOnlyDictionary<string, PromptExecutionSettings>? _executionSettings;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
     /// </summary>
@@ -30,16 +32,18 @@ public class KernelArguments : AIFunctionArguments
     {
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
     /// </summary>
     /// <param name="executionSettings">The prompt execution settings.</param>
     public KernelArguments(PromptExecutionSettings? executionSettings)
-        : this(executionSettings: executionSettings is null
+        : this(executionSettings is null
             ? null
             : [executionSettings])
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
@@ -60,7 +64,7 @@ public class KernelArguments : AIFunctionArguments
 
             if (newExecutionSettings.ContainsKey(targetServiceId))
             {
-                var exceptionMessage = (targetServiceId == PromptExecutionSettings.DefaultServiceId)
+                var exceptionMessage = targetServiceId == PromptExecutionSettings.DefaultServiceId
                     ? $"Multiple prompt execution settings with the default service id '{PromptExecutionSettings.DefaultServiceId}' or no service id have been provided. Specify a single default prompt execution settings and provide a unique service id for all other instances."
                     : $"Multiple prompt execution settings with the service id '{targetServiceId}' have been provided. Provide a unique service id for all instances.";
 
@@ -72,6 +76,7 @@ public class KernelArguments : AIFunctionArguments
 
         ExecutionSettings = newExecutionSettings;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class that contains elements copied from the specified <see cref="IDictionary{TKey, TValue}"/>.
@@ -87,6 +92,7 @@ public class KernelArguments : AIFunctionArguments
     {
         ExecutionSettings = executionSettings ?? (source as KernelArguments)?.ExecutionSettings;
     }
+
 
     /// <summary>
     /// Gets or sets the prompt execution settings.
@@ -112,6 +118,7 @@ public class KernelArguments : AIFunctionArguments
         }
     }
 
+
     /// <summary>Determines whether the <see cref="KernelArguments"/> contains an argument with the specified name.</summary>
     /// <param name="name">The name of the argument to locate.</param>
     /// <returns>true if the arguments contains an argument with the specified named; otherwise, false.</returns>
@@ -121,6 +128,7 @@ public class KernelArguments : AIFunctionArguments
         Verify.NotNull(name);
         return ContainsKey(name);
     }
+
 
     /// <summary>Gets an <see cref="ICollection{String}"/> of all of the arguments names.</summary>
     public ICollection<string> Names => Keys;

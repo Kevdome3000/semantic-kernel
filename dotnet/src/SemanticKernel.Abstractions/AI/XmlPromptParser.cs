@@ -8,6 +8,7 @@ using System.Web;
 using System.Xml;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Class to parse text prompt from XML format.
 /// </summary>
@@ -31,17 +32,18 @@ internal static class XmlPromptParser
         // - it would need to contain a closing tag, which could include either </ or />
         int startPos;
 
-        if (prompt is null ||
+        if (prompt is null
+            ||
 #pragma warning disable CA1307 // Specify StringComparison for clarity
-            (startPos = prompt.IndexOf('<')) < 0 ||
+            (startPos = prompt.IndexOf('<')) < 0
+            ||
 #pragma warning restore CA1307
-            (prompt.IndexOf("</", startPos + 1, StringComparison.Ordinal) < 0 &&
-             prompt.IndexOf("/>", startPos + 1, StringComparison.Ordinal) < 0))
+            prompt.IndexOf("</", startPos + 1, StringComparison.Ordinal) < 0 && prompt.IndexOf("/>", startPos + 1, StringComparison.Ordinal) < 0)
         {
             return false;
         }
 
-        var xmlDocument = new XmlDocument()
+        var xmlDocument = new XmlDocument
         {
             // This is necessary to preserve whitespace within prompts as this may be significant.
             // E.g. if the prompt contains well formatted code and we want the LLM to return well formatted code.
@@ -68,6 +70,7 @@ internal static class XmlPromptParser
         return result is not null;
     }
 
+
     /// <summary>
     /// Gets an instance of <see cref="PromptNode"/> from <see cref="XmlNode"/> and child nodes recursively.
     /// </summary>
@@ -81,8 +84,7 @@ internal static class XmlPromptParser
 
         // Since we're preserving whitespace for the contents within each XMLNode, we
         // need to skip any whitespace nodes at the front of the children.
-        var firstNonWhitespaceChild = node.ChildNodes.Cast<XmlNode>().
-            FirstOrDefault(n => n.NodeType != XmlNodeType.Whitespace);
+        var firstNonWhitespaceChild = node.ChildNodes.Cast<XmlNode>().FirstOrDefault(n => n.NodeType != XmlNodeType.Whitespace);
 
         var isCData = firstNonWhitespaceChild?.NodeType == XmlNodeType.CDATA;
 

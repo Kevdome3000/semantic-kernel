@@ -27,6 +27,7 @@ public abstract class FilterTranslatorBase
     /// </summary>
     protected ParameterExpression RecordParameter { get; private set; } = null!;
 
+
     /// <summary>
     /// Preprocesses the filter expression before translation.
     /// Sets <see cref="Model"/> and <see cref="RecordParameter"/>, runs the preprocessing visitor,
@@ -38,12 +39,13 @@ public abstract class FilterTranslatorBase
     /// <returns>The preprocessed expression ready for translation.</returns>
     protected Expression PreprocessFilter(LambdaExpression lambdaExpression, CollectionModel model, FilterPreprocessingOptions options)
     {
-        this.Model = model;
-        this.RecordParameter = lambdaExpression.Parameters[0];
+        Model = model;
+        RecordParameter = lambdaExpression.Parameters[0];
 
         var preprocessor = new FilterTranslationPreprocessor(options.SupportsParameterization);
         return preprocessor.Preprocess(lambdaExpression.Body);
     }
+
 
     /// <summary>
     /// Tries to match a Contains method call expression and extract the source collection and item expressions.
@@ -89,9 +91,9 @@ public abstract class FilterTranslatorBase
             // it's null.
             case { Method.Name: nameof(MemoryExtensions.Contains), Arguments: [var spanArg, var itm, ..] }
                 when methodCall.Method.DeclaringType == typeof(MemoryExtensions)
-                    && (methodCall.Arguments.Count is 2
-                        || (methodCall.Arguments.Count is 3 && methodCall.Arguments[2] is ConstantExpression { Value: null }))
-                    && TryUnwrapSpanImplicitCast(spanArg, out var src):
+                && (methodCall.Arguments.Count is 2
+                    || methodCall.Arguments.Count is 3 && methodCall.Arguments[2] is ConstantExpression { Value: null })
+                && TryUnwrapSpanImplicitCast(spanArg, out var src):
                 source = src;
                 item = itm;
                 return true;
@@ -103,6 +105,7 @@ public abstract class FilterTranslatorBase
         }
     }
 
+
     /// <summary>
     /// Tries to bind an expression to a property in the collection model.
     /// </summary>
@@ -112,6 +115,7 @@ public abstract class FilterTranslatorBase
     protected virtual bool TryBindProperty(Expression expression, [NotNullWhen(true)] out PropertyModel? propertyModel)
     {
         var unwrappedExpression = expression;
+
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
             unwrappedExpression = convert.Operand;
@@ -120,15 +124,15 @@ public abstract class FilterTranslatorBase
         var modelName = unwrappedExpression switch
         {
             // Regular member access for strongly-typed POCO binding (e.g. r => r.SomeInt == 8)
-            MemberExpression memberExpression when memberExpression.Expression == this.RecordParameter
+            MemberExpression memberExpression when memberExpression.Expression == RecordParameter
                 => memberExpression.Member.Name,
 
             // Dictionary lookup for weakly-typed dynamic binding (e.g. r => r["SomeInt"] == 8)
             MethodCallExpression
-            {
-                Method: { Name: "get_Item", DeclaringType: var declaringType },
-                Arguments: [ConstantExpression { Value: string keyName }]
-            } methodCall when methodCall.Object == this.RecordParameter && declaringType == typeof(Dictionary<string, object?>)
+                {
+                    Method: { Name: "get_Item", DeclaringType: var declaringType },
+                    Arguments: [ConstantExpression { Value: string keyName }]
+                } methodCall when methodCall.Object == RecordParameter && declaringType == typeof(Dictionary<string, object?>)
                 => keyName,
 
             _ => null
@@ -140,7 +144,7 @@ public abstract class FilterTranslatorBase
             return false;
         }
 
-        if (!this.Model.PropertyMap.TryGetValue(modelName, out propertyModel))
+        if (!Model.PropertyMap.TryGetValue(modelName, out propertyModel))
         {
             throw new InvalidOperationException($"Property name '{modelName}' provided as part of the filter clause is not a valid property name.");
         }
@@ -148,9 +152,11 @@ public abstract class FilterTranslatorBase
         // Now that we have the property, go over all wrapping Convert nodes again to ensure that they're compatible with the property type
         var unwrappedPropertyType = Nullable.GetUnderlyingType(propertyModel.Type) ?? propertyModel.Type;
         unwrappedExpression = expression;
+
         while (unwrappedExpression is UnaryExpression { NodeType: ExpressionType.Convert } convert)
         {
             var convertType = Nullable.GetUnderlyingType(convert.Type) ?? convert.Type;
+
             if (convertType != unwrappedPropertyType && convertType != typeof(object))
             {
                 throw new InvalidCastException($"Property '{propertyModel.ModelName}' is being cast to type '{convert.Type.Name}', but its configured type is '{propertyModel.Type.Name}'.");
@@ -161,6 +167,7 @@ public abstract class FilterTranslatorBase
 
         return true;
     }
+
 
     /// <summary>
     /// Tries to unwrap an implicit cast to Span or ReadOnlySpan that may be present in expressions
@@ -192,12 +199,12 @@ public abstract class FilterTranslatorBase
             // recreates the UnaryExpression with a different operand type (QueryParameterExpression).
             // Handle this case by checking if the target type is Span<T> or ReadOnlySpan<T>.
             UnaryExpression
-            {
-                NodeType: ExpressionType.Convert,
-                Method: null,
-                Type: { IsGenericType: true } targetType,
-                Operand: var operand
-            } when targetType.GetGenericTypeDefinition() is var gtd
+                {
+                    NodeType: ExpressionType.Convert,
+                    Method: null,
+                    Type: { IsGenericType: true } targetType,
+                    Operand: var operand
+                } when targetType.GetGenericTypeDefinition() is var gtd
                 && (gtd == typeof(Span<>) || gtd == typeof(ReadOnlySpan<>))
                 => (operand, targetType),
 
@@ -218,7 +225,7 @@ public abstract class FilterTranslatorBase
 
         if (unwrapped is not null
             && castDeclaringType?.GetGenericTypeDefinition() is var genericTypeDefinition
-                && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
+            && (genericTypeDefinition == typeof(Span<>) || genericTypeDefinition == typeof(ReadOnlySpan<>)))
         {
             result = unwrapped;
             return true;
@@ -227,6 +234,7 @@ public abstract class FilterTranslatorBase
         result = null;
         return false;
     }
+
 
     #region FilterTranslationPreprocessor
 
@@ -238,20 +246,23 @@ public abstract class FilterTranslatorBase
         private readonly bool _supportsParameterization;
         private List<string>? _parameterNames;
 
+
         internal FilterTranslationPreprocessor(bool supportsParameterization)
         {
-            this._supportsParameterization = supportsParameterization;
+            _supportsParameterization = supportsParameterization;
         }
+
 
         internal Expression Preprocess(Expression node)
         {
-            if (this._supportsParameterization)
+            if (_supportsParameterization)
             {
-                this._parameterNames = [];
+                _parameterNames = [];
             }
 
-            return this.Visit(node);
+            return Visit(node);
         }
+
 
         /// <inheritdoc />
         protected override Expression VisitMember(MemberExpression node)
@@ -276,6 +287,7 @@ public abstract class FilterTranslatorBase
             // Evaluate the MemberExpression to get the actual value, either for instance members (expression is a ConstantExpression) or for
             // static members (expression is null).
             object? baseValue;
+
             switch (visited.Expression)
             {
                 // Member access over constant (i.e. instance members)
@@ -293,7 +305,7 @@ public abstract class FilterTranslatorBase
                     baseValue = p.Value;
 
                     // The previous parameter is getting replaced by the new one we're creating here, so remove its name from the list of parameter names.
-                    this._parameterNames!.Remove(p.Name);
+                    _parameterNames!.Remove(p.Name);
                     break;
 
                 default:
@@ -321,7 +333,7 @@ public abstract class FilterTranslatorBase
             }
 
             // Inline the evaluated value (if the connector doesn't support parameterization, or if the field is readonly),
-            if (!this._supportsParameterization)
+            if (!_supportsParameterization)
             {
                 return Expression.Constant(evaluatedValue, visited.Type);
             }
@@ -333,14 +345,16 @@ public abstract class FilterTranslatorBase
             // Make sure parameter names are unique.
             var origName = memberInfo.Name;
             var name = origName;
-            for (var i = 0; this._parameterNames!.Contains(name); i++)
+
+            for (var i = 0; _parameterNames!.Contains(name); i++)
             {
                 name = $"{origName}_{i}";
             }
-            this._parameterNames.Add(name);
+            _parameterNames.Add(name);
 
             return new QueryParameterExpression(name, evaluatedValue, visited.Type);
         }
+
 
         /// <inheritdoc />
         protected override Expression VisitNew(NewExpression node)
@@ -348,10 +362,16 @@ public abstract class FilterTranslatorBase
             var visited = (NewExpression)base.VisitNew(node);
 
             // Recognize certain well-known constructors where we can evaluate immediately, converting the NewExpression to a ConstantExpression.
-            // This is particularly useful for converting inline instantiation of DateTime and DateTimeOffset to constants, which can then be easily translated.
+            // This is particularly useful for converting inline instantiation of DateTime, DateTimeOffset, DateOnly, and TimeOnly to constants, which can then be easily translated.
             switch (visited.Constructor)
             {
-                case ConstructorInfo constructor when constructor.DeclaringType == typeof(DateTimeOffset) || constructor.DeclaringType == typeof(DateTime):
+                case ConstructorInfo constructor when constructor.DeclaringType == typeof(DateTimeOffset)
+                    || constructor.DeclaringType == typeof(DateTime)
+#if NET
+                    || constructor.DeclaringType == typeof(DateOnly)
+                    || constructor.DeclaringType == typeof(TimeOnly)
+#endif
+                    :
                     var constantArguments = new object?[visited.Arguments.Count];
 
                     // We first do a fast path to check if all arguments are constants; this catches the common case of e.g. new DateTime(2023, 10, 1).
@@ -371,7 +391,7 @@ public abstract class FilterTranslatorBase
                             {
                                 var evaluated = Expression.Lambda<Func<object>>(Expression.Convert(visited, typeof(object)))
 #if NET
-                                    .Compile(preferInterpretation: true)
+                                    .Compile(true)
 #else
                                     .Compile()
 #endif
@@ -396,4 +416,6 @@ public abstract class FilterTranslatorBase
     }
 
     #endregion FilterTranslationPreprocessor
+
+
 }

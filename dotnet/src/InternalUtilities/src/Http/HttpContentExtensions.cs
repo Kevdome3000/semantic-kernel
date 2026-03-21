@@ -1,12 +1,7 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.SemanticKernel.Http;
+
 /// <summary>
 /// Provides extension methods for working with HTTP content in a way that translates HttpRequestExceptions into HttpOperationExceptions.
 /// </summary>
@@ -27,9 +22,10 @@ internal static class HttpContentExtensions
         }
         catch (HttpRequestException ex)
         {
-            throw new HttpOperationException(message: ex.Message, innerException: ex);
+            throw new HttpOperationException(ex.Message, ex);
         }
     }
+
 
     /// <summary>
     /// Reads the content of the HTTP response as a stream and translates any HttpRequestException into an HttpOperationException.
@@ -45,9 +41,10 @@ internal static class HttpContentExtensions
         }
         catch (HttpRequestException ex)
         {
-            throw new HttpOperationException(message: ex.Message, innerException: ex);
+            throw new HttpOperationException(ex.Message, ex);
         }
     }
+
 
     /// <summary>
     /// Reads the content of the HTTP response as a byte array and translates any HttpRequestException into an HttpOperationException.
@@ -63,7 +60,7 @@ internal static class HttpContentExtensions
         }
         catch (HttpRequestException ex)
         {
-            throw new HttpOperationException(message: ex.Message, innerException: ex);
+            throw new HttpOperationException(ex.Message, ex);
         }
     }
 }

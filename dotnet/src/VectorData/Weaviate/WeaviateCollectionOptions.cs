@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using Microsoft.Extensions.VectorData;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 /// <summary>
@@ -12,6 +9,7 @@ public sealed class WeaviateCollectionOptions : VectorStoreCollectionOptions
 {
     internal static readonly WeaviateCollectionOptions Default = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateCollectionOptions"/> class.
     /// </summary>
@@ -19,12 +17,14 @@ public sealed class WeaviateCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
+
     internal WeaviateCollectionOptions(WeaviateCollectionOptions? source) : base(source)
     {
-        this.Endpoint = source?.Endpoint;
-        this.ApiKey = source?.ApiKey;
-        this.HasNamedVectors = source?.HasNamedVectors ?? Default.HasNamedVectors;
+        Endpoint = source?.Endpoint;
+        ApiKey = source?.ApiKey;
+        HasNamedVectors = source?.HasNamedVectors ?? Default.HasNamedVectors;
     }
+
 
     /// <summary>
     /// Weaviate endpoint for remote or local cluster.

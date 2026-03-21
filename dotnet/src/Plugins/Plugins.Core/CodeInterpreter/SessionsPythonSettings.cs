@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
 
 /// <summary>
 /// Settings for a Python Sessions Plugin.

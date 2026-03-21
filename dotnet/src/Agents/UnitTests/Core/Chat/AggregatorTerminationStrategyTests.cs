@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Agents.UnitTests.Core.Chat;
-
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +8,7 @@ using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Chat;
 using Xunit;
 
+namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 
 /// <summary>
 /// Unit testing of <see cref="AggregatorTerminationStrategy"/>.
@@ -38,34 +37,34 @@ public class AggregatorTerminationStrategyTests
     public async Task VerifyAggregateTerminationStrategyAnyAsync()
     {
         // Arrange
-        TerminationStrategy strategyMockTrue = new MockTerminationStrategy(terminationResult: true);
-        TerminationStrategy strategyMockFalse = new MockTerminationStrategy(terminationResult: false);
+        TerminationStrategy strategyMockTrue = new MockTerminationStrategy(true);
+        TerminationStrategy strategyMockFalse = new MockTerminationStrategy(false);
 
         MockAgent agentMock = new();
 
         // Act and Assert
         await VerifyResultAsync(
-            expectedResult: true,
+            true,
             agentMock,
-            new(strategyMockTrue, strategyMockFalse)
+            new AggregatorTerminationStrategy(strategyMockTrue, strategyMockFalse)
             {
-                Condition = AggregateTerminationCondition.Any,
+                Condition = AggregateTerminationCondition.Any
             });
 
         await VerifyResultAsync(
-            expectedResult: false,
+            false,
             agentMock,
-            new(strategyMockFalse, strategyMockFalse)
+            new AggregatorTerminationStrategy(strategyMockFalse, strategyMockFalse)
             {
-                Condition = AggregateTerminationCondition.Any,
+                Condition = AggregateTerminationCondition.Any
             });
 
         await VerifyResultAsync(
-            expectedResult: true,
+            true,
             agentMock,
-            new(strategyMockTrue, strategyMockTrue)
+            new AggregatorTerminationStrategy(strategyMockTrue, strategyMockTrue)
             {
-                Condition = AggregateTerminationCondition.Any,
+                Condition = AggregateTerminationCondition.Any
             });
     }
 
@@ -77,34 +76,34 @@ public class AggregatorTerminationStrategyTests
     public async Task VerifyAggregateTerminationStrategyAllAsync()
     {
         // Arrange
-        TerminationStrategy strategyMockTrue = new MockTerminationStrategy(terminationResult: true);
-        TerminationStrategy strategyMockFalse = new MockTerminationStrategy(terminationResult: false);
+        TerminationStrategy strategyMockTrue = new MockTerminationStrategy(true);
+        TerminationStrategy strategyMockFalse = new MockTerminationStrategy(false);
 
         MockAgent agentMock = new();
 
         // Act and Assert
         await VerifyResultAsync(
-            expectedResult: false,
+            false,
             agentMock,
-            new(strategyMockTrue, strategyMockFalse)
+            new AggregatorTerminationStrategy(strategyMockTrue, strategyMockFalse)
             {
-                Condition = AggregateTerminationCondition.All,
+                Condition = AggregateTerminationCondition.All
             });
 
         await VerifyResultAsync(
-            expectedResult: false,
+            false,
             agentMock,
-            new(strategyMockFalse, strategyMockFalse)
+            new AggregatorTerminationStrategy(strategyMockFalse, strategyMockFalse)
             {
-                Condition = AggregateTerminationCondition.All,
+                Condition = AggregateTerminationCondition.All
             });
 
         await VerifyResultAsync(
-            expectedResult: true,
+            true,
             agentMock,
-            new(strategyMockTrue, strategyMockTrue)
+            new AggregatorTerminationStrategy(strategyMockTrue, strategyMockTrue)
             {
-                Condition = AggregateTerminationCondition.All,
+                Condition = AggregateTerminationCondition.All
             });
     }
 
@@ -116,29 +115,29 @@ public class AggregatorTerminationStrategyTests
     public async Task VerifyAggregateTerminationStrategyAgentAsync()
     {
         // Arrange
-        TerminationStrategy strategyMockTrue = new MockTerminationStrategy(terminationResult: true);
-        TerminationStrategy strategyMockFalse = new MockTerminationStrategy(terminationResult: false);
+        TerminationStrategy strategyMockTrue = new MockTerminationStrategy(true);
+        TerminationStrategy strategyMockFalse = new MockTerminationStrategy(false);
 
         MockAgent agentMockA = new();
         MockAgent agentMockB = new();
 
         // Act and Assert
         await VerifyResultAsync(
-            expectedResult: false,
+            false,
             agentMockB,
-            new(strategyMockTrue, strategyMockTrue)
+            new AggregatorTerminationStrategy(strategyMockTrue, strategyMockTrue)
             {
                 Agents = [agentMockA],
-                Condition = AggregateTerminationCondition.All,
+                Condition = AggregateTerminationCondition.All
             });
 
         await VerifyResultAsync(
-            expectedResult: true,
+            true,
             agentMockB,
-            new(strategyMockTrue, strategyMockTrue)
+            new AggregatorTerminationStrategy(strategyMockTrue, strategyMockTrue)
             {
                 Agents = [agentMockB],
-                Condition = AggregateTerminationCondition.All,
+                Condition = AggregateTerminationCondition.All
             });
     }
 
@@ -160,7 +159,9 @@ public class AggregatorTerminationStrategyTests
     {
 
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
-            => Task.FromResult(terminationResult);
+        {
+            return Task.FromResult(terminationResult);
+        }
 
     }
 

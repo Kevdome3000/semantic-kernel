@@ -1,13 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -21,25 +14,27 @@ internal sealed class WeaviateMapper<TRecord>
 
     private readonly string _vectorPropertyName;
 
+
     public WeaviateMapper(
         string collectionName,
         bool hasNamedVectors,
         CollectionModel model,
         JsonSerializerOptions jsonSerializerOptions)
     {
-        this._collectionName = collectionName;
-        this._hasNamedVectors = hasNamedVectors;
-        this._model = model;
-        this._jsonSerializerOptions = jsonSerializerOptions;
+        _collectionName = collectionName;
+        _hasNamedVectors = hasNamedVectors;
+        _model = model;
+        _jsonSerializerOptions = jsonSerializerOptions;
 
-        this._vectorPropertyName = hasNamedVectors ?
-            WeaviateConstants.ReservedVectorPropertyName :
-            WeaviateConstants.ReservedSingleVectorPropertyName;
+        _vectorPropertyName = hasNamedVectors
+            ? WeaviateConstants.ReservedVectorPropertyName
+            : WeaviateConstants.ReservedSingleVectorPropertyName;
     }
+
 
     public JsonObject MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
-        var keyNode = this._model.KeyProperty.GetValueAsObject(dataModel) switch
+        var keyNode = _model.KeyProperty.GetValueAsObject(dataModel) switch
         {
             Guid g => JsonValue.Create(g),
 
@@ -49,25 +44,26 @@ internal sealed class WeaviateMapper<TRecord>
 
         // Populate data properties.
         var dataNode = new JsonObject();
-        foreach (var property in this._model.DataProperties)
+
+        foreach (var property in _model.DataProperties)
         {
             if (property.GetValueAsObject(dataModel) is object value)
             {
                 // TODO: NativeAOT support, #11963
-                dataNode[property.StorageName] = JsonSerializer.SerializeToNode(value, property.Type, this._jsonSerializerOptions);
+                dataNode[property.StorageName] = JsonSerializer.SerializeToNode(value, property.Type, _jsonSerializerOptions);
             }
         }
 
         // Populate vector properties.
         JsonNode? vectorNode = null;
 
-        if (this._hasNamedVectors)
+        if (_hasNamedVectors)
         {
             vectorNode = new JsonObject();
 
-            for (var i = 0; i < this._model.VectorProperties.Count; i++)
+            for (var i = 0; i < _model.VectorProperties.Count; i++)
             {
-                var property = this._model.VectorProperties[i];
+                var property = _model.VectorProperties[i];
 
                 var vector = generatedEmbeddings?[i] is IReadOnlyList<Embedding> ge
                     ? ge[recordIndex]
@@ -89,7 +85,7 @@ internal sealed class WeaviateMapper<TRecord>
         {
             var vector = generatedEmbeddings?[0] is IReadOnlyList<Embedding> ge
                 ? ge[recordIndex]
-                : this._model.VectorProperty.GetValueAsObject(dataModel);
+                : _model.VectorProperty.GetValueAsObject(dataModel);
 
             vectorNode = vector switch
             {
@@ -105,10 +101,10 @@ internal sealed class WeaviateMapper<TRecord>
 
         return new JsonObject
         {
-            { WeaviateConstants.CollectionPropertyName, JsonValue.Create(this._collectionName) },
+            { WeaviateConstants.CollectionPropertyName, JsonValue.Create(_collectionName) },
             { WeaviateConstants.ReservedKeyPropertyName, keyNode },
             { WeaviateConstants.ReservedDataPropertyName, dataNode },
-            { this._vectorPropertyName, vectorNode },
+            { _vectorPropertyName, vectorNode }
         };
 
         static JsonArray BuildJsonArray(ReadOnlyMemory<float> memory)
@@ -124,28 +120,29 @@ internal sealed class WeaviateMapper<TRecord>
         }
     }
 
+
     public TRecord MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
         Verify.NotNull(storageModel);
 
-        var record = this._model.CreateRecord<TRecord>()!;
+        var record = _model.CreateRecord<TRecord>()!;
 
         if (storageModel[WeaviateConstants.ReservedKeyPropertyName]?.GetValue<Guid>() is not Guid key)
         {
             throw new InvalidOperationException("No key property was found in the record retrieved from storage.");
         }
 
-        this._model.KeyProperty.SetValueAsObject(record, key);
+        _model.KeyProperty.SetValueAsObject(record, key);
 
         // Populate data properties.
         if (storageModel[WeaviateConstants.ReservedDataPropertyName] is JsonObject dataPropertiesJson)
         {
-            foreach (var property in this._model.DataProperties)
+            foreach (var property in _model.DataProperties)
             {
                 if (dataPropertiesJson.TryGetPropertyValue(property.StorageName, out var dataValue))
                 {
                     // TODO: NativeAOT support, #11963
-                    property.SetValueAsObject(record, dataValue?.Deserialize(property.Type, this._jsonSerializerOptions));
+                    property.SetValueAsObject(record, dataValue?.Deserialize(property.Type, _jsonSerializerOptions));
                 }
             }
         }
@@ -153,9 +150,9 @@ internal sealed class WeaviateMapper<TRecord>
         // Populate vector properties.
         if (includeVectors)
         {
-            if (this._hasNamedVectors && storageModel[this._vectorPropertyName] is JsonObject vectorPropertiesJson)
+            if (_hasNamedVectors && storageModel[_vectorPropertyName] is JsonObject vectorPropertiesJson)
             {
-                foreach (var property in this._model.VectorProperties)
+                foreach (var property in _model.VectorProperties)
                 {
                     if (vectorPropertiesJson.TryGetPropertyValue(property.StorageName, out var node))
                     {
@@ -165,8 +162,8 @@ internal sealed class WeaviateMapper<TRecord>
             }
             else
             {
-                if (this._model.VectorProperties is [var property]
-                    && storageModel.TryGetPropertyValue(this._vectorPropertyName, out var node))
+                if (_model.VectorProperties is [var property]
+                    && storageModel.TryGetPropertyValue(_vectorPropertyName, out var node))
                 {
                     PopulateVectorProperty(record, node, property);
                 }
@@ -184,14 +181,15 @@ internal sealed class WeaviateMapper<TRecord>
                     return;
 
                 case JsonArray jsonArray:
-                    property.SetValueAsObject(record, (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
-                    {
-                        var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(jsonArray.GetValues<float>().ToArray()),
-                        var t when t == typeof(float[]) => jsonArray.GetValues<float>().ToArray(),
-                        var t when t == typeof(Embedding<float>) => new Embedding<float>(jsonArray.GetValues<float>().ToArray()),
+                    property.SetValueAsObject(record,
+                        (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
+                        {
+                            var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(jsonArray.GetValues<float>().ToArray()),
+                            var t when t == typeof(float[]) => jsonArray.GetValues<float>().ToArray(),
+                            var t when t == typeof(Embedding<float>) => new Embedding<float>(jsonArray.GetValues<float>().ToArray()),
 
-                        _ => throw new UnreachableException()
-                    });
+                            _ => throw new UnreachableException()
+                        });
                     return;
 
                 default:

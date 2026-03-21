@@ -21,6 +21,7 @@ internal sealed class Mem0Client
 
     private readonly HttpClient _httpClient;
 
+
     public Mem0Client(HttpClient httpClient)
     {
         Verify.NotNull(httpClient);
@@ -28,7 +29,13 @@ internal sealed class Mem0Client
         _httpClient = httpClient;
     }
 
-    public async Task<IEnumerable<string>> SearchAsync(string? applicationId, string? agentId, string? threadId, string? userId, string? inputText)
+
+    public async Task<IEnumerable<string>> SearchAsync(
+        string? applicationId,
+        string? agentId,
+        string? threadId,
+        string? userId,
+        string? inputText)
     {
         if (string.IsNullOrWhiteSpace(applicationId)
             && string.IsNullOrWhiteSpace(agentId)
@@ -58,7 +65,14 @@ internal sealed class Mem0Client
         return searchResponseItems?.Select(item => item.Memory) ?? [];
     }
 
-    public async Task CreateMemoryAsync(string? applicationId, string? agentId, string? threadId, string? userId, string messageContent, string messageRole)
+
+    public async Task CreateMemoryAsync(
+        string? applicationId,
+        string? agentId,
+        string? threadId,
+        string? userId,
+        string messageContent,
+        string messageRole)
     {
         if (string.IsNullOrWhiteSpace(applicationId)
             && string.IsNullOrWhiteSpace(agentId)
@@ -69,7 +83,7 @@ internal sealed class Mem0Client
         }
 
 #pragma warning disable CA1308 // Normalize strings to uppercase: mem0 requires lowercase values
-        var createMemoryRequest = new CreateMemoryRequest()
+        var createMemoryRequest = new CreateMemoryRequest
         {
             AppId = applicationId,
             AgentId = agentId,
@@ -91,13 +105,20 @@ internal sealed class Mem0Client
         responseMessage.EnsureSuccessStatusCode();
     }
 
-    public async Task ClearMemoryAsync(string? applicationId, string? agentId, string? threadId, string? userId)
+
+    public async Task ClearMemoryAsync(
+        string? applicationId,
+        string? agentId,
+        string? threadId,
+        string? userId)
     {
         string[] paramNames = ["app_id", "agent_id", "run_id", "user_id"];
 
         // Build query string.
         var querystringParams = new string?[4] { applicationId, agentId, threadId, userId }
-            .Select((param, index) => string.IsNullOrWhiteSpace(param) ? null : $"{paramNames[index]}={param}")
+            .Select((param, index) => string.IsNullOrWhiteSpace(param)
+                ? null
+                : $"{paramNames[index]}={param}")
             .Where(x => x != null);
         var queryString = string.Join("&", querystringParams);
         var clearMemoryUrl = new Uri($"/v1/memories/?{queryString}", UriKind.Relative);
@@ -107,68 +128,92 @@ internal sealed class Mem0Client
         responseMessage.EnsureSuccessStatusCode();
     }
 
+
     internal sealed class CreateMemoryRequest
     {
         [JsonPropertyName("app_id")]
         public string? AppId { get; set; }
+
         [JsonPropertyName("agent_id")]
         public string? AgentId { get; set; }
+
         [JsonPropertyName("run_id")]
         public string? RunId { get; set; }
+
         [JsonPropertyName("user_id")]
         public string? UserId { get; set; }
+
         [JsonPropertyName("messages")]
         public CreateMemoryMessage[] Messages { get; set; } = [];
     }
+
 
     internal sealed class CreateMemoryMessage
     {
         [JsonPropertyName("content")]
         public string Content { get; set; } = string.Empty;
+
         [JsonPropertyName("role")]
         public string Role { get; set; } = string.Empty;
     }
+
 
     internal sealed class SearchRequest
     {
         [JsonPropertyName("app_id")]
         public string? AppId { get; set; }
+
         [JsonPropertyName("agent_id")]
-        public string? AgentId { get; set; } = null;
+        public string? AgentId { get; set; }
+
         [JsonPropertyName("run_id")]
-        public string? RunId { get; set; } = null;
+        public string? RunId { get; set; }
+
         [JsonPropertyName("user_id")]
-        public string? UserId { get; set; } = null;
+        public string? UserId { get; set; }
+
         [JsonPropertyName("query")]
         public string Query { get; set; } = string.Empty;
     }
+
 
     internal sealed class SearchResponseItem
     {
         [JsonPropertyName("id")]
         public string Id { get; set; } = string.Empty;
+
         [JsonPropertyName("memory")]
         public string Memory { get; set; } = string.Empty;
+
         [JsonPropertyName("hash")]
         public string Hash { get; set; } = string.Empty;
+
         [JsonPropertyName("metadata")]
         public object? Metadata { get; set; }
+
         [JsonPropertyName("score")]
         public double Score { get; set; }
+
         [JsonPropertyName("created_at")]
         public DateTime CreatedAt { get; set; }
+
         [JsonPropertyName("updated_at")]
         public DateTime? UpdatedAt { get; set; }
+
         [JsonPropertyName("user_id")]
         public string UserId { get; set; } = string.Empty;
+
         [JsonPropertyName("app_id")]
         public string? AppId { get; set; }
+
         [JsonPropertyName("agent_id")]
         public string AgentId { get; set; } = string.Empty;
+
         [JsonPropertyName("session_id")]
         public string RunId { get; set; } = string.Empty;
     }
 }
+
 
 [JsonSourceGenerationOptions(JsonSerializerDefaults.General,
     UseStringEnumConverter = false,

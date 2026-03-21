@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Plugins.UnitTests.Web;
-
 using System.Text.Encodings.Web;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Web;
 using Xunit;
 
+namespace SemanticKernel.Plugins.UnitTests.Web;
 
 public class SearchUrlPluginTests
 {
@@ -40,7 +39,7 @@ public class SearchUrlPluginTests
         string actual = plugin.AmazonSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://www.amazon.com/s?k={this._encodedInput}", actual);
+        Assert.Equal($"https://www.amazon.com/s?k={_encodedInput}", actual);
     }
 
 
@@ -54,7 +53,7 @@ public class SearchUrlPluginTests
         string actual = plugin.BingSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://www.bing.com/search?q={this._encodedInput}", actual);
+        Assert.Equal($"https://www.bing.com/search?q={_encodedInput}", actual);
     }
 
 
@@ -68,7 +67,7 @@ public class SearchUrlPluginTests
         string actual = plugin.BingImagesSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://www.bing.com/images/search?q={this._encodedInput}", actual);
+        Assert.Equal($"https://www.bing.com/images/search?q={_encodedInput}", actual);
     }
 
 
@@ -82,7 +81,7 @@ public class SearchUrlPluginTests
         string actual = plugin.BingMapsSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://www.bing.com/maps?q={this._encodedInput}", actual);
+        Assert.Equal($"https://www.bing.com/maps?q={_encodedInput}", actual);
     }
 
 
@@ -96,7 +95,7 @@ public class SearchUrlPluginTests
         string actual = plugin.BingShoppingSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://www.bing.com/shop?q={this._encodedInput}", actual);
+        Assert.Equal($"https://www.bing.com/shop?q={_encodedInput}", actual);
     }
 
 
@@ -110,7 +109,7 @@ public class SearchUrlPluginTests
         string actual = plugin.BingNewsSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://www.bing.com/news/search?q={this._encodedInput}", actual);
+        Assert.Equal($"https://www.bing.com/news/search?q={_encodedInput}", actual);
     }
 
 
@@ -124,7 +123,7 @@ public class SearchUrlPluginTests
         string actual = plugin.BingTravelSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://www.bing.com/travel/search?q={this._encodedInput}", actual);
+        Assert.Equal($"https://www.bing.com/travel/search?q={_encodedInput}", actual);
     }
 
 
@@ -138,8 +137,9 @@ public class SearchUrlPluginTests
         string actual = plugin.BraveSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://search.brave.com/search?q={this._encodedInput}", actual);
+        Assert.Equal($"https://search.brave.com/search?q={_encodedInput}", actual);
     }
+
 
     [Fact]
     public void BraveImagesSearchUrl()
@@ -151,8 +151,9 @@ public class SearchUrlPluginTests
         string actual = plugin.BraveImagesSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://search.brave.com/images?q={this._encodedInput}", actual);
+        Assert.Equal($"https://search.brave.com/images?q={_encodedInput}", actual);
     }
+
 
     [Fact]
     public void BraveNewsSearchUrl()
@@ -164,8 +165,9 @@ public class SearchUrlPluginTests
         string actual = plugin.BraveNewsSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://search.brave.com/news?q={this._encodedInput}", actual);
+        Assert.Equal($"https://search.brave.com/news?q={_encodedInput}", actual);
     }
+
 
     [Fact]
     public void BraveGooglesSearchUrl()
@@ -177,8 +179,9 @@ public class SearchUrlPluginTests
         string actual = plugin.BraveGooglesSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://search.brave.com/goggles?q={this._encodedInput}", actual);
+        Assert.Equal($"https://search.brave.com/goggles?q={_encodedInput}", actual);
     }
+
 
     [Fact]
     public void BraveVideosSearchUrl()
@@ -190,8 +193,9 @@ public class SearchUrlPluginTests
         string actual = plugin.BraveVideosSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://search.brave.com/videos?q={this._encodedInput}", actual);
+        Assert.Equal($"https://search.brave.com/videos?q={_encodedInput}", actual);
     }
+
 
     [Fact]
     public void FacebookSearchUrl()
@@ -203,7 +207,7 @@ public class SearchUrlPluginTests
         string actual = plugin.FacebookSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://www.facebook.com/search/top/?q={this._encodedInput}", actual);
+        Assert.Equal($"https://www.facebook.com/search/top/?q={_encodedInput}", actual);
     }
 
 
@@ -217,7 +221,7 @@ public class SearchUrlPluginTests
         string actual = plugin.GitHubSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://github.com/search?q={this._encodedInput}", actual);
+        Assert.Equal($"https://github.com/search?q={_encodedInput}", actual);
     }
 
 
@@ -231,7 +235,7 @@ public class SearchUrlPluginTests
         string actual = plugin.LinkedInSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://www.linkedin.com/search/results/index/?keywords={this._encodedInput}", actual);
+        Assert.Equal($"https://www.linkedin.com/search/results/index/?keywords={_encodedInput}", actual);
     }
 
 
@@ -245,7 +249,7 @@ public class SearchUrlPluginTests
         string actual = plugin.TwitterSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://twitter.com/search?q={this._encodedInput}", actual);
+        Assert.Equal($"https://twitter.com/search?q={_encodedInput}", actual);
     }
 
 
@@ -259,6 +263,6 @@ public class SearchUrlPluginTests
         string actual = plugin.WikipediaSearchUrl(AnyInput);
 
         // Assert
-        Assert.Equal($"https://wikipedia.org/w/index.php?search={this._encodedInput}", actual);
+        Assert.Equal($"https://wikipedia.org/w/index.php?search={_encodedInput}", actual);
     }
 }

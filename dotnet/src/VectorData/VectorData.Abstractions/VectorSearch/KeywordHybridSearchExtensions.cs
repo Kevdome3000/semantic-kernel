@@ -22,10 +22,10 @@ public static class KeywordHybridSearchExtensions
     public static object GetRequiredService<TRecord>(this IKeywordHybridSearchable<TRecord> keywordHybridSearch, Type serviceType, object? serviceKey = null)
     {
         if (keywordHybridSearch is null) { throw new ArgumentNullException(nameof(keywordHybridSearch)); }
+
         if (serviceType is null) { throw new ArgumentNullException(nameof(serviceType)); }
 
         return
-            keywordHybridSearch.GetService(serviceType, serviceKey) ??
-            throw Throw.CreateMissingServiceException(serviceType, serviceKey);
+            keywordHybridSearch.GetService(serviceType, serviceKey) ?? throw Throw.CreateMissingServiceException(serviceType, serviceKey);
     }
 }

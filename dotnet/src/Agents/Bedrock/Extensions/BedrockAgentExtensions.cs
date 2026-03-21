@@ -23,14 +23,19 @@ public static class BedrockAgentExtensions
     /// <returns>The Semantic Kernel Agent Framework <see cref="Agent"/> exposed as a Microsoft Agent Framework <see cref="AIAgent"/></returns>
     [Experimental("SKEXP0110")]
     public static AIAgent AsAIAgent(this BedrockAgent bedrockAgent)
-        => bedrockAgent.AsAIAgent(
+    {
+        return bedrockAgent.AsAIAgent(
             () => new BedrockAgentThread(bedrockAgent.RuntimeClient),
             (json, options) =>
             {
                 var agentId = JsonSerializer.Deserialize<string>(json);
-                return agentId is null ? new BedrockAgentThread(bedrockAgent.RuntimeClient) : new BedrockAgentThread(bedrockAgent.RuntimeClient, agentId);
+                return agentId is null
+                    ? new BedrockAgentThread(bedrockAgent.RuntimeClient)
+                    : new BedrockAgentThread(bedrockAgent.RuntimeClient, agentId);
             },
             (thread, options) => JsonSerializer.SerializeToElement((thread as BedrockAgentThread)?.Id));
+    }
+
 
     /// <summary>
     /// Creates an agent.
@@ -51,6 +56,7 @@ public static class BedrockAgentExtensions
         return await client.PrepareAgentAndWaitUntilPreparedAsync(createAgentResponse.Agent, cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <summary>
     /// Creates an agent.
     /// </summary>
@@ -70,6 +76,7 @@ public static class BedrockAgentExtensions
         return createAgentResponse.Agent;
     }
 
+
     /// <summary>
     /// Creates an agent.
     /// </summary>
@@ -84,6 +91,7 @@ public static class BedrockAgentExtensions
         return await client.PrepareAgentAndWaitUntilPreparedAsync(agent, cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <summary>
     /// Associates an agent with a knowledge base.
     /// </summary>
@@ -97,16 +105,19 @@ public static class BedrockAgentExtensions
         string description,
         CancellationToken cancellationToken = default)
     {
-        await agent.Client.AssociateAgentKnowledgeBaseAsync(new()
-        {
-            AgentId = agent.Id,
-            AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
-            KnowledgeBaseId = knowledgeBaseId,
-            Description = description,
-        }, cancellationToken).ConfigureAwait(false);
+        await agent.Client.AssociateAgentKnowledgeBaseAsync(new AssociateAgentKnowledgeBaseRequest
+                {
+                    AgentId = agent.Id,
+                    AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
+                    KnowledgeBaseId = knowledgeBaseId,
+                    Description = description
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
 
         await agent.Client.PrepareAgentAndWaitUntilPreparedAsync(agent.AgentModel, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Disassociate the agent with a knowledge base.
@@ -119,15 +130,18 @@ public static class BedrockAgentExtensions
         string knowledgeBaseId,
         CancellationToken cancellationToken = default)
     {
-        await agent.Client.DisassociateAgentKnowledgeBaseAsync(new()
-        {
-            AgentId = agent.Id,
-            AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
-            KnowledgeBaseId = knowledgeBaseId,
-        }, cancellationToken).ConfigureAwait(false);
+        await agent.Client.DisassociateAgentKnowledgeBaseAsync(new DisassociateAgentKnowledgeBaseRequest
+                {
+                    AgentId = agent.Id,
+                    AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
+                    KnowledgeBaseId = knowledgeBaseId
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
 
         await agent.Client.PrepareAgentAndWaitUntilPreparedAsync(agent.AgentModel, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// List the knowledge bases associated with the agent.
@@ -139,12 +153,15 @@ public static class BedrockAgentExtensions
         this BedrockAgent agent,
         CancellationToken cancellationToken = default)
     {
-        return await agent.Client.ListAgentKnowledgeBasesAsync(new()
-        {
-            AgentId = agent.Id,
-            AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
-        }, cancellationToken).ConfigureAwait(false);
+        return await agent.Client.ListAgentKnowledgeBasesAsync(new ListAgentKnowledgeBasesRequest
+                {
+                    AgentId = agent.Id,
+                    AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT"
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Create a code interpreter action group for the agent and prepare the agent.
@@ -161,12 +178,13 @@ public static class BedrockAgentExtensions
             AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
             ActionGroupName = agent.CodeInterpreterActionGroupSignature,
             ActionGroupState = ActionGroupState.ENABLED,
-            ParentActionGroupSignature = new(Amazon.BedrockAgent.ActionGroupSignature.AMAZONCodeInterpreter),
+            ParentActionGroupSignature = new ActionGroupSignature(ActionGroupSignature.AMAZONCodeInterpreter)
         };
 
         await agent.Client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
         await agent.Client.PrepareAgentAndWaitUntilPreparedAsync(agent.AgentModel, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Create a kernel function action group for the agent and prepare the agent.
@@ -179,6 +197,7 @@ public static class BedrockAgentExtensions
     {
         await agent.CreateKernelFunctionActionGroupAsync(agent.Kernel.ToFunctionSchema(), cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Create a kernel function action group for the agent and prepare the agent.
@@ -197,16 +216,17 @@ public static class BedrockAgentExtensions
             AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
             ActionGroupName = agent.KernelFunctionActionGroupSignature,
             ActionGroupState = ActionGroupState.ENABLED,
-            ActionGroupExecutor = new()
+            ActionGroupExecutor = new ActionGroupExecutor
             {
-                CustomControl = Amazon.BedrockAgent.CustomControlMethod.RETURN_CONTROL,
+                CustomControl = CustomControlMethod.RETURN_CONTROL
             },
-            FunctionSchema = functionSchema,
+            FunctionSchema = functionSchema
         };
 
         await agent.Client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
         await agent.Client.PrepareAgentAndWaitUntilPreparedAsync(agent.AgentModel, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Enable user input for the agent and prepare the agent.
@@ -223,19 +243,20 @@ public static class BedrockAgentExtensions
             AgentVersion = agent.AgentModel.AgentVersion ?? "DRAFT",
             ActionGroupName = agent.UseInputActionGroupSignature,
             ActionGroupState = ActionGroupState.ENABLED,
-            ParentActionGroupSignature = new(Amazon.BedrockAgent.ActionGroupSignature.AMAZONUserInput),
+            ParentActionGroupSignature = new ActionGroupSignature(ActionGroupSignature.AMAZONUserInput)
         };
 
         await agent.Client.CreateAgentActionGroupAsync(createAgentActionGroupRequest, cancellationToken).ConfigureAwait(false);
         await agent.Client.PrepareAgentAndWaitUntilPreparedAsync(agent.AgentModel, cancellationToken).ConfigureAwait(false);
     }
 
+
     private static async Task<Amazon.BedrockAgent.Model.Agent> PrepareAgentAndWaitUntilPreparedAsync(
         this IAmazonBedrockAgent client,
         Amazon.BedrockAgent.Model.Agent agent,
         CancellationToken cancellationToken = default)
     {
-        var prepareAgentResponse = await client.PrepareAgentAsync(new() { AgentId = agent.AgentId }, cancellationToken).ConfigureAwait(false);
+        var prepareAgentResponse = await client.PrepareAgentAsync(new PrepareAgentRequest { AgentId = agent.AgentId }, cancellationToken).ConfigureAwait(false);
 
         // The agent will take some time to enter the PREPARING status after the prepare operation is called.
         // We need to wait for the agent to reach the PREPARING status before we can proceed, otherwise we
@@ -244,6 +265,7 @@ public static class BedrockAgentExtensions
         // When the agent is prepared, it will enter the PREPARED status.
         return await client.WaitForAgentStatusAsync(agent, AgentStatus.PREPARED, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Wait for the agent to reach the specified status.
@@ -265,7 +287,7 @@ public static class BedrockAgentExtensions
     {
         for (var i = 0; i < maxAttempts; i++)
         {
-            var getAgentResponse = await client.GetAgentAsync(new() { AgentId = agent.AgentId }, cancellationToken).ConfigureAwait(false);
+            var getAgentResponse = await client.GetAgentAsync(new GetAgentRequest { AgentId = agent.AgentId }, cancellationToken).ConfigureAwait(false);
 
             if (getAgentResponse.Agent.AgentStatus == status)
             {

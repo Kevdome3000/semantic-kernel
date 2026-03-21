@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Orchestration.Extensions;
@@ -27,52 +26,78 @@ public class ConcurrentOrchestration<TInput, TOutput>
     {
     }
 
+
     /// <inheritdoc />
-    protected override ValueTask StartAsync(IAgentRuntime runtime, TopicId topic, IEnumerable<ChatMessageContent> input, AgentType? entryAgent)
+    protected override ValueTask StartAsync(
+        IAgentRuntime runtime,
+        TopicId topic,
+        IEnumerable<ChatMessageContent> input,
+        AgentType? entryAgent)
     {
         return runtime.PublishMessageAsync(input.AsInputMessage(), topic);
     }
 
+
     /// <inheritdoc />
-    protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(IAgentRuntime runtime, OrchestrationContext context, RegistrationContext registrar, ILogger logger)
+    protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(
+        IAgentRuntime runtime,
+        OrchestrationContext context,
+        RegistrationContext registrar,
+        ILogger logger)
     {
         AgentType outputType = await registrar.RegisterResultTypeAsync<ConcurrentMessages.Result[]>(response => [.. response.Select(r => r.Message)]).ConfigureAwait(false);
 
         // Register result actor
-        AgentType resultType = this.FormatAgentType(context.Topic, "Results");
+        AgentType resultType = FormatAgentType(context.Topic, "Results");
         await runtime.RegisterOrchestrationAgentAsync(
-            resultType,
-            (agentId, runtime) =>
-            {
-                ConcurrentResultActor actor = new(agentId, runtime, context, outputType, this.Members.Count, context.LoggerFactory.CreateLogger<ConcurrentResultActor>());
+                resultType,
+                (agentId, runtime) =>
+                {
+                    ConcurrentResultActor actor = new(agentId,
+                        runtime,
+                        context,
+                        outputType,
+                        Members.Count,
+                        context.LoggerFactory.CreateLogger<ConcurrentResultActor>());
 #if !NETCOREAPP
-                return actor.AsValueTask<IHostableAgent>();
+                    return actor.AsValueTask<IHostableAgent>();
 #else
                 return ValueTask.FromResult<IHostableAgent>(actor);
 #endif
-            }).ConfigureAwait(false);
-        logger.LogRegisterActor(this.OrchestrationLabel, resultType, "RESULTS");
+                })
+            .ConfigureAwait(false);
+        logger.LogRegisterActor(OrchestrationLabel, resultType, "RESULTS");
 
         // Register member actors - All agents respond to the same message.
         int agentCount = 0;
-        foreach (Agent agent in this.Members)
+
+        foreach (Agent agent in Members)
         {
             ++agentCount;
 
             AgentType agentType =
                 await runtime.RegisterAgentFactoryAsync(
-                    this.FormatAgentType(context.Topic, $"Agent_{agentCount}"),
-                    (agentId, runtime) =>
-                    {
-                        ConcurrentActor actor = new(agentId, runtime, context, agent, resultType, context.LoggerFactory.CreateLogger<ConcurrentActor>());
+                        FormatAgentType(context.Topic, $"Agent_{agentCount}"),
+                        (agentId, runtime) =>
+                        {
+                            ConcurrentActor actor = new(agentId,
+                                runtime,
+                                context,
+                                agent,
+                                resultType,
+                                context.LoggerFactory.CreateLogger<ConcurrentActor>());
 #if !NETCOREAPP
-                        return actor.AsValueTask<IHostableAgent>();
+                            return actor.AsValueTask<IHostableAgent>();
 #else
                         return ValueTask.FromResult<IHostableAgent>(actor);
 #endif
-                    }).ConfigureAwait(false);
+                        })
+                    .ConfigureAwait(false);
 
-            logger.LogRegisterActor(this.OrchestrationLabel, agentType, "MEMBER", agentCount);
+            logger.LogRegisterActor(OrchestrationLabel,
+                agentType,
+                "MEMBER",
+                agentCount);
 
             await runtime.SubscribeAsync(agentType, context.Topic).ConfigureAwait(false);
         }

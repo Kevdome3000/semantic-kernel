@@ -27,8 +27,8 @@ public abstract class PropertyModel(string modelName, Type type)
     /// </summary>
     public string StorageName
     {
-        get => this._storageName ?? this.ModelName;
-        set => this._storageName = value;
+        get => _storageName ?? ModelName;
+        set => _storageName = value;
     }
 
     // See comment in VectorStoreJsonModelBuilder
@@ -63,21 +63,52 @@ public abstract class PropertyModel(string modelName, Type type)
     public Dictionary<string, object?>? ProviderAnnotations { get; set; }
 
     /// <summary>
+    /// Gets whether the property type is nullable. For value types, this is <see langword="true"/> when the type is
+    /// <see cref="Nullable{T}"/>. For reference types on .NET 6+, this uses NRT annotations via
+    /// <c>NullabilityInfoContext</c> when a <see cref="PropertyInfo"/> is available
+    /// (i.e., POCO mapping); otherwise, reference types are assumed nullable.
+    /// </summary>
+    public bool IsNullable
+    {
+        get
+        {
+            // Value types: nullable only if Nullable<T>
+            if (Type.IsValueType)
+            {
+                return Nullable.GetUnderlyingType(Type) is not null;
+            }
+
+            // Reference types: check NRT annotation via NullabilityInfoContext when available
+#if NET
+            if (PropertyInfo is { } propertyInfo)
+            {
+                var nullabilityInfo = new NullabilityInfoContext().Create(propertyInfo);
+                return nullabilityInfo.ReadState != NullabilityState.NotNull;
+            }
+#endif
+
+            // Dynamic mapping or old framework: assume nullable for reference types
+            return true;
+        }
+    }
+
+
+    /// <summary>
     /// Reads the property from the given <paramref name="record"/>, returning the value as an <see cref="object"/>.
     /// </summary>
     public virtual object? GetValueAsObject(object record)
     {
-        if (this.PropertyInfo is null)
+        if (PropertyInfo is null)
         {
             if (record is Dictionary<string, object?> dictionary)
             {
-                var value = dictionary.TryGetValue(this.ModelName, out var tempValue)
+                var value = dictionary.TryGetValue(ModelName, out var tempValue)
                     ? tempValue
                     : null;
 
-                if (value is not null && value.GetType() != (Nullable.GetUnderlyingType(this.Type) ?? this.Type))
+                if (value is not null && value.GetType() != (Nullable.GetUnderlyingType(Type) ?? Type))
                 {
-                    throw new InvalidCastException($"Property '{this.ModelName}' has a value of type '{value.GetType().Name}', but its configured type is '{this.Type.Name}'.");
+                    throw new InvalidCastException($"Property '{ModelName}' has a value of type '{value.GetType().Name}', but its configured type is '{Type.Name}'.");
                 }
 
                 return value;
@@ -91,20 +122,21 @@ public abstract class PropertyModel(string modelName, Type type)
         // TODO: Implement compiled delegates for better performance, #11122
         // TODO: Implement source-generated accessors for NativeAOT, #10256
 
-        return this.PropertyInfo.GetValue(record);
+        return PropertyInfo.GetValue(record);
     }
+
 
     /// <summary>
     /// Writes the property from the given <paramref name="record"/>, accepting the value to write as an <see cref="object"/>.
     /// </summary>s
     public virtual void SetValueAsObject(object record, object? value)
     {
-        if (this.PropertyInfo is null)
+        if (PropertyInfo is null)
         {
             if (record.GetType() == typeof(Dictionary<string, object?>))
             {
                 var dictionary = (Dictionary<string, object?>)record;
-                dictionary[this.ModelName] = value;
+                dictionary[ModelName] = value;
                 return;
             }
 
@@ -119,16 +151,20 @@ public abstract class PropertyModel(string modelName, Type type)
         // If the value is null, no need to set the property (it's the CLR default)
         if (value is not null)
         {
-            this.PropertyInfo.SetValue(record, value);
+            PropertyInfo.SetValue(record, value);
         }
     }
+
 
     /// <summary>
     /// Reads the property from the given <paramref name="record"/>.
     /// </summary>
     // TODO: actually implement the generic accessors to avoid boxing, and make use of them in connectors
     public virtual T GetValue<T>(object record)
-        => (T)(object)this.GetValueAsObject(record)!;
+    {
+        return (T)(object)GetValueAsObject(record)!;
+    }
+
 
     /// <summary>
     /// Writes the property from the given <paramref name="record"/>.
@@ -136,6 +172,6 @@ public abstract class PropertyModel(string modelName, Type type)
     // TODO: actually implement the generic accessors to avoid boxing, and make use of them in connectors
     public virtual void SetValue<T>(object record, T value)
     {
-        this.SetValueAsObject(record, value);
+        SetValueAsObject(record, value);
     }
 }

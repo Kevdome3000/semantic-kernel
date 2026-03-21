@@ -16,11 +16,13 @@ public class NotAccessibleException : Exception
     /// </summary>
     public NotAccessibleException() : base("The requested value is not accessible.") { }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="NotAccessibleException"/> class with a custom error message.
     /// </summary>
     /// <param name="message">The custom error message.</param>
     public NotAccessibleException(string message) : base(message) { }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NotAccessibleException"/> class with a custom error message and an inner exception.

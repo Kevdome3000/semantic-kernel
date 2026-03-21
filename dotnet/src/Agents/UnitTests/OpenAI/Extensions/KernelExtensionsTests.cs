@@ -20,15 +20,15 @@ public class KernelExtensionsTests
         // Arrange
         AgentDefinition agentDefinition = new()
         {
-            Model = new()
+            Model = new ModelDefinition
             {
                 Id = "gpt-4o-mini",
-                Connection = new()
+                Connection = new ModelConnection
                 {
-                    ExtensionData = new Dictionary<string, object?>()
+                    ExtensionData = new Dictionary<string, object?>
                     {
                         ["endpoint"] = "https://contosoo.openai.azure.com",
-                        ["api_key"] = "api_key",
+                        ["api_key"] = "api_key"
                     }
                 }
             }

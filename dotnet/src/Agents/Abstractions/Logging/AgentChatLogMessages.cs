@@ -1,11 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents;
-
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Extensions;
+
+namespace Microsoft.SemanticKernel.Agents;
 
 #pragma warning disable SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
 
@@ -30,20 +26,31 @@ internal static partial class AgentChatLogMessages
             eventId: 0,
             "[{MethodName}] Source: {MessageSourceType}/{MessageSourceId}/{MessageSourceName}.");
 
+
     public static void LogAgentChatGetChatMessages(
         this ILogger logger,
         string methodName,
         Agent? agent)
     {
-       if (logger.IsEnabled(LogLevel.Debug))
+        if (logger.IsEnabled(LogLevel.Debug))
         {
             if (agent is null)
             {
-                s_logAgentChatGetChatMessages(logger, methodName, "primary", "primary", null, null);
+                s_logAgentChatGetChatMessages(logger,
+                    methodName,
+                    "primary",
+                    "primary",
+                    null,
+                    null);
             }
             else
             {
-                s_logAgentChatGetChatMessages(logger, methodName, agent.GetType().Name, agent.Id, agent.GetDisplayName(), null);
+                s_logAgentChatGetChatMessages(logger,
+                    methodName,
+                    agent.GetType().Name,
+                    agent.Id,
+                    agent.GetDisplayName(),
+                    null);
             }
         }
     }
@@ -115,6 +122,7 @@ internal static partial class AgentChatLogMessages
             eventId: 0,
             "[{MethodName}] Agent message {AgentType}/{AgentId}/{AgentName}: {Message}.");
 
+
     public static void LogAgentChatInvokedStreamingAgentMessages(
         this ILogger logger,
         string methodName,
@@ -127,10 +135,17 @@ internal static partial class AgentChatLogMessages
         {
             foreach (ChatMessageContent message in messages)
             {
-                s_logAgentChatInvokedStreamingAgentMessages(logger, methodName, agentType, agentId, agentName, message, null);
+                s_logAgentChatInvokedStreamingAgentMessages(logger,
+                    methodName,
+                    agentType,
+                    agentId,
+                    agentName,
+                    message,
+                    null);
             }
         }
     }
+
 
     /// <summary>
     /// Logs <see cref="AgentChat"/> invoked agent (complete).

@@ -34,6 +34,7 @@ public readonly struct AnnotationKind : IEquatable<AnnotationKind>
     /// </remarks>
     public string Label { get; }
 
+
     /// <summary>
     /// Creates a new <see cref="AnnotationKind"/> instance with the provided label.
     /// </summary>
@@ -45,6 +46,7 @@ public readonly struct AnnotationKind : IEquatable<AnnotationKind>
         Label = label!;
     }
 
+
     /// <summary>
     /// Returns a value indicating whether two <see cref="AnnotationKind"/> instances are equivalent, as determined by a
     /// case-insensitive comparison of their labels.
@@ -53,7 +55,10 @@ public readonly struct AnnotationKind : IEquatable<AnnotationKind>
     /// <param name="right"> the second <see cref="AnnotationKind"/> instance to compare </param>
     /// <returns> true if left and right are both null or have equivalent labels; false otherwise </returns>
     public static bool operator ==(AnnotationKind left, AnnotationKind right)
-        => left.Equals(right);
+    {
+        return left.Equals(right);
+    }
+
 
     /// <summary>
     /// Returns a value indicating whether two <see cref="AnnotationKind"/> instances are not equivalent, as determined by a
@@ -63,20 +68,35 @@ public readonly struct AnnotationKind : IEquatable<AnnotationKind>
     /// <param name="right"> the second <see cref="AnnotationKind"/> instance to compare </param>
     /// <returns> false if left and right are both null or have equivalent labels; true otherwise </returns>
     public static bool operator !=(AnnotationKind left, AnnotationKind right)
-        => !(left == right);
+    {
+        return !(left == right);
+    }
+
 
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)
-        => obj is AnnotationKind otherRole && this == otherRole;
+    {
+        return obj is AnnotationKind otherRole && this == otherRole;
+    }
+
 
     /// <inheritdoc/>
     public bool Equals(AnnotationKind other)
-        => string.Equals(Label, other.Label, StringComparison.OrdinalIgnoreCase);
+    {
+        return string.Equals(Label, other.Label, StringComparison.OrdinalIgnoreCase);
+    }
+
 
     /// <inheritdoc/>
     public override int GetHashCode()
-        => StringComparer.OrdinalIgnoreCase.GetHashCode(Label);
+    {
+        return StringComparer.OrdinalIgnoreCase.GetHashCode(Label);
+    }
+
 
     /// <inheritdoc/>
-    public override string ToString() => Label;
+    public override string ToString()
+    {
+        return Label;
+    }
 }

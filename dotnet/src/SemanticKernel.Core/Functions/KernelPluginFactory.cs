@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides static factory methods for creating commonly-used plugin implementations.
 /// </summary>
@@ -39,6 +40,7 @@ public static partial class KernelPluginFactory
         return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
     }
 
+
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</param>
@@ -55,13 +57,16 @@ public static partial class KernelPluginFactory
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
     public static KernelPlugin CreateFromType<[DynamicallyAccessedMembers(
-        DynamicallyAccessedMemberTypes.PublicConstructors |
-        DynamicallyAccessedMemberTypes.PublicMethods |
-        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
+            DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)]
+        T>(JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
     {
         serviceProvider ??= EmptyServiceProvider.Instance;
-        return CreateFromObject<T>(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, jsonSerializerOptions, pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        return CreateFromObject<T>(ActivatorUtilities.CreateInstance<T>(serviceProvider)!,
+            jsonSerializerOptions,
+            pluginName,
+            serviceProvider?.GetService<ILoggerFactory>());
     }
+
 
     /// <summary>Creates a plugin that wraps a new instance of the specified type <paramref name="instanceType"/>.</summary>
     /// <param name="instanceType">
@@ -87,6 +92,7 @@ public static partial class KernelPluginFactory
         return CreateFromObject(ActivatorUtilities.CreateInstance(serviceProvider, instanceType)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
     }
 
+
     /// <summary>Creates a plugin that wraps a new instance of the specified type <paramref name="instanceType"/>.</summary>
     /// <param name="instanceType">
     /// Specifies the type of the object to wrap.
@@ -106,14 +112,21 @@ public static partial class KernelPluginFactory
     /// Methods decorated with <see cref="KernelFunctionAttribute"/> will be included in the plugin.
     /// Attributed methods must all have different names; overloads are not supported.
     /// </remarks>
-    public static KernelPlugin CreateFromType([DynamicallyAccessedMembers(
-        DynamicallyAccessedMemberTypes.PublicConstructors |
-        DynamicallyAccessedMemberTypes.PublicMethods |
-        DynamicallyAccessedMemberTypes.NonPublicMethods)] Type instanceType, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static KernelPlugin CreateFromType(
+        [DynamicallyAccessedMembers(
+            DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)]
+        Type instanceType,
+        JsonSerializerOptions jsonSerializerOptions,
+        string? pluginName = null,
+        IServiceProvider? serviceProvider = null)
     {
         serviceProvider ??= EmptyServiceProvider.Instance;
-        return CreateFromObject(ActivatorUtilities.CreateInstance(serviceProvider, instanceType)!, jsonSerializerOptions, pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        return CreateFromObject(ActivatorUtilities.CreateInstance(serviceProvider, instanceType)!,
+            jsonSerializerOptions,
+            pluginName,
+            serviceProvider?.GetService<ILoggerFactory>());
     }
+
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -133,6 +146,7 @@ public static partial class KernelPluginFactory
         return CreateFromObjectInternal(target, pluginName, loggerFactory: loggerFactory);
     }
 
+
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</param>
@@ -147,11 +161,19 @@ public static partial class KernelPluginFactory
     /// </remarks>
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
-    public static KernelPlugin CreateFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, ILoggerFactory? loggerFactory = null)
+    public static KernelPlugin CreateFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(
+        T target,
+        JsonSerializerOptions jsonSerializerOptions,
+        string? pluginName = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(jsonSerializerOptions);
-        return CreateFromObjectInternal(target, pluginName, jsonSerializerOptions, loggerFactory: loggerFactory);
+        return CreateFromObjectInternal(target,
+            pluginName,
+            jsonSerializerOptions,
+            loggerFactory);
     }
+
 
     /// <summary>Initializes the new plugin from the provided name and function collection.</summary>
     /// <param name="pluginName">The name for the plugin.</param>
@@ -161,8 +183,11 @@ public static partial class KernelPluginFactory
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static KernelPlugin CreateFromFunctions(string pluginName, IEnumerable<KernelFunction>? functions) =>
-        CreateFromFunctions(pluginName, description: null, functions);
+    public static KernelPlugin CreateFromFunctions(string pluginName, IEnumerable<KernelFunction>? functions)
+    {
+        return CreateFromFunctions(pluginName, null, functions);
+    }
+
 
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
     /// <param name="pluginName">The name for the plugin.</param>
@@ -173,8 +198,11 @@ public static partial class KernelPluginFactory
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static KernelPlugin CreateFromFunctions(string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null) =>
-        new DefaultKernelPlugin(pluginName, description, functions);
+    public static KernelPlugin CreateFromFunctions(string pluginName, string? description = null, IEnumerable<KernelFunction>? functions = null)
+    {
+        return new DefaultKernelPlugin(pluginName, description, functions);
+    }
+
 
     /// <summary>Creates a name for a plugin based on its type name.</summary>
     private static string CreatePluginName(Type type)
@@ -213,11 +241,11 @@ public static partial class KernelPluginFactory
         }
 
         // Replace invalid characters
-        name = InvalidPluginNameCharactersRegex().
-            Replace(name, "_");
+        name = InvalidPluginNameCharactersRegex().Replace(name, "_");
 
         return name;
     }
+
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -233,7 +261,11 @@ public static partial class KernelPluginFactory
     /// </remarks>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
-    private static KernelPlugin CreateFromObjectInternal<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(T target, string? pluginName = null, JsonSerializerOptions? jsonSerializerOptions = null, ILoggerFactory? loggerFactory = null)
+    private static KernelPlugin CreateFromObjectInternal<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(
+        T target,
+        string? pluginName = null,
+        JsonSerializerOptions? jsonSerializerOptions = null,
+        ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(target);
 
@@ -244,13 +276,17 @@ public static partial class KernelPluginFactory
 
         // Filter out non-KernelFunctions and fail if two functions have the same name (with or without the same casing).
         var functions = new List<KernelFunction>();
+
         foreach (MethodInfo method in methods)
         {
             if (method.GetCustomAttribute<KernelFunctionAttribute>() is not null)
             {
                 if (jsonSerializerOptions is not null)
                 {
-                    functions.Add(KernelFunctionFactory.CreateFromMethod(method, jsonSerializerOptions, target, loggerFactory: loggerFactory));
+                    functions.Add(KernelFunctionFactory.CreateFromMethod(method,
+                        jsonSerializerOptions,
+                        target,
+                        loggerFactory: loggerFactory));
                 }
                 else
                 {
@@ -258,21 +294,25 @@ public static partial class KernelPluginFactory
                 }
             }
         }
+
         if (functions.Count == 0)
         {
             throw new ArgumentException($"The {target.GetType()} instance doesn't implement any [KernelFunction]-attributed methods.");
         }
 
-        if (loggerFactory?.CreateLogger(target.GetType()) is ILogger logger &&
-            logger.IsEnabled(LogLevel.Trace))
+        if (loggerFactory?.CreateLogger(target.GetType()) is ILogger logger && logger.IsEnabled(LogLevel.Trace))
         {
-            logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} [KernelFunction] methods out of {TotalMethods} methods found.", pluginName, functions.Count, methods.Length);
+            logger.LogTrace("Created plugin {PluginName} with {IncludedFunctions} [KernelFunction] methods out of {TotalMethods} methods found.",
+                pluginName,
+                functions.Count,
+                methods.Length);
         }
 
-        var description = target.GetType().GetCustomAttribute<DescriptionAttribute>(inherit: true)?.Description;
+        var description = target.GetType().GetCustomAttribute<DescriptionAttribute>(true)?.Description;
 
         return CreateFromFunctions(pluginName, description, functions);
     }
+
 
 #if NET
     [GeneratedRegex("[^0-9A-Za-z_]")]

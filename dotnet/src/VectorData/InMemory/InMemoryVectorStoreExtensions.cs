@@ -19,7 +19,7 @@ namespace Microsoft.SemanticKernel.Connectors.InMemory;
 public static class InMemoryVectorStoreExtensions
 {
     /// <summary>
-    /// Serialize a <see cref="VectorStoreCollection{TKey, TRecord}"/> to a stream as JSON.
+    /// Serialize a <see cref="VectorStoreCollection{TKey,TRecord}"/> to a stream as JSON.
     /// </summary>
     /// <typeparam name="TKey">Type of the record key.</typeparam>
     /// <typeparam name="TRecord">Type of the record.</typeparam>
@@ -40,17 +40,19 @@ public static class InMemoryVectorStoreExtensions
         // Get collection and verify that it exists.
         var collection = vectorStore.GetCollection<TKey, TRecord>(collectionName);
         var exists = await collection.CollectionExistsAsync().ConfigureAwait(false);
+
         if (!exists)
         {
             throw new InvalidOperationException($"Collection '{collectionName}' does not exist.");
         }
 
-        var inMemoryCollection = collection as InMemoryCollection<TKey, TRecord>;
+        var inMemoryCollection = collection;
         var records = inMemoryCollection!.GetCollectionDictionary();
         InMemoryRecordCollection<object, object> recordCollection = new(collectionName, records);
 
         await JsonSerializer.SerializeAsync(stream, recordCollection, jsonSerializerOptions).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Deserialize a <see cref="VectorStoreCollection{TKey, TRecord}"/> to a stream as JSON.
@@ -73,6 +75,7 @@ public static class InMemoryVectorStoreExtensions
         {
             string result = streamReader.ReadToEnd();
             var recordCollection = JsonSerializer.Deserialize<InMemoryRecordCollection<TKey, InMemoryRecordWrapper<TRecord>>>(result);
+
             if (recordCollection is null)
             {
                 throw new InvalidOperationException("Stream does not contain valid record collection JSON.");
@@ -90,7 +93,9 @@ public static class InMemoryVectorStoreExtensions
         return collection;
     }
 
+
     #region private
+
     /// <summary>Model class used when storing a <see cref="InMemoryCollection{TKey, TRecord}" />.</summary>
     private sealed class InMemoryRecordCollection<TKey, TRecord>(string name, IDictionary<TKey, TRecord> records)
         where TKey : notnull
@@ -98,6 +103,8 @@ public static class InMemoryVectorStoreExtensions
         public string Name { get; init; } = name;
         public IDictionary<TKey, TRecord> Records { get; init; } = records;
     }
+
     #endregion
+
 
 }

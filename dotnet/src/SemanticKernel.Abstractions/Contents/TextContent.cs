@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Represents text content.
 /// </summary>
@@ -21,6 +22,7 @@ public sealed class TextContent : KernelContent
     [JsonIgnore]
     public Encoding Encoding { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TextContent"/> class.
     /// </summary>
@@ -29,6 +31,7 @@ public sealed class TextContent : KernelContent
     {
         Encoding = Encoding.UTF8;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TextContent"/> class.
@@ -50,11 +53,13 @@ public sealed class TextContent : KernelContent
         Encoding = encoding ?? Encoding.UTF8;
     }
 
+
     /// <inheritdoc/>
     public override string ToString()
     {
         return Text ?? string.Empty;
     }
+
 
     /// <summary>
     /// When converting a string to a <see cref="TextContent"/>, the content is automatically set to the string value.

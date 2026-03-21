@@ -24,15 +24,15 @@ public class OpenApiDocumentParserV30FeatureTests
 
     public OpenApiDocumentParserV30FeatureTests()
     {
-        this._openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_testsV3_0.json");
-        this._parser = new OpenApiDocumentParser();
+        _openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_testsV3_0.json");
+        _parser = new OpenApiDocumentParser();
     }
 
 
     [Fact]
     public async Task ItCanParseAllOfAsync()
     {
-        var spec = await this._parser.ParseAsync(this._openApiDocument);
+        var spec = await _parser.ParseAsync(_openApiDocument);
 
         Assert.NotEmpty(spec.Operations);
         var op0 = spec.Operations.Single(static x => x.Id == "allOfGet");
@@ -49,7 +49,7 @@ public class OpenApiDocumentParserV30FeatureTests
     [Fact]
     public async Task ItCanParseAnyOfAsync()
     {
-        var spec = await this._parser.ParseAsync(this._openApiDocument);
+        var spec = await _parser.ParseAsync(_openApiDocument);
 
         Assert.NotEmpty(spec.Operations);
         var op0 = spec.Operations.Single(static x => x.Id == "anyOfGet");
@@ -66,7 +66,7 @@ public class OpenApiDocumentParserV30FeatureTests
     [Fact]
     public async Task ItCanParseOneOfAsync()
     {
-        var spec = await this._parser.ParseAsync(this._openApiDocument);
+        var spec = await _parser.ParseAsync(_openApiDocument);
 
         Assert.NotEmpty(spec.Operations);
         var op0 = spec.Operations.Single(static x => x.Id == "oneOfGet");

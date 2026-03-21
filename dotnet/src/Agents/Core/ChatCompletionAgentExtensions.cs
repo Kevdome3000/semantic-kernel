@@ -2,7 +2,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Microsoft.SemanticKernel.ChatCompletion;
 using MAAI = Microsoft.Agents.AI;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -19,12 +18,16 @@ public static class ChatCompletionAgentExtensions
     /// <returns>The Semantic Kernel Agent Framework <see cref="Agent"/> exposed as a Microsoft Agent Framework <see cref="MAAI.AIAgent"/></returns>
     [Experimental("SKEXP0110")]
     public static MAAI.AIAgent AsAIAgent(this ChatCompletionAgent chatCompletionAgent)
-        => chatCompletionAgent.AsAIAgent(
+    {
+        return chatCompletionAgent.AsAIAgent(
             () => new ChatHistoryAgentThread(),
             (json, options) =>
             {
                 var chatHistory = JsonSerializer.Deserialize<ChatHistory>(json);
-                return chatHistory is null ? new ChatHistoryAgentThread() : new ChatHistoryAgentThread(chatHistory);
+                return chatHistory is null
+                    ? new ChatHistoryAgentThread()
+                    : new ChatHistoryAgentThread(chatHistory);
             },
             (thread, options) => JsonSerializer.SerializeToElement((thread as ChatHistoryAgentThread)?.ChatHistory));
+    }
 }

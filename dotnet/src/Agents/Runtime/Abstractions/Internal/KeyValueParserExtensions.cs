@@ -20,6 +20,7 @@ internal static class KeyValueParserExtensions
     /// </summary>
     private static readonly Regex KVPairRegex = new(KVPairPattern, RegexOptions.Compiled);
 
+
     /// <summary>
     /// Parses a string in the format "key/value" into a tuple containing the key and value.
     /// </summary>
@@ -42,6 +43,7 @@ internal static class KeyValueParserExtensions
     public static (string, string) ToKeyValuePair(this string inputPair, string keyName, string valueName)
     {
         Match match = KVPairRegex.Match(inputPair);
+
         if (match.Success)
         {
             return (match.Groups["key"].Value, match.Groups["value"].Value);

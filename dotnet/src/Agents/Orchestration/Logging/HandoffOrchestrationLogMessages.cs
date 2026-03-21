@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Agents.Runtime;
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
 /// <summary>
-/// Extensions for logging <see cref="HandoffOrchestration{TInput, TOutput}"/>.
+/// Extensions for logging <see cref="HandoffOrchestration{TInput,TOutput}"/>.
 /// </summary>
 /// <remarks>
 /// This extension uses the <see cref="LoggerMessageAttribute"/> to
@@ -25,6 +25,7 @@ internal static partial class HandoffOrchestrationLogMessages
         this ILogger logger,
         AgentId agentId);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
@@ -34,6 +35,7 @@ internal static partial class HandoffOrchestrationLogMessages
         AgentId agentId,
         string? message);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
@@ -42,6 +44,7 @@ internal static partial class HandoffOrchestrationLogMessages
         this ILogger logger,
         AgentId agentId,
         string name);
+
 
     [LoggerMessage(
         EventId = 0,

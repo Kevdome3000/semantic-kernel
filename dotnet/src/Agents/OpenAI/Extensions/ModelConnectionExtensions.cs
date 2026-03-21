@@ -25,6 +25,7 @@ internal static class ModelConnectionExtensions
             : null;
     }
 
+
     /// <summary>
     /// Gets the API key property as an <see cref="ApiKeyCredential"/> from the specified <see cref="ModelConnection"/>.
     /// </summary>

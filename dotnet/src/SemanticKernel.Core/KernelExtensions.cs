@@ -15,9 +15,12 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>Provides extension methods for interacting with <see cref="Kernel"/> and related types.</summary>
 public static class KernelExtensions
 {
+
+
     #region CreateFunctionFromMethod
 
     /// <summary>
@@ -43,9 +46,15 @@ public static class KernelExtensions
         Verify.NotNull(kernel);
         Verify.NotNull(method);
 
-        return KernelFunctionFactory.CreateFromMethod(method.Method, method.Target, functionName, description,
-            parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method.Method,
+            method.Target,
+            functionName,
+            description,
+            parameters,
+            returnParameter,
+            kernel.LoggerFactory);
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
@@ -70,8 +79,16 @@ public static class KernelExtensions
         Verify.NotNull(kernel);
         Verify.NotNull(method);
 
-        return KernelFunctionFactory.CreateFromMethod(method.Method, jsonSerializerOptions, method.Target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method.Method,
+            jsonSerializerOptions,
+            method.Target,
+            functionName,
+            description,
+            parameters,
+            returnParameter,
+            kernel.LoggerFactory);
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -99,9 +116,15 @@ public static class KernelExtensions
         Verify.NotNull(kernel);
         Verify.NotNull(method);
 
-        return KernelFunctionFactory.CreateFromMethod(method, target, functionName, description,
-            parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method,
+            target,
+            functionName,
+            description,
+            parameters,
+            returnParameter,
+            kernel.LoggerFactory);
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -129,10 +152,18 @@ public static class KernelExtensions
         Verify.NotNull(kernel);
         Verify.NotNull(method);
 
-        return KernelFunctionFactory.CreateFromMethod(method, jsonSerializerOptions, target, functionName, description, parameters, returnParameter, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromMethod(method,
+            jsonSerializerOptions,
+            target,
+            functionName,
+            description,
+            parameters,
+            returnParameter,
+            kernel.LoggerFactory);
     }
 
     #endregion
+
 
     #region CreateFunctionFromPrompt
 
@@ -174,6 +205,7 @@ public static class KernelExtensions
             kernel.LoggerFactory);
     }
 
+
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
     /// </summary>
@@ -212,6 +244,7 @@ public static class KernelExtensions
             promptTemplateFactory,
             kernel.LoggerFactory);
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
@@ -252,6 +285,7 @@ public static class KernelExtensions
             kernel.LoggerFactory);
     }
 
+
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
     /// </summary>
@@ -291,6 +325,7 @@ public static class KernelExtensions
             kernel.LoggerFactory);
     }
 
+
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
     /// </summary>
@@ -314,6 +349,7 @@ public static class KernelExtensions
         return KernelFunctionFactory.CreateFromPrompt(promptConfig, promptTemplateFactory, kernel.LoggerFactory);
     }
 
+
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
     /// </summary>
@@ -334,9 +370,14 @@ public static class KernelExtensions
         Verify.NotNull(kernel);
         Verify.NotNull(promptConfig);
 
-        return KernelFunctionFactory.CreateFromPrompt(promptConfig, jsonSerializerOptions, promptTemplateFactory, kernel.LoggerFactory);
+        return KernelFunctionFactory.CreateFromPrompt(promptConfig,
+            jsonSerializerOptions,
+            promptTemplateFactory,
+            kernel.LoggerFactory);
     }
+
     #endregion
+
 
     #region CreatePluginFromType
 
@@ -360,6 +401,7 @@ public static class KernelExtensions
         return KernelPluginFactory.CreateFromType<T>(pluginName, kernel.Services);
     }
 
+
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -373,15 +415,16 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin CreatePluginFromType<[DynamicallyAccessedMembers(
-        DynamicallyAccessedMemberTypes.PublicConstructors |
-        DynamicallyAccessedMemberTypes.PublicMethods |
-        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+            DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)]
+        T>(this Kernel kernel, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
         return KernelPluginFactory.CreateFromType<T>(jsonSerializerOptions, pluginName, kernel.Services);
     }
+
     #endregion
+
 
     #region CreatePluginFromObject
 
@@ -405,6 +448,7 @@ public static class KernelExtensions
         return KernelPluginFactory.CreateFromObject(target, pluginName, kernel.LoggerFactory);
     }
 
+
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -417,13 +461,22 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
-    public static KernelPlugin CreatePluginFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static KernelPlugin CreatePluginFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(
+        this Kernel kernel,
+        T target,
+        JsonSerializerOptions jsonSerializerOptions,
+        string? pluginName = null)
     {
         Verify.NotNull(kernel);
 
-        return KernelPluginFactory.CreateFromObject<T>(target, jsonSerializerOptions, pluginName, kernel.LoggerFactory);
+        return KernelPluginFactory.CreateFromObject<T>(target,
+            jsonSerializerOptions,
+            pluginName,
+            kernel.LoggerFactory);
     }
+
     #endregion
+
 
     #region CreatePluginFromFunctions
 
@@ -436,8 +489,13 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static KernelPlugin CreatePluginFromFunctions(this Kernel kernel, string pluginName, IEnumerable<KernelFunction>? functions) =>
-        CreatePluginFromFunctions(kernel, pluginName, description: null, functions);
+    public static KernelPlugin CreatePluginFromFunctions(this Kernel kernel, string pluginName, IEnumerable<KernelFunction>? functions)
+    {
+        return kernel.CreatePluginFromFunctions(pluginName,
+            null,
+            functions);
+    }
+
 
     /// <summary>Creates a plugin that contains the specified functions.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -462,6 +520,7 @@ public static class KernelExtensions
 
     #endregion
 
+
     #region ImportPlugin/AddFromType
 
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
@@ -479,11 +538,12 @@ public static class KernelExtensions
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     public static KernelPlugin ImportPluginFromType<T>(this Kernel kernel, string? pluginName = null)
     {
-        KernelPlugin plugin = CreatePluginFromType<T>(kernel, pluginName);
+        KernelPlugin plugin = kernel.CreatePluginFromType<T>(pluginName);
         kernel.Plugins.Add(plugin);
 
         return plugin;
     }
+
 
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
@@ -498,14 +558,14 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin ImportPluginFromType<[DynamicallyAccessedMembers(
-        DynamicallyAccessedMemberTypes.PublicConstructors |
-        DynamicallyAccessedMemberTypes.PublicMethods |
-        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+            DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)]
+        T>(this Kernel kernel, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
-        KernelPlugin plugin = CreatePluginFromType<T>(kernel, jsonSerializerOptions, pluginName);
+        KernelPlugin plugin = kernel.CreatePluginFromType<T>(jsonSerializerOptions, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and adds it into the plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
@@ -531,6 +591,7 @@ public static class KernelExtensions
         return plugin;
     }
 
+
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and adds it into the plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -545,9 +606,12 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static KernelPlugin AddFromType<[DynamicallyAccessedMembers(
-        DynamicallyAccessedMemberTypes.PublicConstructors |
-        DynamicallyAccessedMemberTypes.PublicMethods |
-        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this ICollection<KernelPlugin> plugins, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
+            DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)]
+        T>(
+        this ICollection<KernelPlugin> plugins,
+        JsonSerializerOptions jsonSerializerOptions,
+        string? pluginName = null,
+        IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(plugins);
 
@@ -555,6 +619,7 @@ public static class KernelExtensions
         plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and adds it into the plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
@@ -578,6 +643,7 @@ public static class KernelExtensions
         return plugins;
     }
 
+
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/> and adds it into the plugin collection.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -591,9 +657,8 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     public static IKernelBuilderPlugins AddFromType<[DynamicallyAccessedMembers(
-        DynamicallyAccessedMemberTypes.PublicConstructors |
-        DynamicallyAccessedMemberTypes.PublicMethods |
-        DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this IKernelBuilderPlugins plugins, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+            DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)]
+        T>(this IKernelBuilderPlugins plugins, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
     {
         Verify.NotNull(plugins);
 
@@ -601,6 +666,7 @@ public static class KernelExtensions
 
         return plugins;
     }
+
 
     /// <summary>Adds the <paramref name="plugin"/> to the <paramref name="plugins"/>.</summary>
     /// <param name="plugins">The plugin collection to which the plugin should be added.</param>
@@ -617,6 +683,7 @@ public static class KernelExtensions
     }
 
     #endregion
+
 
     #region ImportPlugin/AddFromObject
 
@@ -635,11 +702,12 @@ public static class KernelExtensions
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     public static KernelPlugin ImportPluginFromObject(this Kernel kernel, object target, string? pluginName = null)
     {
-        KernelPlugin plugin = CreatePluginFromObject(kernel, target, pluginName);
+        KernelPlugin plugin = kernel.CreatePluginFromObject(target, pluginName);
         kernel.Plugins.Add(plugin);
 
         return plugin;
     }
+
 
     /// <summary>Creates a plugin that wraps the specified target object and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -653,12 +721,17 @@ public static class KernelExtensions
     /// Methods that have the <see cref="KernelFunctionAttribute"/> attribute will be included in the plugin.
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
-    public static KernelPlugin ImportPluginFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this Kernel kernel, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static KernelPlugin ImportPluginFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(
+        this Kernel kernel,
+        T target,
+        JsonSerializerOptions jsonSerializerOptions,
+        string? pluginName = null)
     {
-        KernelPlugin plugin = CreatePluginFromObject<T>(kernel, target, jsonSerializerOptions, pluginName);
+        KernelPlugin plugin = kernel.CreatePluginFromObject<T>(target, jsonSerializerOptions, pluginName);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -688,6 +761,7 @@ public static class KernelExtensions
         return plugin;
     }
 
+
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -702,14 +776,23 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     [Experimental("SKEXP0120")]
-    public static KernelPlugin AddFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this ICollection<KernelPlugin> plugins, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null, IServiceProvider? serviceProvider = null)
+    public static KernelPlugin AddFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(
+        this ICollection<KernelPlugin> plugins,
+        T target,
+        JsonSerializerOptions jsonSerializerOptions,
+        string? pluginName = null,
+        IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(plugins);
 
-        KernelPlugin plugin = KernelPluginFactory.CreateFromObject<T>(target, jsonSerializerOptions, pluginName, serviceProvider?.GetService<ILoggerFactory>());
+        KernelPlugin plugin = KernelPluginFactory.CreateFromObject<T>(target,
+            jsonSerializerOptions,
+            pluginName,
+            serviceProvider?.GetService<ILoggerFactory>());
         plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -733,6 +816,7 @@ public static class KernelExtensions
         return plugins;
     }
 
+
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -746,16 +830,24 @@ public static class KernelExtensions
     /// See <see cref="KernelFunctionAttribute"/> attribute for details.
     /// </remarks>
     [Experimental("SKEXP0120")]
-    public static IKernelBuilderPlugins AddFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(this IKernelBuilderPlugins plugins, T target, JsonSerializerOptions jsonSerializerOptions, string? pluginName = null)
+    public static IKernelBuilderPlugins AddFromObject<[DynamicallyAccessedMembersAttribute(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] T>(
+        this IKernelBuilderPlugins plugins,
+        T target,
+        JsonSerializerOptions jsonSerializerOptions,
+        string? pluginName = null)
     {
         Verify.NotNull(plugins);
 
-        plugins.Services.AddSingleton(serviceProvider => KernelPluginFactory.CreateFromObject<T>(target, jsonSerializerOptions, pluginName, serviceProvider?.GetService<ILoggerFactory>()));
+        plugins.Services.AddSingleton(serviceProvider => KernelPluginFactory.CreateFromObject<T>(target,
+            jsonSerializerOptions,
+            pluginName,
+            serviceProvider?.GetService<ILoggerFactory>()));
 
         return plugins;
     }
 
     #endregion
+
 
     #region ImportPlugin/AddFromFunctions
 
@@ -768,8 +860,13 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static KernelPlugin ImportPluginFromFunctions(this Kernel kernel, string pluginName, IEnumerable<KernelFunction>? functions) =>
-        ImportPluginFromFunctions(kernel, pluginName, description: null, functions);
+    public static KernelPlugin ImportPluginFromFunctions(this Kernel kernel, string pluginName, IEnumerable<KernelFunction>? functions)
+    {
+        return kernel.ImportPluginFromFunctions(pluginName,
+            null,
+            functions);
+    }
+
 
     /// <summary>Creates a plugin that contains the specified functions and imports it into the <paramref name="kernel"/>'s plugin collection.</summary>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
@@ -787,11 +884,12 @@ public static class KernelExtensions
         string? description = null,
         IEnumerable<KernelFunction>? functions = null)
     {
-        KernelPlugin plugin = CreatePluginFromFunctions(kernel, pluginName, description, functions);
+        KernelPlugin plugin = kernel.CreatePluginFromFunctions(pluginName, description, functions);
         kernel.Plugins.Add(plugin);
 
         return plugin;
     }
+
 
     /// <summary>Creates a plugin that contains the specified functions and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -802,8 +900,13 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static KernelPlugin AddFromFunctions(this ICollection<KernelPlugin> plugins, string pluginName, IEnumerable<KernelFunction>? functions) =>
-        AddFromFunctions(plugins, pluginName, description: null, functions);
+    public static KernelPlugin AddFromFunctions(this ICollection<KernelPlugin> plugins, string pluginName, IEnumerable<KernelFunction>? functions)
+    {
+        return plugins.AddFromFunctions(pluginName,
+            null,
+            functions);
+    }
+
 
     /// <summary>Creates a plugin that contains the specified functions and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -829,6 +932,7 @@ public static class KernelExtensions
         return plugin;
     }
 
+
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
     /// <param name="pluginName">The name for the plugin.</param>
@@ -838,8 +942,13 @@ public static class KernelExtensions
     /// <exception cref="ArgumentException"><paramref name="pluginName"/> is an invalid plugin name.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="functions"/> contains a null function.</exception>
     /// <exception cref="ArgumentException"><paramref name="functions"/> contains two functions with the same name.</exception>
-    public static IKernelBuilderPlugins AddFromFunctions(this IKernelBuilderPlugins plugins, string pluginName, IEnumerable<KernelFunction>? functions) =>
-        AddFromFunctions(plugins, pluginName, description: null, functions);
+    public static IKernelBuilderPlugins AddFromFunctions(this IKernelBuilderPlugins plugins, string pluginName, IEnumerable<KernelFunction>? functions)
+    {
+        return plugins.AddFromFunctions(pluginName,
+            null,
+            functions);
+    }
+
 
     /// <summary>Creates a plugin that wraps the specified target object and adds it into the plugin collection.</summary>
     /// <param name="plugins">The plugin collection to which the new plugin should be added.</param>
@@ -865,6 +974,7 @@ public static class KernelExtensions
     }
 
     #endregion
+
 
     #region CreatePluginFromDirectory
 
@@ -912,8 +1022,12 @@ public static class KernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return CreatePluginFromPromptDirectory(pluginDirectory, pluginName, promptTemplateFactory, kernel.Services);
+        return CreatePluginFromPromptDirectory(pluginDirectory,
+            pluginName,
+            promptTemplateFactory,
+            kernel.Services);
     }
+
 
     /// <summary>Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>.</summary>
     /// <remarks>
@@ -963,8 +1077,13 @@ public static class KernelExtensions
         Verify.NotNull(kernel);
         Verify.NotNull(jsonSerializerOptions);
 
-        return CreatePluginFromPromptDirectory(pluginDirectory, pluginName, promptTemplateFactory, kernel.Services, jsonSerializerOptions);
+        return CreatePluginFromPromptDirectory(pluginDirectory,
+            pluginName,
+            promptTemplateFactory,
+            kernel.Services,
+            jsonSerializerOptions);
     }
+
 
     /// <summary>Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>.</summary>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
@@ -1009,9 +1128,9 @@ public static class KernelExtensions
 
             if (File.Exists(configPath))
             {
-                promptConfig = jsonSerializerOptions != null ?
-                    PromptTemplateConfig.FromJson(File.ReadAllText(configPath), jsonSerializerOptions) :
-                    PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
+                promptConfig = jsonSerializerOptions != null
+                    ? PromptTemplateConfig.FromJson(File.ReadAllText(configPath), jsonSerializerOptions)
+                    : PromptTemplateConfig.FromJson(File.ReadAllText(configPath));
             }
             else
             {
@@ -1031,7 +1150,10 @@ public static class KernelExtensions
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogTrace("Registering function {0}.{1} loaded from {2}", pluginName, functionName, functionDirectory);
+                logger.LogTrace("Registering function {0}.{1} loaded from {2}",
+                    pluginName,
+                    functionName,
+                    functionDirectory);
             }
 
             functions.Add(KernelFunctionFactory.CreateFromPrompt(promptTemplateInstance, promptConfig, loggerFactory));
@@ -1041,6 +1163,7 @@ public static class KernelExtensions
     }
 
     #endregion
+
 
     #region ImportPlugin/AddFromPromptDirectory
 
@@ -1089,11 +1212,12 @@ public static class KernelExtensions
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        KernelPlugin plugin = CreatePluginFromPromptDirectory(kernel, pluginDirectory, pluginName, promptTemplateFactory);
+        KernelPlugin plugin = kernel.CreatePluginFromPromptDirectory(pluginDirectory, pluginName, promptTemplateFactory);
         kernel.Plugins.Add(plugin);
 
         return plugin;
     }
+
 
     /// <summary>
     /// Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>
@@ -1141,10 +1265,14 @@ public static class KernelExtensions
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        KernelPlugin plugin = CreatePluginFromPromptDirectory(kernel, pluginDirectory, jsonSerializerOptions, pluginName, promptTemplateFactory);
+        KernelPlugin plugin = kernel.CreatePluginFromPromptDirectory(pluginDirectory,
+            jsonSerializerOptions,
+            pluginName,
+            promptTemplateFactory);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
 
     /// <summary>
     /// Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>
@@ -1194,10 +1322,14 @@ public static class KernelExtensions
         Verify.NotNull(plugins);
 
         plugins.Services.AddSingleton<KernelPlugin>(services =>
-            CreatePluginFromPromptDirectory(pluginDirectory, pluginName, promptTemplateFactory, services));
+            CreatePluginFromPromptDirectory(pluginDirectory,
+                pluginName,
+                promptTemplateFactory,
+                services));
 
         return plugins;
     }
+
 
     /// <summary>
     /// Creates a plugin containing one function per child directory of the specified <paramref name="pluginDirectory"/>
@@ -1251,12 +1383,17 @@ public static class KernelExtensions
         Verify.NotNull(jsonSerializerOptions);
 
         plugins.Services.AddSingleton<KernelPlugin>(services =>
-            CreatePluginFromPromptDirectory(pluginDirectory, pluginName, promptTemplateFactory, services, jsonSerializerOptions));
+            CreatePluginFromPromptDirectory(pluginDirectory,
+                pluginName,
+                promptTemplateFactory,
+                services,
+                jsonSerializerOptions));
 
         return plugins;
     }
 
     #endregion
+
 
     #region InvokePromptAsync
 
@@ -1304,6 +1441,7 @@ public static class KernelExtensions
         return kernel.InvokeAsync(function, arguments, cancellationToken);
     }
 
+
     /// <summary>
     /// Invokes a prompt specified via a prompt template.
     /// </summary>
@@ -1350,6 +1488,7 @@ public static class KernelExtensions
         return kernel.InvokeAsync(function, arguments, cancellationToken);
     }
 
+
     /// <summary>
     /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
     /// </summary>
@@ -1393,6 +1532,7 @@ public static class KernelExtensions
 
         return kernel.InvokeAsync<T>(function, arguments, cancellationToken);
     }
+
 
     /// <summary>
     /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
@@ -1440,6 +1580,7 @@ public static class KernelExtensions
         return kernel.InvokeAsync<T>(function, arguments, cancellationToken);
     }
 
+
     /// <summary>
     /// Invokes a prompt specified via a prompt template and returns the results of type <typeparamref name="T"/>.
     /// </summary>
@@ -1469,9 +1610,7 @@ public static class KernelExtensions
         IPromptTemplateFactory? promptTemplateFactory,
         PromptTemplateConfig? promptTemplateConfig)
     {
-        return InvokePromptAsync<T>(
-            kernel,
-            promptTemplate,
+        return kernel.InvokePromptAsync<T>(promptTemplate,
             arguments,
             templateFormat,
             promptTemplateFactory,
@@ -1480,6 +1619,7 @@ public static class KernelExtensions
     }
 
     #endregion
+
 
     #region InvokePromptStreamingAsync
 
@@ -1529,6 +1669,7 @@ public static class KernelExtensions
         return function.InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
     }
 
+
     /// <summary>
     /// Invokes a prompt specified via a prompt template and streams its results.
     /// </summary>
@@ -1577,6 +1718,7 @@ public static class KernelExtensions
         return function.InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
     }
 
+
     /// <summary>
     /// Invokes a prompt specified via a prompt template and streams its results of type <typeparamref name="T"/>.
     /// </summary>
@@ -1622,6 +1764,7 @@ public static class KernelExtensions
 
         return function.InvokeStreamingAsync<T>(kernel, arguments, cancellationToken);
     }
+
 
     /// <summary>
     /// Invokes a prompt specified via a prompt template and streams its results of type <typeparamref name="T"/>.
@@ -1675,6 +1818,7 @@ public static class KernelExtensions
 
     #endregion
 
+
     #region Build for IKernelBuilder
 
     /// <summary>Constructs a new instance of <see cref="Kernel"/> using all of the settings configured on the builder.</summary>
@@ -1690,8 +1834,7 @@ public static class KernelExtensions
         if (builder is KernelBuilder kb && !kb.AllowBuild)
         {
             throw new InvalidOperationException(
-                "Build is not permitted on instances returned from AddKernel. " +
-                "Resolve the Kernel from the service provider.");
+                "Build is not permitted on instances returned from AddKernel. " + "Resolve the Kernel from the service provider.");
         }
 
         IServiceProvider serviceProvider = EmptyServiceProvider.Instance;
@@ -1728,5 +1871,6 @@ public static class KernelExtensions
     }
 
     #endregion
+
 
 }

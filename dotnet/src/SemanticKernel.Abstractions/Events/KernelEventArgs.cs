@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>Provides an <see cref="EventArgs"/> for operations related to <see cref="Kernel"/>-based operations.</summary>
 [Obsolete("Events are deprecated in favor of filters. Example in dotnet/samples/GettingStarted/Step7_Observability.cs of Semantic Kernel repository.")]
 public abstract class KernelEventArgs : EventArgs
@@ -23,6 +24,7 @@ public abstract class KernelEventArgs : EventArgs
         Arguments = arguments;
         Metadata = metadata;
     }
+
 
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this event is associated.

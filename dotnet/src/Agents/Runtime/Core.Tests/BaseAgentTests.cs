@@ -24,6 +24,7 @@ public class BaseAgentTests
         BaseAgent.TraceSource.Name.Should().Be("Microsoft.SemanticKernel.Agents.Runtime");
     }
 
+
     [Fact]
     public void Constructor_InitializesProperties_Correctly()
     {
@@ -35,7 +36,10 @@ public class BaseAgentTests
         Mock<IAgentRuntime> runtimeMock = new();
 
         // Act
-        TestAgentA agent = new(agentId, runtimeMock.Object, description, logger);
+        TestAgentA agent = new(agentId,
+            runtimeMock.Object,
+            description,
+            logger);
 
         // Assert
         agent.Id.Should().Be(agentId);
@@ -44,6 +48,7 @@ public class BaseAgentTests
         agent.Metadata.Description.Should().Be(description);
         agent.Logger.Should().Be(logger);
     }
+
 
     [Fact]
     public void Constructor_WithNoLogger_CreatesNullLogger()
@@ -59,6 +64,7 @@ public class BaseAgentTests
         // Assert
         agent.Logger.Should().Be(NullLogger.Instance);
     }
+
 
     [Fact]
     public async Task OnMessageAsync_WithoutMatchingHandler()
@@ -78,6 +84,7 @@ public class BaseAgentTests
         agent.ReceivedMessages.Should().BeEmpty();
     }
 
+
     [Fact]
     public async Task OnMessageAsync_WithMatchingHandler_NoResult()
     {
@@ -95,6 +102,7 @@ public class BaseAgentTests
         result.Should().BeNull();
         agent.ReceivedMessages.Should().ContainSingle();
     }
+
 
     [Fact]
     public async Task OnMessageAsync_WithMatchingHandler_HasResult()
@@ -115,6 +123,7 @@ public class BaseAgentTests
         agent.ReceivedMessages[0].Should().Contain(message.Content);
     }
 
+
     [Fact]
     public async Task CloseAsync_ReturnsCompletedTask()
     {
@@ -130,6 +139,7 @@ public class BaseAgentTests
         agent.IsClosed.Should().BeTrue();
     }
 
+
     [Fact]
     public async Task PublishMessageAsync_Received()
     {
@@ -142,12 +152,15 @@ public class BaseAgentTests
         await runtime.RegisterAgentTypeAsync<TestAgentB>(receiverType, services);
         await runtime.AddSubscriptionAsync(new TypeSubscription(topic.Type, receiverType));
         AgentId receiverId = await runtime.GetAgentAsync(receiverType, lazy: false);
-        await runtime.RegisterAgentTypeAsync<TestAgentC>(senderType, services, [topic]);
+        await runtime.RegisterAgentTypeAsync<TestAgentC>(senderType,
+            services,
+            topic);
         AgentId senderId = await runtime.GetAgentAsync(senderType, lazy: false);
 
         // Act
         await runtime.StartAsync();
         TestMessage message = new() { Content = "Hello World" };
+
         try
         {
             await runtime.SendMessageAsync(message, senderId);
@@ -161,6 +174,7 @@ public class BaseAgentTests
         await VerifyMessageHandled(runtime, senderId, message.Content);
         await VerifyMessageHandled(runtime, receiverId, message.Content);
     }
+
 
     [Fact]
     public async Task SendMessageAsync_Received()
@@ -172,12 +186,15 @@ public class BaseAgentTests
         AgentType receiverType = nameof(TestAgentB);
         await runtime.RegisterAgentTypeAsync<TestAgentB>(receiverType, services);
         AgentId receiverId = await runtime.GetAgentAsync(receiverType, lazy: false);
-        await runtime.RegisterAgentTypeAsync<TestAgentD>(senderType, services, [receiverId]);
+        await runtime.RegisterAgentTypeAsync<TestAgentD>(senderType,
+            services,
+            receiverId);
         AgentId senderId = await runtime.GetAgentAsync(senderType, lazy: false);
 
         // Act
         await runtime.StartAsync();
         TestMessage message = new() { Content = "Hello World" };
+
         try
         {
             await runtime.SendMessageAsync(message, senderId);
@@ -192,12 +209,14 @@ public class BaseAgentTests
         await VerifyMessageHandled(runtime, receiverId, message.Content);
     }
 
+
     private static async Task VerifyMessageHandled(InProcessRuntime runtime, AgentId agentId, string expectedContent)
     {
         TestAgent agent = await runtime.TryGetUnderlyingAgentInstanceAsync<TestAgent>(agentId);
         agent.ReceivedMessages.Should().ContainSingle();
         agent.ReceivedMessages[0].Should().Be(expectedContent);
     }
+
 
     [Fact]
     public async Task SaveStateAsync_ReturnsEmptyJsonElement()
@@ -214,6 +233,7 @@ public class BaseAgentTests
         state.ValueKind.Should().Be(JsonValueKind.Object);
         state.EnumerateObject().Count().Should().Be(0);
     }
+
 
     [Fact]
     public async Task LoadStateAsync_WithValidState_HandlesStateCorrectly()
@@ -232,6 +252,7 @@ public class BaseAgentTests
         // BaseAgent's default implementation just accepts any state without error
         // This is primarily testing that the default method doesn't throw exceptions
     }
+
 
     [Fact]
     public async Task GetAgentAsync_WithValidType_ReturnsAgentId()
@@ -261,44 +282,66 @@ public class BaseAgentTests
         retrievedAgentId.Should().BeNull();
     }
 
+
     // Custom test message
     private sealed class TestMessage
     {
         public string Content { get; set; } = string.Empty;
     }
 
+
     // TestAgent that collects the messages it receives
     protected abstract class TestAgent : BaseAgent
     {
         public List<string> ReceivedMessages { get; } = [];
 
-        protected TestAgent(AgentId id, IAgentRuntime runtime, string description, ILogger? logger = null)
-            : base(id, runtime, description, logger)
+
+        protected TestAgent(
+            AgentId id,
+            IAgentRuntime runtime,
+            string description,
+            ILogger? logger = null)
+            : base(id,
+                runtime,
+                description,
+                logger)
         {
         }
     }
+
 
     private sealed class TestAgentA : TestAgent, IHandle<TestMessage>
     {
         public bool IsClosed { get; private set; }
 
-        public TestAgentA(AgentId id, IAgentRuntime runtime, string description, ILogger<TestAgentA>? logger = null)
-            : base(id, runtime, description, logger)
+
+        public TestAgentA(
+            AgentId id,
+            IAgentRuntime runtime,
+            string description,
+            ILogger<TestAgentA>? logger = null)
+            : base(id,
+                runtime,
+                description,
+                logger)
         {
         }
+
 
         public ValueTask HandleAsync(TestMessage item, MessageContext messageContext)
         {
-            this.ReceivedMessages.Add(item.Content);
+            ReceivedMessages.Add(item.Content);
             return ValueTask.CompletedTask;
         }
 
+
         public override ValueTask CloseAsync()
         {
-            this.IsClosed = true;
+            IsClosed = true;
             return base.CloseAsync();
         }
     }
+
 
     // TestAgent that implements handler for TestMessage that produces a result
     private sealed class TestAgentB : TestAgent, IHandle<TestMessage, string>
@@ -308,48 +351,65 @@ public class BaseAgentTests
         {
         }
 
+
         public ValueTask<string> HandleAsync(TestMessage item, MessageContext messageContext)
         {
-            this.ReceivedMessages.Add(item.Content);
+            ReceivedMessages.Add(item.Content);
             return ValueTask.FromResult(item.Content);
         }
 
-        public new ValueTask<AgentId?> GetAgentAsync(AgentType agent, CancellationToken cancellationToken = default) => base.GetAgentAsync(agent, cancellationToken);
+
+        public new ValueTask<AgentId?> GetAgentAsync(AgentType agent, CancellationToken cancellationToken = default)
+        {
+            return base.GetAgentAsync(agent, cancellationToken);
+        }
     }
+
 
     // TestAgent that implements handler for TestMessage that responds by publishing to a topic
     private sealed class TestAgentC : TestAgent, IHandle<TestMessage>
     {
         private readonly TopicId _broadcastTopic;
 
+
         public TestAgentC(AgentId id, IAgentRuntime runtime, TopicId broadcastTopic)
             : base(id, runtime, "Test agent that publishes")
         {
-            this._broadcastTopic = broadcastTopic;
+            _broadcastTopic = broadcastTopic;
         }
+
 
         public async ValueTask HandleAsync(TestMessage item, MessageContext messageContext)
         {
-            this.ReceivedMessages.Add(item.Content);
-            await this.PublishMessageAsync(item, this._broadcastTopic, messageContext.MessageId, messageContext.CancellationToken);
+            ReceivedMessages.Add(item.Content);
+            await PublishMessageAsync(item,
+                _broadcastTopic,
+                messageContext.MessageId,
+                messageContext.CancellationToken);
         }
     }
+
 
     // TestAgent that implements handler for TestMessage that responds by messaging another agent
     private sealed class TestAgentD : TestAgent, IHandle<TestMessage>
     {
         private readonly AgentId _receiverId;
 
+
         public TestAgentD(AgentId id, IAgentRuntime runtime, AgentId receiverId)
             : base(id, runtime, "Test agent that sends")
         {
-            this._receiverId = receiverId;
+            _receiverId = receiverId;
         }
+
 
         public async ValueTask HandleAsync(TestMessage item, MessageContext messageContext)
         {
-            this.ReceivedMessages.Add(item.Content);
-            await this.SendMessageAsync(item, this._receiverId, messageContext.MessageId, messageContext.CancellationToken);
+            ReceivedMessages.Add(item.Content);
+            await SendMessageAsync(item,
+                _receiverId,
+                messageContext.MessageId,
+                messageContext.CancellationToken);
         }
     }
 }

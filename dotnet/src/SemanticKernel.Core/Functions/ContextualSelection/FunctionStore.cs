@@ -24,7 +24,8 @@ internal sealed class FunctionStore
     private readonly ILogger _logger;
     private readonly FunctionStoreOptions _options;
     private readonly VectorStoreCollection<object, Dictionary<string, object?>> _collection;
-    private bool _isCollectionExistenceAsserted = false;
+    private bool _isCollectionExistenceAsserted;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionStore"/> class.
@@ -59,14 +60,17 @@ internal sealed class FunctionStore
         _options = options ?? new FunctionStoreOptions();
 
         // Create and assert the collection support record keys of string type
-        _collection = _vectorStore.GetDynamicCollection(collectionName, new VectorStoreCollectionDefinition()
-        {
-            Properties = [
-                new VectorStoreKeyProperty("Name", typeof(string)),
-                new VectorStoreVectorProperty("Embedding", typeof(string), dimensions: vectorDimensions)
-            ]
-        });
+        _collection = _vectorStore.GetDynamicCollection(collectionName,
+            new VectorStoreCollectionDefinition
+            {
+                Properties =
+                [
+                    new VectorStoreKeyProperty("Name", typeof(string)),
+                    new VectorStoreVectorProperty("Embedding", typeof(string), vectorDimensions)
+                ]
+            });
     }
+
 
     /// <summary>
     /// Saves the functions to the vector store.
@@ -82,7 +86,7 @@ internal sealed class FunctionStore
         // Create vector store records
         foreach ((string name, string vectorizationSource) in nameSourcePairs)
         {
-            functionRecords.Add(new Dictionary<string, object?>()
+            functionRecords.Add(new Dictionary<string, object?>
             {
                 ["Name"] = name,
                 ["Embedding"] = vectorizationSource
@@ -92,8 +96,9 @@ internal sealed class FunctionStore
         // Create collection and upsert all vector store records
         await _collection.EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
-        await _collection.UpsertAsync(functionRecords, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await _collection.UpsertAsync(functionRecords, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Searches for functions based on the provided context.
@@ -105,7 +110,7 @@ internal sealed class FunctionStore
         await AssertCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         var results = await _collection
-            .SearchAsync(context, top: _maxNumberOfFunctions, cancellationToken: cancellationToken)
+            .SearchAsync(context, _maxNumberOfFunctions, cancellationToken: cancellationToken)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -113,6 +118,7 @@ internal sealed class FunctionStore
 
         return results.Select(result => _functionByName[(string)result.Record["Name"]!]);
     }
+
 
     /// <summary>
     /// Get the function vectorization information, which includes the function name and the source used for vectorization.
@@ -123,11 +129,14 @@ internal sealed class FunctionStore
     {
         List<FunctionVectorizationInfo> nameSourcePairs = new(_functionByName.Count);
 
-        var provider = (Func<AIFunction, CancellationToken, Task<string>>?)_options.EmbeddingValueProvider ?? ((function, _) =>
-        {
-            string descriptionPart = string.IsNullOrEmpty(function.Description) ? string.Empty : $", description: {function.Description}";
-            return Task.FromResult($"Function name: {function.Name}{descriptionPart}");
-        });
+        var provider = (Func<AIFunction, CancellationToken, Task<string>>?)_options.EmbeddingValueProvider
+            ?? ((function, _) =>
+            {
+                string descriptionPart = string.IsNullOrEmpty(function.Description)
+                    ? string.Empty
+                    : $", description: {function.Description}";
+                return Task.FromResult($"Function name: {function.Name}{descriptionPart}");
+            });
 
         foreach (KeyValuePair<string, AIFunction> pair in _functionByName)
         {
@@ -140,6 +149,7 @@ internal sealed class FunctionStore
 
         return nameSourcePairs;
     }
+
 
     /// <summary>
     /// Asserts that the collection exists in the vector store.
@@ -158,17 +168,20 @@ internal sealed class FunctionStore
         }
     }
 
+
     internal readonly struct FunctionVectorizationInfo
     {
         public string Name { get; }
 
         public string VectorizationSource { get; }
 
+
         public FunctionVectorizationInfo(string name, string vectorizationSource)
         {
             Name = name;
             VectorizationSource = vectorizationSource;
         }
+
 
         public void Deconstruct(out string name, out string vectorizationSource)
         {

@@ -23,9 +23,10 @@ internal class KernelChatOptions : ChatOptions
     {
         Verify.NotNull(kernel);
 
-        this.ExecutionSettings = settings;
-        this.Kernel = kernel;
+        ExecutionSettings = settings;
+        Kernel = kernel;
     }
+
 
     [JsonIgnore]
     public ChatMessageContent? ChatMessageContent { get; internal set; }
@@ -36,8 +37,12 @@ internal class KernelChatOptions : ChatOptions
     [JsonIgnore]
     public PromptExecutionSettings? ExecutionSettings { get; internal set; }
 
-    public override ChatOptions Clone() => new KernelChatOptions(this.Kernel, this, this.ExecutionSettings)
+
+    public override ChatOptions Clone()
     {
-        ChatMessageContent = this.ChatMessageContent
-    };
+        return new KernelChatOptions(Kernel, this, ExecutionSettings)
+        {
+            ChatMessageContent = ChatMessageContent
+        };
+    }
 }

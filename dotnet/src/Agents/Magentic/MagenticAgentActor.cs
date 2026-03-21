@@ -22,6 +22,7 @@ internal sealed class MagenticAgentActor :
 {
     private readonly List<ChatMessageContent> _cache;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MagenticAgentActor"/> class.
     /// </summary>
@@ -30,11 +31,21 @@ internal sealed class MagenticAgentActor :
     /// <param name="context">The orchestration context.</param>
     /// <param name="agent">An <see cref="Agent"/>.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public MagenticAgentActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, Agent agent, ILogger<MagenticAgentActor>? logger = null)
-        : base(id, runtime, context, agent, logger)
+    public MagenticAgentActor(
+        AgentId id,
+        IAgentRuntime runtime,
+        OrchestrationContext context,
+        Agent agent,
+        ILogger<MagenticAgentActor>? logger = null)
+        : base(id,
+            runtime,
+            context,
+            agent,
+            logger)
     {
         _cache = [];
     }
+
 
     /// <inheritdoc/>
     public ValueTask HandleAsync(MagenticMessages.Group item, MessageContext messageContext)
@@ -48,12 +59,14 @@ internal sealed class MagenticAgentActor :
 #endif
     }
 
+
     /// <inheritdoc/>
     public async ValueTask HandleAsync(MagenticMessages.Reset item, MessageContext messageContext)
     {
         _cache.Clear();
         await DeleteThreadAsync(messageContext.CancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(MagenticMessages.Speak item, MessageContext messageContext)

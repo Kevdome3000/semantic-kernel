@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.ImageToText;
+
 /// <summary>
 /// Interface for image-to-text services.
 /// </summary>

@@ -18,6 +18,7 @@ public sealed class FunctionChoiceBehaviorConfigurationContext
         ChatHistory = chatHistory;
     }
 
+
     /// <summary>
     /// History of the current chat session.
     /// </summary>

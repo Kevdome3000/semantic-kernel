@@ -9,17 +9,17 @@ namespace Microsoft.SemanticKernel.Agents.Magentic;
 /// Structured response for the ledger evaluation.
 /// </summary>
 public sealed record MagenticProgressLedger(
-    [property:Description("The name of who is selected to respond.")]
+    [property: Description("The name of who is selected to respond.")]
     string Name,
-    [property:Description("Direction to who is responding that is specifically based on its capabilities and ALWAYS phrased in the 2nd person.")]
+    [property: Description("Direction to who is responding that is specifically based on its capabilities and ALWAYS phrased in the 2nd person.")]
     string Instruction,
-    [property:Description("The reason for selecting the agent.")]
+    [property: Description("The reason for selecting the agent.")]
     string Reason,
-    [property:Description("Is the task completed?")]
+    [property: Description("Is the task completed?")]
     LedgerState IsTaskComplete,
-    [property:Description("Is the task making progress, but not complete?")]
+    [property: Description("Is the task making progress, but not complete?")]
     LedgerState IsTaskProgressing,
-    [property:Description("Is the task stuck in a loop?")]
+    [property: Description("Is the task stuck in a loop?")]
     LedgerState IsTaskInLoop)
 {
     private static readonly JsonSerializerOptions JsonOptions =
@@ -28,20 +28,25 @@ public sealed record MagenticProgressLedger(
             WriteIndented = true
         };
 
+
     /// <summary>
     /// Formats the ledger evaluation as a JSON string.
     /// </summary>
-    public string ToJson() => JsonSerializer.Serialize(this, JsonOptions);
+    public string ToJson()
+    {
+        return JsonSerializer.Serialize(this, JsonOptions);
+    }
 }
+
 
 /// <summary>
 /// Represents the evaluation state of a specific property in the progress ledger,
 /// including the result and the reason for that result.
 /// </summary>
 public sealed record LedgerState(
-    [property:Description("The result for the property being evaluated")]
+    [property: Description("The result for the property being evaluated")]
     bool Result,
-    [property:Description("The reason for the result")]
+    [property: Description("The reason for the result")]
     string Reason)
 {
     /// <summary>
@@ -49,5 +54,8 @@ public sealed record LedgerState(
     /// </summary>
     /// <param name="state">The <see cref="LedgerState"/> instance to convert.</param>
     /// <returns>The <see cref="Result"/> value of the <see cref="LedgerState"/>.</returns>
-    public static implicit operator bool(LedgerState state) => state.Result;
+    public static implicit operator bool(LedgerState state)
+    {
+        return state.Result;
+    }
 }

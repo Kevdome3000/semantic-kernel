@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.Plugins.Document.FileSystem;
 
 #pragma warning disable CA1031 // Exceptions are caught and returned in a task
 
+
 /// <summary>
 /// Connector for local filesystem
 /// </summary>
@@ -40,6 +41,7 @@ public class LocalFileSystemConnector : IFileSystemConnector
         }
     }
 
+
     /// <summary>
     /// Get a writeable stream to a file.
     /// </summary>
@@ -66,6 +68,7 @@ public class LocalFileSystemConnector : IFileSystemConnector
         }
     }
 
+
     /// <summary>
     /// Get a writeable stream to a file.
     /// </summary>
@@ -89,6 +92,7 @@ public class LocalFileSystemConnector : IFileSystemConnector
             return Task.FromException<Stream>(e);
         }
     }
+
 
     /// <inheritdoc/>
     public Task<bool> FileExistsAsync(string filePath, CancellationToken cancellationToken = default)

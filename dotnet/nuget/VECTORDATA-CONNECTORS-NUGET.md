@@ -17,7 +17,8 @@ does not depend on any Semantic Kernel abstractions or core libraries.
 
 ## Getting Started ⚡
 
-- Learn more about using the VectorData abstractions and implementations at the [documentation site](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors).
+- Learn more about using the VectorData abstractions and implementations at
+  the [documentation site](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors).
 - Learn more about Semantic Kernel at the [documentation site](https://aka.ms/SK-Docs).
 - Join the [Discord community](https://aka.ms/SKDiscord).
 - Follow the team on [Semantic Kernel blog](https://aka.ms/sk/blog).

@@ -51,7 +51,9 @@
         },
         "security": [
           {
-            "OAuth2Auth": [ "new_scope" ]
+            "OAuth2Auth": [
+              "new_scope"
+            ]
           }
         ]
       }

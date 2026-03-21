@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateConstants
@@ -43,7 +41,13 @@ internal sealed class WeaviateConstants
         Converters =
         {
             new WeaviateDateTimeOffsetConverter(),
-            new WeaviateNullableDateTimeOffsetConverter()
+            new WeaviateNullableDateTimeOffsetConverter(),
+            new WeaviateDateTimeConverter(),
+            new WeaviateNullableDateTimeConverter(),
+#if NET
+            new WeaviateDateOnlyConverter(),
+            new WeaviateNullableDateOnlyConverter(),
+#endif
         }
     };
 }

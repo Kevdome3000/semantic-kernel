@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Represents a function name.
 /// </summary>
@@ -20,6 +18,7 @@ internal sealed class FunctionName
     /// </summary>
     public string Name { get; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionName"/> class.
     /// </summary>
@@ -32,6 +31,7 @@ internal sealed class FunctionName
         Name = name;
         PluginName = pluginName;
     }
+
 
     /// <summary>
     /// Gets the fully-qualified name of the function.
@@ -46,6 +46,7 @@ internal sealed class FunctionName
             ? functionName
             : $"{pluginName}{functionNameSeparator}{functionName}";
     }
+
 
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionName"/> class.
@@ -63,16 +64,12 @@ internal sealed class FunctionName
 
         if (separatorPos < 0)
         {
-            return new FunctionName(name: functionName, pluginName: pluginName);
+            return new FunctionName(functionName, pluginName);
         }
-        pluginName = fullyQualifiedName.AsSpan(0, separatorPos).
-            Trim().
-            ToString();
+        pluginName = fullyQualifiedName.AsSpan(0, separatorPos).Trim().ToString();
 
-        functionName = fullyQualifiedName.AsSpan(separatorPos + functionNameSeparator.Length).
-            Trim().
-            ToString();
+        functionName = fullyQualifiedName.AsSpan(separatorPos + functionNameSeparator.Length).Trim().ToString();
 
-        return new FunctionName(name: functionName, pluginName: pluginName);
+        return new FunctionName(functionName, pluginName);
     }
 }

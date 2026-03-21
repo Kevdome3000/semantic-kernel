@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Plugins.UnitTests.Core;
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -11,6 +9,7 @@ using Microsoft.SemanticKernel.Plugins.Core;
 using SemanticKernel.UnitTests;
 using Xunit;
 
+namespace SemanticKernel.Plugins.UnitTests.Core;
 
 // TODO: allow clock injection and test all functions
 public class TimePluginTests
@@ -61,7 +60,7 @@ public class TimePluginTests
     {
         KernelFunction func = KernelPluginFactory.CreateFromType<TimePlugin>()["DateMatchingLastDayName"];
 
-        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => func.InvokeAsync(new(), new() { ["input"] = "not a day name" }));
+        var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => func.InvokeAsync(new Kernel(), new KernelArguments { ["input"] = "not a day name" }));
 
         AssertExtensions.AssertIsArgumentOutOfRange(ex, "input", "not a day name");
     }

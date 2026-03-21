@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using Microsoft.Azure.Cosmos;
-
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 
 /// <summary>
 /// Represents a collection of vector store records in a CosmosNoSql database, mapped to a dynamic <c>Dictionary&lt;string, object?&gt;</c>.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This collection accepts keys of type <see cref="object"/>, but only <see cref="CosmosNoSqlKey"/> instances
+/// are supported at runtime. Passing any other key type will result in an <see cref="InvalidOperationException"/>.
+/// </para>
+/// </remarks>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
 public sealed class CosmosNoSqlDynamicCollection : CosmosNoSqlCollection<object, Dictionary<string, object?>>
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
@@ -32,12 +32,13 @@ public sealed class CosmosNoSqlDynamicCollection : CosmosNoSqlCollection<object,
     {
     }
 
+
     /// <summary>
-    /// Initializes a new instance of the <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> class.
+    /// Initializes a new instance of the <see cref="CosmosNoSqlDynamicCollection"/> class.
     /// </summary>
     /// <param name="connectionString">Connection string required to connect to Azure CosmosDB NoSQL.</param>
     /// <param name="databaseName">Database name for Azure CosmosDB NoSQL.</param>
-    /// <param name="collectionName">The name of the collection that this <see cref="CosmosNoSqlCollection{TKey, TRecord}"/> will access.</param>
+    /// <param name="collectionName">The name of the collection that this <see cref="CosmosNoSqlDynamicCollection"/> will access.</param>
     /// <param name="clientOptions">Optional configuration options for <see cref="CosmosClient"/>.</param>
     /// <param name="options">Optional configuration options for this class.</param>
     [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
@@ -58,6 +59,7 @@ public sealed class CosmosNoSqlDynamicCollection : CosmosNoSqlCollection<object,
         Verify.NotNullOrWhiteSpace(databaseName);
         Verify.NotNullOrWhiteSpace(collectionName);
     }
+
 
     internal CosmosNoSqlDynamicCollection(
         ClientWrapper clientWrapper,

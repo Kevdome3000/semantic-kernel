@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
@@ -14,6 +9,7 @@ namespace Microsoft.SemanticKernel.Agents;
 public sealed class AggregatorAgentFactory : AgentFactory
 {
     private readonly AgentFactory[] _agentFactories;
+
 
     /// <summary>Initializes the instance.</summary>
     /// <param name="agentFactories">Ordered <see cref="AgentFactory"/> instances to aggregate.</param>
@@ -29,19 +25,29 @@ public sealed class AggregatorAgentFactory : AgentFactory
             Verify.NotNull(agentFactory, nameof(agentFactories));
         }
 
-        this._agentFactories = agentFactories;
+        _agentFactories = agentFactories;
     }
 
+
     /// <inheritdoc/>
-    public override async Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default)
+    public override async Task<Agent?> TryCreateAsync(
+        Kernel kernel,
+        AgentDefinition agentDefinition,
+        AgentCreationOptions? agentCreationOptions = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
-        foreach (var agentFactory in this._agentFactories)
+        foreach (var agentFactory in _agentFactories)
         {
             if (agentFactory.IsSupported(agentDefinition))
             {
-                var kernelAgent = await agentFactory.TryCreateAsync(kernel, agentDefinition, agentCreationOptions, cancellationToken).ConfigureAwait(false);
+                var kernelAgent = await agentFactory.TryCreateAsync(kernel,
+                        agentDefinition,
+                        agentCreationOptions,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+
                 if (kernelAgent is not null)
                 {
                     return kernelAgent;

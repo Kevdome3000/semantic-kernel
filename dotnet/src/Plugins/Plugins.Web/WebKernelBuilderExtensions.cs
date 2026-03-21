@@ -31,6 +31,7 @@ public static class WebKernelBuilderExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Register an <see cref="ITextSearch"/> instance with the specified service ID.
     /// </summary>
@@ -49,6 +50,7 @@ public static class WebKernelBuilderExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Register an <see cref="ITextSearch"/> instance with the specified service ID.
     /// </summary>
@@ -65,10 +67,14 @@ public static class WebKernelBuilderExtensions
         string? serviceId = null)
     {
         Verify.NotNull(builder);
-        builder.Services.AddGoogleTextSearch(searchEngineId, apiKey, options, serviceId);
+        builder.Services.AddGoogleTextSearch(searchEngineId,
+            apiKey,
+            options,
+            serviceId);
 
         return builder;
     }
+
 
     /// <summary>
     /// Register an <see cref="ITextSearch"/> instance with the specified service ID.

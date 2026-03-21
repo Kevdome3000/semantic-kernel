@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
@@ -24,6 +20,7 @@ internal sealed class CrewAIStateEnumConverter : JsonConverter<CrewAIKickoffStat
             _ => throw new KernelException("Failed to parse Crew AI kickoff state.")
         };
     }
+
 
     public override void Write(Utf8JsonWriter writer, CrewAIKickoffState value, JsonSerializerOptions options)
     {

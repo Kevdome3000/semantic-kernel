@@ -1,13 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 /// <summary>
@@ -23,6 +15,7 @@ internal static class SqlitePropertyMapping
 
         return byteArray;
     }
+
 
     public static List<SqliteColumn> GetColumns(IReadOnlyList<PropertyModel> properties, bool data)
     {
@@ -70,6 +63,7 @@ internal static class SqlitePropertyMapping
 
             var column = new SqliteColumn(property.StorageName, propertyType, isPrimary)
             {
+                IsNullable = property.IsNullable,
                 Configuration = configuration,
                 HasIndex = property is DataPropertyModel { IsIndexed: true }
             };
@@ -80,6 +74,7 @@ internal static class SqlitePropertyMapping
         return columns;
     }
 
+
     public static TPropertyType? GetPropertyValue<TPropertyType>(DbDataReader reader, string propertyName)
     {
         int propertyIndex = reader.GetOrdinal(propertyName);
@@ -89,6 +84,7 @@ internal static class SqlitePropertyMapping
             ? default
             : reader.GetFieldValue<TPropertyType>(propertyIndex);
     }
+
 
     #region private
 
@@ -113,6 +109,14 @@ internal static class SqlitePropertyMapping
             // Guid type - represent as TEXT
             Type t when t == typeof(Guid) || t == typeof(Guid?) => "TEXT",
 
+            // Date/time types - represent as TEXT (ISO 8601)
+            Type t when t == typeof(DateTime) || t == typeof(DateTime?) => "TEXT",
+            Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => "TEXT",
+#if NET
+            Type t when t == typeof(DateOnly) || t == typeof(DateOnly?) => "TEXT",
+            Type t when t == typeof(TimeOnly) || t == typeof(TimeOnly?) => "TEXT",
+#endif
+
             // Byte array (BLOB)
             Type t when t == typeof(byte[]) => "BLOB",
 
@@ -120,17 +124,25 @@ internal static class SqlitePropertyMapping
             _ => throw new NotSupportedException($"Property '{property.ModelName}' has type '{property.Type.Name}', which is not supported by SQLite connector.")
         };
 
+
     private static string GetDistanceMetric(VectorPropertyModel vectorProperty)
-        => vectorProperty.DistanceFunction switch
+    {
+        return vectorProperty.DistanceFunction switch
         {
             DistanceFunction.CosineDistance or null => "cosine",
             DistanceFunction.ManhattanDistance => "l1",
             DistanceFunction.EuclideanDistance => "l2",
             _ => throw new NotSupportedException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the SQLite connector.")
         };
+    }
+
 
     private static string GetStorageVectorPropertyType(VectorPropertyModel vectorProperty)
-        => $"FLOAT[{vectorProperty.Dimensions}]";
+    {
+        return $"FLOAT[{vectorProperty.Dimensions}]";
+    }
 
     #endregion
+
+
 }

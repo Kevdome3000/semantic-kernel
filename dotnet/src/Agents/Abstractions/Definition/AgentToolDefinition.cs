@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>

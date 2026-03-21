@@ -30,26 +30,39 @@ public static class AIServiceExtensions
     /// </summary>
     public static string ApiVersionKey => "ApiVersion";
 
+
     /// <summary>
     /// Gets the model identifier from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.
     /// </summary>
     /// <param name="service">The service from which to get the model identifier.</param>
     /// <returns>The model identifier if it was specified in the service's attributes; otherwise, null.</returns>
-    public static string? GetModelId(this IAIService service) => service.GetAttribute(ModelIdKey);
+    public static string? GetModelId(this IAIService service)
+    {
+        return service.GetAttribute(ModelIdKey);
+    }
+
 
     /// <summary>
     /// Gets the endpoint from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.
     /// </summary>
     /// <param name="service">The service from which to get the endpoint.</param>
     /// <returns>The endpoint if it was specified in the service's attributes; otherwise, null.</returns>
-    public static string? GetEndpoint(this IAIService service) => service.GetAttribute(EndpointKey);
+    public static string? GetEndpoint(this IAIService service)
+    {
+        return service.GetAttribute(EndpointKey);
+    }
+
 
     /// <summary>
     /// Gets the API version from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>
     /// </summary>
     /// <param name="service">The service from which to get the API version.</param>
     /// <returns>The API version if it was specified in the service's attributes; otherwise, null.</returns>
-    public static string? GetApiVersion(this IAIService service) => service.GetAttribute(ApiVersionKey);
+    public static string? GetApiVersion(this IAIService service)
+    {
+        return service.GetAttribute(ApiVersionKey);
+    }
+
 
     /// <summary>
     /// Gets the specified attribute.
@@ -62,6 +75,7 @@ public static class AIServiceExtensions
             ? value as string
             : null;
     }
+
 
     /// <summary>
     /// Resolves an <see cref="IAIService"/> and associated <see cref="PromptExecutionSettings"/> from the specified
@@ -89,16 +103,17 @@ public static class AIServiceExtensions
         Verify.NotNull(function);
         Verify.NotNull(arguments);
 
-        if (selector.TrySelectAIService<T>(
-                kernel, function, arguments,
-                out T? service, out PromptExecutionSettings? settings))
+        if (selector.TrySelectAIService(
+            kernel,
+            function,
+            arguments,
+            out T? service,
+            out PromptExecutionSettings? settings))
         {
             return (service, settings);
         }
 
-        var message = new StringBuilder().Append("Required service of type ").
-            Append(typeof(T)).
-            Append(" not registered.");
+        var message = new StringBuilder().Append("Required service of type ").Append(typeof(T)).Append(" not registered.");
 
         if (function.ExecutionSettings is not null)
         {
@@ -106,23 +121,20 @@ public static class AIServiceExtensions
 
             if (!string.IsNullOrEmpty(serviceIds))
             {
-                message.Append(" Expected serviceIds: ").
-                    Append(serviceIds).
-                    Append('.');
+                message.Append(" Expected serviceIds: ").Append(serviceIds).Append('.');
             }
 
             string modelIds = string.Join("|", function.ExecutionSettings.Values.Select(model => model.ModelId));
 
             if (!string.IsNullOrEmpty(modelIds))
             {
-                message.Append(" Expected modelIds: ").
-                    Append(modelIds).
-                    Append('.');
+                message.Append(" Expected modelIds: ").Append(modelIds).Append('.');
             }
         }
 
         throw new KernelException(message.ToString());
     }
+
 
     /// <summary>
     /// Resolves an <see cref="IAIService"/> and associated <see cref="PromptExecutionSettings"/> from the specified

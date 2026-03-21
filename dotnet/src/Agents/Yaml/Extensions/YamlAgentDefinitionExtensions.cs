@@ -25,7 +25,9 @@ internal static class YamlAgentDefinitionExtensions
         NormalizeObject(agentDefinition, configuration);
     }
 
+
     #region private
+
     private static void NormalizeObject(object? obj, IConfiguration configuration)
     {
         if (obj is null)
@@ -60,6 +62,7 @@ internal static class YamlAgentDefinitionExtensions
         else
         {
             Type type = obj.GetType();
+
             foreach (PropertyInfo property in type.GetProperties())
             {
                 if (!property.CanRead || !property.CanWrite)
@@ -68,6 +71,7 @@ internal static class YamlAgentDefinitionExtensions
                 }
 
                 var value = property.GetValue(obj);
+
                 if (value is null)
                 {
                     continue;
@@ -77,7 +81,10 @@ internal static class YamlAgentDefinitionExtensions
                 {
                     if (RequiresNormalization(stringValue))
                     {
-                        NormalizeString(obj, property, stringValue!, configuration);
+                        NormalizeString(obj,
+                            property,
+                            stringValue!,
+                            configuration);
                     }
                 }
                 else if (value is IDictionary<string, object> dictionaryValue)
@@ -85,6 +92,7 @@ internal static class YamlAgentDefinitionExtensions
                     foreach (var entryKey in dictionaryValue.Keys)
                     {
                         var entryValue = dictionaryValue[entryKey];
+
                         if (entryValue is string entryStringValue)
                         {
                             if (RequiresNormalization(entryStringValue))
@@ -107,20 +115,30 @@ internal static class YamlAgentDefinitionExtensions
         }
     }
 
+
     private static bool RequiresNormalization(string? value)
     {
         return !string.IsNullOrEmpty(value) && value.StartsWith("${", StringComparison.InvariantCulture) && value.EndsWith("}", StringComparison.InvariantCulture);
     }
 
-    private static void NormalizeString(object instance, PropertyInfo property, string input, IConfiguration configuration)
+
+    private static void NormalizeString(
+        object instance,
+        PropertyInfo property,
+        string input,
+        IConfiguration configuration)
     {
         property.SetValue(instance, GetNormalizedValue(input, configuration));
     }
+
 
     private static string GetNormalizedValue(string input, IConfiguration configuration)
     {
         string key = input.Substring(2, input.Length - 3);
         return configuration[key] ?? input;
     }
+
     #endregion
+
+
 }

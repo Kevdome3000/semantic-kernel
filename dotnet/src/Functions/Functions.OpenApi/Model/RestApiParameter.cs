@@ -127,10 +127,13 @@ public sealed class RestApiParameter
         Format = format;
         Schema = schema;
     }
+
+
     internal void Freeze()
     {
         _freezable.Freeze();
     }
+
 
     private readonly Freezable _freezable = new();
     private string? _argumentName;

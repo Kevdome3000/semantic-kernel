@@ -1,16 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Grpc.Core;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using Qdrant.Client;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
@@ -36,6 +26,7 @@ public sealed class QdrantVectorStore : VectorStore
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStore"/> class.
     /// </summary>
@@ -47,6 +38,7 @@ public sealed class QdrantVectorStore : VectorStore
     {
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStore"/> class.
     /// </summary>
@@ -56,24 +48,26 @@ public sealed class QdrantVectorStore : VectorStore
     {
         Verify.NotNull(qdrantClient);
 
-        this._qdrantClient = qdrantClient;
+        _qdrantClient = qdrantClient;
 
         options ??= QdrantVectorStoreOptions.Default;
-        this._hasNamedVectors = options.HasNamedVectors;
-        this._embeddingGenerator = options.EmbeddingGenerator;
+        _hasNamedVectors = options.HasNamedVectors;
+        _embeddingGenerator = options.EmbeddingGenerator;
 
-        this._metadata = new()
+        _metadata = new()
         {
             VectorStoreSystemName = QdrantConstants.VectorStoreSystemName
         };
     }
 
+
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
-        this._qdrantClient.Dispose();
+        _qdrantClient.Dispose();
         base.Dispose(disposing);
     }
+
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
@@ -86,12 +80,15 @@ public sealed class QdrantVectorStore : VectorStore
 #endif
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
-            : new QdrantCollection<TKey, TRecord>(this._qdrantClient.Share, name, new()
-            {
-                HasNamedVectors = this._hasNamedVectors,
-                Definition = definition,
-                EmbeddingGenerator = this._embeddingGenerator
-            });
+            : new QdrantCollection<TKey, TRecord>(_qdrantClient.Share,
+                name,
+                new()
+                {
+                    HasNamedVectors = _hasNamedVectors,
+                    Definition = definition,
+                    EmbeddingGenerator = _embeddingGenerator
+                });
+
 
     /// <inheritdoc />
 #if NET
@@ -99,21 +96,25 @@ public sealed class QdrantVectorStore : VectorStore
 #else
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
-        => new QdrantDynamicCollection(this._qdrantClient.Share, name, new QdrantCollectionOptions()
-        {
-            HasNamedVectors = this._hasNamedVectors,
-            Definition = definition,
-            EmbeddingGenerator = this._embeddingGenerator
-        });
+        => new QdrantDynamicCollection(_qdrantClient.Share,
+            name,
+            new QdrantCollectionOptions
+            {
+                HasNamedVectors = _hasNamedVectors,
+                Definition = definition,
+                EmbeddingGenerator = _embeddingGenerator
+            });
 #pragma warning restore IDE0090
+
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var collections = await VectorStoreErrorHandler.RunOperationAsync<IReadOnlyList<string>, RpcException>(
-            this._metadata,
-            "ListCollections",
-            () => this._qdrantClient.ListCollectionsAsync(cancellationToken)).ConfigureAwait(false);
+                _metadata,
+                "ListCollections",
+                () => _qdrantClient.ListCollectionsAsync(cancellationToken))
+            .ConfigureAwait(false);
 
         foreach (var collection in collections)
         {
@@ -121,19 +122,22 @@ public sealed class QdrantVectorStore : VectorStore
         }
     }
 
+
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
@@ -141,10 +145,14 @@ public sealed class QdrantVectorStore : VectorStore
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(QdrantClient) ? this._qdrantClient.QdrantClient :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreMetadata)
+                    ? _metadata
+                    : serviceType == typeof(QdrantClient)
+                        ? _qdrantClient.QdrantClient
+                        : serviceType.IsInstanceOfType(this)
+                            ? this
+                            : null;
     }
 }

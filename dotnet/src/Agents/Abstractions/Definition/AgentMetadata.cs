@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
@@ -31,15 +27,20 @@ public sealed class AgentMetadata
     [JsonExtensionData]
     public IDictionary<string, object?> ExtensionData
     {
-        get => this._extensionData ??= new Dictionary<string, object?>();
+        get => _extensionData ??= new Dictionary<string, object?>();
         set
         {
             Verify.NotNull(value);
-            this._extensionData = value;
+            _extensionData = value;
         }
     }
 
+
     #region private
+
     private IDictionary<string, object?>? _extensionData;
+
     #endregion
+
+
 }

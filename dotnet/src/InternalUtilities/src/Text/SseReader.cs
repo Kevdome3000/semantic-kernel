@@ -1,12 +1,7 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.SemanticKernel.Text;
+
 /// <summary>
 /// Provides a reader for Server-Sent Events (SSE) data.
 /// </summary>
@@ -21,6 +16,7 @@ internal sealed class SseReader(Stream stream) : IDisposable
     private readonly StreamReader _reader = new(stream);
 
     private string? _lastEventName;
+
 
     public SseLine? ReadSingleDataEvent()
     {
@@ -62,10 +58,10 @@ internal sealed class SseReader(Stream stream) : IDisposable
         return null;
     }
 
+
     public async Task<SseLine?> ReadSingleDataEventAsync(CancellationToken cancellationToken)
     {
-        while (await ReadLineAsync(cancellationToken).
-                   ConfigureAwait(false) is { } line)
+        while (await ReadLineAsync(cancellationToken).ConfigureAwait(false) is { } line)
         {
             if (line.IsEmpty)
             {
@@ -103,6 +99,7 @@ internal sealed class SseReader(Stream stream) : IDisposable
         return null;
     }
 
+
     private SseLine? ReadLine()
     {
         string? lineText = _reader.ReadLine();
@@ -125,14 +122,15 @@ internal sealed class SseReader(Stream stream) : IDisposable
         return null;
     }
 
+
     private async Task<SseLine?> ReadLineAsync(CancellationToken cancellationToken)
     {
         string? lineText = await _reader.ReadLineAsync(
 #if NET
                 cancellationToken
 #endif
-            ).
-            ConfigureAwait(false);
+            )
+            .ConfigureAwait(false);
 
         if (lineText is null)
         {
@@ -152,6 +150,7 @@ internal sealed class SseReader(Stream stream) : IDisposable
         return null;
     }
 
+
     private bool TryParseLine(string lineText, out SseLine line)
     {
         if (lineText.Length == 0)
@@ -169,10 +168,14 @@ internal sealed class SseReader(Stream stream) : IDisposable
             : string.Empty.AsSpan();
 
         bool hasSpace = fieldValue.Length > 0 && fieldValue[0] == ' ';
-        line = new SseLine(lineText, colonIndex, hasSpace, _lastEventName);
+        line = new SseLine(lineText,
+            colonIndex,
+            hasSpace,
+            _lastEventName);
 
         return true;
     }
+
 
     public void Dispose()
     {

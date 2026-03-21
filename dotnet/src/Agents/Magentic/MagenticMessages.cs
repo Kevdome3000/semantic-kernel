@@ -15,6 +15,7 @@ public static class MagenticMessages
     /// </summary>
     internal static readonly ChatMessageContent Empty = new();
 
+
     /// <summary>
     /// Broadcast a message to all <see cref="MagenticAgentActor"/>.
     /// </summary>
@@ -26,10 +27,12 @@ public static class MagenticMessages
         public IEnumerable<ChatMessageContent> Messages { get; init; } = [];
     }
 
+
     /// <summary>
     /// Reset/clear the conversation history for all <see cref="MagenticAgentActor"/>.
     /// </summary>
     public sealed class Reset;
+
 
     /// <summary>
     /// The final result.
@@ -42,10 +45,12 @@ public static class MagenticMessages
         public ChatMessageContent Message { get; init; } = Empty;
     }
 
+
     /// <summary>
     /// Signal a <see cref="MagenticAgentActor"/> to respond.
     /// </summary>
     public sealed class Speak;
+
 
     /// <summary>
     /// The input task.
@@ -58,28 +63,48 @@ public static class MagenticMessages
         public IEnumerable<ChatMessageContent> Messages { get; init; } = [];
     }
 
-    /// <summary>
-    /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Group"/> message.
-    /// </summary>
-    public static Group AsGroupMessage(this ChatMessageContent message) => new() { Messages = [message] };
 
     /// <summary>
     /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Group"/> message.
     /// </summary>
-    public static Group AsGroupMessage(this IEnumerable<ChatMessageContent> messages) => new() { Messages = messages };
+    public static Group AsGroupMessage(this ChatMessageContent message)
+    {
+        return new Group { Messages = [message] };
+    }
+
+
+    /// <summary>
+    /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Group"/> message.
+    /// </summary>
+    public static Group AsGroupMessage(this IEnumerable<ChatMessageContent> messages)
+    {
+        return new Group { Messages = messages };
+    }
+
 
     /// <summary>
     /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Result"/> message.
     /// </summary>
-    public static InputTask AsInputTaskMessage(this IEnumerable<ChatMessageContent> messages) => new() { Messages = messages };
+    public static InputTask AsInputTaskMessage(this IEnumerable<ChatMessageContent> messages)
+    {
+        return new InputTask { Messages = messages };
+    }
+
 
     /// <summary>
     /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Result"/> message.
     /// </summary>
-    public static Result AsResultMessage(this ChatMessageContent message) => new() { Message = message };
+    public static Result AsResultMessage(this ChatMessageContent message)
+    {
+        return new Result { Message = message };
+    }
+
 
     /// <summary>
     /// Extension method to convert a <see cref="string"/> to a <see cref="Result"/>.
     /// </summary>
-    public static Result AsResultMessage(this string text) => new() { Message = new(AuthorRole.Assistant, text) };
+    public static Result AsResultMessage(this string text)
+    {
+        return new Result { Message = new ChatMessageContent(AuthorRole.Assistant, text) };
+    }
 }

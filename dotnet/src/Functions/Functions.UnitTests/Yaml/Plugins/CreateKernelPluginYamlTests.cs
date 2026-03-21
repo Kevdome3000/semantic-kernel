@@ -17,21 +17,22 @@ public sealed class PromptYamlKernelExtensionsTests : IDisposable
     private readonly string _plugin1Name;
     private readonly string _plugin2Name;
 
+
     public PromptYamlKernelExtensionsTests()
     {
-        this._kernelBuilder = Kernel.CreateBuilder();
-        this._kernel = this._kernelBuilder.Build();
+        _kernelBuilder = Kernel.CreateBuilder();
+        _kernel = _kernelBuilder.Build();
 
-        this._pluginsDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        _pluginsDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-        this._plugin1Name = "Plugin1";
-        this._plugin2Name = "Plugin2";
-        string plugin1Directory = Path.Combine(this._pluginsDirectory, this._plugin1Name);
-        string plugin2Directory = Path.Combine(this._pluginsDirectory, this._plugin2Name);
+        _plugin1Name = "Plugin1";
+        _plugin2Name = "Plugin2";
+        string plugin1Directory = Path.Combine(_pluginsDirectory, _plugin1Name);
+        string plugin2Directory = Path.Combine(_pluginsDirectory, _plugin2Name);
 
         try
         {
-            Directory.CreateDirectory(this._pluginsDirectory);
+            Directory.CreateDirectory(_pluginsDirectory);
             Directory.CreateDirectory(plugin1Directory);
             Directory.CreateDirectory(plugin2Directory);
 
@@ -50,18 +51,20 @@ public sealed class PromptYamlKernelExtensionsTests : IDisposable
         }
         catch (Exception)
         {
-            Directory.Delete(this._pluginsDirectory, true);
+            Directory.Delete(_pluginsDirectory, true);
             throw;
         }
     }
 
+
     public void Dispose()
     {
-        if (Directory.Exists(this._pluginsDirectory))
+        if (Directory.Exists(_pluginsDirectory))
         {
-            Directory.Delete(this._pluginsDirectory, true);
+            Directory.Delete(_pluginsDirectory, true);
         }
     }
+
 
     [Fact]
     public void ItShouldCreatePluginFromPromptDirectoryYaml()
@@ -69,44 +72,47 @@ public sealed class PromptYamlKernelExtensionsTests : IDisposable
         // Arrange
         // Act
         var plugins = Directory
-            .EnumerateDirectories(this._pluginsDirectory)
-            .Select(directory => this._kernel.CreatePluginFromPromptDirectoryYaml(directory));
+            .EnumerateDirectories(_pluginsDirectory)
+            .Select(directory => _kernel.CreatePluginFromPromptDirectoryYaml(directory));
 
-        this._kernel.Plugins.AddRange(plugins);
+        _kernel.Plugins.AddRange(plugins);
 
         // Assert
-        VerifyPluginCounts(this._kernel, this._plugin1Name, this._plugin2Name);
+        VerifyPluginCounts(_kernel, _plugin1Name, _plugin2Name);
     }
+
 
     [Fact]
     public void ItShouldImportPluginFromPromptDirectoryYaml()
     {
         // Arrange
         // Act
-        foreach (string directory in Directory.EnumerateDirectories(this._pluginsDirectory))
+        foreach (string directory in Directory.EnumerateDirectories(_pluginsDirectory))
         {
-            this._kernel.ImportPluginFromPromptDirectoryYaml(directory);
+            _kernel.ImportPluginFromPromptDirectoryYaml(directory);
         }
 
         // Assert
-        VerifyPluginCounts(this._kernel, this._plugin1Name, this._plugin2Name);
+        VerifyPluginCounts(_kernel, _plugin1Name, _plugin2Name);
     }
+
 
     [Fact]
     public void ItShouldAddFromPromptDirectoryYaml()
     {
         // Arrange
         // Act
-        foreach (string directory in Directory.EnumerateDirectories(this._pluginsDirectory))
+        foreach (string directory in Directory.EnumerateDirectories(_pluginsDirectory))
         {
-            this._kernelBuilder.Plugins.AddFromPromptDirectoryYaml(directory);
+            _kernelBuilder.Plugins.AddFromPromptDirectoryYaml(directory);
         }
 
-        var kernel = this._kernelBuilder.Build();
+        var kernel = _kernelBuilder.Build();
 
         // Assert
-        VerifyPluginCounts(kernel, this._plugin1Name, this._plugin2Name);
+        VerifyPluginCounts(kernel, _plugin1Name, _plugin2Name);
     }
+
 
     private static void VerifyPluginCounts(Kernel kernel, string expectedPlugin1, string expectedPlugin2)
     {
@@ -119,6 +125,7 @@ public sealed class PromptYamlKernelExtensionsTests : IDisposable
         Assert.Equal(2, kernel.Plugins[expectedPlugin1].Count());
         Assert.Equal(2, kernel.Plugins[expectedPlugin2].Count());
     }
+
 
     private const string YAML = """
                                 template_format: semantic-kernel
@@ -170,6 +177,7 @@ public sealed class PromptYamlKernelExtensionsTests : IDisposable
                                       functions:
                                       - p3.f3
                                 """;
+
     private const string YAMLWithCustomSettings = """
                                                   template_format: semantic-kernel
                                                   template:        Say hello world to {{$name}} in {{$language}}

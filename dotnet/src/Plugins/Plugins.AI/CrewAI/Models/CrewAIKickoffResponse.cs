@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 
 /// <summary>

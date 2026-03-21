@@ -25,6 +25,7 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     private readonly HttpClient _httpClient;
     private readonly OpenAIClient _client;
 
+
     /// <summary>
     /// Verify the assistant creation with default values.
     /// </summary>
@@ -32,15 +33,16 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     public async Task VerifyCreateAssistantAsync()
     {
         // Arrange
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.AssistantDefinition(ModelValue));
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.AssistantDefinition(ModelValue));
 
         // Act
-        Assistant definition = await this._client.GetAssistantClient().CreateAssistantAsync(modelId: ModelValue);
+        Assistant definition = await _client.GetAssistantClient().CreateAssistantAsync(modelId: ModelValue);
 
         // Assert
         Assert.NotNull(definition);
         Assert.Equal(ModelValue, definition.Model);
     }
+
 
     /// <summary>
     /// Verify the assistant creation with name, instructions, and description.
@@ -53,20 +55,21 @@ public sealed class AssistantClientExtensionsTests : IDisposable
         const string DescriptionValue = "test instructions";
         const string InstructionsValue = "test description";
 
-        this.SetupResponse(
+        SetupResponse(
             HttpStatusCode.OK,
             OpenAIAssistantResponseContent.AssistantDefinition(
                 ModelValue,
-                name: NameValue,
+                NameValue,
                 instructions: InstructionsValue,
                 description: DescriptionValue));
 
         // Act
-        Assistant definition = await this._client.GetAssistantClient().CreateAssistantAsync(
-            modelId: ModelValue,
-            name: NameValue,
-            instructions: InstructionsValue,
-            description: DescriptionValue);
+        Assistant definition = await _client.GetAssistantClient()
+            .CreateAssistantAsync(
+                ModelValue,
+                NameValue,
+                instructions: InstructionsValue,
+                description: DescriptionValue);
 
         // Assert
         Assert.NotNull(definition);
@@ -74,6 +77,7 @@ public sealed class AssistantClientExtensionsTests : IDisposable
         Assert.Equal(DescriptionValue, definition.Description);
         Assert.Equal(InstructionsValue, definition.Instructions);
     }
+
 
     /// <summary>
     /// Verify the assistant creation with name, instructions, and description.
@@ -89,18 +93,18 @@ public sealed class AssistantClientExtensionsTests : IDisposable
             new(InstructionsValue)
             {
                 Name = NameValue,
-                Description = InstructionsValue,
+                Description = InstructionsValue
             };
-        this.SetupResponse(
+        SetupResponse(
             HttpStatusCode.OK,
             OpenAIAssistantResponseContent.AssistantDefinition(
                 ModelValue,
-                name: NameValue,
+                NameValue,
                 instructions: InstructionsValue,
                 description: DescriptionValue));
 
         // Act
-        Assistant definition = await this._client.GetAssistantClient().CreateAssistantFromTemplateAsync(modelId: ModelValue, templateConfig);
+        Assistant definition = await _client.GetAssistantClient().CreateAssistantFromTemplateAsync(ModelValue, templateConfig);
 
         // Assert
         Assert.NotNull(definition);
@@ -109,6 +113,7 @@ public sealed class AssistantClientExtensionsTests : IDisposable
         Assert.Equal(InstructionsValue, definition.Instructions);
     }
 
+
     /// <summary>
     /// Verify the assistant creation with code-interpreter enabled.
     /// </summary>
@@ -116,20 +121,22 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     public async Task VerifyCreateAssistantWithCodeInterpreterAsync()
     {
         // Arrange
-        this.SetupResponse(
+        SetupResponse(
             HttpStatusCode.OK,
             OpenAIAssistantResponseContent.AssistantDefinition(ModelValue, enableCodeInterpreter: true));
 
         // Act
-        Assistant definition = await this._client.GetAssistantClient().CreateAssistantAsync(
-            modelId: ModelValue,
-            enableCodeInterpreter: true);
+        Assistant definition = await _client.GetAssistantClient()
+            .CreateAssistantAsync(
+                ModelValue,
+                enableCodeInterpreter: true);
 
         // Assert
         Assert.NotNull(definition);
         Assert.Single(definition.Tools);
         Assert.IsType<CodeInterpreterToolDefinition>(definition.Tools[0]);
     }
+
 
     /// <summary>
     /// Verify the assistant creation with code-interpreter files specified.
@@ -139,14 +146,15 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     {
         // Arrange
         string[] fileIds = ["file1", "file2"];
-        this.SetupResponse(
+        SetupResponse(
             HttpStatusCode.OK,
             OpenAIAssistantResponseContent.AssistantDefinition(ModelValue, codeInterpreterFileIds: fileIds));
 
         // Act
-        Assistant definition = await this._client.GetAssistantClient().CreateAssistantAsync(
-            modelId: ModelValue,
-            codeInterpreterFileIds: fileIds);
+        Assistant definition = await _client.GetAssistantClient()
+            .CreateAssistantAsync(
+                ModelValue,
+                codeInterpreterFileIds: fileIds);
 
         // Assert
         Assert.NotNull(definition);
@@ -156,6 +164,7 @@ public sealed class AssistantClientExtensionsTests : IDisposable
         Assert.Equal(2, definition.ToolResources.CodeInterpreter.FileIds.Count);
     }
 
+
     /// <summary>
     /// Verify the assistant creation with file-search enabled.
     /// </summary>
@@ -163,20 +172,22 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     public async Task VerifyCreateAssistantWithFileSearchAsync()
     {
         // Arrange
-        this.SetupResponse(
+        SetupResponse(
             HttpStatusCode.OK,
             OpenAIAssistantResponseContent.AssistantDefinition(ModelValue, enableFileSearch: true));
 
         // Act
-        Assistant definition = await this._client.GetAssistantClient().CreateAssistantAsync(
-            modelId: ModelValue,
-            enableFileSearch: true);
+        Assistant definition = await _client.GetAssistantClient()
+            .CreateAssistantAsync(
+                ModelValue,
+                enableFileSearch: true);
 
         // Assert
         Assert.NotNull(definition);
         Assert.Single(definition.Tools);
         Assert.IsType<FileSearchToolDefinition>(definition.Tools[0]);
     }
+
 
     /// <summary>
     /// Verify the assistant creation with vector-store specified.
@@ -186,14 +197,15 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     {
         // Arrange
         const string VectorStoreValue = "test store";
-        this.SetupResponse(
+        SetupResponse(
             HttpStatusCode.OK,
             OpenAIAssistantResponseContent.AssistantDefinition(ModelValue, vectorStoreId: VectorStoreValue));
 
         // Act
-        Assistant definition = await this._client.GetAssistantClient().CreateAssistantAsync(
-            modelId: ModelValue,
-            vectorStoreId: VectorStoreValue);
+        Assistant definition = await _client.GetAssistantClient()
+            .CreateAssistantAsync(
+                ModelValue,
+                vectorStoreId: VectorStoreValue);
 
         // Assert
         Assert.NotNull(definition);
@@ -202,6 +214,7 @@ public sealed class AssistantClientExtensionsTests : IDisposable
         Assert.NotNull(definition.ToolResources.FileSearch);
         Assert.Single(definition.ToolResources.FileSearch.VectorStoreIds);
     }
+
 
     /// <summary>
     /// Verify the invocation and response of <see cref="AssistantClient.CreateAssistantAsync(string, AssistantCreationOptions, System.Threading.CancellationToken)"/>
@@ -212,17 +225,19 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     {
         // Arrange
         const float TemperatureValue = 0.5F;
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.AssistantDefinition("testmodel", temperature: TemperatureValue));
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.AssistantDefinition("testmodel", temperature: TemperatureValue));
 
         // Act
-        Assistant definition = await this._client.GetAssistantClient().CreateAssistantAsync(
-            modelId: "testmodel",
-            temperature: TemperatureValue);
+        Assistant definition = await _client.GetAssistantClient()
+            .CreateAssistantAsync(
+                "testmodel",
+                temperature: TemperatureValue);
 
         // Assert
         Assert.NotNull(definition);
         Assert.Equal(TemperatureValue, definition.Temperature);
     }
+
 
     /// <summary>
     /// Verify the invocation and response of <see cref="AssistantClient.CreateAssistantAsync(string, AssistantCreationOptions, System.Threading.CancellationToken)"/>
@@ -233,17 +248,19 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     {
         // Arrange
         const float TopPValue = 2.0F;
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.AssistantDefinition("testmodel", topP: TopPValue));
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.AssistantDefinition("testmodel", topP: TopPValue));
 
         // Act
-        Assistant definition = await this._client.GetAssistantClient().CreateAssistantAsync(
-            modelId: "testmodel",
-            topP: TopPValue);
+        Assistant definition = await _client.GetAssistantClient()
+            .CreateAssistantAsync(
+                "testmodel",
+                topP: TopPValue);
 
         // Assert
         Assert.NotNull(definition);
         Assert.Equal(TopPValue, definition.NucleusSamplingFactor);
     }
+
 
     /// <summary>
     /// Verify the invocation and response of <see cref="AssistantClient.CreateAssistantAsync(string, AssistantCreationOptions, System.Threading.CancellationToken)"/>
@@ -257,19 +274,21 @@ public sealed class AssistantClientExtensionsTests : IDisposable
             new()
             {
                 { "a", "1" },
-                { "b", "2" },
+                { "b", "2" }
             };
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.AssistantDefinition("testmodel", metadata: metadata));
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.AssistantDefinition("testmodel", metadata: metadata));
 
         // Act
-        Assistant definition = await this._client.GetAssistantClient().CreateAssistantAsync(
-            modelId: "testmodel",
-            metadata: metadata);
+        Assistant definition = await _client.GetAssistantClient()
+            .CreateAssistantAsync(
+                "testmodel",
+                metadata: metadata);
 
         // Assert
         Assert.NotNull(definition);
         Assert.NotEmpty(definition.Metadata);
     }
+
 
     /// <summary>
     /// Verify the deletion of assistant.
@@ -278,14 +297,15 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     public async Task VerifyDeleteAssistantAsync()
     {
         // Arrange
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteAgent);
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteAgent);
 
         // Act
-        AssistantDeletionResult result = await this._client.GetAssistantClient().DeleteAssistantAsync("testid");
+        AssistantDeletionResult result = await _client.GetAssistantClient().DeleteAssistantAsync("testid");
 
         // Assert
         Assert.True(result.Deleted);
     }
+
 
     /// <summary>
     /// Verify the creating a thread.
@@ -294,14 +314,15 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     public async Task VerifyCreateThreadAsync()
     {
         // Arrange
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
 
         // Act
-        string threadId = await this._client.GetAssistantClient().CreateThreadAsync(messages: null);
+        string threadId = await _client.GetAssistantClient().CreateThreadAsync(messages: null);
 
         // Assert
         Assert.NotNull(threadId);
     }
+
 
     /// <summary>
     /// Verify the creating a thread with messages.
@@ -310,14 +331,15 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     public async Task VerifyCreateThreadWithMessagesAsync()
     {
         // Arrange
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
 
         // Act
-        string threadId = await this._client.GetAssistantClient().CreateThreadAsync(messages: [new ChatMessageContent(AuthorRole.User, "test")]);
+        string threadId = await _client.GetAssistantClient().CreateThreadAsync([new ChatMessageContent(AuthorRole.User, "test")]);
 
         // Assert
         Assert.NotNull(threadId);
     }
+
 
     /// <summary>
     /// Verify the creating a thread with metadata.
@@ -326,33 +348,38 @@ public sealed class AssistantClientExtensionsTests : IDisposable
     public async Task VerifyCreateThreadWithMetadataAsync()
     {
         // Arrange
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
         Dictionary<string, string> metadata = new() { { "a", "1" }, { "b", "2" } };
 
         // Act
-        string threadId = await this._client.GetAssistantClient().CreateThreadAsync(metadata: metadata);
+        string threadId = await _client.GetAssistantClient().CreateThreadAsync(metadata: metadata);
 
         // Assert
         Assert.NotNull(threadId);
     }
 
+
     /// <inheritdoc/>
     public void Dispose()
     {
-        this._messageHandlerStub.Dispose();
-        this._httpClient.Dispose();
+        _messageHandlerStub.Dispose();
+        _httpClient.Dispose();
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgentTests"/> class.
     /// </summary>
     public AssistantClientExtensionsTests()
     {
-        this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
-        this._client = OpenAIAssistantAgent.CreateOpenAIClient(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient);
+        _messageHandlerStub = new HttpMessageHandlerStub();
+        _httpClient = new HttpClient(_messageHandlerStub, false);
+        _client = OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential("fakekey"), null, _httpClient);
     }
 
-    private void SetupResponse(HttpStatusCode statusCode, string content) =>
-        this._messageHandlerStub.SetupResponses(statusCode, content);
+
+    private void SetupResponse(HttpStatusCode statusCode, string content)
+    {
+        _messageHandlerStub.SetupResponses(statusCode, content);
+    }
 }

@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+
 // ReSharper disable InconsistentNaming
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -38,8 +39,9 @@ public sealed class WhiteboardProvider : AIContextProvider
     private List<string> _currentWhiteboardContent = [];
 
     private readonly ConcurrentQueue<ChatMessage> _recentMessages = new();
-    private ChatMessage? _messageBeingProcessed = null;
+    private ChatMessage? _messageBeingProcessed;
     private Task _updateWhiteboardTask = Task.CompletedTask;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WhiteboardProvider"/> class.
@@ -59,10 +61,12 @@ public sealed class WhiteboardProvider : AIContextProvider
         _logger = loggerFactory?.CreateLogger<WhiteboardProvider>();
     }
 
+
     /// <summary>
     /// Gets the current whiteboard content.
     /// </summary>
     public IReadOnlyList<string> CurrentWhiteboardContent => _currentWhiteboardContent;
+
 
     /// <inheritdoc/>
     public override async Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
@@ -96,6 +100,7 @@ public sealed class WhiteboardProvider : AIContextProvider
         }
     }
 
+
     /// <inheritdoc/>
     public override Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
@@ -106,7 +111,7 @@ public sealed class WhiteboardProvider : AIContextProvider
         if (currentWhiteboard.Count == 0)
         {
             _logger?.LogTrace("WhiteboardBehavior: Output context instructions:\n{Context}", _whiteboardEmptyPrompt);
-            return Task.FromResult(new AIContext() { Instructions = _whiteboardEmptyPrompt });
+            return Task.FromResult(new AIContext { Instructions = _whiteboardEmptyPrompt });
         }
 
         var numberedMessages = currentWhiteboard.Select((x, i) => $"{i} {x}");
@@ -116,11 +121,12 @@ public sealed class WhiteboardProvider : AIContextProvider
         _logger?.LogInformation("WhiteboardBehavior: Whiteboard contains {Count} messages.", currentWhiteboard.Count);
         _logger?.LogTrace("WhiteboardBehavior: Output context instructions:\n{Context}", context);
 
-        return Task.FromResult(new AIContext()
+        return Task.FromResult(new AIContext
         {
             Instructions = context
         });
     }
+
 
     /// <summary>
     /// Wait for all messages to be processed and the whiteboard to be up to date.
@@ -133,6 +139,7 @@ public sealed class WhiteboardProvider : AIContextProvider
             await _updateWhiteboardTask.ConfigureAwait(false);
         }
     }
+
 
     private async Task UpdateWhiteboardAsync(ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
@@ -159,13 +166,14 @@ public sealed class WhiteboardProvider : AIContextProvider
 
         // Inovke the LLM to extract the latest information from the input messages and update the whiteboard.
         var result = await _chatClient.GetResponseAsync(
-            FormatPromptTemplate(inputMessagesJson, currentWhiteboardJson, _maxWhiteboardMessages),
-            new()
-            {
-                Temperature = 0,
-                ResponseFormat = new ChatResponseFormatJson(s_structuredOutputSchema.RootElement),
-            },
-            cancellationToken).ConfigureAwait(false);
+                FormatPromptTemplate(inputMessagesJson, currentWhiteboardJson, _maxWhiteboardMessages),
+                new ChatOptions
+                {
+                    Temperature = 0,
+                    ResponseFormat = new ChatResponseFormatJson(s_structuredOutputSchema.RootElement)
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
 
         // Update the current whiteboard content with the LLM result.
         var newWhiteboardResponse = JsonSerializer.Deserialize(result.ToString(), WhiteboardProviderSourceGenerationContext.Default.NewWhiteboardResponse);
@@ -178,6 +186,7 @@ public sealed class WhiteboardProvider : AIContextProvider
             result);
     }
 
+
     private string FormatPromptTemplate(string inputMessagesJson, string currentWhiteboardJson, int maxWhiteboardMessages)
     {
         var sb = new StringBuilder(_maintenancePrompt);
@@ -186,6 +195,7 @@ public sealed class WhiteboardProvider : AIContextProvider
         sb.Replace("{{$maxWhiteboardMessages}}", maxWhiteboardMessages.ToString());
         return sb.ToString();
     }
+
 
     /// <summary>
     /// Gets the prompt template to use for maintaining the whiteboard.
@@ -272,14 +282,14 @@ public sealed class WhiteboardProvider : AIContextProvider
         {"newWhiteboard":["DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]}
 
         ### Example 7:
-        
+
         New Message:
         [{"AuthorName":"TravelAgent","Role":"assistant","Text":"OK, I've booked that for you."}]
         Current Whiteboard:
         [""DECISION - Mary decided to book the flight departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir. The cost of the flights are EUR 243."]
         New Whiteboard:
         {"newWhiteboard":["ACTION - TravelAgent booked a flight for Mary departing on the 17th of June at 10:00 AM and returning on the 20th of June at 5:00 PM with direct flights to Paris Charles de Gaul airport on NotsocheapoAir for EUR 243."]}
-        
+
         ### Example 8:
 
         New Message:
@@ -300,6 +310,7 @@ public sealed class WhiteboardProvider : AIContextProvider
         New Whiteboard:
         """;
 
+
     /// <summary>
     /// A simple message class that contains just the most basic msessage information
     /// that is required to pass to the LLM.
@@ -311,6 +322,7 @@ public sealed class WhiteboardProvider : AIContextProvider
         public string Text { get; set; } = string.Empty;
     }
 
+
     /// <summary>
     /// Represents the response from the LLM when updating the whiteboard.
     /// </summary>
@@ -320,6 +332,7 @@ public sealed class WhiteboardProvider : AIContextProvider
         public List<string> NewWhiteboard { get; set; } = [];
     }
 }
+
 
 /// <summary>
 /// Source generated json serializer for <see cref="WhiteboardProvider"/>.

@@ -15,16 +15,19 @@ public class AgentProxy
     /// The runtime instance used to interact with agents.
     /// </summary>
     private readonly IAgentRuntime _runtime;
+
     private AgentMetadata? _metadata;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentProxy"/> class.
     /// </summary>
     public AgentProxy(AgentId agentId, IAgentRuntime runtime)
     {
-        this.Id = agentId;
-        this._runtime = runtime;
+        Id = agentId;
+        _runtime = runtime;
     }
+
 
     /// <summary>
     /// The target agent for this proxy.
@@ -37,7 +40,8 @@ public class AgentProxy
     /// <value>
     /// An instance of <see cref="AgentMetadata"/> containing details about the agent.
     /// </value>
-    public AgentMetadata Metadata => this._metadata ??= this.QueryMetadataAndUnwrap();
+    public AgentMetadata Metadata => _metadata ??= QueryMetadataAndUnwrap();
+
 
     /// <summary>
     /// Sends a message to the agent and processes the response.
@@ -52,10 +56,19 @@ public class AgentProxy
     /// A token used to cancel an in-progress operation. Defaults to <c>null</c>.
     /// </param>
     /// <returns>A task representing the asynchronous operation, returning the response from the agent.</returns>
-    public ValueTask<object?> SendMessageAsync(object message, AgentId sender, string? messageId = null, CancellationToken cancellationToken = default)
+    public ValueTask<object?> SendMessageAsync(
+        object message,
+        AgentId sender,
+        string? messageId = null,
+        CancellationToken cancellationToken = default)
     {
-        return this._runtime.SendMessageAsync(message, this.Id, sender, messageId, cancellationToken);
+        return _runtime.SendMessageAsync(message,
+            Id,
+            sender,
+            messageId,
+            cancellationToken);
     }
+
 
     /// <summary>
     /// Loads the state of the agent from a previously saved state.
@@ -64,8 +77,9 @@ public class AgentProxy
     /// <returns>A task representing the asynchronous operation.</returns>
     public ValueTask LoadStateAsync(JsonElement state)
     {
-        return this._runtime.LoadAgentStateAsync(this.Id, state);
+        return _runtime.LoadAgentStateAsync(Id, state);
     }
+
 
     /// <summary>
     /// Saves the state of the agent. The result must be JSON serializable.
@@ -73,13 +87,14 @@ public class AgentProxy
     /// <returns>A task representing the asynchronous operation, returning a dictionary containing the saved state.</returns>
     public ValueTask<JsonElement> SaveStateAsync()
     {
-        return this._runtime.SaveAgentStateAsync(this.Id);
+        return _runtime.SaveAgentStateAsync(Id);
     }
+
 
     private AgentMetadata QueryMetadataAndUnwrap()
     {
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-        return this._runtime.GetAgentMetadataAsync(this.Id).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+        return _runtime.GetAgentMetadataAsync(Id).AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
     }
 }

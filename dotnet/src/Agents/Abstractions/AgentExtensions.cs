@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using MAAI = Microsoft.Agents.AI;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -26,9 +23,11 @@ public static class AgentExtensions
         Func<AgentThread> threadFactory,
         Func<JsonElement, JsonSerializerOptions?, AgentThread> threadDeserializationFactory,
         Func<AgentThread, JsonSerializerOptions?, JsonElement> threadSerializer)
-        => new SemanticKernelAIAgent(
+    {
+        return new SemanticKernelAIAgent(
             semanticKernelAgent,
             threadFactory,
             threadDeserializationFactory,
             threadSerializer);
+    }
 }

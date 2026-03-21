@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Represents a prompt template that can be rendered to a string.
 /// </summary>

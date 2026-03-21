@@ -18,6 +18,7 @@ internal sealed class SequentialActor :
 {
     private readonly AgentType _nextAgent;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SequentialActor"/> class.
     /// </summary>
@@ -27,35 +28,48 @@ internal sealed class SequentialActor :
     /// <param name="agent">An <see cref="Agent"/>.</param>
     /// <param name="nextAgent">The identifier of the next agent for which to handoff the result</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public SequentialActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, Agent agent, AgentType nextAgent, ILogger<SequentialActor>? logger = null)
-        : base(id, runtime, context, agent, logger)
+    public SequentialActor(
+        AgentId id,
+        IAgentRuntime runtime,
+        OrchestrationContext context,
+        Agent agent,
+        AgentType nextAgent,
+        ILogger<SequentialActor>? logger = null)
+        : base(id,
+            runtime,
+            context,
+            agent,
+            logger)
     {
-        logger?.LogInformation("ACTOR {ActorId} {NextAgent}", this.Id, nextAgent);
-        this._nextAgent = nextAgent;
+        logger?.LogInformation("ACTOR {ActorId} {NextAgent}", Id, nextAgent);
+        _nextAgent = nextAgent;
     }
+
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(SequentialMessages.Request item, MessageContext messageContext)
     {
-        await this.InvokeAgentAsync(item.Messages, messageContext).ConfigureAwait(false);
+        await InvokeAgentAsync(item.Messages, messageContext).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(SequentialMessages.Response item, MessageContext messageContext)
     {
-        await this.InvokeAgentAsync([item.Message], messageContext).ConfigureAwait(false);
+        await InvokeAgentAsync([item.Message], messageContext).ConfigureAwait(false);
     }
+
 
     private async ValueTask InvokeAgentAsync(IList<ChatMessageContent> input, MessageContext messageContext)
     {
-        this.Logger.LogInformation("INVOKE {ActorId} {NextAgent}", this.Id, this._nextAgent);
+        Logger.LogInformation("INVOKE {ActorId} {NextAgent}", Id, _nextAgent);
 
-        this.Logger.LogSequentialAgentInvoke(this.Id);
+        Logger.LogSequentialAgentInvoke(Id);
 
-        ChatMessageContent response = await this.InvokeAsync(input, messageContext.CancellationToken).ConfigureAwait(false);
+        ChatMessageContent response = await InvokeAsync(input, messageContext.CancellationToken).ConfigureAwait(false);
 
-        this.Logger.LogSequentialAgentResult(this.Id, response.Content);
+        Logger.LogSequentialAgentResult(Id, response.Content);
 
-        await this.PublishMessageAsync(response.AsResponseMessage(), this._nextAgent, messageContext.CancellationToken).ConfigureAwait(false);
+        await PublishMessageAsync(response.AsResponseMessage(), _nextAgent, messageContext.CancellationToken).ConfigureAwait(false);
     }
 }

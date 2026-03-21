@@ -1,16 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
+
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;
-
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Diagnostics;
-using Identity.Client;
-using Identity.Client.Extensions.Msal;
-
 
 /// <summary>
 /// Manages acquiring and caching MSAL credentials locally.
@@ -43,10 +35,10 @@ public sealed class LocalUserMSALCredentialManager
     /// </summary>
     private LocalUserMSALCredentialManager(StorageCreationProperties storage, MsalCacheHelper cacheHelper)
     {
-        this._publicClientApplications = new ConcurrentDictionary<string, IPublicClientApplication>(StringComparer.OrdinalIgnoreCase);
-        this._storageProperties = storage;
-        this._cacheHelper = cacheHelper;
-        this._cacheHelper.VerifyPersistence();
+        _publicClientApplications = new ConcurrentDictionary<string, IPublicClientApplication>(StringComparer.OrdinalIgnoreCase);
+        _storageProperties = storage;
+        _cacheHelper = cacheHelper;
+        _cacheHelper.VerifyPersistence();
     }
 
 
@@ -61,17 +53,16 @@ public sealed class LocalUserMSALCredentialManager
 
         var storage = new StorageCreationPropertiesBuilder("sk.msal.cache", MsalCacheHelper.UserRootDirectory).WithMacKeyChain(
                 serviceName: $"{CacheSchemaName}.service",
-                accountName: $"{CacheSchemaName}.account").
-            WithLinuxKeyring(
+                accountName: $"{CacheSchemaName}.account")
+            .WithLinuxKeyring(
                 schemaName: CacheSchemaName,
                 collection: MsalCacheHelper.LinuxKeyRingDefaultCollection,
                 secretLabel: "MSAL token cache for Semantic Kernel plugins.",
                 attribute1: new KeyValuePair<string, string>("Version", "1"),
-                attribute2: new KeyValuePair<string, string>("Product", "SemanticKernel")).
-            Build();
+                attribute2: new KeyValuePair<string, string>("Product", "SemanticKernel"))
+            .Build();
 
-        var cacheHelper = await MsalCacheHelper.CreateAsync(storage).
-            ConfigureAwait(false);
+        var cacheHelper = await MsalCacheHelper.CreateAsync(storage).ConfigureAwait(false);
 
         return new LocalUserMSALCredentialManager(storage, cacheHelper);
     }
@@ -96,38 +87,30 @@ public sealed class LocalUserMSALCredentialManager
         Ensure.NotNull(redirectUri, nameof(redirectUri));
         Ensure.NotNull(scopes, nameof(scopes));
 
-        IPublicClientApplication app = this._publicClientApplications.GetOrAdd(
+        IPublicClientApplication app = _publicClientApplications.GetOrAdd(
             key: PublicClientApplicationsKey(clientId, tenantId),
             valueFactory: _ =>
             {
-                IPublicClientApplication newPublicApp = PublicClientApplicationBuilder.Create(clientId).
-                    WithRedirectUri(redirectUri.ToString()).
-                    WithAuthority(AzureCloudInstance.AzurePublic, tenantId).
-                    Build();
+                IPublicClientApplication newPublicApp = PublicClientApplicationBuilder.Create(clientId).WithRedirectUri(redirectUri.ToString()).WithAuthority(AzureCloudInstance.AzurePublic, tenantId).Build();
 
-                this._cacheHelper.RegisterCache(newPublicApp.UserTokenCache);
+                _cacheHelper.RegisterCache(newPublicApp.UserTokenCache);
 
                 return newPublicApp;
             });
 
-        IEnumerable<IAccount> accounts = await app.GetAccountsAsync().
-            ConfigureAwait(false);
+        IEnumerable<IAccount> accounts = await app.GetAccountsAsync().ConfigureAwait(false);
 
         AuthenticationResult result;
 
         try
         {
-            result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault()).
-                ExecuteAsync().
-                ConfigureAwait(false);
+            result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault()).ExecuteAsync().ConfigureAwait(false);
         }
         catch (MsalUiRequiredException)
         {
             // A MsalUiRequiredException happened on AcquireTokenSilent.
             // This indicates you need to call AcquireTokenInteractive to acquire a token
-            result = await app.AcquireTokenInteractive(scopes).
-                ExecuteAsync().
-                ConfigureAwait(false);
+            result = await app.AcquireTokenInteractive(scopes).ExecuteAsync().ConfigureAwait(false);
             // throws MsalException
         }
 
@@ -138,6 +121,9 @@ public sealed class LocalUserMSALCredentialManager
     /// <summary>
     /// Returns a key for the public client application dictionary.
     /// </summary>
-    private static string PublicClientApplicationsKey(string clientId, string tenantId) => $"{clientId}_{tenantId}";
+    private static string PublicClientApplicationsKey(string clientId, string tenantId)
+    {
+        return $"{clientId}_{tenantId}";
+    }
 
 }

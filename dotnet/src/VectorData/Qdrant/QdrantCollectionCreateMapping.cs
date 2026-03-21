@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using Qdrant.Client.Grpc;
-
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
@@ -41,12 +35,20 @@ internal static class QdrantCollectionCreateMapping
         { typeof(decimal?), PayloadSchemaType.Float },
 
         { typeof(string), PayloadSchemaType.Keyword },
-        { typeof(DateTimeOffset), PayloadSchemaType.Datetime },
         { typeof(bool), PayloadSchemaType.Bool },
-
-        { typeof(DateTimeOffset?), PayloadSchemaType.Datetime },
         { typeof(bool?), PayloadSchemaType.Bool },
+
+        { typeof(DateTime), PayloadSchemaType.Datetime },
+        { typeof(DateTimeOffset), PayloadSchemaType.Datetime },
+        { typeof(DateTime?), PayloadSchemaType.Datetime },
+        { typeof(DateTimeOffset?), PayloadSchemaType.Datetime },
+
+#if NET
+        { typeof(DateOnly), PayloadSchemaType.Datetime },
+        { typeof(DateOnly?), PayloadSchemaType.Datetime },
+#endif
     };
+
 
     /// <summary>
     /// Maps a single <see cref="VectorStoreVectorProperty"/> to a qdrant <see cref="VectorParams"/>.
@@ -61,8 +63,9 @@ internal static class QdrantCollectionCreateMapping
             throw new NotSupportedException($"Index kind '{vectorProperty!.IndexKind}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Qdrant VectorStore.");
         }
 
-        return new VectorParams { Size = (ulong)vectorProperty.Dimensions, Distance = QdrantCollectionCreateMapping.GetSDKDistanceAlgorithm(vectorProperty) };
+        return new VectorParams { Size = (ulong)vectorProperty.Dimensions, Distance = GetSDKDistanceAlgorithm(vectorProperty) };
     }
+
 
     /// <summary>
     /// Maps a collection of <see cref="VectorStoreVectorProperty"/> to a qdrant <see cref="VectorParamsMap"/>.
@@ -83,6 +86,7 @@ internal static class QdrantCollectionCreateMapping
         return vectorParamsMap;
     }
 
+
     /// <summary>
     /// Get the configured <see cref="Distance"/> from the given <paramref name="vectorProperty"/>.
     /// If none is configured, the default is <see cref="Distance.Cosine"/>.
@@ -91,7 +95,8 @@ internal static class QdrantCollectionCreateMapping
     /// <returns>The chosen <see cref="Distance"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if a distance function is chosen that isn't supported by qdrant.</exception>
     public static Distance GetSDKDistanceAlgorithm(VectorPropertyModel vectorProperty)
-        => vectorProperty.DistanceFunction switch
+    {
+        return vectorProperty.DistanceFunction switch
         {
             DistanceFunction.CosineSimilarity or null => Distance.Cosine,
             DistanceFunction.DotProductSimilarity => Distance.Dot,
@@ -100,4 +105,5 @@ internal static class QdrantCollectionCreateMapping
 
             _ => throw new NotSupportedException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Qdrant VectorStore.")
         };
+    }
 }

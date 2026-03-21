@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Memory;
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
+namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// Structure for storing data which can be scored.
@@ -32,7 +31,7 @@ public readonly struct ScoredValue<T>(T item, double score) : IComparable<Scored
     /// <returns>A value indicating the relative order of the instances.</returns>
     public int CompareTo(ScoredValue<T> other)
     {
-        return this.Score.CompareTo(other.Score);
+        return Score.CompareTo(other.Score);
     }
 
 
@@ -42,7 +41,7 @@ public readonly struct ScoredValue<T>(T item, double score) : IComparable<Scored
     /// <returns>A string representation of the current instance.</returns>
     public override string ToString()
     {
-        return $"{this.Score}, {this.Value}";
+        return $"{Score}, {Value}";
     }
 
 
@@ -79,7 +78,7 @@ public readonly struct ScoredValue<T>(T item, double score) : IComparable<Scored
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
-        return (obj is ScoredValue<T> other) && this.Equals(other);
+        return obj is ScoredValue<T> other && Equals(other);
     }
 
 
@@ -90,15 +89,14 @@ public readonly struct ScoredValue<T>(T item, double score) : IComparable<Scored
     /// <returns>True if the instances are equal, false otherwise.</returns>
     public bool Equals(ScoredValue<T> other)
     {
-        return EqualityComparer<T>.Default.Equals(this.Value, other.Value) &&
-               this.Score.Equals(other.Score);
+        return EqualityComparer<T>.Default.Equals(Value, other.Value) && Score.Equals(other.Score);
     }
 
 
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        return HashCode.Combine(this.Value, this.Score);
+        return HashCode.Combine(Value, Score);
     }
 
 

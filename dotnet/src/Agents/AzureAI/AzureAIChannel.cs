@@ -26,7 +26,11 @@ internal sealed class AzureAIChannel(PersistentAgentsClient client, string threa
         {
             try
             {
-                await AgentThreadActions.CreateMessageAsync(client, threadId, message, cancellationToken).ConfigureAwait(false);
+                await AgentThreadActions.CreateMessageAsync(client,
+                        threadId,
+                        message,
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (RequestFailedException ex)
             {
@@ -39,37 +43,68 @@ internal sealed class AzureAIChannel(PersistentAgentsClient client, string threa
         }
     }
 
+
     /// <inheritdoc/>
     protected override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         AzureAIAgent agent,
         CancellationToken cancellationToken)
     {
         return ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id, agent.GetDisplayName(), agent.Description, agent.Kernel, []),
-            () => AgentThreadActions.InvokeAsync(agent, client, threadId, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken),
+            () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id,
+                agent.GetDisplayName(),
+                agent.Description,
+                agent.Kernel,
+                []),
+            () => AgentThreadActions.InvokeAsync(agent,
+                client,
+                threadId,
+                invocationOptions: null,
+                Logger,
+                agent.Kernel,
+                agent.Arguments,
+                cancellationToken),
             cancellationToken);
     }
+
 
     /// <inheritdoc/>
     protected override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(AzureAIAgent agent, IList<ChatMessageContent> messages, CancellationToken cancellationToken = default)
     {
         return ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id, agent.GetDisplayName(), agent.Description, agent.Kernel, messages),
-            () => AgentThreadActions.InvokeStreamingAsync(agent, client, threadId, messages, invocationOptions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken),
+            () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id,
+                agent.GetDisplayName(),
+                agent.Description,
+                agent.Kernel,
+                messages),
+            () => AgentThreadActions.InvokeStreamingAsync(agent,
+                client,
+                threadId,
+                messages,
+                invocationOptions: null,
+                Logger,
+                agent.Kernel,
+                agent.Arguments,
+                cancellationToken),
             cancellationToken);
     }
+
 
     /// <inheritdoc/>
     protected override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
-        return AgentThreadActions.GetMessagesAsync(client, threadId, null, cancellationToken);
+        return AgentThreadActions.GetMessagesAsync(client,
+            threadId,
+            null,
+            cancellationToken);
     }
+
 
     /// <inheritdoc/>
     protected override Task ResetAsync(CancellationToken cancellationToken = default)
     {
         return client.Threads.DeleteThreadAsync(threadId, cancellationToken);
     }
+
 
     /// <inheritdoc/>
     protected override string Serialize() { return threadId; }

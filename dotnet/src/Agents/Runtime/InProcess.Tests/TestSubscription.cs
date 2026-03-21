@@ -11,9 +11,10 @@ public class TestSubscription(string topicType, string agentType, string? id = n
 
     public string TopicType { get; } = topicType;
 
+
     public AgentId MapToAgent(TopicId topic)
     {
-        if (!this.Matches(topic))
+        if (!Matches(topic))
         {
             throw new InvalidOperationException("TopicId does not match the subscription.");
         }
@@ -21,14 +22,27 @@ public class TestSubscription(string topicType, string agentType, string? id = n
         return new AgentId(agentType, topic.Source);
     }
 
-    public bool Equals(ISubscriptionDefinition? other) => this.Id == other?.Id;
 
-    public override bool Equals([NotNullWhen(true)] object? obj) => obj is TestSubscription other && other.Equals(this);
+    public bool Equals(ISubscriptionDefinition? other)
+    {
+        return Id == other?.Id;
+    }
 
-    public override int GetHashCode() => this.Id.GetHashCode();
+
+    public override bool Equals([NotNullWhen(true)] object? obj)
+    {
+        return obj is TestSubscription other && other.Equals(this);
+    }
+
+
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
+
 
     public bool Matches(TopicId topic)
     {
-        return topic.Type == this.TopicType;
+        return topic.Type == TopicType;
     }
 }

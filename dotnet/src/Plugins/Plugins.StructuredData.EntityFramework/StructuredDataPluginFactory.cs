@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Reflection;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -56,7 +51,8 @@ public static class StructuredDataPluginFactory
             catch (Exception ex) when (ex is not InvalidOperationException)
             {
                 throw new InvalidOperationException(
-                    $"Failed to create function for operation '{operation}': {ex.Message}", ex);
+                    $"Failed to create function for operation '{operation}': {ex.Message}",
+                    ex);
             }
         }
 

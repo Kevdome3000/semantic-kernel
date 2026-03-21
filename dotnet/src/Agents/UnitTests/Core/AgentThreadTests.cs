@@ -35,6 +35,7 @@ public class AgentThreadTests
         Assert.Equal(1, thread.CreateInternalAsyncCount);
     }
 
+
     /// <summary>
     /// Tests that the CreateAsync method throws an InvalidOperationException if the thread is deleted.
     /// </summary>
@@ -51,6 +52,7 @@ public class AgentThreadTests
         Assert.Equal(1, thread.CreateInternalAsyncCount);
         Assert.Equal(1, thread.DeleteInternalAsyncCount);
     }
+
 
     /// <summary>
     /// Tests that the DeleteAsync method sets IsDeleted and invokes DeleteInternalAsync.
@@ -70,6 +72,7 @@ public class AgentThreadTests
         Assert.Equal(1, thread.CreateInternalAsyncCount);
         Assert.Equal(1, thread.DeleteInternalAsyncCount);
     }
+
 
     /// <summary>
     /// Tests that the DeleteAsync method does not invoke DeleteInternalAsync if the thread is already deleted.
@@ -91,6 +94,7 @@ public class AgentThreadTests
         Assert.Equal(1, thread.DeleteInternalAsyncCount);
     }
 
+
     /// <summary>
     /// Tests that the DeleteAsync method throws an InvalidOperationException if the thread was never created.
     /// </summary>
@@ -105,6 +109,7 @@ public class AgentThreadTests
         Assert.Equal(0, thread.CreateInternalAsyncCount);
         Assert.Equal(0, thread.DeleteInternalAsyncCount);
     }
+
 
     /// <summary>
     /// Tests that the OnNewMessageAsync method creates the thread if it is not already created.
@@ -125,6 +130,7 @@ public class AgentThreadTests
         Assert.Equal(1, thread.OnNewMessageInternalAsyncCount);
     }
 
+
     /// <summary>
     /// Tests that the OnNewMessageAsync method throws an InvalidOperationException if the thread is deleted.
     /// </summary>
@@ -144,6 +150,7 @@ public class AgentThreadTests
         Assert.Equal(0, thread.OnNewMessageInternalAsyncCount);
     }
 
+
     /// <summary>
     /// Tests that the <see cref="AgentThread.OnResumeAsync(CancellationToken)"/> method throws an InvalidOperationException if the thread is not yet created.
     /// </summary>
@@ -156,6 +163,7 @@ public class AgentThreadTests
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => thread.OnResumeAsync());
     }
+
 
     /// <summary>
     /// Tests that the <see cref="AgentThread.OnResumeAsync(CancellationToken)"/> method throws an InvalidOperationException if the thread is deleted.
@@ -171,6 +179,7 @@ public class AgentThreadTests
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => thread.OnResumeAsync());
     }
+
 
     /// <summary>
     /// Tests that the <see cref="AgentThread.OnSuspendAsync(CancellationToken)"/> method
@@ -192,6 +201,7 @@ public class AgentThreadTests
         mockProvider.Verify(x => x.SuspendingAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
 
+
     /// <summary>
     /// Tests that the <see cref="AgentThread.OnResumeAsync(CancellationToken)"/> method
     /// calls each registered state part in turn.
@@ -212,6 +222,7 @@ public class AgentThreadTests
         mockProvider.Verify(x => x.ResumingAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
 
+
     /// <summary>
     /// Tests that the <see cref="AgentThread.CreateAsync(CancellationToken)"/> method
     /// calls each registered state parts in turn.
@@ -230,6 +241,7 @@ public class AgentThreadTests
         // Assert.
         mockProvider.Verify(x => x.ConversationCreatedAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
+
 
     /// <summary>
     /// Tests that the <see cref="AgentThread.DeleteAsync(CancellationToken)"/> method
@@ -250,6 +262,7 @@ public class AgentThreadTests
         // Assert.
         mockProvider.Verify(x => x.ConversationDeletingAsync("test-thread-id", It.IsAny<CancellationToken>()), Times.Once);
     }
+
 
     /// <summary>
     /// Tests that the <see cref="AgentThread.OnNewMessageAsync(ChatMessageContent, CancellationToken)"/> method
@@ -273,32 +286,37 @@ public class AgentThreadTests
         mockProvider.Verify(x => x.MessageAddingAsync("test-thread-id", It.Is<ChatMessage>(x => x.Text == "Test Message." && x.Role == ChatRole.User), It.IsAny<CancellationToken>()), Times.Once);
     }
 
+
     private sealed class TestAgentThread : AgentThread
     {
         public int CreateInternalAsyncCount { get; private set; }
         public int DeleteInternalAsyncCount { get; private set; }
         public int OnNewMessageInternalAsyncCount { get; private set; }
 
+
         public new Task CreateAsync(CancellationToken cancellationToken = default)
         {
             return base.CreateAsync(cancellationToken);
         }
 
+
         protected override Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
         {
-            this.CreateInternalAsyncCount++;
+            CreateInternalAsyncCount++;
             return Task.FromResult<string?>("test-thread-id");
         }
 
+
         protected override Task DeleteInternalAsync(CancellationToken cancellationToken)
         {
-            this.DeleteInternalAsyncCount++;
+            DeleteInternalAsyncCount++;
             return Task.CompletedTask;
         }
 
+
         protected override Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
         {
-            this.OnNewMessageInternalAsyncCount++;
+            OnNewMessageInternalAsyncCount++;
             return Task.CompletedTask;
         }
     }

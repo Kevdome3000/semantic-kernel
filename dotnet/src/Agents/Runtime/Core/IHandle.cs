@@ -19,6 +19,7 @@ public interface IHandle<in T>
     ValueTask HandleAsync(T item, MessageContext messageContext);
 }
 
+
 /// <summary>
 /// Defines a handler interface for processing items of type <typeparamref name="TIn"/> and <typeparamref name="TOut"/>.
 /// </summary>

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
-
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
@@ -11,6 +9,7 @@ public sealed class MongoCollectionOptions : VectorStoreCollectionOptions
 {
     internal static readonly MongoCollectionOptions Default = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoCollectionOptions"/> class.
     /// </summary>
@@ -18,14 +17,16 @@ public sealed class MongoCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
+
     internal MongoCollectionOptions(MongoCollectionOptions? source) : base(source)
     {
-        this.VectorIndexName = source?.VectorIndexName ?? Default.VectorIndexName;
-        this.FullTextSearchIndexName = source?.FullTextSearchIndexName ?? Default.FullTextSearchIndexName;
-        this.MaxRetries = source?.MaxRetries ?? Default.MaxRetries;
-        this.DelayInMilliseconds = source?.DelayInMilliseconds ?? Default.DelayInMilliseconds;
-        this.NumCandidates = source?.NumCandidates ?? Default.NumCandidates;
+        VectorIndexName = source?.VectorIndexName ?? Default.VectorIndexName;
+        FullTextSearchIndexName = source?.FullTextSearchIndexName ?? Default.FullTextSearchIndexName;
+        MaxRetries = source?.MaxRetries ?? Default.MaxRetries;
+        DelayInMilliseconds = source?.DelayInMilliseconds ?? Default.DelayInMilliseconds;
+        NumCandidates = source?.NumCandidates ?? Default.NumCandidates;
     }
+
 
     /// <summary>
     /// Vector index name to use. If null, the default "vector_index" name will be used.

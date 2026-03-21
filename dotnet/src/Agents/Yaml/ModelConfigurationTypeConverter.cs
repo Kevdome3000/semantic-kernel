@@ -23,6 +23,7 @@ internal sealed class ModelConfigurationTypeConverter : IYamlTypeConverter
         return type == typeof(ModelConnection);
     }
 
+
     /// <inheritdoc/>
     public object? ReadYaml(IParser parser, Type type, ObjectDeserializer rootDeserializer)
     {
@@ -34,9 +35,11 @@ internal sealed class ModelConfigurationTypeConverter : IYamlTypeConverter
         parser.MoveNext(); // Move to the first property  
 
         var modelConfiguration = new ModelConnection();
+
         while (parser.Current is not MappingEnd)
         {
             var propertyName = parser.Consume<Scalar>().Value;
+
             switch (propertyName)
             {
                 case "type":
@@ -54,11 +57,17 @@ internal sealed class ModelConfigurationTypeConverter : IYamlTypeConverter
         return modelConfiguration;
     }
 
+
     /// <inheritdoc/>
-    public void WriteYaml(IEmitter emitter, object? value, Type type, ObjectSerializer serializer)
+    public void WriteYaml(
+        IEmitter emitter,
+        object? value,
+        Type type,
+        ObjectSerializer serializer)
     {
         throw new NotImplementedException();
     }
+
 
     /// <summary>
     /// The YamlDotNet deserializer instance.

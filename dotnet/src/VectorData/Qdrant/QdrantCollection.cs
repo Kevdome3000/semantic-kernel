@@ -1,22 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Grpc.Core;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using Qdrant.Client;
-using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
@@ -58,6 +43,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     /// <summary>Whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector per qdrant point.</summary>
     private readonly bool _hasNamedVectors;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantCollection{TKey, TRecord}"/> class.
     /// </summary>
@@ -69,10 +55,15 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     /// <exception cref="ArgumentException">Thrown for any misconfigured options.</exception>
     [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate QdrantDynamicCollection instead.")]
     [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate QdrantDynamicCollection instead")]
-    public QdrantCollection(QdrantClient qdrantClient, string name, bool ownsClient, QdrantCollectionOptions? options = null)
+    public QdrantCollection(
+        QdrantClient qdrantClient,
+        string name,
+        bool ownsClient,
+        QdrantCollectionOptions? options = null)
         : this(() => new MockableQdrantClient(qdrantClient, ownsClient), name, options)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantCollection{TKey, TRecord}"/> class.
@@ -90,12 +81,20 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(QdrantDynamicCollection)))
-                : new QdrantModelBuilder(options.HasNamedVectors).Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new QdrantModelBuilder(options.HasNamedVectors).Build(typeof(TRecord),
+                    typeof(TKey),
+                    options.Definition,
+                    options.EmbeddingGenerator),
             options)
     {
     }
 
-    internal QdrantCollection(Func<MockableQdrantClient> clientFactory, string name, Func<QdrantCollectionOptions, CollectionModel> modelFactory, QdrantCollectionOptions? options)
+
+    internal QdrantCollection(
+        Func<MockableQdrantClient> clientFactory,
+        string name,
+        Func<QdrantCollectionOptions, CollectionModel> modelFactory,
+        QdrantCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(clientFactory);
@@ -109,13 +108,13 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         options ??= QdrantCollectionOptions.Default;
 
         // Assign.
-        this.Name = name;
-        this._model = modelFactory(options);
+        Name = name;
+        _model = modelFactory(options);
 
-        this._hasNamedVectors = options.HasNamedVectors;
-        this._mapper = new QdrantMapper<TRecord>(this._model, options.HasNamedVectors);
+        _hasNamedVectors = options.HasNamedVectors;
+        _mapper = new QdrantMapper<TRecord>(_model, options.HasNamedVectors);
 
-        this._collectionMetadata = new()
+        _collectionMetadata = new()
         {
             VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
             CollectionName = name
@@ -123,84 +122,92 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
         // The code above can throw, so we need to create the client after the model is built and verified.
         // In case an exception is thrown, we don't need to dispose any resources.
-        this._qdrantClient = clientFactory();
+        _qdrantClient = clientFactory();
     }
+
 
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
-        this._qdrantClient.Dispose();
+        _qdrantClient.Dispose();
         base.Dispose(disposing);
     }
 
+
     /// <inheritdoc />
     public override string Name { get; }
+
 
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         return this.RunOperationAsync(
             "CollectionExists",
-            () => this._qdrantClient.CollectionExistsAsync(this.Name, cancellationToken));
+            () => _qdrantClient.CollectionExistsAsync(Name, cancellationToken));
     }
+
 
     /// <inheritdoc />
     public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         // Don't even try to create if the collection already exists.
-        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        if (await CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
             return;
         }
 
         try
         {
-            if (!this._hasNamedVectors)
+            if (!_hasNamedVectors)
             {
                 // If we are not using named vectors, we can only have one vector property. We can assume we have exactly one, since this is already verified in the constructor.
-                var singleVectorProperty = this._model.VectorProperty;
+                var singleVectorProperty = _model.VectorProperty;
 
                 // Map the single vector property to the qdrant config.
                 var vectorParams = QdrantCollectionCreateMapping.MapSingleVector(singleVectorProperty!);
 
                 // Create the collection with the single unnamed vector.
-                await this._qdrantClient.CreateCollectionAsync(
-                    this.Name,
-                    vectorParams,
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                await _qdrantClient.CreateCollectionAsync(
+                        Name,
+                        vectorParams,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
             }
             else
             {
                 // Since we are using named vectors, iterate over all vector properties.
-                var vectorProperties = this._model.VectorProperties;
+                var vectorProperties = _model.VectorProperties;
 
                 // Map the named vectors to the qdrant config.
                 var vectorParamsMap = QdrantCollectionCreateMapping.MapNamedVectors(vectorProperties);
 
                 // Create the collection with named vectors.
-                await this._qdrantClient.CreateCollectionAsync(
-                    this.Name,
-                    vectorParamsMap,
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                await _qdrantClient.CreateCollectionAsync(
+                        Name,
+                        vectorParamsMap,
+                        cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             // Add indexes for each of the data properties that require filtering.
-            var dataProperties = this._model.DataProperties.Where(x => x.IsIndexed);
+            var dataProperties = _model.DataProperties.Where(x => x.IsIndexed);
+
             foreach (var dataProperty in dataProperties)
             {
                 // Note that the schema type doesn't distinguish between array and scalar type (so PayloadSchemaType.Integer is used for both integer and array of integers)
                 if (QdrantCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type, out PayloadSchemaType schemaType)
                     || dataProperty.Type.IsArray
-                        && QdrantCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type.GetElementType()!, out schemaType)
+                    && QdrantCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type.GetElementType()!, out schemaType)
                     || dataProperty.Type.IsGenericType
-                        && dataProperty.Type.GetGenericTypeDefinition() == typeof(List<>)
-                        && QdrantCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type.GenericTypeArguments[0], out schemaType))
+                    && dataProperty.Type.GetGenericTypeDefinition() == typeof(List<>)
+                    && QdrantCollectionCreateMapping.s_schemaTypeMap.TryGetValue(dataProperty.Type.GenericTypeArguments[0], out schemaType))
                 {
-                    await this._qdrantClient.CreatePayloadIndexAsync(
-                        this.Name,
-                        dataProperty.StorageName,
-                        schemaType,
-                        cancellationToken: cancellationToken).ConfigureAwait(false);
+                    await _qdrantClient.CreatePayloadIndexAsync(
+                            Name,
+                            dataProperty.StorageName,
+                            schemaType,
+                            cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 else
                 {
@@ -210,7 +217,8 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             }
 
             // Add indexes for each of the data properties that require full text search.
-            dataProperties = this._model.DataProperties.Where(x => x.IsFullTextIndexed);
+            dataProperties = _model.DataProperties.Where(x => x.IsFullTextIndexed);
+
             foreach (var dataProperty in dataProperties)
             {
                 // TODO: This should move to model validation
@@ -219,11 +227,12 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
                     throw new InvalidOperationException($"Property {nameof(dataProperty.IsFullTextIndexed)} on {nameof(VectorStoreDataProperty)} '{dataProperty.ModelName}' is set to true, but the property type is not a string. The Qdrant VectorStore supports {nameof(dataProperty.IsFullTextIndexed)} on string properties only.");
                 }
 
-                await this._qdrantClient.CreatePayloadIndexAsync(
-                    this.Name,
-                    dataProperty.StorageName,
-                    PayloadSchemaType.Text,
-                    cancellationToken: cancellationToken).ConfigureAwait(false);
+                await _qdrantClient.CreatePayloadIndexAsync(
+                        Name,
+                        dataProperty.StorageName,
+                        PayloadSchemaType.Text,
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.AlreadyExists)
@@ -235,28 +244,30 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             throw new VectorStoreException("Call to vector store failed.", ex)
             {
                 VectorStoreSystemName = QdrantConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
+                VectorStoreName = _collectionMetadata.VectorStoreName,
+                CollectionName = Name,
                 OperationName = "EnsureCollectionExists"
             };
         }
     }
 
+
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
-        => this.RunOperationAsync("DeleteCollection",
+    {
+        return this.RunOperationAsync("DeleteCollection",
             async () =>
             {
                 try
                 {
-                    await this._qdrantClient.DeleteCollectionAsync(this.Name, null, cancellationToken).ConfigureAwait(false);
+                    await _qdrantClient.DeleteCollectionAsync(Name, null, cancellationToken).ConfigureAwait(false);
                 }
                 catch (QdrantException)
                 {
                     // There is no reliable way to check if the operation failed because the
                     // collection does not exist based on the exception itself.
                     // So we just check here if it exists, and if not, ignore the exception.
-                    if (!await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+                    if (!await CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
                     {
                         return;
                     }
@@ -264,6 +275,8 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
                     throw;
                 }
             });
+    }
+
 
     /// <inheritdoc />
     public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
@@ -273,6 +286,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         var retrievedPoints = await this.GetAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
         return retrievedPoints.FirstOrDefault();
     }
+
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<TRecord> GetAsync(
@@ -319,22 +333,32 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         }
 
         var includeVectors = options?.IncludeVectors ?? false;
-        if (includeVectors && this._model.EmbeddingGenerationRequired)
+
+        if (includeVectors && _model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
         // Retrieve data points.
         var retrievedPoints = await this.RunOperationAsync(
-            OperationName,
-            () => this._qdrantClient.RetrieveAsync(this.Name, pointsIds, true, includeVectors, cancellationToken: cancellationToken)).ConfigureAwait(false);
+                OperationName,
+                () => _qdrantClient.RetrieveAsync(Name,
+                    pointsIds,
+                    true,
+                    includeVectors,
+                    cancellationToken: cancellationToken))
+            .ConfigureAwait(false);
 
         // Convert the retrieved points to the target data model.
         foreach (var retrievedPoint in retrievedPoints)
         {
-            yield return this._mapper.MapFromStorageToDataModel(retrievedPoint.Id, retrievedPoint.Payload, retrievedPoint.Vectors, includeVectors);
+            yield return _mapper.MapFromStorageToDataModel(retrievedPoint.Id,
+                retrievedPoint.Payload,
+                retrievedPoint.Vectors,
+                includeVectors);
         }
     }
+
 
     /// <inheritdoc />
     public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
@@ -345,11 +369,18 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             DeleteName,
             () => key switch
             {
-                ulong id => this._qdrantClient.DeleteAsync(this.Name, id, wait: true, cancellationToken: cancellationToken),
-                Guid id => this._qdrantClient.DeleteAsync(this.Name, id, wait: true, cancellationToken: cancellationToken),
+                ulong id => _qdrantClient.DeleteAsync(Name,
+                    id,
+                    wait: true,
+                    cancellationToken: cancellationToken),
+                Guid id => _qdrantClient.DeleteAsync(Name,
+                    id,
+                    wait: true,
+                    cancellationToken: cancellationToken),
                 _ => throw new NotSupportedException($"The provided key type '{key.GetType().Name}' is not supported by Qdrant.")
             });
     }
+
 
     /// <inheritdoc />
     public override Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
@@ -375,6 +406,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
                 List<ulong>? ulongKeys = null;
 
                 var isFirst = true;
+
                 foreach (var key in objectKeys)
                 {
                     if (isFirst)
@@ -430,14 +462,14 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             DeleteName,
             () => keyList switch
             {
-                List<ulong> keysList => this._qdrantClient.DeleteAsync(
-                    this.Name,
+                List<ulong> keysList => _qdrantClient.DeleteAsync(
+                    Name,
                     keysList,
                     wait: true,
                     cancellationToken: cancellationToken),
 
-                List<Guid> keysList => this._qdrantClient.DeleteAsync(
-                    this.Name,
+                List<Guid> keysList => _qdrantClient.DeleteAsync(
+                    Name,
                     keysList,
                     wait: true,
                     cancellationToken: cancellationToken),
@@ -446,6 +478,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             });
     }
 
+
     /// <inheritdoc />
     public override async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
@@ -453,6 +486,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
         await this.UpsertAsync([record], cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
@@ -464,10 +498,11 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         // If an embedding generator is defined, invoke it once per property for all records.
         GeneratedEmbeddings<Embedding<float>>?[]? generatedEmbeddings = null;
 
-        var vectorPropertyCount = this._model.VectorProperties.Count;
+        var vectorPropertyCount = _model.VectorProperties.Count;
+
         for (var i = 0; i < vectorPropertyCount; i++)
         {
-            var vectorProperty = this._model.VectorProperties[i];
+            var vectorProperty = _model.VectorProperties[i];
 
             if (QdrantModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
@@ -479,7 +514,9 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
             if (recordsList is null)
             {
-                recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+                recordsList = records is IReadOnlyList<TRecord> r
+                    ? r
+                    : records.ToList();
 
                 if (recordsList.Count == 0)
                 {
@@ -491,22 +528,15 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var task))
-            {
-                generatedEmbeddings ??= new GeneratedEmbeddings<Embedding<float>>?[vectorPropertyCount];
-                generatedEmbeddings[i] = await task.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbeddings ??= new GeneratedEmbeddings<Embedding<float>>?[vectorPropertyCount];
+            generatedEmbeddings[i] = (GeneratedEmbeddings<Embedding<float>>)await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 
         // Create points from records.
-        var keyProperty = this._model.KeyProperty;
+        var keyProperty = _model.KeyProperty;
         var pointStructs = new List<PointStruct>();
         var recordIndex = 0;
+
         foreach (var record in records)
         {
             if (keyProperty.IsAutoGenerated && keyProperty.GetValue<Guid>(record) == Guid.Empty)
@@ -514,7 +544,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
                 keyProperty.SetValue(record, Guid.NewGuid());
             }
 
-            pointStructs.Add(this._mapper.MapFromDataToStorageModel(record, recordIndex++, generatedEmbeddings));
+            pointStructs.Add(_mapper.MapFromDataToStorageModel(record, recordIndex++, generatedEmbeddings));
         }
 
         if (pointStructs.Count == 0)
@@ -524,9 +554,14 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
         // Upsert.
         await this.RunOperationAsync(
-            UpsertName,
-            () => this._qdrantClient.UpsertAsync(this.Name, pointStructs, true, cancellationToken: cancellationToken)).ConfigureAwait(false);
+                UpsertName,
+                () => _qdrantClient.UpsertAsync(Name,
+                    pointStructs,
+                    true,
+                    cancellationToken: cancellationToken))
+            .ConfigureAwait(false);
     }
+
 
     #region Search
 
@@ -541,12 +576,13 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
-        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
+
+        if (options.IncludeVectors && _model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+        var vectorProperty = _model.GetVectorPropertyOrSingle(options);
         var vectorArray = await GetSearchVectorArrayAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -554,8 +590,8 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => QdrantCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, this._model),
+            { OldFilter: VectorSearchFilter legacyFilter } => QdrantCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, _model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, _model),
             _ => new Filter()
         };
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -566,33 +602,37 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
 
         // Execute Search.
         var points = await this.RunOperationAsync(
-            "Query",
-            () => this._qdrantClient.QueryAsync(
-                this.Name,
-                query: query,
-                usingVector: this._hasNamedVectors ? vectorProperty.StorageName : null,
-                filter: filter,
-                scoreThreshold: (float?)options.ScoreThreshold,
-                limit: (ulong)top,
-                offset: (ulong)options.Skip,
-                vectorsSelector: vectorsSelector,
-                cancellationToken: cancellationToken)).ConfigureAwait(false);
+                "Query",
+                () => _qdrantClient.QueryAsync(
+                    Name,
+                    query: query,
+                    usingVector: _hasNamedVectors
+                        ? vectorProperty.StorageName
+                        : null,
+                    filter: filter,
+                    scoreThreshold: (float?)options.ScoreThreshold,
+                    limit: (ulong)top,
+                    offset: (ulong)options.Skip,
+                    vectorsSelector: vectorsSelector,
+                    cancellationToken: cancellationToken))
+            .ConfigureAwait(false);
 
         // Map to data model.
         var mappedResults = points.Select(point => QdrantCollectionSearchMapping.MapScoredPointToVectorSearchResult(
-                point,
-                this._mapper,
-                options.IncludeVectors,
-                QdrantConstants.VectorStoreSystemName,
-                this._collectionMetadata.VectorStoreName,
-                this.Name,
-                "Query"));
+            point,
+            _mapper,
+            options.IncludeVectors,
+            QdrantConstants.VectorStoreSystemName,
+            _collectionMetadata.VectorStoreName,
+            Name,
+            "Query"));
 
         foreach (var result in mappedResults)
         {
             yield return result;
         }
     }
+
 
     private static async ValueTask<float[]> GetSearchVectorArrayAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
         where TInput : notnull
@@ -606,8 +646,8 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         {
             ReadOnlyMemory<float> r => r,
             Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => ((Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false)).Vector,
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), QdrantModelBuilder.SupportedVectorTypes))
@@ -615,22 +655,26 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         };
 
         return MemoryMarshal.TryGetArray(memory, out ArraySegment<float> segment) && segment.Count == segment.Array!.Length
-                ? segment.Array
-                : memory.ToArray();
+            ? segment.Array
+            : memory.ToArray();
     }
 
     #endregion Search
 
+
     /// <inheritdoc />
-    public override async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        FilteredRecordRetrievalOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(
+        Expression<Func<TRecord, bool>> filter,
+        int top,
+        FilteredRecordRetrievalOptions<TRecord>? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
         options ??= new();
 
-        var translatedFilter = new QdrantFilterTranslator().Translate(filter, this._model);
+        var translatedFilter = new QdrantFilterTranslator().Translate(filter, _model);
 
         // Specify whether to include vectors in the search results.
         WithVectorsSelector vectorsSelector = new() { Enable = options.IncludeVectors };
@@ -644,32 +688,37 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         };
 
         OrderBy? orderBy = null;
+
         if (sortInfo is not null)
         {
-            var orderByName = this._model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
+            var orderByName = _model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
             orderBy = new(orderByName)
             {
-                Direction = sortInfo.Ascending ? global::Qdrant.Client.Grpc.Direction.Asc : global::Qdrant.Client.Grpc.Direction.Desc
+                Direction = sortInfo.Ascending
+                    ? global::Qdrant.Client.Grpc.Direction.Asc
+                    : global::Qdrant.Client.Grpc.Direction.Desc
             };
         }
 
         var scrollResponse = await this.RunOperationAsync(
-            "Scroll",
-            () => this._qdrantClient.ScrollAsync(
-                this.Name,
-                translatedFilter,
-                vectorsSelector,
-                limit: (uint)(top + options.Skip),
-                orderBy,
-                cancellationToken: cancellationToken)).ConfigureAwait(false);
+                "Scroll",
+                () => _qdrantClient.ScrollAsync(
+                    Name,
+                    translatedFilter,
+                    vectorsSelector,
+                    limit: (uint)(top + options.Skip),
+                    orderBy,
+                    cancellationToken: cancellationToken))
+            .ConfigureAwait(false);
 
-        var mappedResults = scrollResponse.Result.Skip(options.Skip).Select(point => QdrantCollectionSearchMapping.MapRetrievedPointToRecord(
+        var mappedResults = scrollResponse.Result.Skip(options.Skip)
+            .Select(point => QdrantCollectionSearchMapping.MapRetrievedPointToRecord(
                 point,
-                this._mapper,
+                _mapper,
                 options.IncludeVectors,
                 QdrantConstants.VectorStoreSystemName,
-                this._collectionMetadata.VectorStoreName,
-                this.Name,
+                _collectionMetadata.VectorStoreName,
+                Name,
                 "Scroll"));
 
         foreach (var mappedResult in mappedResults)
@@ -678,17 +727,23 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         }
     }
 
+
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(TInput searchValue, ICollection<string> keywords, int top, HybridSearchOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(
+        TInput searchValue,
+        ICollection<string> keywords,
+        int top,
+        HybridSearchOptions<TRecord>? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TInput : notnull
     {
         Verify.NotLessThan(top, 1);
 
         // Resolve options.
         options ??= s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var vectorProperty = _model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
         var vectorArray = await GetSearchVectorArrayAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
-        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
+        var textDataProperty = _model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
         // Build filter object.
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -696,8 +751,8 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         var filter = options switch
         {
             { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => QdrantCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, this._model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, this._model),
+            { OldFilter: VectorSearchFilter legacyFilter } => QdrantCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, _model),
+            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, _model),
             _ => new Filter()
         };
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -712,52 +767,56 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             Query = new Query { Nearest = new VectorInput(vectorArray) }
         };
 
-        if (this._hasNamedVectors)
+        if (_hasNamedVectors)
         {
-            vectorQuery.Using = this._hasNamedVectors ? vectorProperty.StorageName : null;
+            vectorQuery.Using = _hasNamedVectors
+                ? vectorProperty.StorageName
+                : null;
         }
 
         // Build the keyword query.
         var keywordFilter = filter.Clone();
         var keywordSubFilter = new Filter();
+
         foreach (string keyword in keywords)
         {
-            keywordSubFilter.Should.Add(new Condition() { Field = new FieldCondition() { Key = textDataProperty.StorageName, Match = new Match { Text = keyword } } });
+            keywordSubFilter.Should.Add(new Condition { Field = new FieldCondition { Key = textDataProperty.StorageName, Match = new Match { Text = keyword } } });
         }
-        keywordFilter.Must.Add(new Condition() { Filter = keywordSubFilter });
+        keywordFilter.Must.Add(new Condition { Filter = keywordSubFilter });
         var keywordQuery = new PrefetchQuery
         {
-            Filter = keywordFilter,
+            Filter = keywordFilter
         };
 
         // Build the fusion query.
         var fusionQuery = new Query
         {
-            Fusion = Fusion.Rrf,
+            Fusion = Fusion.Rrf
         };
 
         // Execute Search.
         var points = await this.RunOperationAsync(
-            "Query",
-            () => this._qdrantClient.QueryAsync(
-                this.Name,
-                prefetch: [vectorQuery, keywordQuery],
-                query: fusionQuery,
-                scoreThreshold: (float?)options.ScoreThreshold,
-                limit: (ulong)top,
-                offset: (ulong)options.Skip,
-                vectorsSelector: vectorsSelector,
-                cancellationToken: cancellationToken)).ConfigureAwait(false);
+                "Query",
+                () => _qdrantClient.QueryAsync(
+                    Name,
+                    prefetch: [vectorQuery, keywordQuery],
+                    query: fusionQuery,
+                    scoreThreshold: (float?)options.ScoreThreshold,
+                    limit: (ulong)top,
+                    offset: (ulong)options.Skip,
+                    vectorsSelector: vectorsSelector,
+                    cancellationToken: cancellationToken))
+            .ConfigureAwait(false);
 
         // Map to data model.
         var mappedResults = points.Select(point => QdrantCollectionSearchMapping.MapScoredPointToVectorSearchResult(
-                point,
-                this._mapper,
-                options.IncludeVectors,
-                QdrantConstants.VectorStoreSystemName,
-                this._collectionMetadata.VectorStoreName,
-                this.Name,
-                "Query"));
+            point,
+            _mapper,
+            options.IncludeVectors,
+            QdrantConstants.VectorStoreSystemName,
+            _collectionMetadata.VectorStoreName,
+            Name,
+            "Query"));
 
         foreach (var result in mappedResults)
         {
@@ -765,18 +824,24 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         }
     }
 
+
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(QdrantClient) ? this._qdrantClient.QdrantClient :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreCollectionMetadata)
+                    ? _collectionMetadata
+                    : serviceType == typeof(QdrantClient)
+                        ? _qdrantClient.QdrantClient
+                        : serviceType.IsInstanceOfType(this)
+                            ? this
+                            : null;
     }
+
 
     /// <summary>
     /// Run the given operation and wrap any <see cref="RpcException"/> with <see cref="VectorStoreException"/>."/>
@@ -785,10 +850,13 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     /// <param name="operation">The operation to run.</param>
     /// <returns>The result of the operation.</returns>
     private Task RunOperationAsync(string operationName, Func<Task> operation)
-        => VectorStoreErrorHandler.RunOperationAsync<RpcException>(
-            this._collectionMetadata,
+    {
+        return VectorStoreErrorHandler.RunOperationAsync<RpcException>(
+            _collectionMetadata,
             operationName,
             operation);
+    }
+
 
     /// <summary>
     /// Run the given operation and wrap any <see cref="RpcException"/> with <see cref="VectorStoreException"/>."/>
@@ -798,8 +866,10 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     /// <param name="operation">The operation to run.</param>
     /// <returns>The result of the operation.</returns>
     private Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
-        => VectorStoreErrorHandler.RunOperationAsync<T, RpcException>(
-            this._collectionMetadata,
+    {
+        return VectorStoreErrorHandler.RunOperationAsync<T, RpcException>(
+            _collectionMetadata,
             operationName,
             operation);
+    }
 }

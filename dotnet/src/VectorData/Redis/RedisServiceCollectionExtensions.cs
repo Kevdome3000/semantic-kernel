@@ -1,13 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Redis;
-using StackExchange.Redis;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +12,7 @@ public static class RedisServiceCollectionExtensions
 {
     private const string DynamicCodeMessage = "This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
     private const string UnreferencedCodeMessage = "This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
+
 
     /// <summary>
     /// Registers a <see cref="RedisVectorStore"/> as <see cref="VectorStore"/>
@@ -31,7 +26,14 @@ public static class RedisServiceCollectionExtensions
         Func<IServiceProvider, IDatabase>? clientProvider = default,
         Func<IServiceProvider, RedisVectorStoreOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedRedisVectorStore(services, serviceKey: null, clientProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedRedisVectorStore(services,
+            null,
+            clientProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="RedisVectorStore"/> as <see cref="VectorStore"/>
@@ -54,19 +56,27 @@ public static class RedisServiceCollectionExtensions
     {
         Verify.NotNull(services);
 
-        services.Add(new ServiceDescriptor(typeof(RedisVectorStore), serviceKey, (sp, _) =>
-        {
-            var client = clientProvider is null ? sp.GetRequiredService<IDatabase>() : clientProvider(sp);
-            var options = GetStoreOptions(sp, optionsProvider);
+        services.Add(new ServiceDescriptor(typeof(RedisVectorStore),
+            serviceKey,
+            (sp, _) =>
+            {
+                var client = clientProvider is null
+                    ? sp.GetRequiredService<IDatabase>()
+                    : clientProvider(sp);
+                var options = GetStoreOptions(sp, optionsProvider);
 
-            return new RedisVectorStore(client, options);
-        }, lifetime));
+                return new RedisVectorStore(client, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<RedisVectorStore>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStore),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<RedisVectorStore>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="RedisVectorStore"/> as <see cref="VectorStore"/>
@@ -80,7 +90,14 @@ public static class RedisServiceCollectionExtensions
         string connectionConfiguration,
         RedisVectorStoreOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedRedisVectorStore(services, serviceKey: null, connectionConfiguration, options, lifetime);
+    {
+        return AddKeyedRedisVectorStore(services,
+            null,
+            connectionConfiguration,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="RedisVectorStore"/> as <see cref="VectorStore"/>
@@ -103,8 +120,13 @@ public static class RedisServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(connectionConfiguration);
 
-        return AddKeyedRedisVectorStore(services, serviceKey, _ => ConnectionMultiplexer.Connect(connectionConfiguration).GetDatabase(), sp => options!, lifetime);
+        return AddKeyedRedisVectorStore(services,
+            serviceKey,
+            _ => ConnectionMultiplexer.Connect(connectionConfiguration).GetDatabase(),
+            sp => options!,
+            lifetime);
     }
+
 
     /// <summary>
     /// Registers a <see cref="RedisJsonCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -120,7 +142,15 @@ public static class RedisServiceCollectionExtensions
         Func<IServiceProvider, RedisJsonCollectionOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedRedisJsonCollection<TRecord>(services, serviceKey: null, name, clientProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedRedisJsonCollection<TRecord>(services,
+            null,
+            name,
+            clientProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="RedisJsonCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -147,22 +177,32 @@ public static class RedisServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(name);
 
-        services.Add(new ServiceDescriptor(typeof(RedisJsonCollection<string, TRecord>), serviceKey, (sp, _) =>
-        {
-            var client = clientProvider is null ? sp.GetRequiredService<IDatabase>() : clientProvider(sp);
-            var options = GetCollectionOptions(sp, optionsProvider);
+        services.Add(new ServiceDescriptor(typeof(RedisJsonCollection<string, TRecord>),
+            serviceKey,
+            (sp, _) =>
+            {
+                var client = clientProvider is null
+                    ? sp.GetRequiredService<IDatabase>()
+                    : clientProvider(sp);
+                var options = GetCollectionOptions(sp, optionsProvider);
 
-            return new RedisJsonCollection<string, TRecord>(client, name, options);
-        }, lifetime));
+                return new RedisJsonCollection<string, TRecord>(client, name, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<string, TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<RedisJsonCollection<string, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<string, TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<RedisJsonCollection<string, TRecord>>(key),
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<RedisJsonCollection<string, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<RedisJsonCollection<string, TRecord>>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="RedisJsonCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -178,7 +218,15 @@ public static class RedisServiceCollectionExtensions
         RedisJsonCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedRedisJsonCollection<TRecord>(services, serviceKey: null, name, connectionConfiguration, options, lifetime);
+    {
+        return AddKeyedRedisJsonCollection<TRecord>(services,
+            null,
+            name,
+            connectionConfiguration,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="RedisJsonCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -213,6 +261,7 @@ public static class RedisServiceCollectionExtensions
             lifetime);
     }
 
+
     /// <summary>
     /// Registers a <see cref="RedisHashSetCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
     /// with <see cref="IDatabase"/> returned by <paramref name="clientProvider"/> or retrieved from the dependency injection container if <paramref name="clientProvider"/> was not provided.
@@ -227,7 +276,15 @@ public static class RedisServiceCollectionExtensions
         Func<IServiceProvider, RedisHashSetCollectionOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedRedisHashSetCollection<TRecord>(services, serviceKey: null, name, clientProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedRedisHashSetCollection<TRecord>(services,
+            null,
+            name,
+            clientProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="RedisHashSetCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -254,22 +311,32 @@ public static class RedisServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(name);
 
-        services.Add(new ServiceDescriptor(typeof(RedisHashSetCollection<string, TRecord>), serviceKey, (sp, _) =>
-        {
-            var client = clientProvider is null ? sp.GetRequiredService<IDatabase>() : clientProvider(sp);
-            var options = GetCollectionOptions(sp, optionsProvider);
+        services.Add(new ServiceDescriptor(typeof(RedisHashSetCollection<string, TRecord>),
+            serviceKey,
+            (sp, _) =>
+            {
+                var client = clientProvider is null
+                    ? sp.GetRequiredService<IDatabase>()
+                    : clientProvider(sp);
+                var options = GetCollectionOptions(sp, optionsProvider);
 
-            return new RedisHashSetCollection<string, TRecord>(client, name, options);
-        }, lifetime));
+                return new RedisHashSetCollection<string, TRecord>(client, name, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<string, TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<RedisHashSetCollection<string, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<string, TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<RedisHashSetCollection<string, TRecord>>(key),
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<RedisHashSetCollection<string, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<RedisHashSetCollection<string, TRecord>>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="RedisHashSetCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -285,7 +352,15 @@ public static class RedisServiceCollectionExtensions
         RedisHashSetCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedRedisHashSetCollection<TRecord>(services, serviceKey: null, name, connectionConfiguration, options, lifetime);
+    {
+        return AddKeyedRedisHashSetCollection<TRecord>(services,
+            null,
+            name,
+            connectionConfiguration,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="RedisHashSetCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -320,9 +395,11 @@ public static class RedisServiceCollectionExtensions
             lifetime);
     }
 
+
     private static RedisVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, RedisVectorStoreOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.
@@ -333,10 +410,12 @@ public static class RedisServiceCollectionExtensions
             ? options // There is nothing to change.
             : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
+
 
     private static RedisJsonCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, RedisJsonCollectionOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.
@@ -348,9 +427,11 @@ public static class RedisServiceCollectionExtensions
             : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
 
+
     private static RedisHashSetCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, RedisHashSetCollectionOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.

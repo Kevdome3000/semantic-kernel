@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection;
 #if NET
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -14,6 +10,7 @@ using System.Security.Cryptography.X509Certificates;
 #pragma warning disable CA2215 // Dispose methods should call base class dispose
 
 namespace Microsoft.SemanticKernel.Http;
+
 /// <summary>
 /// Provides functionality for retrieving instances of HttpClient.
 /// </summary>
@@ -24,25 +21,41 @@ internal static class HttpClientProvider
     /// Retrieves an instance of HttpClient.
     /// </summary>
     /// <returns>An instance of HttpClient.</returns>
-    public static HttpClient GetHttpClient() => new(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+    public static HttpClient GetHttpClient()
+    {
+        return new(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+    }
+
 
     /// <summary>
     /// Retrieves an instance of HttpClient.
     /// </summary>
     /// <returns>An instance of HttpClient.</returns>
-    public static HttpClient GetHttpClient(HttpClient? httpClient = null) => httpClient ?? GetHttpClient();
+    public static HttpClient GetHttpClient(HttpClient? httpClient = null)
+    {
+        return httpClient ?? GetHttpClient();
+    }
+
 
     /// <summary>
     /// Retrieves an instance of HttpClient.
     /// </summary>
     /// <returns>An instance of HttpClient.</returns>
-    public static HttpClient GetHttpClient(IServiceProvider? serviceProvider = null) => GetHttpClient(serviceProvider?.GetService<HttpClient>());
+    public static HttpClient GetHttpClient(IServiceProvider? serviceProvider = null)
+    {
+        return GetHttpClient(serviceProvider?.GetService<HttpClient>());
+    }
+
 
     /// <summary>
     /// Retrieves an instance of HttpClient.
     /// </summary>
     /// <returns>An instance of HttpClient.</returns>
-    public static HttpClient GetHttpClient(HttpClient? httpClient, IServiceProvider serviceProvider) => httpClient ?? GetHttpClient(serviceProvider?.GetService<HttpClient>());
+    public static HttpClient GetHttpClient(HttpClient? httpClient, IServiceProvider serviceProvider)
+    {
+        return httpClient ?? GetHttpClient(serviceProvider?.GetService<HttpClient>());
+    }
+
 
     /// <summary>
     /// Represents a singleton implementation of <see cref="HttpClientHandler"/> that is not disposable.
@@ -56,10 +69,12 @@ internal static class HttpClientProvider
         {
         }
 
+
         /// <summary>
         /// Gets the singleton instance of <see cref="NonDisposableHttpClientHandler"/>.
         /// </summary>
         public static NonDisposableHttpClientHandler Instance { get; } = new();
+
 
         /// <summary>
         /// Disposes the underlying resources held by the <see cref="NonDisposableHttpClientHandler"/>.
@@ -73,19 +88,20 @@ internal static class HttpClientProvider
             // This implementation assumes that the HttpMessageHandler is being used as a singleton and should not be disposed directly.
         }
 
+
 #if NET
         private static SocketsHttpHandler CreateHandler()
         {
-            return new SocketsHttpHandler()
+            return new SocketsHttpHandler
             {
                 // Limit the lifetime of connections to better respect any DNS changes
                 PooledConnectionLifetime = TimeSpan.FromMinutes(2),
 
                 // Check cert revocation
-                SslOptions = new SslClientAuthenticationOptions()
+                SslOptions = new SslClientAuthenticationOptions
                 {
-                    CertificateRevocationCheckMode = X509RevocationMode.Online,
-                },
+                    CertificateRevocationCheckMode = X509RevocationMode.Online
+                }
             };
         }
 #elif NETSTANDARD2_0_OR_GREATER

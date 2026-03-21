@@ -21,6 +21,7 @@ internal sealed class ConcurrentResultActor :
     private readonly int _expectedCount;
     private int _resultCount;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ConcurrentResultActor"/> class.
     /// </summary>
@@ -37,23 +38,28 @@ internal sealed class ConcurrentResultActor :
         AgentType orchestrationType,
         int expectedCount,
         ILogger logger)
-        : base(id, runtime, context, "Captures the results of the ConcurrentOrchestration", logger)
+        : base(id,
+            runtime,
+            context,
+            "Captures the results of the ConcurrentOrchestration",
+            logger)
     {
-        this._orchestrationType = orchestrationType;
-        this._expectedCount = expectedCount;
-        this._results = [];
+        _orchestrationType = orchestrationType;
+        _expectedCount = expectedCount;
+        _results = [];
     }
+
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(ConcurrentMessages.Result item, MessageContext messageContext)
     {
-        this.Logger.LogConcurrentResultCapture(this.Id, this._resultCount + 1, this._expectedCount);
+        Logger.LogConcurrentResultCapture(Id, _resultCount + 1, _expectedCount);
 
-        this._results.Enqueue(item);
+        _results.Enqueue(item);
 
-        if (Interlocked.Increment(ref this._resultCount) == this._expectedCount)
+        if (Interlocked.Increment(ref _resultCount) == _expectedCount)
         {
-            await this.PublishMessageAsync(this._results.ToArray(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false);
+            await PublishMessageAsync(_results.ToArray(), _orchestrationType, messageContext.CancellationToken).ConfigureAwait(false);
         }
     }
 }

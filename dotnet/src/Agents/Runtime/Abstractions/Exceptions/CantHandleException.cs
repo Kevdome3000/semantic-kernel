@@ -16,11 +16,13 @@ public class CantHandleException : Exception
     /// </summary>
     public CantHandleException() : base("The handler cannot process the given message.") { }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CantHandleException"/> class with a custom error message.
     /// </summary>
     /// <param name="message">The custom error message.</param>
     public CantHandleException(string message) : base(message) { }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CantHandleException"/> class with a custom error message and an inner exception.

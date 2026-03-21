@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using Microsoft.Extensions.Logging;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -38,8 +33,7 @@ public static class KernelFunctionYaml
         {
             if (inputVariable.Default is not null and not string)
             {
-                throw new NotSupportedException($"Default value for input variable '{inputVariable.Name}' must be a string. " +
-                        $"This is a temporary limitation; future updates are expected to remove this constraint. Prompt function - '{promptTemplateConfig.Name ?? promptTemplateConfig.Description}'.");
+                throw new NotSupportedException($"Default value for input variable '{inputVariable.Name}' must be a string. " + $"This is a temporary limitation; future updates are expected to remove this constraint. Prompt function - '{promptTemplateConfig.Name ?? promptTemplateConfig.Description}'.");
             }
         }
 
@@ -48,6 +42,7 @@ public static class KernelFunctionYaml
             promptTemplateFactory,
             loggerFactory);
     }
+
 
     /// <summary>
     /// Convert the given YAML text to a <see cref="PromptTemplateConfig"/> model.

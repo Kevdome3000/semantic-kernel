@@ -25,6 +25,7 @@ public static class AIFunctionExtensions
             : new AIFunctionKernelFunction(aiFunction);
     }
 
+
     /// <summary>
     /// Invokes the <see cref="AIFunction"/> providing a <see cref="Kernel"/> and returns its result.
     /// </summary>
@@ -33,11 +34,16 @@ public static class AIFunctionExtensions
     /// <param name="functionArguments">Contains the arguments required for the AI function execution.</param>
     /// <param name="cancellationToken">Allows for the operation to be canceled if needed.</param>
     /// <returns>The result of the function execution.</returns>
-    public static ValueTask<object?> InvokeAsync(this AIFunction aiFunction, Kernel kernel, AIFunctionArguments? functionArguments = null, CancellationToken cancellationToken = default)
+    public static ValueTask<object?> InvokeAsync(
+        this AIFunction aiFunction,
+        Kernel kernel,
+        AIFunctionArguments? functionArguments = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(aiFunction);
 
         AIFunctionArguments? functionArgumentsClone = null;
+
         if (aiFunction is KernelFunction)
         {
             // If the AIFunction is a KernelFunction inject the provided kernel in the cloned arguments

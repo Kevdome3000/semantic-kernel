@@ -19,16 +19,18 @@ namespace Microsoft.SemanticKernel.Agents.AzureAI.Extensions;
 internal static class AgentRunExtensions
 {
     public static async IAsyncEnumerable<RunStep> GetStepsAsync(
-           this PersistentAgentsClient client,
-           ThreadRun run,
-           [EnumeratorCancellation] CancellationToken cancellationToken)
+        this PersistentAgentsClient client,
+        ThreadRun run,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         AsyncPageable<RunStep>? steps = client.Runs.GetRunStepsAsync(run, cancellationToken: cancellationToken);
+
         await foreach (RunStep step in steps.ConfigureAwait(false))
         {
             yield return step;
         }
     }
+
 
     public static async Task<ThreadRun> CreateAsync(
         this PersistentAgentsClient client,
@@ -43,48 +45,52 @@ internal static class AgentRunExtensions
         BinaryData? responseFormat = GetResponseFormat(invocationOptions);
         return
             await client.Runs.CreateRunAsync(
-                threadId,
-                agent.Id,
-                overrideModelName: invocationOptions?.ModelName,
-                overrideInstructions: invocationOptions?.OverrideInstructions ?? instructions,
-                additionalInstructions: invocationOptions?.AdditionalInstructions,
-                additionalMessages: [.. AgentMessageFactory.GetThreadMessages(invocationOptions?.AdditionalMessages)],
-                overrideTools: tools,
-                stream: false,
-                temperature: invocationOptions?.Temperature,
-                topP: invocationOptions?.TopP,
-                maxPromptTokens: invocationOptions?.MaxPromptTokens,
-                maxCompletionTokens: invocationOptions?.MaxCompletionTokens,
-                truncationStrategy,
-                toolChoice: null,
-                responseFormat,
-                parallelToolCalls: invocationOptions?.ParallelToolCallsEnabled,
-                metadata: invocationOptions?.Metadata,
-                include: null,
-                cancellationToken).ConfigureAwait(false);
+                    threadId,
+                    agent.Id,
+                    invocationOptions?.ModelName,
+                    invocationOptions?.OverrideInstructions ?? instructions,
+                    invocationOptions?.AdditionalInstructions,
+                    [.. AgentMessageFactory.GetThreadMessages(invocationOptions?.AdditionalMessages)],
+                    tools,
+                    false,
+                    invocationOptions?.Temperature,
+                    invocationOptions?.TopP,
+                    invocationOptions?.MaxPromptTokens,
+                    invocationOptions?.MaxCompletionTokens,
+                    truncationStrategy,
+                    null,
+                    responseFormat,
+                    invocationOptions?.ParallelToolCallsEnabled,
+                    invocationOptions?.Metadata,
+                    null,
+                    cancellationToken)
+                .ConfigureAwait(false);
     }
+
 
     private static BinaryData? GetResponseFormat(AzureAIInvocationOptions? invocationOptions)
     {
-        return invocationOptions?.EnableJsonResponse == true ?
-            BinaryData.FromString(
+        return invocationOptions?.EnableJsonResponse == true
+            ? BinaryData.FromString(
                 """
                 {
                     "type": "json_object"
                 }                        
-                """) :
-            null;
+                """)
+            : null;
     }
+
 
     private static Truncation? GetTruncationStrategy(AzureAIInvocationOptions? invocationOptions)
     {
-        return invocationOptions?.TruncationMessageCount == null ?
-            null :
-            new(TruncationStrategy.LastMessages)
+        return invocationOptions?.TruncationMessageCount == null
+            ? null
+            : new Truncation(TruncationStrategy.LastMessages)
             {
                 LastMessages = invocationOptions.TruncationMessageCount
             };
     }
+
 
     public static IAsyncEnumerable<StreamingUpdate> CreateStreamingAsync(
         this PersistentAgentsClient client,
@@ -101,20 +107,20 @@ internal static class AgentRunExtensions
             client.Runs.CreateRunStreamingAsync(
                 threadId,
                 agent.Id,
-                overrideModelName: invocationOptions?.ModelName,
-                overrideInstructions: invocationOptions?.OverrideInstructions ?? instructions,
-                additionalInstructions: invocationOptions?.AdditionalInstructions,
-                additionalMessages: [.. AgentMessageFactory.GetThreadMessages(invocationOptions?.AdditionalMessages)],
-                overrideTools: tools,
-                temperature: invocationOptions?.Temperature,
-                topP: invocationOptions?.TopP,
-                maxPromptTokens: invocationOptions?.MaxPromptTokens,
-                maxCompletionTokens: invocationOptions?.MaxCompletionTokens,
+                invocationOptions?.ModelName,
+                invocationOptions?.OverrideInstructions ?? instructions,
+                invocationOptions?.AdditionalInstructions,
+                [.. AgentMessageFactory.GetThreadMessages(invocationOptions?.AdditionalMessages)],
+                tools,
+                invocationOptions?.Temperature,
+                invocationOptions?.TopP,
+                invocationOptions?.MaxPromptTokens,
+                invocationOptions?.MaxCompletionTokens,
                 truncationStrategy,
-                toolChoice: null,
+                null,
                 responseFormat,
-                parallelToolCalls: invocationOptions?.ParallelToolCallsEnabled,
-                metadata: invocationOptions?.Metadata,
+                invocationOptions?.ParallelToolCallsEnabled,
+                invocationOptions?.Metadata,
                 cancellationToken);
     }
 }

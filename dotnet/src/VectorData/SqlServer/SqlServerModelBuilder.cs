@@ -1,30 +1,29 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Data.SqlTypes;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ProviderServices;
-
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingOptions)
 {
     internal const string SupportedVectorTypes = "SqlVector<float>, ReadOnlyMemory<float>, Embedding<float>, float[]";
+    internal const string SupportedIndexKinds = $"{IndexKind.Flat}, {IndexKind.DiskAnn}";
 
     private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
-        SupportsMultipleVectors = true,
+        SupportsMultipleVectors = true
     };
 
+
     protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
-        => keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
+    {
+        return keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
+    }
+
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(int) && type != typeof(long) && type != typeof(string) && type != typeof(Guid))
@@ -33,6 +32,25 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
                 $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: int, long, string, Guid.");
         }
     }
+
+
+    protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
+    {
+        base.ValidateProperty(propertyModel, definition);
+
+        if (propertyModel is VectorPropertyModel vectorProperty)
+        {
+            switch (vectorProperty.IndexKind)
+            {
+                case IndexKind.Flat or IndexKind.DiskAnn or null or "":
+                    break;
+                default:
+                    throw new NotSupportedException(
+                        $"Index kind '{vectorProperty.IndexKind}' is not supported by the SQL Server connector. Supported index kinds: {SupportedIndexKinds}");
+            }
+        }
+    }
+
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
@@ -68,8 +86,12 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
             || type == typeof(List<string>); // JSON
     }
 
+
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-        => IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    {
+        return IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    }
+
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {

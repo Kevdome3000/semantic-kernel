@@ -46,6 +46,7 @@ public static class ChatHistoryExtensions
         return true;
     }
 
+
     /// <summary>
     /// Returns the reduced history using the provided reducer without mutating the source history.
     /// </summary>
@@ -62,6 +63,7 @@ public static class ChatHistoryExtensions
 
         return chatHistory;
     }
+
 
     /// <summary>
     /// Returns the reduced history using the provided reducer without mutating the source history.
@@ -80,15 +82,25 @@ public static class ChatHistoryExtensions
         return chatHistory;
     }
 
+
     /// <summary>Converts a <see cref="ChatHistory"/> to a <see cref="ChatMessage"/> list.</summary>
     /// <param name="chatHistory">The chat history to convert.</param>
     /// <returns>A list of <see cref="ChatMessage"/> objects.</returns>
     internal static List<ChatMessage> ToChatMessageList(this ChatHistory chatHistory)
-        => chatHistory.Select(m => m.ToChatMessage()).ToList();
+    {
+        return chatHistory.Select(m => m.ToChatMessage()).ToList();
+    }
+
 
     internal static void SetChatMessageHandlers(this ChatHistory chatHistory, IList<ChatMessage> messages)
     {
-        chatHistory.SetOverrides(Add, Remove, Clear, Insert, RemoveAt, RemoveRange, AddRange);
+        chatHistory.SetOverrides(Add,
+            Remove,
+            Clear,
+            Insert,
+            RemoveAt,
+            RemoveRange,
+            AddRange);
 
         void Add(ChatMessageContent item)
         {

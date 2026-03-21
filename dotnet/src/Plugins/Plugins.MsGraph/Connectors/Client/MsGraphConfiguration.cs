@@ -2,11 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
-
 /// <summary>
 /// Graph API connector configuration model.
 /// </summary>
@@ -50,9 +45,9 @@ public class MsGraphConfiguration
         [NotNull] string tenantId,
         [NotNull] Uri redirectUri)
     {
-        this.ClientId = clientId;
-        this.TenantId = tenantId;
-        this.RedirectUri = redirectUri;
+        ClientId = clientId;
+        TenantId = tenantId;
+        RedirectUri = redirectUri;
     }
 
 }

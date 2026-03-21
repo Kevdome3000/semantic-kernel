@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
-
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
@@ -11,6 +9,7 @@ public sealed class PineconeCollectionOptions : VectorStoreCollectionOptions
 {
     internal static readonly PineconeCollectionOptions Default = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeCollectionOptions"/> class.
     /// </summary>
@@ -18,12 +17,14 @@ public sealed class PineconeCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
+
     internal PineconeCollectionOptions(PineconeCollectionOptions? source) : base(source)
     {
-        this.IndexNamespace = source?.IndexNamespace;
-        this.ServerlessIndexCloud = source?.ServerlessIndexCloud ?? Default.ServerlessIndexCloud;
-        this.ServerlessIndexRegion = source?.ServerlessIndexRegion ?? Default.ServerlessIndexRegion;
+        IndexNamespace = source?.IndexNamespace;
+        ServerlessIndexCloud = source?.ServerlessIndexCloud ?? Default.ServerlessIndexCloud;
+        ServerlessIndexRegion = source?.ServerlessIndexRegion ?? Default.ServerlessIndexRegion;
     }
+
 
     /// <summary>
     /// Gets or sets the value for a namespace within the Pinecone index that will be used for operations involving records (Get, Upsert, Delete)."/>

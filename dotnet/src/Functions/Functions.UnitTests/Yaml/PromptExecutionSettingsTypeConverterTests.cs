@@ -16,22 +16,24 @@ public sealed class PromptExecutionSettingsTypeConverterTests
 
     private readonly Kernel _kernel;
 
+
     public PromptExecutionSettingsTypeConverterTests()
     {
-        this._deserializer = new DeserializerBuilder()
+        _deserializer = new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
             .WithTypeConverter(new PromptExecutionSettingsTypeConverter())
-        .Build();
+            .Build();
 
-        this._kernel = new Kernel();
-        this._kernel.Plugins.Add(GetTestPlugin());
+        _kernel = new Kernel();
+        _kernel.Plugins.Add(GetTestPlugin());
     }
+
 
     [Fact]
     public void ItShouldCreatePromptFunctionFromYamlWithCustomModelSettings()
     {
         // Act
-        var semanticFunctionConfig = this._deserializer.Deserialize<PromptTemplateConfig>(this._yaml);
+        var semanticFunctionConfig = _deserializer.Deserialize<PromptTemplateConfig>(_yaml);
 
         // Assert
         Assert.NotNull(semanticFunctionConfig);
@@ -45,19 +47,20 @@ public sealed class PromptExecutionSettingsTypeConverterTests
         Assert.Equal("gpt-3.5-turbo", semanticFunctionConfig.ExecutionSettings["service3"].ModelId);
     }
 
+
     [Fact]
     public void ItShouldDeserializeAutoFunctionChoiceBehaviorFromYamlWithNoFunctionsProperty()
     {
         // Arrange
         var yaml = """
-            function_choice_behavior:
-              type: auto
-        """;
+                       function_choice_behavior:
+                         type: auto
+                   """;
 
-        var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
+        var executionSettings = _deserializer.Deserialize<PromptExecutionSettings>(yaml);
 
         // Act
-        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -72,21 +75,22 @@ public sealed class PromptExecutionSettingsTypeConverterTests
         Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function2");
         Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
     }
+
 
     [Fact]
     public void ItShouldDeserializeAutoFunctionChoiceBehaviorFromYamlWithEmptyFunctionsProperty()
     {
         // Arrange
         var yaml = """
-            function_choice_behavior:
-              type: auto
-              functions: []
-        """;
+                       function_choice_behavior:
+                         type: auto
+                         functions: []
+                   """;
 
-        var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
+        var executionSettings = _deserializer.Deserialize<PromptExecutionSettings>(yaml);
 
         // Act
-        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -97,23 +101,24 @@ public sealed class PromptExecutionSettingsTypeConverterTests
 
         Assert.Null(config?.Functions);
     }
+
 
     [Fact]
     public void ItShouldDeserializeAutoFunctionChoiceBehaviorFromYamlWithSpecifiedFunctionsProperty()
     {
         // Arrange
         var yaml = """
-            function_choice_behavior:
-              type: auto
-              functions:
-              - MyPlugin.Function1
-              - MyPlugin.Function3
-        """;
+                       function_choice_behavior:
+                         type: auto
+                         functions:
+                         - MyPlugin.Function1
+                         - MyPlugin.Function3
+                   """;
 
-        var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
+        var executionSettings = _deserializer.Deserialize<PromptExecutionSettings>(yaml);
 
         // Act
-        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -128,19 +133,20 @@ public sealed class PromptExecutionSettingsTypeConverterTests
         Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
     }
 
+
     [Fact]
     public void ItShouldDeserializeRequiredFunctionChoiceBehaviorFromYamlWithNoFunctionsProperty()
     {
         // Arrange
         var yaml = """
-            function_choice_behavior:
-              type: required
-        """;
+                       function_choice_behavior:
+                         type: required
+                   """;
 
-        var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
+        var executionSettings = _deserializer.Deserialize<PromptExecutionSettings>(yaml);
 
         // Act
-        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -155,21 +161,22 @@ public sealed class PromptExecutionSettingsTypeConverterTests
         Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function2");
         Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
     }
+
 
     [Fact]
     public void ItShouldDeserializeRequiredFunctionChoiceBehaviorFromYamlWithEmptyFunctionsProperty()
     {
         // Arrange
         var yaml = """
-            function_choice_behavior:
-              type: required
-              functions: []
-        """;
+                       function_choice_behavior:
+                         type: required
+                         functions: []
+                   """;
 
-        var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
+        var executionSettings = _deserializer.Deserialize<PromptExecutionSettings>(yaml);
 
         // Act
-        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -181,22 +188,23 @@ public sealed class PromptExecutionSettingsTypeConverterTests
         Assert.Null(config?.Functions);
     }
 
+
     [Fact]
     public void ItShouldDeserializeRequiredFunctionChoiceBehaviorFromYamlWithSpecifiedFunctionsProperty()
     {
         // Arrange
         var yaml = """
-            function_choice_behavior:
-              type: required
-              functions:
-              - MyPlugin.Function1
-              - MyPlugin.Function3
-        """;
+                       function_choice_behavior:
+                         type: required
+                         functions:
+                         - MyPlugin.Function1
+                         - MyPlugin.Function3
+                   """;
 
-        var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
+        var executionSettings = _deserializer.Deserialize<PromptExecutionSettings>(yaml);
 
         // Act
-        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -211,19 +219,20 @@ public sealed class PromptExecutionSettingsTypeConverterTests
         Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
     }
 
+
     [Fact]
     public void ItShouldDeserializedNoneFunctionChoiceBehaviorFromYamlWithNoFunctionsProperty()
     {
         // Arrange
         var yaml = """
-            function_choice_behavior:
-              type: none
-        """;
+                       function_choice_behavior:
+                         type: none
+                   """;
 
-        var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
+        var executionSettings = _deserializer.Deserialize<PromptExecutionSettings>(yaml);
 
         // Act
-        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -239,20 +248,21 @@ public sealed class PromptExecutionSettingsTypeConverterTests
         Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
     }
 
+
     [Fact]
     public void ItShouldDeserializedNoneFunctionChoiceBehaviorFromYamlWithEmptyFunctionsProperty()
     {
         // Arrange
         var yaml = """
-            function_choice_behavior:
-              type: none
-              functions: []
-        """;
+                       function_choice_behavior:
+                         type: none
+                         functions: []
+                   """;
 
-        var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
+        var executionSettings = _deserializer.Deserialize<PromptExecutionSettings>(yaml);
 
         // Act
-        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -264,22 +274,23 @@ public sealed class PromptExecutionSettingsTypeConverterTests
         Assert.Null(config?.Functions);
     }
 
+
     [Fact]
     public void ItShouldDeserializedNoneFunctionChoiceBehaviorFromYamlWithSpecifiedFunctionsProperty()
     {
         // Arrange
         var yaml = """
-            function_choice_behavior:
-              type: none
-              functions:
-              - MyPlugin.Function1
-              - MyPlugin.Function3
-        """;
+                       function_choice_behavior:
+                         type: none
+                         functions:
+                         - MyPlugin.Function1
+                         - MyPlugin.Function3
+                   """;
 
-        var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
+        var executionSettings = _deserializer.Deserialize<PromptExecutionSettings>(yaml);
 
         // Act
-        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
 
         // Assert
         Assert.NotNull(config);
@@ -294,47 +305,49 @@ public sealed class PromptExecutionSettingsTypeConverterTests
         Assert.Contains(config.Functions, f => f.PluginName == "MyPlugin" && f.Name == "Function3");
     }
 
+
     [Fact]
     public void ItShouldDeserializeAutoFunctionChoiceBehaviorFromJsonWithOptions()
     {
         // Arrange
         var yaml = """
-            function_choice_behavior:
-              type: auto
-              options:
-                allow_parallel_calls: true
-                allow_concurrent_invocation: true
-                allow_strict_schema_adherence: true
-        """;
+                       function_choice_behavior:
+                         type: auto
+                         options:
+                           allow_parallel_calls: true
+                           allow_concurrent_invocation: true
+                           allow_strict_schema_adherence: true
+                   """;
 
-        var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
+        var executionSettings = _deserializer.Deserialize<PromptExecutionSettings>(yaml);
 
         // Act
-        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
 
         // Assert
         Assert.True(config.Options.AllowParallelCalls);
         Assert.True(config.Options.AllowConcurrentInvocation);
         Assert.True(config.Options.AllowStrictSchemaAdherence);
     }
+
 
     [Fact]
     public void ItShouldDeserializeRequiredFunctionChoiceBehaviorFromJsonWithOptions()
     {
         // Arrange
         var yaml = """
-            function_choice_behavior:
-              type: required
-              options:
-                allow_parallel_calls: true
-                allow_concurrent_invocation: true
-                allow_strict_schema_adherence: true
-        """;
+                       function_choice_behavior:
+                         type: required
+                         options:
+                           allow_parallel_calls: true
+                           allow_concurrent_invocation: true
+                           allow_strict_schema_adherence: true
+                   """;
 
-        var executionSettings = this._deserializer.Deserialize<PromptExecutionSettings>(yaml);
+        var executionSettings = _deserializer.Deserialize<PromptExecutionSettings>(yaml);
 
         // Act
-        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new(chatHistory: []) { Kernel = this._kernel });
+        var config = executionSettings!.FunctionChoiceBehavior!.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
 
         // Assert
         Assert.True(config.Options.AllowParallelCalls);
@@ -342,56 +355,58 @@ public sealed class PromptExecutionSettingsTypeConverterTests
         Assert.True(config.Options.AllowStrictSchemaAdherence);
     }
 
+
     private readonly string _yaml = """
-        template_format: semantic-kernel
-        template:        Say hello world to {{$name}} in {{$language}}
-        description:     Say hello to the specified person using the specified language
-        name:            SayHello
-        input_variables:
-          - name:          name
-            description:   The name of the person to greet
-            default:       John
-          - name:          language
-            description:   The language to generate the greeting in
-            default:       English
-        execution_settings:
-          service1:
-            model_id:          gpt-4
-            temperature:       1.0
-            top_p:             0.0
-            presence_penalty:  0.0
-            frequency_penalty: 0.0
-            max_tokens:        256
-            stop_sequences:    []
-            function_choice_behavior:
-              type: auto
-              functions:
-              - p1.f1
-          service2:
-            model_id:          gpt-3.5
-            temperature:       1.0
-            top_p:             0.0
-            presence_penalty:  0.0
-            frequency_penalty: 0.0
-            max_tokens:        256
-            stop_sequences:    [ "foo", "bar", "baz" ]
-            function_choice_behavior:
-              type: required
-              functions:
-              - p2.f2
-          service3:
-            model_id:          gpt-3.5-turbo
-            temperature:       1.0
-            top_p:             0.0
-            presence_penalty:  0.0
-            frequency_penalty: 0.0
-            max_tokens:        256
-            stop_sequences:    [ "foo", "bar", "baz" ]
-            function_choice_behavior:
-              type: none
-              functions:
-              - p3.f3
-        """;
+                                    template_format: semantic-kernel
+                                    template:        Say hello world to {{$name}} in {{$language}}
+                                    description:     Say hello to the specified person using the specified language
+                                    name:            SayHello
+                                    input_variables:
+                                      - name:          name
+                                        description:   The name of the person to greet
+                                        default:       John
+                                      - name:          language
+                                        description:   The language to generate the greeting in
+                                        default:       English
+                                    execution_settings:
+                                      service1:
+                                        model_id:          gpt-4
+                                        temperature:       1.0
+                                        top_p:             0.0
+                                        presence_penalty:  0.0
+                                        frequency_penalty: 0.0
+                                        max_tokens:        256
+                                        stop_sequences:    []
+                                        function_choice_behavior:
+                                          type: auto
+                                          functions:
+                                          - p1.f1
+                                      service2:
+                                        model_id:          gpt-3.5
+                                        temperature:       1.0
+                                        top_p:             0.0
+                                        presence_penalty:  0.0
+                                        frequency_penalty: 0.0
+                                        max_tokens:        256
+                                        stop_sequences:    [ "foo", "bar", "baz" ]
+                                        function_choice_behavior:
+                                          type: required
+                                          functions:
+                                          - p2.f2
+                                      service3:
+                                        model_id:          gpt-3.5-turbo
+                                        temperature:       1.0
+                                        top_p:             0.0
+                                        presence_penalty:  0.0
+                                        frequency_penalty: 0.0
+                                        max_tokens:        256
+                                        stop_sequences:    [ "foo", "bar", "baz" ]
+                                        function_choice_behavior:
+                                          type: none
+                                          functions:
+                                          - p3.f3
+                                    """;
+
 
     private static KernelPlugin GetTestPlugin()
     {

@@ -24,7 +24,7 @@ internal static class ChatOptionsExtensions
         PromptExecutionSettings settings = new()
         {
             ExtensionData = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase),
-            ModelId = options.ModelId,
+            ModelId = options.ModelId
         };
 
         // Transfer over all strongly-typed members of ChatOptions. We do not know the exact name the derived PromptExecutionSettings
@@ -83,9 +83,9 @@ internal static class ChatOptionsExtensions
             }
             else if (options.ResponseFormat is ChatResponseFormatJson json)
             {
-                settings.ExtensionData["response_format"] = json.Schema is JsonElement schema ?
-                    JsonSerializer.Deserialize(schema, AbstractionsJsonContext.Default.JsonElement) :
-                    "json_object";
+                settings.ExtensionData["response_format"] = json.Schema is JsonElement schema
+                    ? schema.Deserialize(AbstractionsJsonContext.Default.JsonElement)
+                    : "json_object";
             }
         }
 
@@ -110,10 +110,13 @@ internal static class ChatOptionsExtensions
         {
             var functions = options.Tools.OfType<AIFunction>().Select(f => new AIFunctionKernelFunction(f));
             settings.FunctionChoiceBehavior =
-                options.ToolMode is null or AutoChatToolMode ? FunctionChoiceBehavior.Auto(functions, autoInvoke: false) :
-                options.ToolMode is RequiredChatToolMode { RequiredFunctionName: null } ? FunctionChoiceBehavior.Required(functions, autoInvoke: false) :
-                options.ToolMode is RequiredChatToolMode { RequiredFunctionName: string functionName } ? FunctionChoiceBehavior.Required(functions.Where(f => f.Name == functionName), autoInvoke: false) :
-                null;
+                options.ToolMode is null or AutoChatToolMode
+                    ? FunctionChoiceBehavior.Auto(functions, false)
+                    : options.ToolMode is RequiredChatToolMode { RequiredFunctionName: null }
+                        ? FunctionChoiceBehavior.Required(functions, false)
+                        : options.ToolMode is RequiredChatToolMode { RequiredFunctionName: string functionName }
+                            ? FunctionChoiceBehavior.Required(functions.Where(f => f.Name == functionName), false)
+                            : null;
         }
 
         return settings;

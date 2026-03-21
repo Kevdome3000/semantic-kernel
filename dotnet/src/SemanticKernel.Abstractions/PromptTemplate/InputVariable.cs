@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Represents an input variable for prompt functions.
 /// </summary>
@@ -15,12 +16,14 @@ public sealed class InputVariable
     /// <summary>The description of the variable.</summary>
     private string _description = string.Empty;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="InputVariable"/> class.
     /// </summary>
     public InputVariable()
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InputVariable"/> class from an existing instance.
@@ -37,6 +40,7 @@ public sealed class InputVariable
         JsonSchema = inputVariable.JsonSchema;
         AllowDangerouslySetContent = inputVariable.AllowDangerouslySetContent;
     }
+
 
     /// <summary>
     /// Gets or sets the name of the variable.
@@ -100,7 +104,7 @@ public sealed class InputVariable
     /// When using other AI services e.g. Text-To-Image this can be set to true to allow for more complex prompts.
     /// </remarks>
     [JsonPropertyName("allow_dangerously_set_content")]
-    public bool AllowDangerouslySetContent { get; set; } = false;
+    public bool AllowDangerouslySetContent { get; set; }
 
     /// <summary>
     /// Gets or sets a sample value for the variable.

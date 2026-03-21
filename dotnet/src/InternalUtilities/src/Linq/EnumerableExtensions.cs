@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-
 [ExcludeFromCodeCoverage]
 internal static class EnumerableExtensions
 {
@@ -15,7 +10,7 @@ internal static class EnumerableExtensions
 #if NET || NETSTANDARD2_1_OR_GREATER
         return Enumerable.TakeLast(source, count);
 #else
-        return source.Skip(System.Math.Max(0, source.Count() - count));
+        return source.Skip(Math.Max(0, source.Count() - count));
 #endif
     }
 }

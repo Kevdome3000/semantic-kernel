@@ -1,23 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.Web.Google;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using global::Google.Apis.CustomSearchAPI.v1;
-using global::Google.Apis.Services;
+using Google.Apis.CustomSearchAPI.v1;
+using Google.Apis.Services;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
+namespace Microsoft.SemanticKernel.Plugins.Web.Google;
 
 /// <summary>
 /// Google search connector.
 /// Provides methods to search using Google Custom Search API.
 /// </summary>
-public sealed class  GoogleConnector : IWebSearchEngineConnector, IDisposable
+public sealed class GoogleConnector : IWebSearchEngineConnector, IDisposable
 {
 
     private readonly ILogger _logger;
@@ -85,8 +84,7 @@ public sealed class  GoogleConnector : IWebSearchEngineConnector, IDisposable
         search.Num = count;
         search.Start = offset;
 
-        var results = await search.ExecuteAsync(cancellationToken).
-            ConfigureAwait(false);
+        var results = await search.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
         List<T>? returnValues = null;
 
@@ -94,8 +92,7 @@ public sealed class  GoogleConnector : IWebSearchEngineConnector, IDisposable
         {
             if (typeof(T) == typeof(string))
             {
-                returnValues = results.Items.Select(item => item.Snippet).
-                    ToList() as List<T>;
+                returnValues = results.Items.Select(item => item.Snippet).ToList() as List<T>;
             }
             else if (typeof(T) == typeof(WebPage))
             {
@@ -113,8 +110,7 @@ public sealed class  GoogleConnector : IWebSearchEngineConnector, IDisposable
                     webPages.Add(webPage);
                 }
 
-                returnValues = webPages.Take(count).
-                    ToList() as List<T>;
+                returnValues = webPages.Take(count).ToList() as List<T>;
             }
             else
             {
@@ -123,9 +119,11 @@ public sealed class  GoogleConnector : IWebSearchEngineConnector, IDisposable
         }
 
         return
-            returnValues is null ? [] :
-            returnValues.Count <= count ? returnValues :
-            returnValues.Take(count);
+            returnValues is null
+                ? []
+                : returnValues.Count <= count
+                    ? returnValues
+                    : returnValues.Take(count);
     }
 
 

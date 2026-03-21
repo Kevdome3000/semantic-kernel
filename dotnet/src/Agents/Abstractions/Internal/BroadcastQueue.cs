@@ -3,13 +3,6 @@ using ChannelQueue = System.Collections.Generic.Queue<System.Collections.Generic
 
 namespace Microsoft.SemanticKernel.Agents.Internal;
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
-
-
 /// <summary>
 /// Utility class used by <see cref="AgentChat"/> to manage the broadcast of
 /// conversation messages via the <see cref="AgentChannel.ReceiveAsync"/>.
@@ -47,10 +40,10 @@ internal sealed class BroadcastQueue
         // Ensure mutating _queues
         foreach (var channelRef in channelRefs)
         {
-            if (!this._queues.TryGetValue(channelRef.Hash, out var queueRef))
+            if (!_queues.TryGetValue(channelRef.Hash, out var queueRef))
             {
                 queueRef = new();
-                this._queues.Add(channelRef.Hash, queueRef);
+                _queues.Add(channelRef.Hash, queueRef);
             }
 
             lock (queueRef.QueueLock)
@@ -80,7 +73,7 @@ internal sealed class BroadcastQueue
     {
         // Either won race with Enqueue or lost race with ReceiveAsync.
         // Missing queue is synchronized by definition.
-        if (!this._queues.TryGetValue(channelRef.Hash, out QueueReference? queueRef))
+        if (!_queues.TryGetValue(channelRef.Hash, out QueueReference? queueRef))
         {
             return;
         }
@@ -117,8 +110,7 @@ internal sealed class BroadcastQueue
 
             if (!isEmpty)
             {
-                await Task.Delay(this.BlockDuration, cancellationToken).
-                    ConfigureAwait(false);
+                await Task.Delay(BlockDuration, cancellationToken).ConfigureAwait(false);
             }
         } while (!isEmpty);
     }
@@ -191,7 +183,7 @@ internal sealed class BroadcastQueue
         /// <summary>
         /// Convenience logic
         /// </summary>
-        public bool IsEmpty => this.Queue.Count == 0;
+        public bool IsEmpty => Queue.Count == 0;
 
         /// <summary>
         /// Queue specific lock to control queue access with finer granularity

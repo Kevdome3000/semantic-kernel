@@ -21,6 +21,7 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
         private readonly OrchestrationResultTransform<TResult> _transformResult;
         private readonly OrchestrationOutputTransform<TOutput> _transform;
 
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AgentOrchestration{TInput, TOutput}.ResultActor{TResult}"/> class.
         /// </summary>
@@ -39,12 +40,17 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
             OrchestrationOutputTransform<TOutput> transformOutput,
             TaskCompletionSource<TOutput> completionSource,
             ILogger<ResultActor<TResult>>? logger = null)
-            : base(id, runtime, context, $"{id.Type}_Actor", logger)
+            : base(id,
+                runtime,
+                context,
+                $"{id.Type}_Actor",
+                logger)
         {
-            this._completionSource = completionSource;
-            this._transformResult = transformResult;
-            this._transform = transformOutput;
+            _completionSource = completionSource;
+            _transformResult = transformResult;
+            _transform = transformOutput;
         }
+
 
         /// <summary>
         /// Processes the received TResult message by transforming it into a TOutput message.
@@ -56,22 +62,22 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
         /// <returns>A ValueTask representing asynchronous operation.</returns>
         public async ValueTask HandleAsync(TResult item, MessageContext messageContext)
         {
-            this.Logger.LogOrchestrationResultInvoke(this.Context.Orchestration, this.Id);
+            Logger.LogOrchestrationResultInvoke(Context.Orchestration, Id);
 
             try
             {
-                if (!this._completionSource.Task.IsCompleted)
+                if (!_completionSource.Task.IsCompleted)
                 {
-                    IList<ChatMessageContent> result = this._transformResult.Invoke(item);
-                    TOutput output = await this._transform.Invoke(result).ConfigureAwait(false);
-                    this._completionSource.TrySetResult(output);
+                    IList<ChatMessageContent> result = _transformResult.Invoke(item);
+                    TOutput output = await _transform.Invoke(result).ConfigureAwait(false);
+                    _completionSource.TrySetResult(output);
                 }
             }
             catch (Exception exception)
             {
                 // Log exception details and fail orchestration as per design.
-                this.Logger.LogOrchestrationResultFailure(this.Context.Orchestration, this.Id, exception);
-                this._completionSource.SetException(exception);
+                Logger.LogOrchestrationResultFailure(Context.Orchestration, Id, exception);
+                _completionSource.SetException(exception);
                 throw;
             }
         }

@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Text;
 
 /// <summary>
@@ -20,11 +15,13 @@ internal sealed class ExceptionJsonConverter : JsonConverter<object>
     private const string InnerExceptionPropertyName = "innerException";
     private const string StackTracePropertyName = "stackTraceString";
 
+
     /// <inheritdoc/>
     public override bool CanConvert(Type typeToConvert)
     {
         return typeof(Exception).IsAssignableFrom(typeToConvert);
     }
+
 
     /// <inheritdoc/>
     public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
@@ -34,6 +31,7 @@ internal sealed class ExceptionJsonConverter : JsonConverter<object>
             writer.WriteStartObject();
             writer.WriteString(ClassNamePropertyName, ex.GetType().ToString());
             writer.WriteString(MessagePropertyName, ex.Message);
+
             if (ex.InnerException is Exception innerEx)
             {
                 writer.WritePropertyName(InnerExceptionPropertyName);
@@ -44,6 +42,7 @@ internal sealed class ExceptionJsonConverter : JsonConverter<object>
             writer.WriteEndObject();
         }
     }
+
 
     /// <inheritdoc/>
     public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

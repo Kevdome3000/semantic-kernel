@@ -15,9 +15,10 @@ public sealed class VectorSearchResult<TRecord>
     /// <param name="score">The score of this result in relation to the search query.</param>
     public VectorSearchResult(TRecord record, double? score)
     {
-        this.Record = record;
-        this.Score = score;
+        Record = record;
+        Score = score;
     }
+
 
     /// <summary>
     /// Gets the record that was found by the search.

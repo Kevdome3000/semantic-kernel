@@ -1,15 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
-
 namespace Microsoft.SemanticKernel;
 
 [ExcludeFromCodeCoverage]
-internal static partial class KernelVerify
+internal static class KernelVerify
 {
 #if NET
     [GeneratedRegex("^[0-9A-Za-z_]*$")]
@@ -19,10 +13,21 @@ internal static partial class KernelVerify
     [GeneratedRegex("^[0-9A-Za-z_-]*$")]
     private static partial Regex AllowedFunctionNameSymbolsRegex();
 #else
-    private static Regex AllowedPluginNameSymbolsRegex() => s_allowedPluginNameSymbolsRegex;
+    private static Regex AllowedPluginNameSymbolsRegex()
+    {
+        return s_allowedPluginNameSymbolsRegex;
+    }
+
+
     private static readonly Regex s_allowedPluginNameSymbolsRegex = new("^[0-9A-Za-z_]*$", RegexOptions.Compiled);
 
-    private static Regex AllowedFunctionNameSymbolsRegex() => s_allowedFunctionNameSymbolsRegex;
+
+    private static Regex AllowedFunctionNameSymbolsRegex()
+    {
+        return s_allowedFunctionNameSymbolsRegex;
+    }
+
+
     private static readonly Regex s_allowedFunctionNameSymbolsRegex = new("^[0-9A-Za-z_-]*$", RegexOptions.Compiled);
 #endif
 

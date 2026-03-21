@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Net.Http;
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateDeleteObjectRequest(string collectionName, Guid id)
@@ -16,8 +12,9 @@ internal sealed class WeaviateDeleteObjectRequest(string collectionName, Guid id
     [JsonIgnore]
     public Guid Id { get; set; } = id;
 
+
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreateDeleteRequest($"{ApiRoute}/{this.CollectionName}/{this.Id}");
+        return HttpRequest.CreateDeleteRequest($"{ApiRoute}/{CollectionName}/{Id}");
     }
 }

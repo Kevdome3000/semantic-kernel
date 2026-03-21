@@ -9,7 +9,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// <remarks>
 /// The characteristics defined here will influence how the property is treated when converting a record to a <see cref="TextSearchResult"/>.
 /// </remarks>
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Property)]
 public sealed class TextSearchResultLinkAttribute : Attribute
 {
 }

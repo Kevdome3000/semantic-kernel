@@ -4,6 +4,7 @@ using System;
 using System.Net;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Represents an exception specific to HTTP operations.
 /// </summary>
@@ -20,6 +21,7 @@ public class HttpOperationException : Exception
     {
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpOperationException"/> class with its message set to <paramref name="message"/>.
     /// </summary>
@@ -27,6 +29,7 @@ public class HttpOperationException : Exception
     public HttpOperationException(string? message) : base(message)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpOperationException"/> class with its message set to <paramref name="message"/>.
@@ -36,6 +39,7 @@ public class HttpOperationException : Exception
     public HttpOperationException(string? message, Exception? innerException) : base(message, innerException)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpOperationException"/> class with its message
@@ -55,6 +59,7 @@ public class HttpOperationException : Exception
         StatusCode = statusCode;
         ResponseContent = responseContent;
     }
+
 
     /// <summary>
     /// Gets or sets the HTTP status code. If the property is null, it indicates that no response was received.

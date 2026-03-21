@@ -17,6 +17,7 @@ public class HttpPipelineRoutingPolicy : HttpPipelinePolicy
     private readonly Uri _endpoint;
     private readonly string _apiVersion;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpPipelineRoutingPolicy"/> class.
     /// </summary>
@@ -24,9 +25,10 @@ public class HttpPipelineRoutingPolicy : HttpPipelinePolicy
     /// <param name="apiVersion">The API version.</param>
     public HttpPipelineRoutingPolicy(Uri endpoint, string apiVersion)
     {
-        this._endpoint = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
-        this._apiVersion = apiVersion ?? throw new ArgumentNullException(nameof(apiVersion));
+        _endpoint = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
+        _apiVersion = apiVersion ?? throw new ArgumentNullException(nameof(apiVersion));
     }
+
 
     /// <summary>
     /// Processes the HTTP message and routes it as needed.
@@ -35,10 +37,11 @@ public class HttpPipelineRoutingPolicy : HttpPipelinePolicy
     /// <param name="pipeline">The pipeline policies.</param>
     public override void Process(HttpMessage message, ReadOnlyMemory<HttpPipelinePolicy> pipeline)
     {
-        this.Process(message);
+        Process(message);
 
         ProcessNext(message, pipeline);
     }
+
 
     /// <summary>
     /// Asynchronously processes the HTTP message and routes it as needed.
@@ -48,10 +51,11 @@ public class HttpPipelineRoutingPolicy : HttpPipelinePolicy
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
     public override ValueTask ProcessAsync(HttpMessage message, ReadOnlyMemory<HttpPipelinePolicy> pipeline)
     {
-        this.Process(message);
+        Process(message);
 
         return ProcessNextAsync(message, pipeline);
     }
+
 
     /// <summary>
     /// Processes the HTTP message and updates its URI for routing.
@@ -63,14 +67,16 @@ public class HttpPipelineRoutingPolicy : HttpPipelinePolicy
         {
             throw new ArgumentException(nameof(message.Request.Uri));
         }
-        else if (message.Request.Uri.ToUri().IsLoopback)
+
+        if (message.Request.Uri.ToUri().IsLoopback)
         {
-            message.Request.Uri.Reset(new Uri(string.Format($"{this._endpoint.ToString().TrimEnd('/')}/{message.Request.Uri.ToUri().AbsolutePath.TrimStart('/')}?api-version={this._apiVersion}")));
+            message.Request.Uri.Reset(new Uri(string.Format($"{_endpoint.ToString().TrimEnd('/')}/{message.Request.Uri.ToUri().AbsolutePath.TrimStart('/')}?api-version={_apiVersion}")));
         }
 
-        message.Request.Uri.Reset(message.Request.Uri.ToUri().Reroute(apiVersion: this._apiVersion, isWorkflow: message.Request.Content!.IsWorkflow()));
+        message.Request.Uri.Reset(message.Request.Uri.ToUri().Reroute(_apiVersion, message.Request.Content!.IsWorkflow()));
     }
 }
+
 
 /// <summary>
 /// Pipeline policy for routing requests in the Foundry pipeline.
@@ -80,6 +86,7 @@ public class PipelineRoutingPolicy : PipelinePolicy
     private readonly Uri _endpoint;
     private readonly string _apiVersion;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PipelineRoutingPolicy"/> class.
     /// </summary>
@@ -87,9 +94,10 @@ public class PipelineRoutingPolicy : PipelinePolicy
     /// <param name="apiVersion">The API version.</param>
     public PipelineRoutingPolicy(Uri endpoint, string apiVersion)
     {
-        this._endpoint = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
-        this._apiVersion = apiVersion ?? throw new ArgumentNullException(nameof(apiVersion));
+        _endpoint = endpoint ?? throw new ArgumentNullException(nameof(endpoint));
+        _apiVersion = apiVersion ?? throw new ArgumentNullException(nameof(apiVersion));
     }
+
 
     /// <summary>
     /// Processes the pipeline message and routes it as needed.
@@ -99,9 +107,10 @@ public class PipelineRoutingPolicy : PipelinePolicy
     /// <param name="currentIndex">The current index in the pipeline.</param>
     public override void Process(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
     {
-        this.ProcessRequest(message.Request);
+        ProcessRequest(message.Request);
         ProcessNext(message, pipeline, currentIndex);
     }
+
 
     /// <summary>
     /// Asynchronously processes the pipeline message and routes it as needed.
@@ -112,9 +121,10 @@ public class PipelineRoutingPolicy : PipelinePolicy
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
     public override async ValueTask ProcessAsync(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
     {
-        this.ProcessRequest(message.Request);
+        ProcessRequest(message.Request);
         await ProcessNextAsync(message, pipeline, currentIndex).ConfigureAwait(false);
     }
+
 
     private void ProcessRequest(PipelineRequest request)
     {
@@ -122,11 +132,12 @@ public class PipelineRoutingPolicy : PipelinePolicy
         {
             throw new InvalidOperationException($"{nameof(request.Uri)} cannot be null");
         }
-        else if (request.Uri.IsLoopback)
+
+        if (request.Uri.IsLoopback)
         {
-            request.Uri = new Uri(string.Format($"{this._endpoint.ToString().TrimEnd('/')}/{request.Uri.AbsolutePath.TrimStart('/')}?api-version={this._apiVersion}"));
+            request.Uri = new Uri(string.Format($"{_endpoint.ToString().TrimEnd('/')}/{request.Uri.AbsolutePath.TrimStart('/')}?api-version={_apiVersion}"));
         }
 
-        request.Uri = request.Uri.Reroute(apiVersion: this._apiVersion, isWorkflow: request.Content!.IsWorkflow());
+        request.Uri = request.Uri.Reroute(_apiVersion, request.Content!.IsWorkflow());
     }
 }

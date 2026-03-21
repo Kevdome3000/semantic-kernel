@@ -1,63 +1,56 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using Microsoft.Extensions.VectorData.ProviderServices.Filter;
-
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 
 #pragma warning disable MEVD9001 // Experimental: filter translation base types
+
 
 internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
 {
     private readonly Dictionary<string, object?> _parameters = [];
     private readonly StringBuilder _sql = new();
 
+
     internal (string WhereClause, Dictionary<string, object?> Parameters) Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
         var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions { SupportsParameterization = true });
 
-        this.Translate(preprocessedExpression);
+        Translate(preprocessedExpression);
 
-        return (this._sql.ToString(), this._parameters);
+        return (_sql.ToString(), _parameters);
     }
+
 
     private void Translate(Expression? node)
     {
         switch (node)
         {
             case BinaryExpression binary:
-                this.TranslateBinary(binary);
+                TranslateBinary(binary);
                 return;
 
             case ConstantExpression constant:
-                this.TranslateConstant(constant);
+                TranslateConstant(constant);
                 return;
 
             case QueryParameterExpression { Name: var name, Value: var value }:
-                this.TranslateQueryParameter(name, value);
+                TranslateQueryParameter(name, value);
                 return;
 
             case MemberExpression member:
-                this.TranslateMember(member);
+                TranslateMember(member);
                 return;
 
             case NewArrayExpression newArray:
-                this.TranslateNewArray(newArray);
+                TranslateNewArray(newArray);
                 return;
 
             case MethodCallExpression methodCall:
-                this.TranslateMethodCall(methodCall);
+                TranslateMethodCall(methodCall);
                 return;
 
             case UnaryExpression unary:
-                this.TranslateUnary(unary);
+                TranslateUnary(unary);
                 return;
 
             default:
@@ -65,12 +58,13 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         }
     }
 
+
     private void TranslateBinary(BinaryExpression binary)
     {
-        this._sql.Append('(');
-        this.Translate(binary.Left);
+        _sql.Append('(');
+        Translate(binary.Left);
 
-        this._sql.Append(binary.NodeType switch
+        _sql.Append(binary.NodeType switch
         {
             ExpressionType.Equal => " = ",
             ExpressionType.NotEqual => " <> ",
@@ -86,75 +80,98 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
             _ => throw new NotSupportedException("Unsupported binary expression node type: " + binary.NodeType)
         });
 
-        this.Translate(binary.Right);
-        this._sql.Append(')');
+        Translate(binary.Right);
+        _sql.Append(')');
     }
 
+
     private void TranslateConstant(ConstantExpression constant)
-        => this.TranslateConstant(constant.Value);
+    {
+        this.TranslateConstant(constant.Value);
+    }
+
 
     private void TranslateConstant(object? value)
     {
         switch (value)
         {
             case byte v:
-                this._sql.Append(v);
+                _sql.Append(v);
                 return;
             case short v:
-                this._sql.Append(v);
+                _sql.Append(v);
                 return;
             case int v:
-                this._sql.Append(v);
+                _sql.Append(v);
                 return;
             case long v:
-                this._sql.Append(v);
+                _sql.Append(v);
                 return;
 
             case float v:
-                this._sql.Append(v);
+                _sql.Append(v);
                 return;
             case double v:
-                this._sql.Append(v);
+                _sql.Append(v);
                 return;
 
             case string v:
-                this._sql.Append('"').Append(v.Replace(@"\", @"\\").Replace("\"", "\\\"")).Append('"');
+                _sql.Append('"').Append(v.Replace(@"\", @"\\").Replace("\"", "\\\"")).Append('"');
                 return;
             case bool v:
-                this._sql.Append(v ? "true" : "false");
+                _sql.Append(v
+                    ? "true"
+                    : "false");
                 return;
             case Guid v:
-                this._sql.Append('"').Append(v.ToString()).Append('"');
+                _sql.Append('"').Append(v.ToString()).Append('"');
                 return;
 
             case DateTimeOffset v:
                 // Cosmos doesn't support DateTimeOffset with non-zero offset, so we convert it to UTC.
                 // See https://github.com/dotnet/efcore/issues/35310
-                this._sql
+                _sql
                     .Append('"')
                     .Append(v.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.FFFFFF", CultureInfo.InvariantCulture))
                     .Append("Z\"");
                 return;
 
+            case DateTime v:
+                _sql
+                    .Append('"')
+                    .Append(v.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFF", CultureInfo.InvariantCulture))
+                    .Append('"');
+                return;
+
+#if NET
+            case DateOnly v:
+                this._sql
+                    .Append('"')
+                    .Append(v.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+                    .Append('"');
+                return;
+#endif
+
             case IEnumerable v when v.GetType() is var type && (type.IsArray || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)):
-                this._sql.Append('[');
+                _sql.Append('[');
 
                 var i = 0;
+
                 foreach (var element in v)
                 {
                     if (i++ > 0)
                     {
-                        this._sql.Append(',');
+                        _sql.Append(',');
                     }
 
                     this.TranslateConstant(element);
                 }
 
-                this._sql.Append(']');
+                _sql.Append(']');
                 return;
 
             case null:
-                this._sql.Append("null");
+                _sql.Append("null");
                 return;
 
             default:
@@ -162,40 +179,43 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         }
     }
 
+
     private void TranslateMember(MemberExpression memberExpression)
     {
         if (this.TryBindProperty(memberExpression, out var property))
         {
-            this.GeneratePropertyAccess(property);
+            GeneratePropertyAccess(property);
             return;
         }
 
         throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
 
+
     private void TranslateNewArray(NewArrayExpression newArray)
     {
-        this._sql.Append('[');
+        _sql.Append('[');
 
         for (var i = 0; i < newArray.Expressions.Count; i++)
         {
             if (i > 0)
             {
-                this._sql.Append(", ");
+                _sql.Append(", ");
             }
 
-            this.Translate(newArray.Expressions[i]);
+            Translate(newArray.Expressions[i]);
         }
 
-        this._sql.Append(']');
+        _sql.Append(']');
     }
+
 
     private void TranslateMethodCall(MethodCallExpression methodCall)
     {
         // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
         if (this.TryBindProperty(methodCall, out var property))
         {
-            this.GeneratePropertyAccess(property);
+            GeneratePropertyAccess(property);
             return;
         }
 
@@ -203,13 +223,13 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         {
             // Enumerable.Contains(), List.Contains(), MemoryExtensions.Contains()
             case var _ when TryMatchContains(methodCall, out var source, out var item):
-                this.TranslateContains(source, item);
+                TranslateContains(source, item);
                 return;
 
             // Enumerable.Any() with a Contains predicate (r => r.Strings.Any(s => array.Contains(s)))
             case { Method.Name: nameof(Enumerable.Any), Arguments: [var anySource, LambdaExpression lambda] } any
                 when any.Method.DeclaringType == typeof(Enumerable):
-                this.TranslateAny(anySource, lambda);
+                TranslateAny(anySource, lambda);
                 return;
 
             default:
@@ -217,14 +237,16 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         }
     }
 
+
     private void TranslateContains(Expression source, Expression item)
     {
-        this._sql.Append("ARRAY_CONTAINS(");
-        this.Translate(source);
-        this._sql.Append(", ");
-        this.Translate(item);
-        this._sql.Append(')');
+        _sql.Append("ARRAY_CONTAINS(");
+        Translate(source);
+        _sql.Append(", ");
+        Translate(item);
+        _sql.Append(')');
     }
+
 
     /// <summary>
     /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
@@ -255,6 +277,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
             case NewArrayExpression newArray:
             {
                 var values = new object?[newArray.Expressions.Count];
+
                 for (var i = 0; i < newArray.Expressions.Count; i++)
                 {
                     values[i] = newArray.Expressions[i] switch
@@ -271,7 +294,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
 
             // Captured/parameterized array or list: r.Strings.Any(s => capturedArray.Contains(s))
             case QueryParameterExpression queryParameter:
-                this.GenerateAnyContains(property, queryParameter);
+                GenerateAnyContains(property, queryParameter);
                 return;
 
             // Constant array: shouldn't normally happen, but handle it
@@ -284,23 +307,26 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         }
     }
 
+
     private void GenerateAnyContains(PropertyModel property, object? values)
     {
-        this._sql.Append("EXISTS(SELECT VALUE t FROM t IN ");
-        this.GeneratePropertyAccess(property);
-        this._sql.Append(" WHERE ARRAY_CONTAINS(");
-        this.TranslateConstant(values);
-        this._sql.Append(", t))");
+        _sql.Append("EXISTS(SELECT VALUE t FROM t IN ");
+        GeneratePropertyAccess(property);
+        _sql.Append(" WHERE ARRAY_CONTAINS(");
+        TranslateConstant(values);
+        _sql.Append(", t))");
     }
+
 
     private void GenerateAnyContains(PropertyModel property, QueryParameterExpression queryParameter)
     {
-        this._sql.Append("EXISTS(SELECT VALUE t FROM t IN ");
-        this.GeneratePropertyAccess(property);
-        this._sql.Append(" WHERE ARRAY_CONTAINS(");
-        this.TranslateQueryParameter(queryParameter.Name, queryParameter.Value);
-        this._sql.Append(", t))");
+        _sql.Append("EXISTS(SELECT VALUE t FROM t IN ");
+        GeneratePropertyAccess(property);
+        _sql.Append(" WHERE ARRAY_CONTAINS(");
+        TranslateQueryParameter(queryParameter.Name, queryParameter.Value);
+        _sql.Append(", t))");
     }
+
 
     private void TranslateUnary(UnaryExpression unary)
     {
@@ -310,27 +336,29 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
             case ExpressionType.Not:
                 if (unary.Operand is BinaryExpression { NodeType: ExpressionType.Equal or ExpressionType.NotEqual } binary)
                 {
-                    this.TranslateBinary(
+                    TranslateBinary(
                         Expression.MakeBinary(
-                            binary.NodeType is ExpressionType.Equal ? ExpressionType.NotEqual : ExpressionType.Equal,
+                            binary.NodeType is ExpressionType.Equal
+                                ? ExpressionType.NotEqual
+                                : ExpressionType.Equal,
                             binary.Left,
                             binary.Right));
                     return;
                 }
 
-                this._sql.Append("(NOT ");
-                this.Translate(unary.Operand);
-                this._sql.Append(')');
+                _sql.Append("(NOT ");
+                Translate(unary.Operand);
+                _sql.Append(')');
                 return;
 
             // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
             case ExpressionType.Convert when Nullable.GetUnderlyingType(unary.Type) == unary.Operand.Type:
-                this.Translate(unary.Operand);
+                Translate(unary.Operand);
                 return;
 
             // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
             case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
-                this.GeneratePropertyAccess(property);
+                GeneratePropertyAccess(property);
                 return;
 
             default:
@@ -338,17 +366,21 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         }
     }
 
+
     protected void TranslateQueryParameter(string name, object? value)
     {
         name = '@' + name;
-        this._parameters.Add(name, value);
-        this._sql.Append(name);
+        _parameters.Add(name, value);
+        _sql.Append(name);
     }
 
+
     protected virtual void GeneratePropertyAccess(PropertyModel property)
-        => this._sql
+    {
+        _sql
             .Append(CosmosNoSqlConstants.ContainerAlias)
             .Append("[\"")
             .Append(property.StorageName.Replace(@"\", @"\\").Replace("\"", "\\\""))
             .Append("\"]");
+    }
 }

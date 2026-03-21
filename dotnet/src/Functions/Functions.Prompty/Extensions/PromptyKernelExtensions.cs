@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.IO;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.SemanticKernel.Prompty;
 
 namespace Microsoft.SemanticKernel;
@@ -37,6 +34,7 @@ public static class PromptyKernelExtensions
         return kernel.CreateFunctionFromPrompty(promptyTemplate, promptTemplateFactory, promptyFilePath);
     }
 
+
     /// <summary>
     /// Create a <see cref="KernelFunction"/> from a prompty template.
     /// </summary>
@@ -68,6 +66,7 @@ public static class PromptyKernelExtensions
             kernel.LoggerFactory);
     }
 
+
     /// <summary>
     /// Create a <see cref="KernelFunction"/> from a prompty template file.
     /// </summary>
@@ -95,6 +94,7 @@ public static class PromptyKernelExtensions
         var fileInfo = fileProvider.GetFileInfo(promptyFilePath);
         return CreateFunctionFromPromptyFile(kernel, fileInfo, promptTemplateFactory);
     }
+
 
     /// <summary>
     /// Create a <see cref="KernelFunction"/> from a prompty template file.

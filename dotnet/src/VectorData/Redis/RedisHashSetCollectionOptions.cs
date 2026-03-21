@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
-
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
@@ -11,6 +9,7 @@ public sealed class RedisHashSetCollectionOptions : VectorStoreCollectionOptions
 {
     internal static readonly RedisHashSetCollectionOptions Default = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisHashSetCollectionOptions"/> class.
     /// </summary>
@@ -18,10 +17,12 @@ public sealed class RedisHashSetCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
+
     internal RedisHashSetCollectionOptions(RedisHashSetCollectionOptions? source) : base(source)
     {
-        this.PrefixCollectionNameToKeyNames = source?.PrefixCollectionNameToKeyNames ?? Default.PrefixCollectionNameToKeyNames;
+        PrefixCollectionNameToKeyNames = source?.PrefixCollectionNameToKeyNames ?? Default.PrefixCollectionNameToKeyNames;
     }
+
 
     /// <summary>
     /// Gets or sets a value indicating whether the collection name should be prefixed to the

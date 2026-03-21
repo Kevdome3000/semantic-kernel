@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents.Chat;
-
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
+namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
 /// Provides settings that affect the behavior of <see cref="AgentGroupChat"/> instances.
@@ -53,7 +52,7 @@ public class AgentGroupChatSettings
 
         public DefaultTerminationStrategy()
         {
-            this.MaximumIterations = 1;
+            MaximumIterations = 1;
         }
 
     }

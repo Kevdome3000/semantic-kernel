@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Net.Http;
-
 namespace Microsoft.SemanticKernel.Http;
+
 /// <summary>
 /// Associate a response stream with its parent response for parity in life-cycle management.
 /// </summary>
@@ -30,30 +27,36 @@ internal sealed class HttpResponseStream(Stream stream, HttpResponseMessage resp
         set => _stream.Position = value;
     }
 
+
     public override void Flush()
     {
         _stream.Flush();
     }
+
 
     public override int Read(byte[] buffer, int offset, int count)
     {
         return _stream.Read(buffer, offset, count);
     }
 
+
     public override long Seek(long offset, SeekOrigin origin)
     {
         return _stream.Seek(offset, origin);
     }
+
 
     public override void SetLength(long value)
     {
         _stream.SetLength(value);
     }
 
+
     public override void Write(byte[] buffer, int offset, int count)
     {
         _stream.Write(buffer, offset, count);
     }
+
 
     protected override void Dispose(bool disposing)
     {

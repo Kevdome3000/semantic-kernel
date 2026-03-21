@@ -34,8 +34,9 @@ internal sealed class MagenticManagerActor :
 
     private IReadOnlyList<ChatMessageContent> _inputTask = [];
     private int _invocationCount;
-    private int _stallCount = 0;
-    private int _retryCount = 0;
+    private int _stallCount;
+    private int _retryCount;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MagenticManagerActor"/> class.
@@ -47,8 +48,19 @@ internal sealed class MagenticManagerActor :
     /// <param name="team">The team of agents being orchestrated</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public MagenticManagerActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, MagenticManager manager, MagenticTeam team, AgentType orchestrationType, ILogger? logger = null)
-        : base(id, runtime, context, DefaultDescription, logger)
+    public MagenticManagerActor(
+        AgentId id,
+        IAgentRuntime runtime,
+        OrchestrationContext context,
+        MagenticManager manager,
+        MagenticTeam team,
+        AgentType orchestrationType,
+        ILogger? logger = null)
+        : base(id,
+            runtime,
+            context,
+            DefaultDescription,
+            logger)
     {
         _chat = [];
         _manager = manager;
@@ -57,6 +69,7 @@ internal sealed class MagenticManagerActor :
 
         Debug.WriteLine($"TEAM:\n{team.FormatList()}");
     }
+
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(MagenticMessages.InputTask item, MessageContext messageContext)
@@ -67,9 +80,10 @@ internal sealed class MagenticManagerActor :
         _inputTask = item.Messages.ToList().AsReadOnly();
 
         await PublishMessageAsync(item.Messages.AsGroupMessage(), Context.Topic).ConfigureAwait(false);
-        await PrepareAsync(isReset: false, messageContext.CancellationToken).ConfigureAwait(false);
+        await PrepareAsync(false, messageContext.CancellationToken).ConfigureAwait(false);
         await ManageAsync(messageContext.CancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(MagenticMessages.Group item, MessageContext messageContext)
@@ -81,6 +95,7 @@ internal sealed class MagenticManagerActor :
         await ManageAsync(messageContext.CancellationToken).ConfigureAwait(false);
     }
 
+
     private async ValueTask ManageAsync(CancellationToken cancellationToken)
     {
         bool isStalled = false;
@@ -90,6 +105,7 @@ internal sealed class MagenticManagerActor :
         {
             string agentName = string.Empty;
             string agentInstruction = string.Empty;
+
             try
             {
                 MagenticManagerContext context = CreateContext();
@@ -116,6 +132,7 @@ internal sealed class MagenticManagerActor :
             }
 
             bool hasAgent = _team.TryGetValue(agentName, out (string Type, string Description) agent);
+
             if (!hasAgent)
             {
                 isStalled = true;
@@ -142,9 +159,10 @@ internal sealed class MagenticManagerActor :
                 if (_invocationCount >= _manager.MaximumInvocationCount)
                 {
                     Logger.LogMagenticManagerTaskFailed(Context.Topic);
+
                     try
                     {
-                        var partialResult = _chat.Last((message) => message.Role == AuthorRole.Assistant);
+                        var partialResult = _chat.Last(message => message.Role == AuthorRole.Assistant);
                         await PublishMessageAsync(partialResult.AsResultMessage(), _orchestrationType, cancellationToken).ConfigureAwait(false);
                     }
                     catch (InvalidOperationException)
@@ -156,7 +174,11 @@ internal sealed class MagenticManagerActor :
 
                 ChatMessageContent instruction = new(AuthorRole.Assistant, agentInstruction);
                 _chat.Add(instruction);
-                await PublishMessageAsync(instruction.AsGroupMessage(), Context.Topic, messageId: null, cancellationToken).ConfigureAwait(false);
+                await PublishMessageAsync(instruction.AsGroupMessage(),
+                        Context.Topic,
+                        null,
+                        cancellationToken)
+                    .ConfigureAwait(false);
                 await PublishMessageAsync(new MagenticMessages.Speak(), agent.Type, cancellationToken).ConfigureAwait(false);
                 break;
             }
@@ -166,9 +188,10 @@ internal sealed class MagenticManagerActor :
                 if (_retryCount >= _manager.MaximumResetCount)
                 {
                     Logger.LogMagenticManagerTaskFailed(Context.Topic);
+
                     try
                     {
-                        var partialResult = _chat.Last((message) => message.Role == AuthorRole.Assistant);
+                        var partialResult = _chat.Last(message => message.Role == AuthorRole.Assistant);
                         await PublishMessageAsync(partialResult.AsResultMessage(), _orchestrationType, cancellationToken).ConfigureAwait(false);
                     }
                     catch (InvalidOperationException)
@@ -184,12 +207,16 @@ internal sealed class MagenticManagerActor :
                 Logger.LogMagenticManagerTaskReset(Context.Topic, _retryCount);
                 Debug.WriteLine($"TASK RESET [#{_retryCount}]");
 
-                await PublishMessageAsync(new MagenticMessages.Reset(), Context.Topic, messageId: null, cancellationToken).ConfigureAwait(false);
-                await PrepareAsync(isReset: true, cancellationToken).ConfigureAwait(false);
+                await PublishMessageAsync(new MagenticMessages.Reset(),
+                        Context.Topic,
+                        null,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                await PrepareAsync(true, cancellationToken).ConfigureAwait(false);
             }
-        }
-        while (isStalled);
+        } while (isStalled);
     }
+
 
     private async ValueTask PrepareAsync(bool isReset, CancellationToken cancellationToken)
     {
@@ -199,6 +226,7 @@ internal sealed class MagenticManagerActor :
         MagenticManagerContext context = CreateContext(internalChat);
 
         IList<ChatMessageContent> plan;
+
         if (isReset)
         {
             plan = await _manager.PlanAsync(context, cancellationToken).ConfigureAwait(false);
@@ -211,6 +239,14 @@ internal sealed class MagenticManagerActor :
         _chat.AddRange(plan);
     }
 
-    private MagenticManagerContext CreateContext(ChatHistory? chat = null) =>
-        new(_team, _inputTask, (chat ?? _chat), _invocationCount, _stallCount, _retryCount);
+
+    private MagenticManagerContext CreateContext(ChatHistory? chat = null)
+    {
+        return new MagenticManagerContext(_team,
+            _inputTask,
+            chat ?? _chat,
+            _invocationCount,
+            _stallCount,
+            _retryCount);
+    }
 }

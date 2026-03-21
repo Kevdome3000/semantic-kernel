@@ -1,13 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using StackExchange.Redis;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
@@ -29,6 +22,7 @@ internal sealed class RedisHashSetMapper<TConsumerDataModel>(CollectionModel mod
         };
 
         var hashEntries = new List<HashEntry>();
+
         foreach (var property in model.DataProperties)
         {
             var value = property.GetValueAsObject(dataModel!);
@@ -46,23 +40,25 @@ internal sealed class RedisHashSetMapper<TConsumerDataModel>(CollectionModel mod
                 // Convert the vector to a byte array and store it in the hash entry.
                 // We only support float and double vectors and we do checking in the
                 // collection constructor to ensure that the model has no other vector types.
-                hashEntries.Add(new HashEntry(property.StorageName, value switch
-                {
-                    ReadOnlyMemory<float> m => MemoryMarshal.AsBytes(m.Span).ToArray(),
-                    Embedding<float> e => MemoryMarshal.AsBytes(e.Vector.Span).ToArray(),
-                    float[] a => MemoryMarshal.AsBytes(a.AsSpan()).ToArray(),
+                hashEntries.Add(new HashEntry(property.StorageName,
+                    value switch
+                    {
+                        ReadOnlyMemory<float> m => MemoryMarshal.AsBytes(m.Span).ToArray(),
+                        Embedding<float> e => MemoryMarshal.AsBytes(e.Vector.Span).ToArray(),
+                        float[] a => MemoryMarshal.AsBytes(a.AsSpan()).ToArray(),
 
-                    ReadOnlyMemory<double> m => MemoryMarshal.AsBytes(m.Span).ToArray(),
-                    Embedding<double> e => MemoryMarshal.AsBytes(e.Vector.Span).ToArray(),
-                    double[] a => MemoryMarshal.AsBytes(a.AsSpan()).ToArray(),
+                        ReadOnlyMemory<double> m => MemoryMarshal.AsBytes(m.Span).ToArray(),
+                        Embedding<double> e => MemoryMarshal.AsBytes(e.Vector.Span).ToArray(),
+                        double[] a => MemoryMarshal.AsBytes(a.AsSpan()).ToArray(),
 
-                    _ => throw new InvalidOperationException($"Unsupported vector type '{value.GetType()}'. Only float and double vectors are supported.")
-                }));
+                        _ => throw new InvalidOperationException($"Unsupported vector type '{value.GetType()}'. Only float and double vectors are supported.")
+                    }));
             }
         }
 
         return (keyValue, hashEntries.ToArray());
     }
+
 
     /// <inheritdoc />
     public TConsumerDataModel MapFromStorageToDataModel((string Key, HashEntry[] HashEntries) storageModel, bool includeVectors)
@@ -73,15 +69,16 @@ internal sealed class RedisHashSetMapper<TConsumerDataModel>(CollectionModel mod
         var outputRecord = model.CreateRecord<TConsumerDataModel>()!;
 
         // Set Key.
-        model.KeyProperty.SetValueAsObject(outputRecord, model.KeyProperty.Type switch
-        {
-            Type t when t == typeof(string)
-                => storageModel.Key,
-            Type t when t == typeof(Guid)
-                => Guid.Parse(storageModel.Key),
+        model.KeyProperty.SetValueAsObject(outputRecord,
+            model.KeyProperty.Type switch
+            {
+                Type t when t == typeof(string)
+                    => storageModel.Key,
+                Type t when t == typeof(Guid)
+                    => Guid.Parse(storageModel.Key),
 
-            _ => throw new UnreachableException()
-        });
+                _ => throw new UnreachableException()
+            });
 
         // Set each vector property if embeddings should be returned.
         if (includeVectors)
@@ -98,24 +95,25 @@ internal sealed class RedisHashSetMapper<TConsumerDataModel>(CollectionModel mod
 
                     var vector = (byte[])value!;
 
-                    property.SetValueAsObject(outputRecord!, (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
-                    {
-                        Type t when t == typeof(ReadOnlyMemory<float>)
-                            => new ReadOnlyMemory<float>(MemoryMarshal.Cast<byte, float>(vector).ToArray()),
-                        Type t when t == typeof(Embedding<float>)
-                            => new Embedding<float>(MemoryMarshal.Cast<byte, float>(vector).ToArray()),
-                        Type t when t == typeof(float[])
-                            => MemoryMarshal.Cast<byte, float>(vector).ToArray(),
+                    property.SetValueAsObject(outputRecord!,
+                        (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
+                        {
+                            Type t when t == typeof(ReadOnlyMemory<float>)
+                                => new ReadOnlyMemory<float>(MemoryMarshal.Cast<byte, float>(vector).ToArray()),
+                            Type t when t == typeof(Embedding<float>)
+                                => new Embedding<float>(MemoryMarshal.Cast<byte, float>(vector).ToArray()),
+                            Type t when t == typeof(float[])
+                                => MemoryMarshal.Cast<byte, float>(vector).ToArray(),
 
-                        Type t when t == typeof(ReadOnlyMemory<double>)
-                            => new ReadOnlyMemory<double>(MemoryMarshal.Cast<byte, double>(vector).ToArray()),
-                        Type t when t == typeof(Embedding<double>)
-                            => new Embedding<double>(MemoryMarshal.Cast<byte, double>(vector).ToArray()),
-                        Type t when t == typeof(double[])
-                            => MemoryMarshal.Cast<byte, double>(vector).ToArray(),
+                            Type t when t == typeof(ReadOnlyMemory<double>)
+                                => new ReadOnlyMemory<double>(MemoryMarshal.Cast<byte, double>(vector).ToArray()),
+                            Type t when t == typeof(Embedding<double>)
+                                => new Embedding<double>(MemoryMarshal.Cast<byte, double>(vector).ToArray()),
+                            Type t when t == typeof(double[])
+                                => MemoryMarshal.Cast<byte, double>(vector).ToArray(),
 
-                        _ => throw new InvalidOperationException($"Unsupported vector type '{property.Type}'. Only float and double vectors are supported.")
-                    });
+                            _ => throw new InvalidOperationException($"Unsupported vector type '{property.Type}'. Only float and double vectors are supported.")
+                        });
                 }
             }
         }

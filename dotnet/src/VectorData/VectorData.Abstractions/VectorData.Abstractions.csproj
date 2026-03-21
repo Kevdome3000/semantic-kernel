@@ -1,51 +1,52 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
-    <AssemblyName>Microsoft.Extensions.VectorData.Abstractions</AssemblyName>
-    <RootNamespace>Microsoft.Extensions.VectorData</RootNamespace>
-    <TargetFramework>net10.0</TargetFramework>
-    <IsAotCompatible>true</IsAotCompatible>
-    <!-- temporarily disabled due to mysterious build issue -->
-    <EnablePackageValidation>false</EnablePackageValidation>
-  </PropertyGroup>
+    <PropertyGroup>
+        <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+        <AssemblyName>Microsoft.Extensions.VectorData.Abstractions</AssemblyName>
+        <RootNamespace>Microsoft.Extensions.VectorData</RootNamespace>
+        <TargetFramework>net10.0</TargetFramework>
+        <IsAotCompatible>true</IsAotCompatible>
+        <!-- temporarily disabled due to mysterious build issue -->
+        <EnablePackageValidation>false</EnablePackageValidation>
+    </PropertyGroup>
 
-  <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props" />
+    <Import Project="$(RepoRoot)/dotnet/nuget/nuget-package.props"/>
 
-  <PropertyGroup>
-    <PackageVersion>9.7.0</PackageVersion>
-    <AssemblyVersion>9.0.0.0</AssemblyVersion>
-    <!-- Package validation. Baseline Version should be the latest version available on NuGet. -->
-    <PackageValidationBaselineVersion>9.6.0</PackageValidationBaselineVersion>
-    <Title>Microsoft.Extensions.VectorData.Abstractions</Title>
-    <PackageId>$(AssemblyName)</PackageId>
-    <PackageDescription>Abstractions for vector database access.
+    <PropertyGroup>
+        <PackageVersion>10.1.0</PackageVersion>
+        <AssemblyVersion>10.0.0.0</AssemblyVersion>
+        <!-- Package validation. Baseline Version should be the latest version available on NuGet. -->
+        <PackageValidationBaselineVersion>10.0.1</PackageValidationBaselineVersion>
+        <Title>Microsoft.Extensions.VectorData.Abstractions</Title>
+        <PackageId>$(AssemblyName)</PackageId>
+        <PackageDescription>Abstractions for vector database access.
 
-Commonly Used Types:
-Microsoft.Extensions.VectorData.IVectorStore
-Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt;</PackageDescription>
-    <PackageIcon>neticon.png</PackageIcon>
-    <PackageIconUrl>neticon.png</PackageIconUrl>
-    <PackageReadmeFile>PACKAGE.md</PackageReadmeFile>
-    <Product></Product>
-    <PackageTags>Vector, Database, SDK</PackageTags>
-    <Description>$(PackageDescription)</Description>
-    <PackageProjectUrl>https://dot.net/</PackageProjectUrl>
-  </PropertyGroup>
+            Commonly Used Types:
+            Microsoft.Extensions.VectorData.IVectorStore
+            Microsoft.Extensions.VectorData.IVectorStoreRecordCollection&lt;TKey, TRecord&gt;
+        </PackageDescription>
+        <PackageIcon>neticon.png</PackageIcon>
+        <PackageIconUrl>neticon.png</PackageIconUrl>
+        <PackageReadmeFile>PACKAGE.md</PackageReadmeFile>
+        <Product></Product>
+        <PackageTags>Vector, Database, SDK</PackageTags>
+        <Description>$(PackageDescription)</Description>
+        <PackageProjectUrl>https://dot.net/</PackageProjectUrl>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <!-- Include neticon.png and PACKAGE.md in the project. -->
-    <None Include="neticon.png" Pack="true" PackagePath="." />
-    <None Include="PACKAGE.md" Pack="true" PackagePath="." />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.AI.Abstractions"/>
+    </ItemGroup>
 
 
-  <ItemGroup>
-    <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/Verify.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)" />
-  </ItemGroup>
+    <ItemGroup>
+        <!-- Include neticon.png and PACKAGE.md in the project. -->
+        <None Include="neticon.png" Pack="true" PackagePath="."/>
+        <None Include="PACKAGE.md" Pack="true" PackagePath="."/>
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/Verify.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)"/>
+    </ItemGroup>
 
 </Project>

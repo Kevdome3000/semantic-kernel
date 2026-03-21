@@ -19,15 +19,23 @@ public static class YamlAgentFactoryExtensions
     /// <param name="options">Optional <see cref="AgentCreationOptions"/> instance.</param>
     /// <param name="configuration">Optional <see cref="IConfiguration"/> instance.</param>
     /// <param name="cancellationToken">Optional cancellation token</param>
-    public static async Task<Agent?> CreateAgentFromYamlAsync(this AgentFactory kernelAgentFactory, string text, AgentCreationOptions? options = null, IConfiguration? configuration = null, CancellationToken cancellationToken = default)
+    public static async Task<Agent?> CreateAgentFromYamlAsync(
+        this AgentFactory kernelAgentFactory,
+        string text,
+        AgentCreationOptions? options = null,
+        IConfiguration? configuration = null,
+        CancellationToken cancellationToken = default)
     {
         var agentDefinition = AgentDefinitionYaml.FromYaml(text, configuration);
-        agentDefinition.Type ??= (kernelAgentFactory.Types.Count > 0 ? kernelAgentFactory.Types[0] : null);
+        agentDefinition.Type ??= kernelAgentFactory.Types.Count > 0
+            ? kernelAgentFactory.Types[0]
+            : null;
 
         return await kernelAgentFactory.CreateAsync(
-            options?.Kernel ?? new Kernel(),
-            agentDefinition,
-            options,
-            cancellationToken).ConfigureAwait(false);
+                options?.Kernel ?? new Kernel(),
+                agentDefinition,
+                options,
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 }

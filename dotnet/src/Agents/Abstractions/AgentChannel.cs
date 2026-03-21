@@ -1,11 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
@@ -22,10 +15,12 @@ public abstract class AgentChannel
     /// </summary>
     public ILogger Logger { get; set; } = NullLogger.Instance;
 
+
     /// <summary>
     /// Responsible for providing the serialized representation of the channel.
     /// </summary>
     protected internal abstract string Serialize();
+
 
     /// <summary>
     /// Receive the conversation messages.  Used when joining a conversation and also during each agent interaction.
@@ -33,6 +28,7 @@ public abstract class AgentChannel
     /// <param name="history">The chat history at the point the channel is created.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     protected internal abstract Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Reset any persistent state associated with the channel.
@@ -42,6 +38,7 @@ public abstract class AgentChannel
     /// The channel won't be reused; rather, it will be discarded and a new one created.
     /// </remarks>
     protected internal abstract Task ResetAsync(CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Perform a discrete incremental interaction between a single <see cref="Agent"/> and <see cref="AgentChat"/>.
@@ -57,6 +54,7 @@ public abstract class AgentChannel
         Agent agent,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Perform a discrete incremental interaction between a single <see cref="Agent"/> and <see cref="AgentChat"/> with streaming results.
     /// </summary>
@@ -69,6 +67,7 @@ public abstract class AgentChannel
         IList<ChatMessageContent> messages,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Retrieve the message history specific to this channel.
     /// </summary>
@@ -76,6 +75,7 @@ public abstract class AgentChannel
     /// <returns>Asynchronous enumeration of messages.</returns>
     protected internal abstract IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken = default);
 }
+
 
 /// <summary>
 /// Defines the communication protocol for a particular <see cref="Agent"/> type.
@@ -102,6 +102,7 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
         TAgent agent,
         CancellationToken cancellationToken = default);
 
+
     /// <inheritdoc/>
     protected internal override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         Agent agent,
@@ -112,8 +113,10 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
             throw new KernelException($"Invalid agent channel: {typeof(TAgent).Name}/{agent.GetType().Name}");
         }
 
-        return this.InvokeAsync((TAgent)agent, cancellationToken);
+        return InvokeAsync((TAgent)agent, cancellationToken);
     }
+
+
     /// <summary>
     /// Process a discrete incremental interaction between a single <see cref="Agent"/> and a <see cref="AgentChat"/>.
     /// </summary>
@@ -130,6 +133,7 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
         IList<ChatMessageContent> messages,
         CancellationToken cancellationToken = default);
 
+
     /// <inheritdoc/>
     protected internal override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         Agent agent,
@@ -141,6 +145,6 @@ public abstract class AgentChannel<TAgent> : AgentChannel where TAgent : Agent
             throw new KernelException($"Invalid agent channel: {typeof(TAgent).Name}/{agent.GetType().Name}");
         }
 
-        return this.InvokeStreamingAsync((TAgent)agent, messages, cancellationToken);
+        return InvokeStreamingAsync((TAgent)agent, messages, cancellationToken);
     }
 }

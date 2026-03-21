@@ -21,9 +21,16 @@ internal static class DocumentLoader
         string? userAgent,
         CancellationToken cancellationToken)
     {
-        using var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, cancellationToken).ConfigureAwait(false);
+        using var response = await LoadDocumentResponseFromUriAsync(uri,
+                logger,
+                httpClient,
+                authCallback,
+                userAgent,
+                cancellationToken)
+            .ConfigureAwait(false);
         return await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
     }
+
 
     internal static async Task<Stream> LoadDocumentFromUriAsStreamAsync(
         Uri uri,
@@ -34,10 +41,17 @@ internal static class DocumentLoader
         CancellationToken cancellationToken)
     {
         //disposing the response disposes the stream
-        var response = await LoadDocumentResponseFromUriAsync(uri, logger, httpClient, authCallback, userAgent, cancellationToken).ConfigureAwait(false);
+        var response = await LoadDocumentResponseFromUriAsync(uri,
+                logger,
+                httpClient,
+                authCallback,
+                userAgent,
+                cancellationToken)
+            .ConfigureAwait(false);
         var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
         return new HttpResponseStream(stream, response);
     }
+
 
     private static async Task<HttpResponseMessage> LoadDocumentResponseFromUriAsync(
         Uri uri,
@@ -60,6 +74,7 @@ internal static class DocumentLoader
         return await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
+
     internal static async Task<string> LoadDocumentFromFilePathAsync(
         string filePath,
         ILogger logger,
@@ -74,10 +89,12 @@ internal static class DocumentLoader
         using var sr = File.OpenText(filePath);
         return await sr.ReadToEndAsync(
 #if NET
-            cancellationToken
+                cancellationToken
 #endif
-            ).ConfigureAwait(false);
+            )
+            .ConfigureAwait(false);
     }
+
 
     private static void CheckIfFileExists(string filePath, ILogger logger)
     {
@@ -89,6 +106,7 @@ internal static class DocumentLoader
         }
     }
 
+
     internal static Stream LoadDocumentFromFilePathAsStream(
         string filePath,
         ILogger logger)
@@ -99,6 +117,7 @@ internal static class DocumentLoader
 
         return File.OpenRead(filePath);
     }
+
 
     internal static async Task<string> LoadDocumentFromStreamAsync(
         Stream stream,

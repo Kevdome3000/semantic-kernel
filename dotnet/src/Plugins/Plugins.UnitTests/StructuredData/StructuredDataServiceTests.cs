@@ -4,6 +4,7 @@ using System;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Moq;
@@ -24,12 +25,14 @@ public class StructuredDataServiceTests
         Assert.NotNull(service.Context);
     }
 
+
     [Fact]
     public void ConstructorWithNullDbContextThrowsArgumentNullException()
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => new StructuredDataService<TestDbContext>(dbContext: null!));
     }
+
 
     [Fact]
     public void SelectWithNoQueryReturnsAllEntities()
@@ -59,6 +62,7 @@ public class StructuredDataServiceTests
         Assert.Equal(2, result.Count);
     }
 
+
     [Fact]
     public async Task InsertAsyncValidEntityInsertsAndReturnsEntityAsync()
     {
@@ -77,6 +81,7 @@ public class StructuredDataServiceTests
         mockContext.Verify(m => m.SaveChangesAsync(default), Times.Once);
         Assert.Same(entity, result);
     }
+
 
     [Fact]
     public async Task UpdateAsyncValidEntityUpdatesAndReturnsAffectedRowsAsync()
@@ -110,6 +115,7 @@ public class StructuredDataServiceTests
         mockContext.Verify(m => m.SaveChangesAsync(default), Times.Once);
     }
 
+
     [Fact]
     public async Task DeleteAsyncValidEntityDeletesAndReturnsAffectedRowsAsync()
     {
@@ -122,7 +128,7 @@ public class StructuredDataServiceTests
             .Setup("OnModelCreating", ItExpr.IsAny<DbModelBuilder>())
             .Callback<DbModelBuilder>(modelBuilder =>
             {
-                Database.SetInitializer(null as System.Data.Entity.IDatabaseInitializer<TestDbContext>);
+                Database.SetInitializer(null as IDatabaseInitializer<TestDbContext>);
                 var mockedContextType = mockContext.Object.GetType();
                 typeof(Database).GetMethod("SetInitializer")!
                     .MakeGenericMethod(mockedContextType)
@@ -131,7 +137,7 @@ public class StructuredDataServiceTests
 
         mockSet.Setup(m => m.Remove(It.IsAny<TestEntity>())).Returns((TestEntity e) => e);
         mockContext.Setup(c => c.Set<TestEntity>()).Returns(mockSet.Object);
-        mockContext.Setup(m => m.SaveChangesAsync(It.IsAny<System.Threading.CancellationToken>())).ReturnsAsync(1);
+        mockContext.Setup(m => m.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         using var service = new StructuredDataService<TestDbContext>(mockContext.Object);
         var entity = new TestEntity { Id = 1, Name = "ToDelete" };
@@ -142,6 +148,7 @@ public class StructuredDataServiceTests
         // Assert
         Assert.Equal(1, result);
     }
+
 
     [Fact]
     public void SelectWithFilterQueryAppliesFilter()
@@ -172,13 +179,20 @@ public class StructuredDataServiceTests
         Assert.Equal("Test1", result[0].Name);
     }
 
+
     [Fact]
     public void SelectWithDateTimeFilterQueryHandlesNullableAndNonNullable()
     {
         // Arrange
         var mockContext = new Mock<TestDbContext>("TestConnection");
         var mockSet = new Mock<DbSet<TestEntity>>();
-        var testDate = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var testDate = new DateTime(2023,
+            1,
+            1,
+            0,
+            0,
+            0,
+            DateTimeKind.Utc);
         var entities = new[]
         {
             new TestEntity { Id = 1, Name = "Test1", NullableDate = testDate },
@@ -212,13 +226,20 @@ public class StructuredDataServiceTests
         Assert.Equal(3, result3[0].Id);
     }
 
+
     [Fact]
     public void SelectWithDateTimeFilterQueryHandlesMultipleConditions()
     {
         // Arrange
         var mockContext = new Mock<TestDbContext>("TestConnection");
         var mockSet = new Mock<DbSet<TestEntity>>();
-        var testDate = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var testDate = new DateTime(2023,
+            1,
+            1,
+            0,
+            0,
+            0,
+            DateTimeKind.Utc);
         var entities = new[]
         {
             new TestEntity { Id = 1, Name = "Test1", NullableDate = testDate },
@@ -248,6 +269,7 @@ public class StructuredDataServiceTests
         Assert.Contains(result2, e => e.Id == 3);
     }
 
+
     [Theory]
     [InlineData("2023-01-01T00:00:00Z")]
     [InlineData("2023-01-01T00:00:00.000Z")]
@@ -256,7 +278,13 @@ public class StructuredDataServiceTests
         // Arrange
         var mockContext = new Mock<TestDbContext>("TestConnection");
         var mockSet = new Mock<DbSet<TestEntity>>();
-        var testDate = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var testDate = new DateTime(2023,
+            1,
+            1,
+            0,
+            0,
+            0,
+            DateTimeKind.Utc);
         var entities = new[]
         {
             new TestEntity { Id = 1, NullableDate = testDate },
@@ -279,6 +307,7 @@ public class StructuredDataServiceTests
         Assert.Single(result);
         Assert.Equal(1, result[0].Id);
     }
+
 
     [Fact]
     public void SelectWithNullableTypesHandlesComparisons()
@@ -329,6 +358,7 @@ public class StructuredDataServiceTests
         Assert.Equal(3, result5[0].Id);
     }
 
+
     [Theory]
     [InlineData("eq", 10, 1)]
     [InlineData("ne", 10, 2)]
@@ -364,6 +394,7 @@ public class StructuredDataServiceTests
         Assert.Equal(expectedCount, result.Count);
     }
 
+
     [Fact]
     public void SelectWithQuotedStringHandlesSpacesCorrectly()
     {
@@ -391,6 +422,7 @@ public class StructuredDataServiceTests
         Assert.Single(result1);
         Assert.Equal("Sample Product", result1[0].Name);
     }
+
 
     [Fact]
     public void SelectWithQuotedStringHandlesComplexQueries()
@@ -432,6 +464,7 @@ public class StructuredDataServiceTests
         Assert.Contains(result3, e => e.Name == "Product or test");
     }
 
+
     [Fact]
     public void SelectWithQuotedStringHandlesEscapedQuotes()
     {
@@ -465,6 +498,7 @@ public class StructuredDataServiceTests
         Assert.Equal("Product \"Quote\" Test", result2[0].Name);
     }
 
+
     public class TestEntity
     {
         public int Id { get; set; }
@@ -476,6 +510,7 @@ public class StructuredDataServiceTests
         public bool? NullableBool { get; set; }
     }
 
+
     public class TestDbContext : DbContext
     {
         public TestDbContext(string nameOrConnectionString) : base(nameOrConnectionString)
@@ -484,21 +519,26 @@ public class StructuredDataServiceTests
             Database.SetInitializer<TestDbContext>(null);
         }
 
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             Database.SetInitializer<TestDbContext>(null);
             base.OnModelCreating(modelBuilder);
         }
+
+
         public virtual void Entry<TEntity>(TEntity entity, Action<DbEntityEntry<TEntity>> action) where TEntity : class
         {
             action(base.Entry(entity));
         }
+
 
         [Obsolete("Use overload for unit tests.")]
         public new DbEntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class
         {
             throw new NotSupportedException("Use overload for unit tests.");
         }
+
 
         public DbSet<TestEntity>? TestEntities { get; set; }
     }

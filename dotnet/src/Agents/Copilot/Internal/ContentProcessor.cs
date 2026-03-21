@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.CopilotStudio.Internal;
 
@@ -18,7 +17,7 @@ internal static class ContentProcessor
                 {
                     Encoding = textContent.Encoding,
                     InnerContent = textContent.InnerContent,
-                    Metadata = textContent.Metadata,
+                    Metadata = textContent.Metadata
                 };
             }
             else if (item is ReasoningContent reasoningContent)

@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
-using Azure.Search.Documents.Indexes;
-using Microsoft.Extensions.AI;
-
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
@@ -19,11 +15,13 @@ public sealed class AzureAISearchVectorStoreOptions
     {
     }
 
+
     internal AzureAISearchVectorStoreOptions(AzureAISearchVectorStoreOptions? source)
     {
-        this.JsonSerializerOptions = source?.JsonSerializerOptions;
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+        JsonSerializerOptions = source?.JsonSerializerOptions;
+        EmbeddingGenerator = source?.EmbeddingGenerator;
     }
+
 
     /// <summary>
     /// Gets or sets the JSON serializer options to use when converting between the data model and the Azure AI Search record.

@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using MongoDB.Bson;
-
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
@@ -29,7 +23,7 @@ internal static class MongoCollectionCreateMapping
                 { "type", "vector" },
                 { "numDimensions", property.Dimensions },
                 { "path", property.StorageName },
-                { "similarity", GetDistanceFunction(property.DistanceFunction, property.ModelName) },
+                { "similarity", GetDistanceFunction(property.DistanceFunction, property.ModelName) }
             };
 
             indexArray.Add(indexDocument);
@@ -37,6 +31,7 @@ internal static class MongoCollectionCreateMapping
 
         return indexArray;
     }
+
 
     /// <summary>
     /// Returns an array of indexes to create for filterable data properties.
@@ -54,7 +49,7 @@ internal static class MongoCollectionCreateMapping
                 var indexDocument = new BsonDocument
                 {
                     { "type", "filter" },
-                    { "path", property.StorageName },
+                    { "path", property.StorageName }
                 };
 
                 indexArray.Add(indexDocument);
@@ -63,6 +58,7 @@ internal static class MongoCollectionCreateMapping
 
         return indexArray;
     }
+
 
     /// <summary>
     /// Returns a list of of fields to index for full text search data properties.
@@ -77,21 +73,24 @@ internal static class MongoCollectionCreateMapping
         {
             if (property.IsFullTextIndexed)
             {
-                fieldElements.Add(new BsonElement(property.StorageName, new BsonArray()
-                {
-                    new BsonDocument() { { "type", "string" } }
-                }));
+                fieldElements.Add(new BsonElement(property.StorageName,
+                    new BsonArray
+                    {
+                        new BsonDocument { { "type", "string" } }
+                    }));
             }
         }
 
         return fieldElements;
     }
 
+
     /// <summary>
     /// More information about MongoDB distance functions here: <see href="https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-type/#atlas-vector-search-index-fields" />.
     /// </summary>
     private static string GetDistanceFunction(string? distanceFunction, string vectorPropertyName)
-        => distanceFunction switch
+    {
+        return distanceFunction switch
         {
             DistanceFunction.CosineSimilarity or null => "cosine",
             DistanceFunction.DotProductSimilarity => "dotProduct",
@@ -99,4 +98,5 @@ internal static class MongoCollectionCreateMapping
 
             _ => throw new NotSupportedException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the MongoDB VectorStore.")
         };
+    }
 }

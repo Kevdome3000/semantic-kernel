@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Net.Http;
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 /// <summary>
@@ -15,6 +12,7 @@ internal sealed class WeaviateVectorSearchRequest(string query)
 
     [JsonPropertyName("query")]
     public string Query { get; set; } = query;
+
 
     public HttpRequestMessage Build()
     {

@@ -34,17 +34,19 @@ public sealed class CopilotStudioConnectionSettings : ConnectionSettings
     /// </summary>
     public bool UseInteractiveAuthentication { get; init; } = true;
 
+
     /// <summary>
     /// Instantiate a new instance of the <see cref="CopilotStudioConnectionSettings"/> from provided settings.
     /// </summary>
     public CopilotStudioConnectionSettings(string tenantId, string appClientId, string? appClientSecret = null)
     {
-        this.TenantId = tenantId;
-        this.AppClientId = appClientId;
-        this.AppClientSecret = appClientSecret;
-        this.Cloud = PowerPlatformCloud.Prod;
-        this.CopilotAgentType = AgentType.Published;
+        TenantId = tenantId;
+        AppClientId = appClientId;
+        AppClientSecret = appClientSecret;
+        Cloud = PowerPlatformCloud.Prod;
+        CopilotAgentType = AgentType.Published;
     }
+
 
     /// <summary>
     /// Instantiate a new instance of the <see cref="CopilotStudioConnectionSettings"/> from a configuration section.
@@ -54,8 +56,8 @@ public sealed class CopilotStudioConnectionSettings : ConnectionSettings
     public CopilotStudioConnectionSettings(IConfigurationSection config)
         : base(config)
     {
-        this.AppClientId = config[nameof(this.AppClientId)] ?? throw new ArgumentException($"{nameof(this.AppClientId)} not found in config");
-        this.TenantId = config[nameof(this.TenantId)] ?? throw new ArgumentException($"{nameof(this.TenantId)} not found in config");
-        this.AppClientSecret = config[nameof(this.AppClientSecret)];
+        AppClientId = config[nameof(AppClientId)] ?? throw new ArgumentException($"{nameof(AppClientId)} not found in config");
+        TenantId = config[nameof(TenantId)] ?? throw new ArgumentException($"{nameof(TenantId)} not found in config");
+        AppClientSecret = config[nameof(AppClientSecret)];
     }
 }

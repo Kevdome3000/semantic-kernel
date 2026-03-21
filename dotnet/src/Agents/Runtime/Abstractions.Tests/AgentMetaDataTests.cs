@@ -6,7 +6,7 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Agents.Runtime.Abstractions.Tests;
 
 [Trait("Category", "Unit")]
-public class AgentMetadataTests()
+public class AgentMetadataTests
 {
     [Fact]
     public void AgentMetadataShouldInitializeCorrectlyTest()

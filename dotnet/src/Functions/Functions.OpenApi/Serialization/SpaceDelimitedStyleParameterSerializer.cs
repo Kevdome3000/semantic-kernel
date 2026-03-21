@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-
-namespace Microsoft.SemanticKernel.Plugins.OpenApi;
-
 using System.Text.Json.Nodes;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
 /// Serializes REST API parameter of the 'SpaceDelimited' style.
@@ -37,6 +35,7 @@ internal static class SpaceDelimitedStyleParameterSerializer
         return SerializeArrayParameter(parameter, argument);
     }
 
+
     /// <summary>
     /// Serializes an array-type parameter.
     /// </summary>
@@ -52,9 +51,9 @@ internal static class SpaceDelimitedStyleParameterSerializer
 
         if (parameter.Expand)
         {
-            return ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters(parameter.Name, array, delimiter: "&"); //id=1&id=2&id=3
+            return ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters(parameter.Name, array, "&"); //id=1&id=2&id=3
         }
 
-        return $"{parameter.Name}={ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: "%20")}"; //id=1%202%203
+        return $"{parameter.Name}={ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, "%20")}"; //id=1%202%203
     }
 }

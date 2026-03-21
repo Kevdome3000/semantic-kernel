@@ -1,12 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using MongoDB.Bson;
-
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
@@ -52,8 +45,8 @@ internal static class MongoCollectionSearchMapping
             else
             {
                 throw new NotSupportedException(
-                    $"Unsupported filter clause type '{filterClause.GetType().Name}'. " +
-                    $"Supported filter clause types are: {string.Join(", ", [
+                    $"Unsupported filter clause type '{filterClause.GetType().Name}'. "
+                    + $"Supported filter clause types are: {string.Join(", ", [
                         nameof(EqualToFilterClause)])}");
             }
 
@@ -67,21 +60,21 @@ internal static class MongoCollectionSearchMapping
                 if (filter[property.StorageName] is BsonDocument document && document.Contains(filterOperator))
                 {
                     throw new NotSupportedException(
-                        $"Filter with operator '{filterOperator}' is already added to '{propertyName}' property. " +
-                        "Multiple filters of the same type in the same property are not supported.");
+                        $"Filter with operator '{filterOperator}' is already added to '{propertyName}' property. " + "Multiple filters of the same type in the same property are not supported.");
                 }
 
                 filter[property.StorageName][filterOperator] = propertyValue;
             }
             else
             {
-                filter[property.StorageName] = new BsonDocument() { [filterOperator] = propertyValue };
+                filter[property.StorageName] = new BsonDocument { [filterOperator] = propertyValue };
             }
         }
 
         return filter;
     }
 #pragma warning restore CS0618
+
 
     /// <summary>Returns search part of the search query.</summary>
     public static BsonDocument GetSearchQuery<TVector>(
@@ -99,7 +92,7 @@ internal static class MongoCollectionSearchMapping
             { "queryVector", BsonArray.Create(vector) },
             { "path", vectorPropertyName },
             { "limit", limit },
-            { "numCandidates", numCandidates },
+            { "numCandidates", numCandidates }
         };
 
         if (filter is not null)
@@ -112,6 +105,7 @@ internal static class MongoCollectionSearchMapping
             { "$vectorSearch", searchQuery }
         };
     }
+
 
     /// <summary>Returns projection part of the search query to return similarity score together with document.</summary>
     public static BsonDocument GetProjectionQuery(string scorePropertyName, string documentPropertyName)
@@ -128,13 +122,15 @@ internal static class MongoCollectionSearchMapping
         };
     }
 
+
     /// <summary>Returns a $match stage to filter results by score threshold.</summary>
     /// <remarks>
     /// MongoDB Atlas Vector Search returns a similarity score where higher values mean more similar,
     /// so we filter with $gte to keep results at or above the threshold.
     /// </remarks>
     public static BsonDocument GetScoreThresholdMatchQuery(string scorePropertyName, double scoreThreshold)
-        => new()
+    {
+        return new()
         {
             {
                 "$match", new BsonDocument
@@ -143,6 +139,8 @@ internal static class MongoCollectionSearchMapping
                 }
             }
         };
+    }
+
 
     /// <summary>Returns a pipeline for hybrid search using vector search and full text search.</summary>
     public static BsonDocument[] GetHybridSearchPipeline<TVector>(
@@ -163,7 +161,10 @@ internal static class MongoCollectionSearchMapping
         var ftsPipeline = new List<BsonDocument>
         {
             // The full text search stage.
-            GetFullTextSearchQuery(keywords, fullTextSearchIndexName, textPropertyName, filter),
+            GetFullTextSearchQuery(keywords,
+                fullTextSearchIndexName,
+                textPropertyName,
+                filter),
             // Limit the results to the maximum that we may require.
             new()
             {
@@ -178,7 +179,7 @@ internal static class MongoCollectionSearchMapping
             // Add a weighted score based on the rank of the document.
             AddScore("fts_score", 0.9),
             // Project the score, the id and the original document as properties, so that we can join with the vector search results on id.
-            ProjectWithScore("fts_score"),
+            ProjectWithScore("fts_score")
         };
 
         // Add filtering to the FullTextSearch pipeline if filter is provided.
@@ -186,19 +187,25 @@ internal static class MongoCollectionSearchMapping
         {
             // Insert filter at the second position, since
             // MongoDB requires search to be the first stage.
-            ftsPipeline.Insert(1, new BsonDocument
-            {
+            ftsPipeline.Insert(1,
+                new BsonDocument
                 {
-                    "$match", filter
-                }
-            });
+                    {
+                        "$match", filter
+                    }
+                });
         }
 
         // Create combined pipeline with the vector search part first.
-        var pipeline = new BsonDocument[]
+        var pipeline = new[]
         {
             // The vector search stage.
-            GetSearchQuery(vector, vectorIndexName, vectorPropertyName, limit, numCandidates, filter),
+            GetSearchQuery(vector,
+                vectorIndexName,
+                vectorPropertyName,
+                limit,
+                numCandidates,
+                filter),
             // Converts the list of documents to a single document with an array property containing all the source documents.
             GroupDocsSection(),
             // Creates separate documents again where each has a new rank property based on the index of the document.
@@ -273,11 +280,12 @@ internal static class MongoCollectionSearchMapping
                 {
                     "$limit", limit
                 }
-            },
+            }
         };
 
         return pipeline;
     }
+
 
     /// <summary>Builds the full text search query stage.</summary>
     private static BsonDocument GetFullTextSearchQuery(
@@ -292,7 +300,8 @@ internal static class MongoCollectionSearchMapping
                 "$search", new BsonDocument
                 {
                     { "index", fullTextSearchIndexName },
-                    { "text",
+                    {
+                        "text",
                         new BsonDocument
                         {
                             { "query", new BsonArray(keywords) },
@@ -306,6 +315,7 @@ internal static class MongoCollectionSearchMapping
 
         return fullTextSearchQuery;
     }
+
 
     /// <summary>Create a stage that groups all documents into a single document with an array property containing all the source documents.</summary>
     private static BsonDocument GroupDocsSection()
@@ -322,6 +332,7 @@ internal static class MongoCollectionSearchMapping
         };
     }
 
+
     /// <summary>Creates a stage that splits an array of documents from a single document into separate documents and adds an index property for each document based on its index in the array.</summary>
     private static BsonDocument UnwindDocsArraySection()
     {
@@ -337,6 +348,7 @@ internal static class MongoCollectionSearchMapping
         };
     }
 
+
     /// <summary>Adds a weighted score to each document based on the rank property on the document.</summary>
     private static BsonDocument AddScore(string scoreName, double weight)
     {
@@ -349,17 +361,19 @@ internal static class MongoCollectionSearchMapping
                         scoreName, new BsonDocument
                         {
                             {
-                                "$multiply", new BsonArray()
+                                "$multiply", new BsonArray
                                 {
                                     weight,
                                     new BsonDocument
                                     {
-                                        { "$divide", new BsonArray()
+                                        {
+                                            "$divide", new BsonArray
                                             {
                                                 1.0,
                                                 new BsonDocument
                                                 {
-                                                    { "$add", new BsonArray()
+                                                    {
+                                                        "$add", new BsonArray
                                                         {
                                                             "$rank",
                                                             60
@@ -372,11 +386,12 @@ internal static class MongoCollectionSearchMapping
                                 }
                             }
                         }
-                    },
+                    }
                 }
             }
         };
     }
+
 
     /// <summary>Projects the score, the id and the original document as properties.</summary>
     private static BsonDocument ProjectWithScore(string scoreName)

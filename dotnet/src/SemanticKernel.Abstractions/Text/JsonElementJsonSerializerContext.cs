@@ -8,5 +8,5 @@ namespace Microsoft.SemanticKernel.Text;
 [JsonSerializable(typeof(JsonElement))]
 internal sealed partial class JsonElementJsonSerializerContext : JsonSerializerContext
 {
-    public static readonly JsonElementJsonSerializerContext MaxDepth_128 = new(new() { MaxDepth = 128 });
+    public static readonly JsonElementJsonSerializerContext MaxDepth_128 = new(new JsonSerializerOptions { MaxDepth = 128 });
 }

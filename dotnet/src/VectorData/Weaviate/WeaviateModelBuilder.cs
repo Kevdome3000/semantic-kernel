@@ -1,30 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelBuilder(GetModelBuildingOptions(hasNamedVectors))
 {
     internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[]";
 
+
     private static CollectionModelBuildingOptions GetModelBuildingOptions(bool hasNamedVectors)
     {
         return new()
         {
             RequiresAtLeastOneVector = !hasNamedVectors,
-            SupportsMultipleKeys = false,
             SupportsMultipleVectors = hasNamedVectors
         };
     }
 
+
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         if (keyProperty.Type != typeof(Guid))
         {
             throw new NotSupportedException(
@@ -32,13 +28,18 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
         }
     }
 
+
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, bool, int, long, short, byte, float, double, decimal, DateTime, DateTimeOffset, Guid, or arrays/lists of these types";
+        supportedTypes = "string, bool, int, long, short, byte, float, double, decimal, DateTime, DateTimeOffset,"
+#if NET
+            + " DateOnly,"
+#endif
+            + " Guid, or arrays/lists of these types";
 
         return IsValid(type)
-            || (type.IsArray && IsValid(type.GetElementType()!))
-            || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && IsValid(type.GenericTypeArguments[0]));
+            || type.IsArray && IsValid(type.GetElementType()!)
+            || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && IsValid(type.GenericTypeArguments[0]);
 
         static bool IsValid(Type type)
         {
@@ -58,12 +59,19 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
                 || type == typeof(decimal)
                 || type == typeof(DateTime)
                 || type == typeof(DateTimeOffset)
+#if NET
+                || type == typeof(DateOnly)
+#endif
                 || type == typeof(Guid);
         }
     }
 
+
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-        => IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    {
+        return IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    }
+
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
@@ -75,6 +83,7 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
             || type == typeof(float[]);
     }
 
+
     /// <inheritdoc />
     protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
     {
@@ -85,10 +94,10 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
         if (!IsValidIdentifier(propertyModel.StorageName))
         {
             throw new InvalidOperationException(
-                $"Property '{propertyModel.ModelName}' has storage name '{propertyModel.StorageName}' which is not a valid GraphQL identifier. " +
-                "GraphQL identifiers must start with a letter or underscore, and contain only letters, digits, and underscores.");
+                $"Property '{propertyModel.ModelName}' has storage name '{propertyModel.StorageName}' which is not a valid GraphQL identifier. " + "GraphQL identifiers must start with a letter or underscore, and contain only letters, digits, and underscores.");
         }
     }
+
 
     private static bool IsValidIdentifier(string name)
     {
@@ -98,6 +107,7 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
         }
 
         var first = name[0];
+
         if (!char.IsLetter(first) && first != '_')
         {
             return false;
@@ -106,6 +116,7 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
         for (var i = 1; i < name.Length; i++)
         {
             var c = name[i];
+
             if (!char.IsLetterOrDigit(c) && c != '_')
             {
                 return false;

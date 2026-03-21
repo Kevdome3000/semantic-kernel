@@ -28,7 +28,10 @@ public class DataPropertyModel(string modelName, Type type) : PropertyModel(mode
     /// </value>
     public bool IsFullTextIndexed { get; set; }
 
+
     /// <inheritdoc/>
     public override string ToString()
-        => $"{this.ModelName} (Data, {this.Type.Name})";
+    {
+        return $"{ModelName} (Data, {Type.Name})";
+    }
 }

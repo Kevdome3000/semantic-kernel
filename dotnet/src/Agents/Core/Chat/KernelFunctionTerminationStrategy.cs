@@ -3,11 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Internal;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Chat;
 
@@ -65,32 +63,36 @@ public class KernelFunctionTerminationStrategy(KernelFunction function, Kernel k
     /// Gets a callback responsible for translating the <see cref="FunctionResult"/>
     /// to the termination criteria.
     /// </summary>
-    public Func<FunctionResult, bool> ResultParser { get; init; } = (_) => true;
+    public Func<FunctionResult, bool> ResultParser { get; init; } = _ => true;
 
     /// <summary>
     /// Gets an optional <see cref="IChatHistoryReducer"/> to reduce the history.
     /// </summary>
     public IChatHistoryReducer? HistoryReducer { get; init; }
 
+
     /// <inheritdoc/>
     protected sealed override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        history = await history.ReduceAsync(this.HistoryReducer, cancellationToken).ConfigureAwait(false);
+        history = await history.ReduceAsync(HistoryReducer, cancellationToken).ConfigureAwait(false);
 
-        KernelArguments originalArguments = this.Arguments ?? [];
+        KernelArguments originalArguments = Arguments ?? [];
         KernelArguments arguments =
             new(originalArguments, originalArguments.ExecutionSettings?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value))
             {
-                { this.AgentVariableName, agent.Name ?? agent.Id },
-                { this.HistoryVariableName, ChatMessageForPrompt.Format(history, this.EvaluateNameOnly) },
+                { AgentVariableName, agent.Name ?? agent.Id },
+                { HistoryVariableName, ChatMessageForPrompt.Format(history, EvaluateNameOnly) }
             };
 
-        this.Logger.LogKernelFunctionTerminationStrategyInvokingFunction(nameof(ShouldAgentTerminateAsync), this.Function.PluginName, this.Function.Name);
+        Logger.LogKernelFunctionTerminationStrategyInvokingFunction(nameof(ShouldAgentTerminateAsync), Function.PluginName, Function.Name);
 
-        FunctionResult result = await this.Function.InvokeAsync(this.Kernel, arguments, cancellationToken).ConfigureAwait(false);
+        FunctionResult result = await Function.InvokeAsync(Kernel, arguments, cancellationToken).ConfigureAwait(false);
 
-        this.Logger.LogKernelFunctionTerminationStrategyInvokedFunction(nameof(ShouldAgentTerminateAsync), this.Function.PluginName, this.Function.Name, result.ValueType);
+        Logger.LogKernelFunctionTerminationStrategyInvokedFunction(nameof(ShouldAgentTerminateAsync),
+            Function.PluginName,
+            Function.Name,
+            result.ValueType);
 
-        return this.ResultParser.Invoke(result);
+        return ResultParser.Invoke(result);
     }
 }

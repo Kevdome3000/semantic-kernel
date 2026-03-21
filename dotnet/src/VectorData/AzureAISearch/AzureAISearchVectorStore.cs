@@ -1,17 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Azure;
-using Azure.Search.Documents.Indexes;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 using static Microsoft.Extensions.VectorData.VectorStoreErrorHandler;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -36,6 +24,7 @@ public sealed class AzureAISearchVectorStore : VectorStore
     /// <summary>A general purpose definition that can be used to construct a collection when needing to proxy schema agnostic operations.</summary>
     private static readonly VectorStoreCollectionDefinition s_generalPurposeDefinition = new() { Properties = [new VectorStoreKeyProperty("Key", typeof(string))] };
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAISearchVectorStore"/> class.
     /// </summary>
@@ -47,16 +36,17 @@ public sealed class AzureAISearchVectorStore : VectorStore
     {
         Verify.NotNull(searchIndexClient);
 
-        this._searchIndexClient = searchIndexClient;
-        this._embeddingGenerator = options?.EmbeddingGenerator;
-        this._jsonSerializerOptions = options?.JsonSerializerOptions;
+        _searchIndexClient = searchIndexClient;
+        _embeddingGenerator = options?.EmbeddingGenerator;
+        _jsonSerializerOptions = options?.JsonSerializerOptions;
 
-        this._metadata = new()
+        _metadata = new()
         {
             VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
             VectorStoreName = searchIndexClient.ServiceName
         };
     }
+
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
@@ -70,14 +60,15 @@ public sealed class AzureAISearchVectorStore : VectorStore
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new AzureAISearchCollection<TKey, TRecord>(
-                this._searchIndexClient,
+                _searchIndexClient,
                 name,
-                new AzureAISearchCollectionOptions()
+                new AzureAISearchCollectionOptions
                 {
-                    JsonSerializerOptions = this._jsonSerializerOptions,
+                    JsonSerializerOptions = _jsonSerializerOptions,
                     Definition = definition,
-                    EmbeddingGenerator = this._embeddingGenerator
+                    EmbeddingGenerator = _embeddingGenerator
                 });
+
 
     /// <inheritdoc />
     [RequiresUnreferencedCode("The Azure AI Search provider is currently incompatible with trimming.")]
@@ -88,24 +79,25 @@ public sealed class AzureAISearchVectorStore : VectorStore
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new AzureAISearchDynamicCollection(
-            this._searchIndexClient,
+            _searchIndexClient,
             name,
-            new()
+            new AzureAISearchCollectionOptions
             {
-                JsonSerializerOptions = this._jsonSerializerOptions,
+                JsonSerializerOptions = _jsonSerializerOptions,
                 Definition = definition,
-                EmbeddingGenerator = this._embeddingGenerator
+                EmbeddingGenerator = _embeddingGenerator
             }
         );
 #pragma warning restore IDE0090
+
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         const string OperationName = "GetIndexNames";
 
-        var indexNamesEnumerable = this._searchIndexClient.GetIndexNamesAsync(cancellationToken).ConfigureAwait(false);
-        var errorHandlingEnumerable = new ConfiguredCancelableErrorHandlingAsyncEnumerable<string, RequestFailedException>(indexNamesEnumerable, this._metadata, OperationName);
+        var indexNamesEnumerable = _searchIndexClient.GetIndexNamesAsync(cancellationToken).ConfigureAwait(false);
+        var errorHandlingEnumerable = new ConfiguredCancelableErrorHandlingAsyncEnumerable<string, RequestFailedException>(indexNamesEnumerable, _metadata, OperationName);
 
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task: False Positive
         await foreach (var item in errorHandlingEnumerable.ConfigureAwait(false))
@@ -115,19 +107,22 @@ public sealed class AzureAISearchVectorStore : VectorStore
         }
     }
 
+
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
@@ -135,10 +130,14 @@ public sealed class AzureAISearchVectorStore : VectorStore
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(SearchIndexClient) ? this._searchIndexClient :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreMetadata)
+                    ? _metadata
+                    : serviceType == typeof(SearchIndexClient)
+                        ? _searchIndexClient
+                        : serviceType.IsInstanceOfType(this)
+                            ? this
+                            : null;
     }
 }

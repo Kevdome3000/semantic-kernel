@@ -1,15 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Google.Core;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
 internal sealed class VertexAIEmbeddingRequest
 {
-
     [JsonPropertyName("instances")]
     public IList<RequestContent> Requests { get; set; } = null!;
 
@@ -17,25 +15,21 @@ internal sealed class VertexAIEmbeddingRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public RequestParameters? Parameters { get; set; }
 
-
-    public static VertexAIEmbeddingRequest FromData(IEnumerable<string> data) => new()
+    public static VertexAIEmbeddingRequest FromData(IEnumerable<string> data, int? dimensions = null) => new()
     {
         Requests = data.Select(text => new RequestContent
-            {
-                Content = text
-            }).
-            ToList(),
+        {
+            Content = text
+        }).ToList(),
         Parameters = new RequestParameters
         {
-            // todo make configurable when ITextEmbeddingGenerationService will support parameters
-            AutoTruncate = false
+            AutoTruncate = false,
+            OutputDimensionality = dimensions
         }
     };
 
-
     internal sealed class RequestContent
     {
-
         [JsonPropertyName("title")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Title { get; set; }
@@ -46,16 +40,15 @@ internal sealed class VertexAIEmbeddingRequest
         [JsonPropertyName("taskType")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? TaskType { get; set; } // todo: enum
-
     }
-
 
     internal sealed class RequestParameters
     {
-
         [JsonPropertyName("autoTruncate")]
         public bool AutoTruncate { get; set; }
 
+        [JsonPropertyName("outputDimensionality")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? OutputDimensionality { get; set; }
     }
-
 }

@@ -1,12 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Diagnostics;
-using System.Linq;
-using Google.Protobuf.Collections;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
@@ -40,8 +34,7 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
         var pointStruct = new PointStruct
         {
             Id = pointId,
-            Vectors = new Vectors(),
-            Payload = { },
+            Vectors = new Vectors()
         };
 
         // Add point payload.
@@ -87,7 +80,8 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
         return pointStruct;
 
         Vector GetVector(PropertyModel property, object? embedding)
-            => embedding switch
+        {
+            return embedding switch
             {
                 ReadOnlyMemory<float> m => m.ToArray(),
                 Embedding<float> e => e.Vector.ToArray(),
@@ -96,20 +90,27 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
                 null => throw new InvalidOperationException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null when not using named vectors."),
                 var unknownEmbedding => throw new InvalidOperationException($"Vector property '{property.ModelName}' on provided record of type '{typeof(TRecord).Name}' has unsupported embedding type '{unknownEmbedding.GetType().Name}'.")
             };
+        }
     }
 
+
     /// <inheritdoc />
-    public TRecord MapFromStorageToDataModel(PointId pointId, MapField<string, Value> payload, VectorsOutput vectorsOutput, bool includeVectors)
+    public TRecord MapFromStorageToDataModel(
+        PointId pointId,
+        MapField<string, Value> payload,
+        VectorsOutput vectorsOutput,
+        bool includeVectors)
     {
         var outputRecord = model.CreateRecord<TRecord>()!;
 
         // TODO: Set the following generically to avoid boxing
-        model.KeyProperty.SetValueAsObject(outputRecord, pointId switch
-        {
-            { HasNum: true } => pointId.Num,
-            { HasUuid: true } => Guid.Parse(pointId.Uuid),
-            _ => throw new UnreachableException()
-        });
+        model.KeyProperty.SetValueAsObject(outputRecord,
+            pointId switch
+            {
+                { HasNum: true } => pointId.Num,
+                { HasUuid: true } => Guid.Parse(pointId.Uuid),
+                _ => throw new UnreachableException()
+            });
 
         // Set each vector property if embeddings are included in the point.
         if (includeVectors)
@@ -130,13 +131,22 @@ internal sealed class QdrantMapper<TRecord>(CollectionModel model, bool hasNamed
 
             static void PopulateVectorProperty(TRecord record, VectorOutput value, VectorPropertyModel property)
             {
+                RepeatedField<float> data = value switch
+                {
+                    // qdrant 1.16 and newer, return the new union type
+                    { Dense: not null } => value.Dense.Data,
+                    // Required for qdrant < 1.16.0, but deprecated in client >=1.16.0 and is empty with qdrant server 1.17.0
+                    { Data: not null } => value.Data,
+                    _ => throw new UnreachableException()
+
+                };
                 property.SetValueAsObject(
                     record,
                     (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
                     {
-                        var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(value.Data.ToArray()),
-                        var t when t == typeof(Embedding<float>) => new Embedding<float>(value.Data.ToArray()),
-                        var t when t == typeof(float[]) => value.Data.ToArray(),
+                        var t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(data.ToArray()),
+                        var t when t == typeof(Embedding<float>) => new Embedding<float>(data.ToArray()),
+                        var t when t == typeof(float[]) => data.ToArray(),
 
                         _ => throw new UnreachableException()
                     });

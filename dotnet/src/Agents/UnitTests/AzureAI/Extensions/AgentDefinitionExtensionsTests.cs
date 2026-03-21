@@ -21,17 +21,18 @@ public class AgentDefinitionExtensionsTests
         // Arrange
         AgentDefinition agentDefinition = new()
         {
-            Tools = [
-                new AgentToolDefinition()
+            Tools =
+            [
+                new AgentToolDefinition
                 {
                     Id = "tool1",
-                    Type = "code_interpreter",
+                    Type = "code_interpreter"
                 },
-                new AgentToolDefinition()
+                new AgentToolDefinition
                 {
                     Id = "tool2",
-                    Type = "file_search",
-                },
+                    Type = "file_search"
+                }
             ]
         };
 
@@ -43,6 +44,7 @@ public class AgentDefinitionExtensionsTests
         Assert.Equal(2, toolDefinitions.Count());
     }
 
+
     /// <summary>
     /// Verify GetMetadata
     /// </summary>
@@ -50,9 +52,7 @@ public class AgentDefinitionExtensionsTests
     public void VerifyGetMetadata()
     {
         // Arrange
-        AgentDefinition agentDefinition = new()
-        {
-        };
+        AgentDefinition agentDefinition = new();
 
         // Act
         var metadata = agentDefinition.GetMetadata();

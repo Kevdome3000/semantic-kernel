@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
+
 /// <summary>
 /// A description of the intended purpose of a message within a chat completions interaction.
 /// </summary>
@@ -43,6 +44,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// </remarks>
     public string Label { get; }
 
+
     /// <summary>
     /// Creates a new <see cref="AuthorRole"/> instance with the provided label.
     /// </summary>
@@ -54,6 +56,7 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
         Label = label!;
     }
 
+
     /// <summary>
     /// Returns a value indicating whether two <see cref="AuthorRole"/> instances are equivalent, as determined by a
     /// case-insensitive comparison of their labels.
@@ -62,7 +65,10 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <param name="right"> the second <see cref="AuthorRole"/> instance to compare </param>
     /// <returns> true if left and right are both null or have equivalent labels; false otherwise </returns>
     public static bool operator ==(AuthorRole left, AuthorRole right)
-        => left.Equals(right);
+    {
+        return left.Equals(right);
+    }
+
 
     /// <summary>
     /// Returns a value indicating whether two <see cref="AuthorRole"/> instances are not equivalent, as determined by a
@@ -72,11 +78,17 @@ public readonly struct AuthorRole : IEquatable<AuthorRole>
     /// <param name="right"> the second <see cref="AuthorRole"/> instance to compare </param>
     /// <returns> false if left and right are both null or have equivalent labels; true otherwise </returns>
     public static bool operator !=(AuthorRole left, AuthorRole right)
-        => !(left == right);
+    {
+        return !(left == right);
+    }
+
 
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)
-        => obj is AuthorRole otherRole && this == otherRole;
+    {
+        return obj is AuthorRole otherRole && this == otherRole;
+    }
+
 
     /// <inheritdoc/>
     public bool Equals(AuthorRole other)

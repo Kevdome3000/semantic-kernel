@@ -6,10 +6,8 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Agents.Persistent;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 using Microsoft.SemanticKernel.Agents.Extensions;
-using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;
@@ -36,6 +34,7 @@ public sealed partial class AzureAIAgent : Agent
         public const string FileSearch = "file_search";
     }
 
+
     /// <summary>
     /// The metadata key that identifies code-interpreter content.
     /// </summary>
@@ -50,6 +49,7 @@ public sealed partial class AzureAIAgent : Agent
     /// Gets the polling behavior for run processing.
     /// </summary>
     public RunPollingOptions PollingOptions { get; } = new();
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAIAgent"/> class.
@@ -66,35 +66,37 @@ public sealed partial class AzureAIAgent : Agent
         IPromptTemplateFactory? templateFactory = null,
         string? templateFormat = null)
     {
-        this.Client = client;
-        this.Definition = model;
-        this.Description = this.Definition.Description;
-        this.Id = this.Definition.Id;
-        this.Name = this.Definition.Name;
-        this.Instructions = this.Definition.Instructions;
+        Client = client;
+        Definition = model;
+        Description = Definition.Description;
+        Id = Definition.Id;
+        Name = Definition.Name;
+        Instructions = Definition.Instructions;
 
         if (templateFactory != null)
         {
             Verify.NotNullOrWhiteSpace(templateFormat);
 
-            PromptTemplateConfig templateConfig = new(this.Instructions)
+            PromptTemplateConfig templateConfig = new(Instructions)
             {
                 TemplateFormat = templateFormat
             };
 
-            this.Template = templateFactory.Create(templateConfig);
+            Template = templateFactory.Create(templateConfig);
         }
 
         if (plugins != null)
         {
-            this.Kernel.Plugins.AddRange(plugins);
+            Kernel.Plugins.AddRange(plugins);
         }
     }
+
 
     /// <summary>
     /// The associated client.
     /// </summary>
     public PersistentAgentsClient Client { get; }
+
 
     /// <inheritdoc/>
     public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
@@ -103,14 +105,17 @@ public sealed partial class AzureAIAgent : Agent
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeAsync(
+        return InvokeAsync(
             messages,
             thread,
-            options is null ?
-                null :
-                options is AzureAIAgentInvokeOptions azureAIAgentInvokeOptions ? azureAIAgentInvokeOptions : new AzureAIAgentInvokeOptions(options),
+            options is null
+                ? null
+                : options is AzureAIAgentInvokeOptions azureAIAgentInvokeOptions
+                    ? azureAIAgentInvokeOptions
+                    : new AzureAIAgentInvokeOptions(options),
             cancellationToken);
     }
+
 
     /// <summary>
     /// Invoke the agent with the provided message and arguments.
@@ -132,14 +137,15 @@ public sealed partial class AzureAIAgent : Agent
         Verify.NotNull(messages);
 
         AzureAIAgentThread azureAIAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
-            messages,
-            thread,
-            () => new AzureAIAgentThread(this.Client),
-            cancellationToken).ConfigureAwait(false);
+                messages,
+                thread,
+                () => new AzureAIAgentThread(Client),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         Kernel kernel = this.GetKernel(options);
 #pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        if (this.UseImmutableKernel)
+        if (UseImmutableKernel)
         {
             kernel = kernel.Clone();
         }
@@ -148,7 +154,7 @@ public sealed partial class AzureAIAgent : Agent
         AIContext providersContext = await azureAIAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
 
         // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
-        if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
+        if (providersContext.AIFunctions is { Count: > 0 } && !UseImmutableKernel)
         {
             throw new InvalidOperationException("AIContextProviders with AIFunctions are not supported when Agent UseImmutableKernel setting is false.");
         }
@@ -157,16 +163,23 @@ public sealed partial class AzureAIAgent : Agent
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
-        var extensionsContextOptions = options is null ?
-            new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
-            new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
+        var extensionsContextOptions = options is null
+            ? new AzureAIAgentInvokeOptions { AdditionalInstructions = mergedAdditionalInstructions }
+            : new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, kernel, messages);
-        List<ChatMessageContent>? chatMessageContents = activity is not null ? [] : null;
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(Id,
+            this.GetDisplayName(),
+            Description,
+            kernel,
+            messages);
+        List<ChatMessageContent>? chatMessageContents = activity is not null
+            ? []
+            : null;
 
         await foreach (var result in InternalInvokeAsync().ConfigureAwait(false))
         {
-            yield return new(result, azureAIAgentThread);
+            yield return new AgentResponseItem<ChatMessageContent>(result, azureAIAgentThread);
+
             chatMessageContents?.Add(result);
         }
 
@@ -175,17 +188,19 @@ public sealed partial class AzureAIAgent : Agent
         async IAsyncEnumerable<ChatMessageContent> InternalInvokeAsync()
         {
             await foreach ((bool isVisible, ChatMessageContent message) in AgentThreadActions.InvokeAsync(
-                this,
-                this.Client,
-                azureAIAgentThread.Id!,
-                extensionsContextOptions?.ToAzureAIInvocationOptions(),
-                this.Logger,
-                kernel,
-                options?.KernelArguments,
-                cancellationToken).ConfigureAwait(false))
+                    this,
+                    Client,
+                    azureAIAgentThread.Id!,
+                    extensionsContextOptions?.ToAzureAIInvocationOptions(),
+                    Logger,
+                    kernel,
+                    options?.KernelArguments,
+                    cancellationToken)
+                .ConfigureAwait(false))
             {
                 // The thread and the caller should be notified of all messages regardless of visibility.
                 await this.NotifyThreadOfNewMessage(azureAIAgentThread, message, cancellationToken).ConfigureAwait(false);
+
                 if (options?.OnIntermediateMessage is not null)
                 {
                     await options.OnIntermediateMessage(message).ConfigureAwait(false);
@@ -199,6 +214,7 @@ public sealed partial class AzureAIAgent : Agent
         }
     }
 
+
     /// <inheritdoc/>
     public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ICollection<ChatMessageContent> messages,
@@ -206,14 +222,17 @@ public sealed partial class AzureAIAgent : Agent
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeStreamingAsync(
+        return InvokeStreamingAsync(
             messages,
             thread,
-            options is null ?
-                null :
-                options is AzureAIAgentInvokeOptions azureAIAgentInvokeOptions ? azureAIAgentInvokeOptions : new AzureAIAgentInvokeOptions(options),
+            options is null
+                ? null
+                : options is AzureAIAgentInvokeOptions azureAIAgentInvokeOptions
+                    ? azureAIAgentInvokeOptions
+                    : new AzureAIAgentInvokeOptions(options),
             cancellationToken);
     }
+
 
     /// <summary>
     /// Invoke the agent with the provided message and arguments.
@@ -235,14 +254,15 @@ public sealed partial class AzureAIAgent : Agent
         Verify.NotNull(messages);
 
         AzureAIAgentThread azureAIAgentThread = await this.EnsureThreadExistsWithMessagesAsync(
-            messages,
-            thread,
-            () => new AzureAIAgentThread(this.Client),
-            cancellationToken).ConfigureAwait(false);
+                messages,
+                thread,
+                () => new AzureAIAgentThread(Client),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         Kernel kernel = this.GetKernel(options);
 #pragma warning disable SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        if (this.UseImmutableKernel)
+        if (UseImmutableKernel)
         {
             kernel = kernel.Clone();
         }
@@ -251,7 +271,7 @@ public sealed partial class AzureAIAgent : Agent
         AIContext providersContext = await azureAIAgentThread.AIContextProviders.ModelInvokingAsync(messages, cancellationToken).ConfigureAwait(false);
 
         // Check for compatibility AIContextProviders and the UseImmutableKernel setting.
-        if (providersContext.AIFunctions is { Count: > 0 } && !this.UseImmutableKernel)
+        if (providersContext.AIFunctions is { Count: > 0 } && !UseImmutableKernel)
         {
             throw new InvalidOperationException("AIContextProviders with AIFunctions are not supported when Agent UseImmutableKernel setting is false.");
         }
@@ -260,35 +280,43 @@ public sealed partial class AzureAIAgent : Agent
 #pragma warning restore SKEXP0110, SKEXP0130 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         string mergedAdditionalInstructions = FormatAdditionalInstructions(providersContext, options);
-        var extensionsContextOptions = options is null ?
-            new AzureAIAgentInvokeOptions() { AdditionalInstructions = mergedAdditionalInstructions } :
-            new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
+        var extensionsContextOptions = options is null
+            ? new AzureAIAgentInvokeOptions { AdditionalInstructions = mergedAdditionalInstructions }
+            : new AzureAIAgentInvokeOptions(options) { AdditionalInstructions = mergedAdditionalInstructions };
 
-        using var activity = ModelDiagnostics.StartAgentInvocationActivity(this.Id, this.GetDisplayName(), this.Description, kernel, messages);
-        List<StreamingChatMessageContent>? streamedContents = activity is not null ? [] : null;
+        using var activity = ModelDiagnostics.StartAgentInvocationActivity(Id,
+            this.GetDisplayName(),
+            Description,
+            kernel,
+            messages);
+        List<StreamingChatMessageContent>? streamedContents = activity is not null
+            ? []
+            : null;
 
         // Invoke the Agent with the thread that we already added our message to, and with
         // a chat history to receive complete messages.
         ChatHistory newMessagesReceiver = [];
         var invokeResults = AgentThreadActions.InvokeStreamingAsync(
             this,
-            this.Client,
+            Client,
             azureAIAgentThread.Id!,
             newMessagesReceiver,
             extensionsContextOptions.ToAzureAIInvocationOptions(),
-            this.Logger,
+            Logger,
             kernel,
             options?.KernelArguments,
             cancellationToken);
 
         // Return the chunks to the caller.
         int messageIndex = 0;
+
         await foreach (var result in invokeResults.ConfigureAwait(false))
         {
             // Notify the thread of any messages that were assembled from the streaming response during this iteration.
             await NotifyMessagesAsync().ConfigureAwait(false);
 
-            yield return new(result, azureAIAgentThread);
+            yield return new AgentResponseItem<StreamingChatMessageContent>(result, azureAIAgentThread);
+
             streamedContents?.Add(result);
         }
 
@@ -312,51 +340,56 @@ public sealed partial class AzureAIAgent : Agent
         }
     }
 
+
     /// <inheritdoc/>
     protected override IEnumerable<string> GetChannelKeys()
     {
         // Distinguish from other channel types.
         yield return typeof(AzureAIChannel).FullName!;
+
         // Distinguish based on client instance.
-        yield return this.Client.GetHashCode().ToString();
+        yield return Client.GetHashCode().ToString();
     }
+
 
     /// <inheritdoc/>
     protected override async Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        this.Logger.LogAzureAIAgentCreatingChannel(nameof(CreateChannelAsync), nameof(AzureAIChannel));
+        Logger.LogAzureAIAgentCreatingChannel(nameof(CreateChannelAsync), nameof(AzureAIChannel));
 
-        string threadId = await AgentThreadActions.CreateThreadAsync(this.Client, cancellationToken).ConfigureAwait(false);
+        string threadId = await AgentThreadActions.CreateThreadAsync(Client, cancellationToken).ConfigureAwait(false);
 
-        this.Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), threadId);
+        Logger.LogInformation("[{MethodName}] Created assistant thread: {ThreadId}", nameof(CreateChannelAsync), threadId);
 
         AzureAIChannel channel =
-            new(this.Client, threadId)
+            new(Client, threadId)
             {
-                Logger = this.ActiveLoggerFactory.CreateLogger<AzureAIChannel>()
+                Logger = ActiveLoggerFactory.CreateLogger<AzureAIChannel>()
             };
 
-        this.Logger.LogAzureAIAgentCreatedChannel(nameof(CreateChannelAsync), nameof(AzureAIChannel), threadId);
+        Logger.LogAzureAIAgentCreatedChannel(nameof(CreateChannelAsync), nameof(AzureAIChannel), threadId);
 
         return channel;
     }
+
 
     internal Task<string?> GetInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
         return this.RenderInstructionsAsync(kernel, arguments, cancellationToken);
     }
 
+
     /// <inheritdoc/>
     protected override async Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
         string threadId = channelState;
 
-        this.Logger.LogAzureAIAgentRestoringChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
+        Logger.LogAzureAIAgentRestoringChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
 
-        PersistentAgentThread thread = await this.Client.Threads.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
+        PersistentAgentThread thread = await Client.Threads.GetThreadAsync(threadId, cancellationToken).ConfigureAwait(false);
 
-        this.Logger.LogAzureAIAgentRestoredChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
+        Logger.LogAzureAIAgentRestoredChannel(nameof(RestoreChannelAsync), nameof(AzureAIChannel), threadId);
 
-        return new AzureAIChannel(this.Client, thread.Id);
+        return new AzureAIChannel(Client, thread.Id);
     }
 }

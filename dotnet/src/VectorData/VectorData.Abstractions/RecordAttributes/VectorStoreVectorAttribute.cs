@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.VectorData;
 /// <remarks>
 /// The characteristics defined here influence how the property is treated by the vector store.
 /// </remarks>
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Property)]
 public sealed class VectorStoreVectorAttribute : Attribute
 {
     /// <summary>
@@ -26,6 +26,7 @@ public sealed class VectorStoreVectorAttribute : Attribute
 
         this.Dimensions = Dimensions;
     }
+
 
     /// <summary>
     /// Gets the number of dimensions that the vector has.

@@ -15,23 +15,25 @@ namespace SemanticKernel.Plugins.AI.UnitTests.CrewAI;
 /// <summary>
 /// Tests for the <see cref="CrewAIEnterpriseClient"/> class.
 /// </summary>
-public sealed partial class CrewAIEnterpriseClientTests
+public sealed class CrewAIEnterpriseClientTests
 {
     private readonly Mock<HttpMessageHandler> _httpMessageHandlerMock;
     private readonly CrewAIEnterpriseClient _client;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CrewAIEnterpriseClientTests"/> class.
     /// </summary>
     public CrewAIEnterpriseClientTests()
     {
-        this._httpMessageHandlerMock = new Mock<HttpMessageHandler>();
-        using var httpClientFactory = new MockHttpClientFactory(this._httpMessageHandlerMock);
-        this._client = new CrewAIEnterpriseClient(
-            endpoint: new Uri("http://example.com"),
-            authTokenProvider: () => Task.FromResult("token"),
+        _httpMessageHandlerMock = new Mock<HttpMessageHandler>();
+        using var httpClientFactory = new MockHttpClientFactory(_httpMessageHandlerMock);
+        _client = new CrewAIEnterpriseClient(
+            new Uri("http://example.com"),
+            () => Task.FromResult("token"),
             httpClientFactory);
     }
+
 
     /// <summary>
     /// Tests that <see cref="CrewAIEnterpriseClient.GetInputsAsync"/> returns the required inputs from the CrewAI API.
@@ -48,7 +50,7 @@ public sealed partial class CrewAIEnterpriseClientTests
             Content = new StringContent(responseContent)
         };
 
-        this._httpMessageHandlerMock.Protected()
+        _httpMessageHandlerMock.Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
@@ -56,7 +58,7 @@ public sealed partial class CrewAIEnterpriseClientTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await this._client.GetInputsAsync();
+        var result = await _client.GetInputsAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -64,6 +66,7 @@ public sealed partial class CrewAIEnterpriseClientTests
         Assert.Contains("input1", result.Inputs);
         Assert.Contains("input2", result.Inputs);
     }
+
 
     /// <summary>
     /// Tests that <see cref="CrewAIEnterpriseClient.KickoffAsync"/> returns the kickoff id from the CrewAI API.
@@ -80,7 +83,7 @@ public sealed partial class CrewAIEnterpriseClientTests
             Content = new StringContent(responseContent)
         };
 
-        this._httpMessageHandlerMock.Protected()
+        _httpMessageHandlerMock.Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
@@ -88,12 +91,13 @@ public sealed partial class CrewAIEnterpriseClientTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await this._client.KickoffAsync(new { key = "value" });
+        var result = await _client.KickoffAsync(new { key = "value" });
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal("12345", result.KickoffId);
     }
+
 
     /// <summary>
     /// Tests that <see cref="CrewAIEnterpriseClient.GetStatusAsync"/> returns the status of the CrewAI Crew.
@@ -131,7 +135,7 @@ public sealed partial class CrewAIEnterpriseClientTests
             Content = new StringContent(responseContent)
         };
 
-        this._httpMessageHandlerMock.Protected()
+        _httpMessageHandlerMock.Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
@@ -139,7 +143,7 @@ public sealed partial class CrewAIEnterpriseClientTests
             .ReturnsAsync(responseMessage);
 
         // Act
-        var result = await this._client.GetStatusAsync("12345");
+        var result = await _client.GetStatusAsync("12345");
 
         // Assert
         Assert.NotNull(result);

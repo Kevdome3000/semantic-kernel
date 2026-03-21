@@ -31,6 +31,7 @@ internal static partial class MagenticOrchestrationLogMessages
         AgentType agentType,
         string label);
 
+
     /// <summary>
     /// Logs agent actor registration.
     /// </summary>
@@ -45,6 +46,7 @@ internal static partial class MagenticOrchestrationLogMessages
         string label,
         int count);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
@@ -52,6 +54,7 @@ internal static partial class MagenticOrchestrationLogMessages
     public static partial void LogMagenticAgentInvoke(
         this ILogger logger,
         AgentId agentId);
+
 
     [LoggerMessage(
         EventId = 0,
@@ -62,6 +65,7 @@ internal static partial class MagenticOrchestrationLogMessages
         AgentId agentId,
         string? message);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Debug,
@@ -70,6 +74,7 @@ internal static partial class MagenticOrchestrationLogMessages
         this ILogger logger,
         AgentId agentId);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Debug,
@@ -77,6 +82,7 @@ internal static partial class MagenticOrchestrationLogMessages
     public static partial void LogMagenticManagerInvoke(
         this ILogger logger,
         AgentId agentId);
+
 
     [LoggerMessage(
         EventId = 0,
@@ -88,6 +94,7 @@ internal static partial class MagenticOrchestrationLogMessages
         bool result,
         string reason);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Debug,
@@ -96,6 +103,7 @@ internal static partial class MagenticOrchestrationLogMessages
         this ILogger logger,
         AgentId agentId,
         AgentType nextAgent);
+
 
     [LoggerMessage(
         EventId = 0,
@@ -107,6 +115,7 @@ internal static partial class MagenticOrchestrationLogMessages
         string result,
         string reason);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Debug,
@@ -117,6 +126,7 @@ internal static partial class MagenticOrchestrationLogMessages
         bool result,
         string reason);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
@@ -125,6 +135,7 @@ internal static partial class MagenticOrchestrationLogMessages
         this ILogger logger,
         AgentId agentId,
         string? message);
+
 
     /// <summary>
     /// Logs <see cref="OrchestrationResult{TValue}"/> timeout while awaiting the orchestration.
@@ -135,6 +146,7 @@ internal static partial class MagenticOrchestrationLogMessages
         Message = "MAGENTIC FAILURE: {Topic}")]
     public static partial void LogMagenticManagerStatusFailure(this ILogger logger, TopicId topic, Exception exception);
 
+
     /// <summary>
     /// Logs <see cref="OrchestrationResult{TValue}"/> timeout while awaiting the orchestration.
     /// </summary>
@@ -143,6 +155,7 @@ internal static partial class MagenticOrchestrationLogMessages
         Level = LogLevel.Error,
         Message = "MAGENTIC MANAGER FAILURE: {Topic}")]
     public static partial void LogMagenticManagerTaskFailed(this ILogger logger, TopicId topic);
+
 
     /// <summary>
     /// Logs <see cref="OrchestrationResult{TValue}"/> timeout while awaiting the orchestration.

@@ -1,19 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Chroma;
-
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Http;
+using Microsoft.SemanticKernel.Http;
 
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 /// <summary>
 /// An implementation of a client for the Chroma Vector DB. This class is used to
@@ -32,9 +27,9 @@ public class ChromaClient : IChromaClient
     {
         Verify.NotNull(endpoint);
 
-        this._httpClient = HttpClientProvider.GetHttpClient();
-        this._endpoint = endpoint;
-        this._logger = loggerFactory?.CreateLogger(typeof(ChromaClient)) ?? NullLogger.Instance;
+        _httpClient = HttpClientProvider.GetHttpClient();
+        _endpoint = endpoint;
+        _logger = loggerFactory?.CreateLogger(typeof(ChromaClient)) ?? NullLogger.Instance;
     }
 
 
@@ -52,31 +47,31 @@ public class ChromaClient : IChromaClient
             throw new ArgumentException($"The {nameof(httpClient)}.{nameof(HttpClient.BaseAddress)} and {nameof(endpoint)} are both null or empty. Please ensure at least one is provided.");
         }
 
-        this._httpClient = httpClient;
-        this._endpoint = endpoint;
-        this._logger = loggerFactory?.CreateLogger(typeof(ChromaClient)) ?? NullLogger.Instance;
+        _httpClient = httpClient;
+        _endpoint = endpoint;
+        _logger = loggerFactory?.CreateLogger(typeof(ChromaClient)) ?? NullLogger.Instance;
     }
 
 
     /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        this._logger.LogDebug("Creating collection {0}", collectionName);
+        _logger.LogDebug("Creating collection {0}", collectionName);
 
         using var request = CreateCollectionRequest.Create(collectionName).Build();
 
-        await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        await ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
 
     /// <inheritdoc />
     public async Task<ChromaCollectionModel?> GetCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        this._logger.LogDebug("Getting collection {0}", collectionName);
+        _logger.LogDebug("Getting collection {0}", collectionName);
 
         using var request = GetCollectionRequest.Create(collectionName).Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        (HttpResponseMessage response, string responseContent) = await ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         var collection = JsonSerializer.Deserialize<ChromaCollectionModel>(responseContent);
 
@@ -87,22 +82,22 @@ public class ChromaClient : IChromaClient
     /// <inheritdoc />
     public async Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        this._logger.LogDebug("Deleting collection {0}", collectionName);
+        _logger.LogDebug("Deleting collection {0}", collectionName);
 
         using var request = DeleteCollectionRequest.Create(collectionName).Build();
 
-        await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        await ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
 
     /// <inheritdoc />
     public async IAsyncEnumerable<string> ListCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        this._logger.LogDebug("Listing collections");
+        _logger.LogDebug("Listing collections");
 
         using var request = ListCollectionsRequest.Create().Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        (HttpResponseMessage response, string responseContent) = await ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         var collections = JsonSerializer.Deserialize<List<ChromaCollectionModel>>(responseContent);
 
@@ -114,24 +109,37 @@ public class ChromaClient : IChromaClient
 
 
     /// <inheritdoc />
-    public async Task UpsertEmbeddingsAsync(string collectionId, string[] ids, ReadOnlyMemory<float>[] embeddings, object[]? metadatas = null, CancellationToken cancellationToken = default)
+    public async Task UpsertEmbeddingsAsync(
+        string collectionId,
+        string[] ids,
+        ReadOnlyMemory<float>[] embeddings,
+        object[]? metadatas = null,
+        CancellationToken cancellationToken = default)
     {
-        this._logger.LogDebug("Upserting embeddings to collection with id: {0}", collectionId);
+        _logger.LogDebug("Upserting embeddings to collection with id: {0}", collectionId);
 
-        using var request = UpsertEmbeddingsRequest.Create(collectionId, ids, embeddings, metadatas).Build();
+        using var request = UpsertEmbeddingsRequest.Create(collectionId,
+                ids,
+                embeddings,
+                metadatas)
+            .Build();
 
-        await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        await ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
 
     /// <inheritdoc />
-    public async Task<ChromaEmbeddingsModel> GetEmbeddingsAsync(string collectionId, string[] ids, string[]? include = null, CancellationToken cancellationToken = default)
+    public async Task<ChromaEmbeddingsModel> GetEmbeddingsAsync(
+        string collectionId,
+        string[] ids,
+        string[]? include = null,
+        CancellationToken cancellationToken = default)
     {
-        this._logger.LogDebug("Getting embeddings from collection with id: {0}", collectionId);
+        _logger.LogDebug("Getting embeddings from collection with id: {0}", collectionId);
 
         using var request = GetEmbeddingsRequest.Create(collectionId, ids, include).Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        (HttpResponseMessage response, string responseContent) = await ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         var embeddings = JsonSerializer.Deserialize<ChromaEmbeddingsModel>(responseContent);
 
@@ -142,22 +150,31 @@ public class ChromaClient : IChromaClient
     /// <inheritdoc />
     public async Task DeleteEmbeddingsAsync(string collectionId, string[] ids, CancellationToken cancellationToken = default)
     {
-        this._logger.LogDebug("Deleting embeddings from collection with id: {0}", collectionId);
+        _logger.LogDebug("Deleting embeddings from collection with id: {0}", collectionId);
 
         using var request = DeleteEmbeddingsRequest.Create(collectionId, ids).Build();
 
-        await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        await ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
 
     /// <inheritdoc />
-    public async Task<ChromaQueryResultModel> QueryEmbeddingsAsync(string collectionId, ReadOnlyMemory<float>[] queryEmbeddings, int nResults, string[]? include = null, CancellationToken cancellationToken = default)
+    public async Task<ChromaQueryResultModel> QueryEmbeddingsAsync(
+        string collectionId,
+        ReadOnlyMemory<float>[] queryEmbeddings,
+        int nResults,
+        string[]? include = null,
+        CancellationToken cancellationToken = default)
     {
-        this._logger.LogDebug("Query embeddings in collection with id: {0}", collectionId);
+        _logger.LogDebug("Query embeddings in collection with id: {0}", collectionId);
 
-        using var request = QueryEmbeddingsRequest.Create(collectionId, queryEmbeddings, nResults, include).Build();
+        using var request = QueryEmbeddingsRequest.Create(collectionId,
+                queryEmbeddings,
+                nResults,
+                include)
+            .Build();
 
-        (HttpResponseMessage response, string responseContent) = await this.ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        (HttpResponseMessage response, string responseContent) = await ExecuteHttpRequestAsync(request, cancellationToken).ConfigureAwait(false);
 
         var queryResult = JsonSerializer.Deserialize<ChromaQueryResultModel>(responseContent);
 
@@ -171,15 +188,15 @@ public class ChromaClient : IChromaClient
 
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
-    private readonly string? _endpoint = null;
+    private readonly string? _endpoint;
 
 
     private async Task<(HttpResponseMessage response, string responseContent)> ExecuteHttpRequestAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken = default)
     {
-        string endpoint = this._endpoint ?? this._httpClient.BaseAddress!.ToString();
-        endpoint = this.SanitizeEndpoint(endpoint);
+        string endpoint = _endpoint ?? _httpClient.BaseAddress!.ToString();
+        endpoint = SanitizeEndpoint(endpoint);
 
         string operationName = request.RequestUri!.ToString();
 
@@ -191,13 +208,18 @@ public class ChromaClient : IChromaClient
 
         try
         {
-            response = await this._httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
+            response = await _httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
 
             responseContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (HttpOperationException e)
         {
-            this._logger.LogError(e, "{Method} {Path} operation failed: {Message}, {Response}", request.Method.Method, operationName, e.Message, e.ResponseContent);
+            _logger.LogError(e,
+                "{Method} {Path} operation failed: {Message}, {Response}",
+                request.Method.Method,
+                operationName,
+                e.Message,
+                e.ResponseContent);
             throw;
         }
 

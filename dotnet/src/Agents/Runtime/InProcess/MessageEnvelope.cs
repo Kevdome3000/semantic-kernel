@@ -15,22 +15,25 @@ internal sealed class MessageEnvelope
     public AgentId? Receiver { get; private set; }
     public CancellationToken Cancellation { get; }
 
+
     public MessageEnvelope(object message, string? messageId = null, CancellationToken cancellation = default)
     {
-        this.Message = message;
-        this.MessageId = messageId ?? Guid.NewGuid().ToString();
-        this.Cancellation = cancellation;
+        Message = message;
+        MessageId = messageId ?? Guid.NewGuid().ToString();
+        Cancellation = cancellation;
     }
+
 
     public MessageEnvelope WithSender(AgentId? sender)
     {
-        this.Sender = sender;
+        Sender = sender;
         return this;
     }
 
+
     public MessageDelivery ForSend(AgentId receiver, Func<MessageEnvelope, CancellationToken, ValueTask<object?>> servicer)
     {
-        this.Receiver = receiver;
+        Receiver = receiver;
 
         ResultSink<object?> resultSink = new();
 
@@ -54,9 +57,10 @@ internal sealed class MessageEnvelope
         }
     }
 
+
     public MessageDelivery ForPublish(TopicId topic, Func<MessageEnvelope, CancellationToken, ValueTask> servicer)
     {
-        this.Topic = topic;
+        Topic = topic;
 
         ResultSink<object?> waitForPublish = new();
 

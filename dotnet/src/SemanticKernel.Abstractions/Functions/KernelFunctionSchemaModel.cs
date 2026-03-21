@@ -11,12 +11,12 @@ internal sealed class KernelFunctionSchemaModel
     [JsonPropertyName("type")]
     public string Type { get; set; } = "object";
 
-    [JsonPropertyName("condition"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("condition")] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Description { get; set; }
 
     [JsonPropertyName("properties")]
     public Dictionary<string, JsonElement> Properties { get; set; } = [];
 
-    [JsonPropertyName("required"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [JsonPropertyName("required")] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<string>? Required { get; set; }
 }

@@ -1,12 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 namespace Microsoft.SemanticKernel.Agents.Internal;
 
-using System;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
-
-
 /// <summary>
 /// Utility to encode a list of string keys to an base-64 encoded hash.
 /// </summary>

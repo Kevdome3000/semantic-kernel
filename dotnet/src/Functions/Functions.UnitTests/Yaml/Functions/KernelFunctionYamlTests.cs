@@ -15,17 +15,19 @@ public class KernelFunctionYamlTests
     private readonly ISerializer _serializer;
     private readonly Kernel _kernel;
 
+
     public KernelFunctionYamlTests()
     {
-        this._kernel = new Kernel();
-        this._kernel.Plugins.AddFromFunctions("p1", [KernelFunctionFactory.CreateFromMethod(() => { }, "f1")]);
-        this._kernel.Plugins.AddFromFunctions("p2", [KernelFunctionFactory.CreateFromMethod(() => { }, "f2")]);
-        this._kernel.Plugins.AddFromFunctions("p3", [KernelFunctionFactory.CreateFromMethod(() => { }, "f3")]);
+        _kernel = new Kernel();
+        _kernel.Plugins.AddFromFunctions("p1", [KernelFunctionFactory.CreateFromMethod(() => { }, "f1")]);
+        _kernel.Plugins.AddFromFunctions("p2", [KernelFunctionFactory.CreateFromMethod(() => { }, "f2")]);
+        _kernel.Plugins.AddFromFunctions("p3", [KernelFunctionFactory.CreateFromMethod(() => { }, "f3")]);
 
-        this._serializer = new SerializerBuilder()
+        _serializer = new SerializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
             .Build();
     }
+
 
     [Fact]
     public void ItShouldCreateFunctionFromPromptYamlWithNoExecutionSettings()
@@ -42,6 +44,7 @@ public class KernelFunctionYamlTests
         //Assert.Equal(0, function.ExecutionSettings.Count);
     }
 
+
     [Fact]
     public void ItShouldCreateFunctionFromPromptYaml()
     {
@@ -54,6 +57,7 @@ public class KernelFunctionYamlTests
         Assert.Equal("SayHello", function.Name);
         Assert.Equal("Say hello to the specified person using the specified language", function.Description);
     }
+
 
     [Fact]
     public void ItShouldCreateFunctionFromPromptYamlWithCustomExecutionSettings()
@@ -68,6 +72,7 @@ public class KernelFunctionYamlTests
         Assert.Equal("Say hello to the specified person using the specified language", function.Description);
         Assert.Equal(2, function.Metadata.Parameters.Count);
     }
+
 
     [Fact]
     public void ItShouldSupportCreatingOpenAIExecutionSettings()
@@ -89,6 +94,7 @@ public class KernelFunctionYamlTests
         Assert.Equal(0.0, executionSettings.TopP);
     }
 
+
     [Fact]
     public void ItShouldDeserializeAutoFunctionChoiceBehaviors()
     {
@@ -102,13 +108,14 @@ public class KernelFunctionYamlTests
         var executionSettings = promptTemplateConfig.ExecutionSettings["service1"];
         Assert.NotNull(executionSettings?.FunctionChoiceBehavior);
 
-        var config = executionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = this._kernel });
+        var config = executionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
         Assert.NotNull(config);
         Assert.Equal(FunctionChoice.Auto, config.Choice);
         Assert.NotNull(config.Functions);
         Assert.Equal("p1", config.Functions.Single().PluginName);
         Assert.Equal("f1", config.Functions.Single().Name);
     }
+
 
     [Fact]
     public void ItShouldDeserializeRequiredFunctionChoiceBehaviors()
@@ -123,13 +130,14 @@ public class KernelFunctionYamlTests
         var executionSettings = promptTemplateConfig.ExecutionSettings["service2"];
         Assert.NotNull(executionSettings?.FunctionChoiceBehavior);
 
-        var config = executionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = this._kernel });
+        var config = executionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
         Assert.NotNull(config);
         Assert.Equal(FunctionChoice.Required, config.Choice);
         Assert.NotNull(config.Functions);
         Assert.Equal("p2", config.Functions.Single().PluginName);
         Assert.Equal("f2", config.Functions.Single().Name);
     }
+
 
     [Fact]
     public void ItShouldDeserializeNoneFunctionChoiceBehaviors()
@@ -144,13 +152,14 @@ public class KernelFunctionYamlTests
         var executionSettings = promptTemplateConfig.ExecutionSettings["service3"];
         Assert.NotNull(executionSettings?.FunctionChoiceBehavior);
 
-        var noneConfig = executionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = this._kernel });
+        var noneConfig = executionSettings.FunctionChoiceBehavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext([]) { Kernel = _kernel });
         Assert.NotNull(noneConfig);
         Assert.Equal(FunctionChoice.None, noneConfig.Choice);
         Assert.NotNull(noneConfig.Functions);
         Assert.Equal("p3", noneConfig.Functions.Single().PluginName);
         Assert.Equal("f3", noneConfig.Functions.Single().Name);
     }
+
 
     [Fact]
     public void ItShouldCreateFunctionWithDefaultValueOfStringType()
@@ -163,6 +172,7 @@ public class KernelFunctionYamlTests
         Assert.Equal("John", function?.Metadata?.Parameters[0].DefaultValue);
         Assert.Equal("English", function?.Metadata?.Parameters[1].DefaultValue);
     }
+
 
     [Fact]
     // This test checks that the logic of imposing a temporary limitation on the default value being a string is in place and works as expected.
@@ -185,26 +195,27 @@ public class KernelFunctionYamlTests
                 }
             };
 
-            return this._serializer.Serialize(obj);
+            return _serializer.Serialize(obj);
         }
 
         // Act
         Assert.Throws<NotSupportedException>(() => KernelFunctionYaml.FromPromptYaml(CreateYaml(new { p1 = "v1" })));
     }
 
+
     private const string YAMLNoExecutionSettings = """
-                                                    template_format: semantic-kernel
-                                                    template:        Say hello world to {{$name}} in {{$language}}
-                                                    description:     Say hello to the specified person using the specified language
-                                                    name:            SayHello
-                                                    input_variables:
-                                                      - name:          name
-                                                        description:   The name of the person to greet
-                                                        default:       John
-                                                      - name:          language
-                                                        description:   The language to generate the greeting in
-                                                        default: English
-                                                    """;
+                                                   template_format: semantic-kernel
+                                                   template:        Say hello world to {{$name}} in {{$language}}
+                                                   description:     Say hello to the specified person using the specified language
+                                                   name:            SayHello
+                                                   input_variables:
+                                                     - name:          name
+                                                       description:   The name of the person to greet
+                                                       default:       John
+                                                     - name:          language
+                                                       description:   The language to generate the greeting in
+                                                       default: English
+                                                   """;
 
     private const string YAML = """
                                 template_format: semantic-kernel

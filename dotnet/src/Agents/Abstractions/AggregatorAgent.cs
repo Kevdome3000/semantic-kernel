@@ -1,14 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents;
-
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Serialization;
 
+namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
 /// Defines the relationship between the internal aggregated chat and the chat
@@ -26,7 +19,7 @@ public enum AggregatorMode
     /// <summary>
     /// A nested embedding the aggregated chat within another chat.
     /// </summary>
-    Nested,
+    Nested
 
 }
 
@@ -61,6 +54,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
         throw new NotImplementedException();
     }
 
+
     /// <inheritdoc/>
     public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
         ICollection<ChatMessageContent> messages,
@@ -72,6 +66,7 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
         throw new NotImplementedException();
     }
 
+
     /// <inheritdoc/>
     /// <remarks>
     /// Different <see cref="AggregatorAgent"/> instances will never share the same channel.
@@ -79,38 +74,41 @@ public sealed class AggregatorAgent(Func<AgentChat> chatProvider) : Agent
     protected internal override IEnumerable<string> GetChannelKeys()
     {
         yield return typeof(AggregatorChannel).FullName!;
-        yield return this.Name ?? this.Id;
+        yield return Name ?? Id;
     }
 
 
     /// <inheritdoc/>
     protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
     {
-        this.Logger.LogAggregatorAgentCreatingChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
+        Logger.LogAggregatorAgentCreatingChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
 
         AgentChat chat = chatProvider.Invoke();
         AggregatorChannel channel = new(chat);
 
-        this.Logger.LogAggregatorAgentCreatedChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel), this.Mode,
+        Logger.LogAggregatorAgentCreatedChannel(nameof(CreateChannelAsync),
+            nameof(AggregatorChannel),
+            Mode,
             chat.GetType());
 
         return Task.FromResult<AgentChannel>(channel);
     }
 
+
     /// <inheritdoc/>
     protected internal override async Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
     {
-        this.Logger.LogOpenAIAssistantAgentRestoringChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
+        Logger.LogOpenAIAssistantAgentRestoringChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
 
         AgentChat chat = chatProvider.Invoke();
         AgentChatState agentChatState =
-            JsonSerializer.Deserialize<AgentChatState>(channelState) ??
-            throw new KernelException("Unable to restore channel: invalid state.");
+            JsonSerializer.Deserialize<AgentChatState>(channelState) ?? throw new KernelException("Unable to restore channel: invalid state.");
 
-        await chat.DeserializeAsync(agentChatState).ConfigureAwait(false); ;
+        await chat.DeserializeAsync(agentChatState).ConfigureAwait(false);
+        ;
         AggregatorChannel channel = new(chat);
 
-        this.Logger.LogOpenAIAssistantAgentRestoredChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
+        Logger.LogOpenAIAssistantAgentRestoredChannel(nameof(CreateChannelAsync), nameof(AggregatorChannel));
 
         return channel;
     }

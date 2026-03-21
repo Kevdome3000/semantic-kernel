@@ -5,12 +5,14 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides <see cref="Kernel"/> extensions methods for Handlebars functionality.
 /// </summary>
 public static class HandlebarsKernelExtensions
 {
     private static readonly HandlebarsPromptTemplateFactory s_promptTemplateFactory = new();
+
 
     /// <summary>
     /// Invokes a prompt specified via a prompt template in the Handlebars prompt template format.
@@ -24,9 +26,13 @@ public static class HandlebarsKernelExtensions
         this Kernel kernel,
         string promptTemplate,
         KernelArguments? arguments = null,
-        CancellationToken cancellationToken = default) =>
-        kernel.InvokeAsync((KernelFunction)KernelFunctionFactory.CreateFromPrompt(
-            promptTemplate,
-            templateFormat: HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
-            promptTemplateFactory: s_promptTemplateFactory), arguments, cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        return kernel.InvokeAsync((KernelFunction)KernelFunctionFactory.CreateFromPrompt(
+                promptTemplate,
+                templateFormat: HandlebarsPromptTemplateFactory.HandlebarsTemplateFormat,
+                promptTemplateFactory: s_promptTemplateFactory),
+            arguments,
+            cancellationToken);
+    }
 }

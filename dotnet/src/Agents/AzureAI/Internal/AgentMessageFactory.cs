@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System.Collections.Generic;
-using System.Linq;
 using Azure.AI.Agents.Persistent;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 
@@ -24,6 +22,7 @@ internal static class AgentMessageFactory
         return message.Metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.ToString() ?? string.Empty) ?? [];
     }
 
+
     /// <summary>
     /// Translate attachments from a <see cref="ChatMessageContent"/> to be used for a <see cref="PersistentThreadMessage"/> or
     /// </summary>
@@ -34,9 +33,8 @@ internal static class AgentMessageFactory
             message.Items
                 .OfType<FileReferenceContent>()
                 .Where(fileContent => fileContent.Tools?.Any() ?? false)
-                .Select(
-                    fileContent =>
-                        new MessageAttachment(fileContent.FileId, [.. GetToolDefinition(fileContent.Tools!)]));
+                .Select(fileContent =>
+                    new MessageAttachment(fileContent.FileId, [.. GetToolDefinition(fileContent.Tools!)]));
 
         static IEnumerable<ToolDefinition> GetToolDefinition(IEnumerable<string> tools)
         {
@@ -49,6 +47,7 @@ internal static class AgentMessageFactory
             }
         }
     }
+
 
     /// <summary>
     /// Translates a set of <see cref="ChatMessageContent"/> to a set of <see cref="MessageInputContentBlock"/>.
@@ -63,6 +62,7 @@ internal static class AgentMessageFactory
                 if (content is TextContent textContent)
                 {
                     var text = content.ToString();
+
                     if (string.IsNullOrWhiteSpace(text))
                     {
                         // Message content must be non-empty.
@@ -74,12 +74,12 @@ internal static class AgentMessageFactory
                 {
                     if (imageContent.Uri != null)
                     {
-                        MessageImageUriParam imageUrlParam = new(uri: imageContent.Uri.ToString());
+                        MessageImageUriParam imageUrlParam = new(imageContent.Uri.ToString());
                         yield return new MessageInputImageUriBlock(imageUrlParam);
                     }
                     else if (!string.IsNullOrWhiteSpace(imageContent.DataUri))
                     {
-                        MessageImageUriParam imageUrlParam = new(uri: imageContent.DataUri!);
+                        MessageImageUriParam imageUrlParam = new(imageContent.DataUri!);
                         yield return new MessageInputImageUriBlock(imageUrlParam);
                     }
                 }
@@ -92,6 +92,7 @@ internal static class AgentMessageFactory
         }
     }
 
+
     /// <summary>
     /// Translates a set of <see cref="ChatMessageContent"/> to a set of <see cref="ThreadMessageOptions"/>."/>
     /// </summary>
@@ -103,16 +104,19 @@ internal static class AgentMessageFactory
             foreach (ChatMessageContent message in messages)
             {
                 string? content = message.Content;
+
                 if (string.IsNullOrWhiteSpace(content))
                 {
                     continue;
                 }
 
                 ThreadMessageOptions threadMessage = new(
-                    role: message.Role == AuthorRole.User ? MessageRole.User : MessageRole.Agent,
+                    role: message.Role == AuthorRole.User
+                        ? MessageRole.User
+                        : MessageRole.Agent,
                     content: message.Content)
                 {
-                    Attachments = [.. GetAttachments(message)],
+                    Attachments = [.. GetAttachments(message)]
                 };
 
                 if (message.Metadata != null)
@@ -128,10 +132,11 @@ internal static class AgentMessageFactory
         }
     }
 
+
     private static readonly Dictionary<string, ToolDefinition> s_toolMetadata =
         new()
         {
             { AzureAIAgent.Tools.CodeInterpreter, new CodeInterpreterToolDefinition() },
-            { AzureAIAgent.Tools.FileSearch, new FileSearchToolDefinition() },
+            { AzureAIAgent.Tools.FileSearch, new FileSearchToolDefinition() }
         };
 }

@@ -22,6 +22,7 @@ public sealed class VectorStoreKeyProperty : VectorStoreProperty
     {
     }
 
+
     /// <summary>
     /// Gets or sets whether this key property's value is auto-generated or not.
     /// </summary>

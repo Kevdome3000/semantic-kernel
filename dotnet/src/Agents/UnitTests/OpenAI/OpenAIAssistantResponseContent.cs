@@ -30,6 +30,7 @@ internal static class OpenAIAssistantResponseContent
             };
     }
 
+
     /// <summary>
     /// Setup the response content for the <see cref="HttpMessageHandlerStub"/>.
     /// </summary>
@@ -39,7 +40,7 @@ internal static class OpenAIAssistantResponseContent
         {
 #pragma warning disable CA2000 // Dispose objects before losing scope
             messageHandlerStub.ResponseQueue.Enqueue(
-                new(statusCode)
+                new HttpResponseMessage(statusCode)
                 {
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(item)))
                 });
@@ -47,25 +48,39 @@ internal static class OpenAIAssistantResponseContent
         }
     }
 
+
     private const string AssistantId = "asst_abc123";
     private const string ThreadId = "thread_abc123";
     private const string RunId = "run_abc123";
     private const string MessageId = "msg_abc123";
     private const string StepId = "step_abc123";
 
+
     #region Assistant
 
     /// <summary>
     /// The response for creating or querying an assistant definition.
     /// </summary>
-    public static string AssistantDefinition(OpenAIAssistantCapabilities capabilities, PromptTemplateConfig templateConfig) =>
-        AssistantDefinition(templateConfig.Name, templateConfig.Template, templateConfig.Description, capabilities);
+    public static string AssistantDefinition(OpenAIAssistantCapabilities capabilities, PromptTemplateConfig templateConfig)
+    {
+        return AssistantDefinition(templateConfig.Name,
+            templateConfig.Template,
+            templateConfig.Description,
+            capabilities);
+    }
+
 
     /// <summary>
     /// The response for creating or querying an assistant definition.
     /// </summary>
-    public static string AssistantDefinition(OpenAIAssistantDefinition definition) =>
-        AssistantDefinition(definition.Name, definition.Instructions, definition.Description, definition);
+    public static string AssistantDefinition(OpenAIAssistantDefinition definition)
+    {
+        return AssistantDefinition(definition.Name,
+            definition.Instructions,
+            definition.Description,
+            definition);
+    }
+
 
     /// <summary>
     /// The response for creating or querying an assistant definition.
@@ -89,6 +104,7 @@ internal static class OpenAIAssistantResponseContent
         bool hasCodeInterpreter = capabilities.EnableCodeInterpreter;
         bool hasCodeInterpreterFiles = (capabilities.CodeInterpreterFileIds?.Count ?? 0) > 0;
         bool hasFileSearch = capabilities.EnableFileSearch;
+
         if (!hasCodeInterpreter && !hasFileSearch)
         {
             builder.AppendLine(@"  ""tools"": [],");
@@ -143,7 +159,8 @@ internal static class OpenAIAssistantResponseContent
         }
 
         bool hasExecutionOptions = capabilities.ExecutionOptions != null;
-        int metadataCount = (capabilities.Metadata?.Count ?? 0);
+        int metadataCount = capabilities.Metadata?.Count ?? 0;
+
         if (metadataCount == 0 && !hasExecutionOptions)
         {
             builder.AppendLine(@"  ""metadata"": {}");
@@ -176,6 +193,7 @@ internal static class OpenAIAssistantResponseContent
         return builder.ToString();
     }
 
+
     /// <summary>
     /// The response for creating or querying an assistant definition.
     /// </summary>
@@ -206,6 +224,7 @@ internal static class OpenAIAssistantResponseContent
         bool hasCodeInterpreterFiles = (codeInterpreterFileIds?.Count ?? 0) > 0;
         bool hasCodeInterpreter = enableCodeInterpreter || hasCodeInterpreterFiles;
         bool hasFileSearch = enableFileSearch || vectorStoreId != null;
+
         if (!hasCodeInterpreter && !hasFileSearch)
         {
             builder.AppendLine(@"  ""tools"": [],");
@@ -258,7 +277,8 @@ internal static class OpenAIAssistantResponseContent
         {
             builder.AppendLine(@$"  ""top_p"": {topP},");
         }
-        int metadataCount = (metadata?.Count ?? 0);
+        int metadataCount = metadata?.Count ?? 0;
+
         if (metadataCount == 0)
         {
             builder.AppendLine(@"  ""metadata"": {}");
@@ -285,156 +305,161 @@ internal static class OpenAIAssistantResponseContent
         return builder.ToString();
     }
 
+
     public const string DeleteAgent =
         $$$"""
-        {
-            "id": "{{{AssistantId}}}",
-            "object": "assistant.deleted",
-            "deleted": true
-        }
-        """;
+           {
+               "id": "{{{AssistantId}}}",
+               "object": "assistant.deleted",
+               "deleted": true
+           }
+           """;
 
     public const string CreateThread =
         $$$"""
-        {
-            "id": "{{{ThreadId}}}",
-            "object": "thread",
-            "created_at": 1699012949,
-            "metadata": {}
-        }
-        """;
+           {
+               "id": "{{{ThreadId}}}",
+               "object": "thread",
+               "created_at": 1699012949,
+               "metadata": {}
+           }
+           """;
 
     public const string DeleteThread =
         $$$"""
-        {
-            "id": "{{{ThreadId}}}",
-            "object": "thread.deleted",
-            "deleted": true
-        }
-        """;
+           {
+               "id": "{{{ThreadId}}}",
+               "object": "thread.deleted",
+               "deleted": true
+           }
+           """;
 
     public const string ToolResponse = "{ }";
 
     public const string GetImageMessage =
         $$$"""
-        {
-            "id": "{{{MessageId}}}",
-            "object": "thread.message",
-            "created_at": 1699017614,
-            "thread_id": "{{{ThreadId}}}",
-            "role": "user",
-            "content": [
-            {
-                "type": "image_file",
-                "image_file": {
-                "file_id": "file_123"
-                }
-            }
-            ],
-            "assistant_id": "{{{AssistantId}}}",
-            "run_id": "{{{RunId}}}"
-        }
-        """;
+           {
+               "id": "{{{MessageId}}}",
+               "object": "thread.message",
+               "created_at": 1699017614,
+               "thread_id": "{{{ThreadId}}}",
+               "role": "user",
+               "content": [
+               {
+                   "type": "image_file",
+                   "image_file": {
+                   "file_id": "file_123"
+                   }
+               }
+               ],
+               "assistant_id": "{{{AssistantId}}}",
+               "run_id": "{{{RunId}}}"
+           }
+           """;
 
-    public static string GetTextMessage(string text = "test") =>
-        $$$"""
-        {
-            "id": "{{{MessageId}}}",
-            "object": "thread.message",
-            "created_at": 1699017614,
-            "thread_id": "{{{ThreadId}}}",
-            "role": "user",
-            "content": [
-            {
-                "type": "text",
-                "text": {
-                "value": "{{{text}}}",
-                "annotations": []
-                }
-            }
-            ],
-            "assistant_id": "{{{AssistantId}}}",
-            "run_id": "{{{RunId}}}"
-        }
-        """;
+
+    public static string GetTextMessage(string text = "test")
+    {
+        return $$$"""
+                  {
+                      "id": "{{{MessageId}}}",
+                      "object": "thread.message",
+                      "created_at": 1699017614,
+                      "thread_id": "{{{ThreadId}}}",
+                      "role": "user",
+                      "content": [
+                      {
+                          "type": "text",
+                          "text": {
+                          "value": "{{{text}}}",
+                          "annotations": []
+                          }
+                      }
+                      ],
+                      "assistant_id": "{{{AssistantId}}}",
+                      "run_id": "{{{RunId}}}"
+                  }
+                  """;
+    }
+
 
     public const string GetTextMessageWithAnnotation =
         $$$"""
-        {
-            "id": "{{{MessageId}}}",
-            "object": "thread.message",
-            "created_at": 1699017614,
-            "thread_id": "{{{ThreadId}}}",
-            "role": "user",
-            "content": [
-            {
-                "type": "text",
-                "text": {
-                "value": "How does AI work? Explain it in simple terms.**f1",
-                "annotations": [
-                    {
-                        "type": "file_citation",
-                        "text": "**f1",
-                        "file_citation": {
-                            "file_id": "file_123",
-                            "quote": "does"
-                        },
-                        "start_index": 3,
-                        "end_index": 6
-                    }
-                ]
-                }
-            }
-            ],
-            "assistant_id": "{{{AssistantId}}}",
-            "run_id": "{{{RunId}}}"
-        }
-        """;
+           {
+               "id": "{{{MessageId}}}",
+               "object": "thread.message",
+               "created_at": 1699017614,
+               "thread_id": "{{{ThreadId}}}",
+               "role": "user",
+               "content": [
+               {
+                   "type": "text",
+                   "text": {
+                   "value": "How does AI work? Explain it in simple terms.**f1",
+                   "annotations": [
+                       {
+                           "type": "file_citation",
+                           "text": "**f1",
+                           "file_citation": {
+                               "file_id": "file_123",
+                               "quote": "does"
+                           },
+                           "start_index": 3,
+                           "end_index": 6
+                       }
+                   ]
+                   }
+               }
+               ],
+               "assistant_id": "{{{AssistantId}}}",
+               "run_id": "{{{RunId}}}"
+           }
+           """;
 
     public const string ListAgentsPageMore =
         $$$"""
-        {
-            "object": "list",
-            "data": [
-            {
-                "id": "{{{AssistantId}}}",
-                "object": "assistant",
-                "created_at": 1698982736,
-                "name": "Coding Tutor",
-                "description": null,
-                "model": "gpt-4-turbo",
-                "instructions": "You are a helpful assistant designed to make me better at coding!",
-                "tools": [],
-                "metadata": {}
-            },
-            {
-                "id": "asst_abc456",
-                "object": "assistant",
-                "created_at": 1698982718,
-                "name": "My Assistant",
-                "description": null,
-                "model": "gpt-4-turbo",
-                "instructions": "You are a helpful assistant designed to make me better at coding!",
-                "tools": [],
-                "metadata": {}
-            },
-            {
-                "id": "asst_abc789",
-                "object": "assistant",
-                "created_at": 1698982643,
-                "name": null,
-                "description": null,
-                "model": "gpt-4-turbo",
-                "instructions": null,
-                "tools": [],
-                "metadata": {}
-            }
-            ],
-            "first_id": "{{{AssistantId}}}",
-            "last_id": "asst_abc789",
-            "has_more": true
-        }
-        """;
+           {
+               "object": "list",
+               "data": [
+               {
+                   "id": "{{{AssistantId}}}",
+                   "object": "assistant",
+                   "created_at": 1698982736,
+                   "name": "Coding Tutor",
+                   "description": null,
+                   "model": "gpt-4-turbo",
+                   "instructions": "You are a helpful assistant designed to make me better at coding!",
+                   "tools": [],
+                   "metadata": {}
+               },
+               {
+                   "id": "asst_abc456",
+                   "object": "assistant",
+                   "created_at": 1698982718,
+                   "name": "My Assistant",
+                   "description": null,
+                   "model": "gpt-4-turbo",
+                   "instructions": "You are a helpful assistant designed to make me better at coding!",
+                   "tools": [],
+                   "metadata": {}
+               },
+               {
+                   "id": "asst_abc789",
+                   "object": "assistant",
+                   "created_at": 1698982643,
+                   "name": null,
+                   "description": null,
+                   "model": "gpt-4-turbo",
+                   "instructions": null,
+                   "tools": [],
+                   "metadata": {}
+               }
+               ],
+               "first_id": "{{{AssistantId}}}",
+               "last_id": "asst_abc789",
+               "has_more": true
+           }
+           """;
 
     public const string ListAgentsPageFinal =
         """
@@ -461,89 +486,89 @@ internal static class OpenAIAssistantResponseContent
 
     public const string ListMessagesPageMore =
         $$$"""
-        {
-            "object": "list",
-            "data": [
-            {
-                "id": "{{{MessageId}}}",
-                "object": "thread.message",
-                "created_at": 1699016383,
-                "thread_id": "{{{ThreadId}}}",
-                "role": "user",
-                "content": [
-                {
-                    "type": "text",
-                    "text": {
-                    "value": "How does AI work? Explain it in simple terms.",
-                    "annotations": []
-                    }
-                }
-                ],
-                "file_ids": [],
-                "assistant_id": null,
-                "run_id": null,
-                "metadata": {}
-            },
-            {
-                "id": "msg_abc456",
-                "object": "thread.message",
-                "created_at": 1699016383,
-                "thread_id": "{{{ThreadId}}}",
-                "role": "user",
-                "content": [
-                {
-                    "type": "text",
-                    "text": {
-                    "value": "Hello, what is AI?",
-                    "annotations": []
-                    }
-                }
-                ],
-                "file_ids": [
-                "file-abc123"
-                ],
-                "assistant_id": null,
-                "run_id": null,
-                "metadata": {}
-            }
-            ],
-            "first_id": "{{{MessageId}}}",
-            "last_id": "msg_abc456",
-            "has_more": true
-        }
-        """;
+           {
+               "object": "list",
+               "data": [
+               {
+                   "id": "{{{MessageId}}}",
+                   "object": "thread.message",
+                   "created_at": 1699016383,
+                   "thread_id": "{{{ThreadId}}}",
+                   "role": "user",
+                   "content": [
+                   {
+                       "type": "text",
+                       "text": {
+                       "value": "How does AI work? Explain it in simple terms.",
+                       "annotations": []
+                       }
+                   }
+                   ],
+                   "file_ids": [],
+                   "assistant_id": null,
+                   "run_id": null,
+                   "metadata": {}
+               },
+               {
+                   "id": "msg_abc456",
+                   "object": "thread.message",
+                   "created_at": 1699016383,
+                   "thread_id": "{{{ThreadId}}}",
+                   "role": "user",
+                   "content": [
+                   {
+                       "type": "text",
+                       "text": {
+                       "value": "Hello, what is AI?",
+                       "annotations": []
+                       }
+                   }
+                   ],
+                   "file_ids": [
+                   "file-abc123"
+                   ],
+                   "assistant_id": null,
+                   "run_id": null,
+                   "metadata": {}
+               }
+               ],
+               "first_id": "{{{MessageId}}}",
+               "last_id": "msg_abc456",
+               "has_more": true
+           }
+           """;
 
     public const string ListMessagesPageFinal =
         $$$"""
-        {
-            "object": "list",
-            "data": [
-            {
-                "id": "msg_abc789",
-                "object": "thread.message",
-                "created_at": 1699016383,
-                "thread_id": "{{{ThreadId}}}",
-                "role": "user",
-                "content": [
-                {
-                    "type": "text",
-                    "text": {
-                    "value": "How does AI work? Explain it in simple terms.",
-                    "annotations": []
-                    }
-                }
-                ],
-                "file_ids": [],
-                "assistant_id": null,
-                "run_id": null,
-                "metadata": {}
-            }
-            ],
-            "first_id": "msg_abc789",
-            "last_id": "msg_abc789",
-            "has_more": false
-        }
-        """;
+           {
+               "object": "list",
+               "data": [
+               {
+                   "id": "msg_abc789",
+                   "object": "thread.message",
+                   "created_at": 1699016383,
+                   "thread_id": "{{{ThreadId}}}",
+                   "role": "user",
+                   "content": [
+                   {
+                       "type": "text",
+                       "text": {
+                       "value": "How does AI work? Explain it in simple terms.",
+                       "annotations": []
+                       }
+                   }
+                   ],
+                   "file_ids": [],
+                   "assistant_id": null,
+                   "run_id": null,
+                   "metadata": {}
+               }
+               ],
+               "first_id": "msg_abc789",
+               "last_id": "msg_abc789",
+               "has_more": false
+           }
+           """;
 
     public static string UploadFile =
         """
@@ -595,6 +620,7 @@ internal static class OpenAIAssistantResponseContent
 
     #endregion
 
+
     /// <summary>
     /// Response payloads for a "regular" assistant run.
     /// </summary>
@@ -602,163 +628,164 @@ internal static class OpenAIAssistantResponseContent
     {
         public const string CreateRun =
             $$$"""
-            {
-              "id": "{{{RunId}}}",
-              "object": "thread.run",
-              "created_at": 1699063290,
-              "assistant_id": "{{{AssistantId}}}",
-              "thread_id": "{{{ThreadId}}}",
-              "status": "queued",
-              "started_at": 1699063290,
-              "expires_at": null,
-              "cancelled_at": null,
-              "failed_at": null,
-              "completed_at": 1699063291,
-              "last_error": null,
-              "model": "gpt-4-turbo",
-              "instructions": null,
-              "tools": [],
-              "file_ids": [],
-              "metadata": {},
-              "usage": null,
-              "temperature": 1
-            }
-            """;
+               {
+                 "id": "{{{RunId}}}",
+                 "object": "thread.run",
+                 "created_at": 1699063290,
+                 "assistant_id": "{{{AssistantId}}}",
+                 "thread_id": "{{{ThreadId}}}",
+                 "status": "queued",
+                 "started_at": 1699063290,
+                 "expires_at": null,
+                 "cancelled_at": null,
+                 "failed_at": null,
+                 "completed_at": 1699063291,
+                 "last_error": null,
+                 "model": "gpt-4-turbo",
+                 "instructions": null,
+                 "tools": [],
+                 "file_ids": [],
+                 "metadata": {},
+                 "usage": null,
+                 "temperature": 1
+               }
+               """;
 
         public const string PendingRun =
             $$$"""
-            {
-              "id": "{{{RunId}}}",
-              "object": "thread.run",
-              "created_at": 1699063290,
-              "assistant_id": "{{{AssistantId}}}",
-              "thread_id": "{{{ThreadId}}}",
-              "status": "requires_action",
-              "started_at": 1699063290,
-              "expires_at": null,
-              "cancelled_at": null,
-              "failed_at": null,
-              "completed_at": 1699063291,
-              "last_error": null,
-              "model": "gpt-4-turbo",
-              "instructions": null,
-              "tools": [],
-              "file_ids": [],
-              "metadata": {},
-              "usage": null,
-              "temperature": 1
-            }
-            """;
+               {
+                 "id": "{{{RunId}}}",
+                 "object": "thread.run",
+                 "created_at": 1699063290,
+                 "assistant_id": "{{{AssistantId}}}",
+                 "thread_id": "{{{ThreadId}}}",
+                 "status": "requires_action",
+                 "started_at": 1699063290,
+                 "expires_at": null,
+                 "cancelled_at": null,
+                 "failed_at": null,
+                 "completed_at": 1699063291,
+                 "last_error": null,
+                 "model": "gpt-4-turbo",
+                 "instructions": null,
+                 "tools": [],
+                 "file_ids": [],
+                 "metadata": {},
+                 "usage": null,
+                 "temperature": 1
+               }
+               """;
 
         public const string CompletedRun =
             $$$"""
-            {
-              "id": "{{{RunId}}}",
-              "object": "thread.run",
-              "created_at": 1699063290,
-              "assistant_id": "{{{AssistantId}}}",
-              "thread_id": "{{{ThreadId}}}",
-              "status": "completed",
-              "started_at": 1699063290,
-              "expires_at": null,
-              "cancelled_at": null,
-              "failed_at": null,
-              "completed_at": 1699063291,
-              "last_error": null,
-              "model": "gpt-4-turbo",
-              "instructions": null,
-              "tools": [],
-              "file_ids": [],
-              "metadata": {},
-              "usage": null,
-              "temperature": 1
-            }
-            """;
+               {
+                 "id": "{{{RunId}}}",
+                 "object": "thread.run",
+                 "created_at": 1699063290,
+                 "assistant_id": "{{{AssistantId}}}",
+                 "thread_id": "{{{ThreadId}}}",
+                 "status": "completed",
+                 "started_at": 1699063290,
+                 "expires_at": null,
+                 "cancelled_at": null,
+                 "failed_at": null,
+                 "completed_at": 1699063291,
+                 "last_error": null,
+                 "model": "gpt-4-turbo",
+                 "instructions": null,
+                 "tools": [],
+                 "file_ids": [],
+                 "metadata": {},
+                 "usage": null,
+                 "temperature": 1
+               }
+               """;
 
         public const string MessageSteps =
             $$$"""
-            {
-              "object": "list",
-              "data": [
-                {
-                  "id": "{{{StepId}}}",
-                  "object": "thread.run.step",
-                  "created_at": 1699063291,
-                  "run_id": "{{{RunId}}}",
-                  "assistant_id": "{{{AssistantId}}}",
-                  "thread_id": "{{{ThreadId}}}",
-                  "type": "message_creation",
-                  "status": "completed",
-                  "cancelled_at": null,
-                  "completed_at": 1699063291,
-                  "expired_at": null,
-                  "failed_at": null,
-                  "last_error": null,
-                  "step_details": {
-                    "type": "message_creation",
-                    "message_creation": {
-                      "message_id": "{{{MessageId}}}"
-                    }
-                  },
-                  "usage": {
-                    "prompt_tokens": 123,
-                    "completion_tokens": 456,
-                    "total_tokens": 579
-                  }
-                }
-              ],
-              "first_id": "{{{StepId}}}",
-              "last_id": "step_abc456",
-              "has_more": false
-            }
-            """;
+               {
+                 "object": "list",
+                 "data": [
+                   {
+                     "id": "{{{StepId}}}",
+                     "object": "thread.run.step",
+                     "created_at": 1699063291,
+                     "run_id": "{{{RunId}}}",
+                     "assistant_id": "{{{AssistantId}}}",
+                     "thread_id": "{{{ThreadId}}}",
+                     "type": "message_creation",
+                     "status": "completed",
+                     "cancelled_at": null,
+                     "completed_at": 1699063291,
+                     "expired_at": null,
+                     "failed_at": null,
+                     "last_error": null,
+                     "step_details": {
+                       "type": "message_creation",
+                       "message_creation": {
+                         "message_id": "{{{MessageId}}}"
+                       }
+                     },
+                     "usage": {
+                       "prompt_tokens": 123,
+                       "completion_tokens": 456,
+                       "total_tokens": 579
+                     }
+                   }
+                 ],
+                 "first_id": "{{{StepId}}}",
+                 "last_id": "step_abc456",
+                 "has_more": false
+               }
+               """;
 
         public const string ToolSteps =
             $$$"""
-            {
-              "object": "list",
-              "data": [
-                {
-                  "id": "step_abc987",
-                  "object": "thread.run.step",
-                  "created_at": 1699063291,
-                  "run_id": "{{{RunId}}}",
-                  "assistant_id": "{{{AssistantId}}}",
-                  "thread_id": "{{{ThreadId}}}",
-                  "type": "tool_calls",
-                  "status": "in_progress",
-                  "cancelled_at": null,
-                  "completed_at": 1699063291,
-                  "expired_at": null,
-                  "failed_at": null,
-                  "last_error": null,
-                  "step_details": {
-                    "type": "tool_calls",
-                    "tool_calls": [
-                     {
-                        "id": "tool_1",
-                        "type": "function",
-                        "function": {
-                            "name": "MyPlugin-MyFunction",
-                            "arguments": "{ \"index\": 3 }",
-                            "output": "test"
+               {
+                 "object": "list",
+                 "data": [
+                   {
+                     "id": "step_abc987",
+                     "object": "thread.run.step",
+                     "created_at": 1699063291,
+                     "run_id": "{{{RunId}}}",
+                     "assistant_id": "{{{AssistantId}}}",
+                     "thread_id": "{{{ThreadId}}}",
+                     "type": "tool_calls",
+                     "status": "in_progress",
+                     "cancelled_at": null,
+                     "completed_at": 1699063291,
+                     "expired_at": null,
+                     "failed_at": null,
+                     "last_error": null,
+                     "step_details": {
+                       "type": "tool_calls",
+                       "tool_calls": [
+                        {
+                           "id": "tool_1",
+                           "type": "function",
+                           "function": {
+                               "name": "MyPlugin-MyFunction",
+                               "arguments": "{ \"index\": 3 }",
+                               "output": "test"
+                           }
                         }
+                       ]
+                     },
+                     "usage": {
+                       "prompt_tokens": 123,
+                       "completion_tokens": 456,
+                       "total_tokens": 579
                      }
-                    ]
-                  },
-                  "usage": {
-                    "prompt_tokens": 123,
-                    "completion_tokens": 456,
-                    "total_tokens": 579
-                  }
-                }
-              ],
-              "first_id": "{{{StepId}}}",
-              "last_id": "step_abc456",
-              "has_more": false
-            }
-            """;
+                   }
+                 ],
+                 "first_id": "{{{StepId}}}",
+                 "last_id": "step_abc456",
+                 "has_more": false
+               }
+               """;
     }
+
 
     /// <summary>
     /// Response payloads for a streaming assistant run.
@@ -779,11 +806,13 @@ internal static class OpenAIAssistantResponseContent
             return builder.ToString();
         }
 
+
         public const string Done =
             """
             event: thread.done
             data: [DONE]
             """;
+
 
         public static string CreateRun(string eventType)
         {
@@ -824,51 +853,55 @@ internal static class OpenAIAssistantResponseContent
                 CreateEvent(
                     $"thread.run.{eventType}",
                     $$$"""
-                    {
-                      "id": "{{{RunId}}}",
-                      "object": "thread.run",
-                      "assistant_id": "{{{AssistantId}}}",
-                      "thread_id": "{{{ThreadId}}}",
-                      "status": "{{{status}}}",
-                      "created_at": {{{ParseTimestamp(createdAt)}}},
-                      "started_at": {{{ParseTimestamp(startedAt)}}},
-                      "expires_at": {{{ParseTimestamp(expiresAt)}}},
-                      "completed_at": {{{ParseTimestamp(completedAt)}}},
-                      "required_action": null,
-                      "model": "gpt-4o-mini",
-                      "instructions": "test",
-                      "tools": [],
-                      "metadata": {},
-                      "temperature": 1.0,
-                      "top_p": 1.0,
-                      "truncation_strategy": { "type": "auto" },
-                      "incomplete_details": null,
-                      "usage": null,
-                      "response_format": "auto",
-                      "tool_choice": "auto",
-                      "parallel_tool_calls": true
-                    }
-                    """);
+                       {
+                         "id": "{{{RunId}}}",
+                         "object": "thread.run",
+                         "assistant_id": "{{{AssistantId}}}",
+                         "thread_id": "{{{ThreadId}}}",
+                         "status": "{{{status}}}",
+                         "created_at": {{{ParseTimestamp(createdAt)}}},
+                         "started_at": {{{ParseTimestamp(startedAt)}}},
+                         "expires_at": {{{ParseTimestamp(expiresAt)}}},
+                         "completed_at": {{{ParseTimestamp(completedAt)}}},
+                         "required_action": null,
+                         "model": "gpt-4o-mini",
+                         "instructions": "test",
+                         "tools": [],
+                         "metadata": {},
+                         "temperature": 1.0,
+                         "top_p": 1.0,
+                         "truncation_strategy": { "type": "auto" },
+                         "incomplete_details": null,
+                         "usage": null,
+                         "response_format": "auto",
+                         "tool_choice": "auto",
+                         "parallel_tool_calls": true
+                       }
+                       """);
         }
 
-        public static string DeltaMessage(string text) =>
-                CreateEvent(
-                    "thread.message.delta",
-                    $$$"""
-                    {
-                      "id": "{{{MessageId}}}",
-                      "object": "thread.message.delta",
-                      "delta": {
-                        "content": [
-                          {
-                            "index": 0,
-                            "type": "text",
-                            "text": { "value": "{{{text}}}", "annotations": [] }
-                          }
-                        ]
-                      }
-                    }
-                    """);
+
+        public static string DeltaMessage(string text)
+        {
+            return CreateEvent(
+                "thread.message.delta",
+                $$$"""
+                   {
+                     "id": "{{{MessageId}}}",
+                     "object": "thread.message.delta",
+                     "delta": {
+                       "content": [
+                         {
+                           "index": 0,
+                           "type": "text",
+                           "text": { "value": "{{{text}}}", "annotations": [] }
+                         }
+                       ]
+                     }
+                   }
+                   """);
+        }
+
 
         private static string ParseTimestamp(int? timestamp)
         {
@@ -880,10 +913,13 @@ internal static class OpenAIAssistantResponseContent
             return "0";
         }
 
-        private static string CreateEvent(string eventType, string data) =>
-            $"""
-            event: {eventType}
-            data: {data.Replace("\n", string.Empty).Replace("\r", string.Empty)}
-            """;
+
+        private static string CreateEvent(string eventType, string data)
+        {
+            return $"""
+                    event: {eventType}
+                    data: {data.Replace("\n", string.Empty).Replace("\r", string.Empty)}
+                    """;
+        }
     }
 }

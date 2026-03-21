@@ -22,7 +22,12 @@ internal static class FunctionStoreLoggingExtensions
         }
     }
 
-    internal static void LogFunctionsSearchResults(this ILogger logger, string context, int maxNumberOfFunctionsToReturn, IList<VectorSearchResult<Dictionary<string, object?>>> results)
+
+    internal static void LogFunctionsSearchResults(
+        this ILogger logger,
+        string context,
+        int maxNumberOfFunctionsToReturn,
+        IList<VectorSearchResult<Dictionary<string, object?>>> results)
     {
         logger.LogInformation("ContextualFunctionProvider: Search returned {Count} functions, with a maximum limit of {MaxCount}", results.Count, maxNumberOfFunctionsToReturn);
 

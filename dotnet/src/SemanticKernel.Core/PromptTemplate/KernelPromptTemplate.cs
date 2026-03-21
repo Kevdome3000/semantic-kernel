@@ -46,17 +46,21 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         _allowDangerouslySetContent = allowDangerouslySetContent || promptConfig.AllowDangerouslySetContent;
 
-        _safeBlocks = new HashSet<string>(promptConfig.InputVariables.Where(iv => allowDangerouslySetContent || iv.AllowDangerouslySetContent).
-            Select(iv => iv.Name));
+        _safeBlocks = new HashSet<string>(promptConfig.InputVariables.Where(iv => allowDangerouslySetContent || iv.AllowDangerouslySetContent).Select(iv => iv.Name));
     }
+
 
     /// <inheritdoc/>
     public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(kernel);
 
-        return RenderAsync(_blocks, kernel, arguments, cancellationToken);
+        return RenderAsync(_blocks,
+            kernel,
+            arguments,
+            cancellationToken);
     }
+
 
     #region private
 
@@ -67,6 +71,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     private readonly bool _allowDangerouslySetContent;
 
     private readonly HashSet<string> _safeBlocks;
+
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
@@ -88,6 +93,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         return blocks;
     }
+
 
     /// <summary>
     /// Given a list of blocks render each block and compose the final result.
@@ -116,8 +122,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
                     break;
 
                 case ICodeRendering dynamicBlock:
-                    blockResult = ConvertToString(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).
-                        ConfigureAwait(false), kernel.Culture);
+                    blockResult = ConvertToString(await dynamicBlock.RenderCodeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false), kernel.Culture);
                     break;
 
                 default:
@@ -139,6 +144,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         return result.ToString();
     }
+
 
     /// <summary>
     /// Augments <paramref name="config"/>'s <see cref="PromptTemplateConfig.InputVariables"/> with any variables
@@ -199,6 +205,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         }
     }
 
+
     private static bool ShouldEncodeTags(bool disableTagEncoding, HashSet<string> safeBlocks, Block block)
     {
         if (block is VarBlock varBlock)
@@ -209,6 +216,7 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         return !disableTagEncoding && block is not TextBlock;
     }
 
+
     private static string? ConvertToString(object? value, CultureInfo? culture = null)
     {
         if (value is null) { return null; }
@@ -217,6 +225,8 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
             ? string.Join("\n", stringList)
             : InternalTypeConverter.ConvertToString(value, culture);
     }
+
     #endregion
+
 
 }

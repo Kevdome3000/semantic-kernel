@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.Grpc;
-
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -16,6 +15,7 @@ using Microsoft.SemanticKernel.Plugins.Grpc;
 using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.Grpc;
 
 public sealed class GrpcRunnerTests : IDisposable
 {
@@ -36,9 +36,9 @@ public sealed class GrpcRunnerTests : IDisposable
     /// </summary>
     public GrpcRunnerTests()
     {
-        this._httpMessageHandlerStub = new HttpMessageHandlerStub();
+        _httpMessageHandlerStub = new HttpMessageHandlerStub();
 
-        this._httpClient = new HttpClient(this._httpMessageHandlerStub);
+        _httpClient = new HttpClient(_httpMessageHandlerStub);
     }
 
 
@@ -46,18 +46,21 @@ public sealed class GrpcRunnerTests : IDisposable
     public async Task ShouldUseAddressProvidedInGrpcOperationAsync()
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Version = new Version(2, 0);
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent([0, 0, 0, 0, 14, 10, 12, 72, 101, 108, 108, 111, 32, 97, 117, 116, 104, 111, 114]);
-        this._httpMessageHandlerStub.ResponseToReturn.Content.Headers.Add("Content-Type", "application/grpc");
-        this._httpMessageHandlerStub.ResponseToReturn.TrailingHeaders.Add("grpc-status", "0");
+        _httpMessageHandlerStub.ResponseToReturn.Version = new Version(2, 0);
+        _httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent([0, 0, 0, 0, 14, 10, 12, 72, 101, 108, 108, 111, 32, 97, 117, 116, 104, 111, 114]);
+        _httpMessageHandlerStub.ResponseToReturn.Content.Headers.Add("Content-Type", "application/grpc");
+        _httpMessageHandlerStub.ResponseToReturn.TrailingHeaders.Add("grpc-status", "0");
 
         var requestMetadata = new GrpcOperationDataContractType("greet.HelloRequest", [new("name", 1, "TYPE_STRING")]);
 
         var responseMetadata = new GrpcOperationDataContractType("greet.HelloReply", [new("message", 1, "TYPE_STRING")]);
 
-        var sut = new GrpcOperationRunner(this._httpClient);
+        var sut = new GrpcOperationRunner(_httpClient);
 
-        var operation = new GrpcOperation("Greeter", "SayHello", requestMetadata, responseMetadata)
+        var operation = new GrpcOperation("Greeter",
+            "SayHello",
+            requestMetadata,
+            responseMetadata)
         {
             Package = "greet",
             Address = "https://fake-random-test-host"
@@ -72,8 +75,8 @@ public sealed class GrpcRunnerTests : IDisposable
         var result = await sut.RunAsync(operation, arguments);
 
         // Assert
-        Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
-        Assert.Equal("https://fake-random-test-host/greet.Greeter/SayHello", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
+        Assert.NotNull(_httpMessageHandlerStub.RequestUri);
+        Assert.Equal("https://fake-random-test-host/greet.Greeter/SayHello", _httpMessageHandlerStub.RequestUri.AbsoluteUri);
     }
 
 
@@ -81,18 +84,21 @@ public sealed class GrpcRunnerTests : IDisposable
     public async Task ShouldUseAddressOverrideFromArgumentsAsync()
     {
         // Arrange
-        this._httpMessageHandlerStub.ResponseToReturn.Version = new Version(2, 0);
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent([0, 0, 0, 0, 14, 10, 12, 72, 101, 108, 108, 111, 32, 97, 117, 116, 104, 111, 114]);
-        this._httpMessageHandlerStub.ResponseToReturn.Content.Headers.Add("Content-Type", "application/grpc");
-        this._httpMessageHandlerStub.ResponseToReturn.TrailingHeaders.Add("grpc-status", "0");
+        _httpMessageHandlerStub.ResponseToReturn.Version = new Version(2, 0);
+        _httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent([0, 0, 0, 0, 14, 10, 12, 72, 101, 108, 108, 111, 32, 97, 117, 116, 104, 111, 114]);
+        _httpMessageHandlerStub.ResponseToReturn.Content.Headers.Add("Content-Type", "application/grpc");
+        _httpMessageHandlerStub.ResponseToReturn.TrailingHeaders.Add("grpc-status", "0");
 
         var requestMetadata = new GrpcOperationDataContractType("greet.HelloRequest", [new("name", 1, "TYPE_STRING")]);
 
         var responseMetadata = new GrpcOperationDataContractType("greet.HelloReply", [new("message", 1, "TYPE_STRING")]);
 
-        var sut = new GrpcOperationRunner(this._httpClient);
+        var sut = new GrpcOperationRunner(_httpClient);
 
-        var operation = new GrpcOperation("Greeter", "SayHello", requestMetadata, responseMetadata)
+        var operation = new GrpcOperation("Greeter",
+            "SayHello",
+            requestMetadata,
+            responseMetadata)
         {
             Package = "greet",
             Address = "https://fake-random-test-host"
@@ -108,8 +114,8 @@ public sealed class GrpcRunnerTests : IDisposable
         var result = await sut.RunAsync(operation, arguments);
 
         // Assert
-        Assert.NotNull(this._httpMessageHandlerStub.RequestUri);
-        Assert.Equal("https://fake-random-test-host-from-args/greet.Greeter/SayHello", this._httpMessageHandlerStub.RequestUri.AbsoluteUri);
+        Assert.NotNull(_httpMessageHandlerStub.RequestUri);
+        Assert.Equal("https://fake-random-test-host-from-args/greet.Greeter/SayHello", _httpMessageHandlerStub.RequestUri.AbsoluteUri);
     }
 
 
@@ -120,18 +126,21 @@ public sealed class GrpcRunnerTests : IDisposable
 
         //The byte array is copied from intercepted gRPC call to a local gPRC service created using this guide - https://learn.microsoft.com/en-us/aspnet/core/tutorials/grpc/grpc-start?view=aspnetcore-7.0&tabs=visual-studio
         //since there's no simple way to obtain/create serialized content of gRPC response.
-        this._httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent([0, 0, 0, 0, 14, 10, 12, 72, 101, 108, 108, 111, 32, 97, 117, 116, 104, 111, 114]);
-        this._httpMessageHandlerStub.ResponseToReturn.Version = new Version(2, 0);
-        this._httpMessageHandlerStub.ResponseToReturn.Content.Headers.Add("Content-Type", "application/grpc");
-        this._httpMessageHandlerStub.ResponseToReturn.TrailingHeaders.Add("grpc-status", "0");
+        _httpMessageHandlerStub.ResponseToReturn.Content = new ByteArrayContent([0, 0, 0, 0, 14, 10, 12, 72, 101, 108, 108, 111, 32, 97, 117, 116, 104, 111, 114]);
+        _httpMessageHandlerStub.ResponseToReturn.Version = new Version(2, 0);
+        _httpMessageHandlerStub.ResponseToReturn.Content.Headers.Add("Content-Type", "application/grpc");
+        _httpMessageHandlerStub.ResponseToReturn.TrailingHeaders.Add("grpc-status", "0");
 
         var requestMetadata = new GrpcOperationDataContractType("greet.HelloRequest", [new("name", 1, "TYPE_STRING")]);
 
         var responseMetadata = new GrpcOperationDataContractType("greet.HelloReply", [new("message", 1, "TYPE_STRING")]);
 
-        var sut = new GrpcOperationRunner(this._httpClient);
+        var sut = new GrpcOperationRunner(_httpClient);
 
-        var operation = new GrpcOperation("Greeter", "SayHello", requestMetadata, responseMetadata)
+        var operation = new GrpcOperation("Greeter",
+            "SayHello",
+            requestMetadata,
+            responseMetadata)
         {
             Package = "greet",
             Address = "https://fake-random-test-host"
@@ -148,27 +157,24 @@ public sealed class GrpcRunnerTests : IDisposable
         // Assert
         Assert.NotNull(result);
 
-        var contentProperty = result["content"]?.
-            ToString();
+        var contentProperty = result["content"]?.ToString();
 
         Assert.NotNull(contentProperty);
 
         var jsonContent = JsonNode.Parse(contentProperty);
         Assert.NotNull(jsonContent);
 
-        var messageProperty = jsonContent["message"]?.
-            ToString();
+        var messageProperty = jsonContent["message"]?.ToString();
 
         Assert.Equal("Hello author", messageProperty);
 
-        var contentTypeProperty = result["contentType"]?.
-            ToString();
+        var contentTypeProperty = result["contentType"]?.ToString();
 
         Assert.Equal("application/json; charset=utf-8", contentTypeProperty);
 
         //The byte array is copied from intercepted gRPC call to a local gPRC service created using this guide - https://learn.microsoft.com/en-us/aspnet/core/tutorials/grpc/grpc-start?view=aspnetcore-7.0&tabs=visual-studio
         //since there's no simple way to obtain/create serialized content of gRPC request.
-        Assert.Equal(new byte[] { 0, 0, 0, 0, 8, 10, 6, 97, 117, 116, 104, 111, 114 }, this._httpMessageHandlerStub.RequestContent);
+        Assert.Equal(new byte[] { 0, 0, 0, 0, 8, 10, 6, 97, 117, 116, 104, 111, 114 }, _httpMessageHandlerStub.RequestContent);
     }
 
 
@@ -177,9 +183,9 @@ public sealed class GrpcRunnerTests : IDisposable
     /// </summary>
     public void Dispose()
     {
-        this._httpMessageHandlerStub.Dispose();
+        _httpMessageHandlerStub.Dispose();
 
-        this._httpClient.Dispose();
+        _httpClient.Dispose();
     }
 
 
@@ -201,7 +207,7 @@ public sealed class GrpcRunnerTests : IDisposable
 
         public HttpMessageHandlerStub()
         {
-            this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json)
             };
@@ -210,17 +216,17 @@ public sealed class GrpcRunnerTests : IDisposable
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            this.Method = request.Method;
-            this.RequestUri = request.RequestUri;
-            this.RequestHeaders = request.Headers;
+            Method = request.Method;
+            RequestUri = request.RequestUri;
+            RequestHeaders = request.Headers;
 
-            this.RequestContent = request.Content is null
+            RequestContent = request.Content is null
                 ? null
                 : await request.Content.ReadAsByteArrayAsync(cancellationToken);
 
-            this.ContentHeaders = request.Content?.Headers;
+            ContentHeaders = request.Content?.Headers;
 
-            return await Task.FromResult(this.ResponseToReturn);
+            return await Task.FromResult(ResponseToReturn);
         }
 
     }

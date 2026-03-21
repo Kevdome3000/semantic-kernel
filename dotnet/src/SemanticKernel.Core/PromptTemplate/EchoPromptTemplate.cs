@@ -13,6 +13,7 @@ internal sealed class EchoPromptTemplate : IPromptTemplate
     private readonly PromptTemplateConfig _promptConfig;
     private readonly Task<string> _renderResult;
 
+
     /// <summary>
     /// Constructor for <see cref="EchoPromptTemplate"/>.
     /// </summary>
@@ -26,6 +27,10 @@ internal sealed class EchoPromptTemplate : IPromptTemplate
         _renderResult = Task.FromResult(_promptConfig.Template);
     }
 
+
     /// <inheritdoc/>
-    public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default) => _renderResult;
+    public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
+    {
+        return _renderResult;
+    }
 }

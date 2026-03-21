@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
+
 internal sealed class ValBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.Value;
@@ -14,6 +14,7 @@ internal sealed class ValBlock : Block, ITextRendering
 
     // Content, excluding start/end quote chars
     private readonly string _value = string.Empty;
+
 
     /// <summary>
     /// Create an instance
@@ -33,6 +34,7 @@ internal sealed class ValBlock : Block, ITextRendering
         _last = Content[Content.Length - 1];
         _value = Content.Substring(1, Content.Length - 2);
     }
+
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
     // ReSharper disable TemplateIsNotCompileTimeConstantProblem
@@ -60,16 +62,18 @@ internal sealed class ValBlock : Block, ITextRendering
     }
 #pragma warning restore CA2254
 
+
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
         return _value;
     }
 
+
     public static bool HasValPrefix(string? text)
     {
         return !string.IsNullOrEmpty(text)
-               && text!.Length > 0
-               && (text[0] is Symbols.DblQuote or Symbols.SglQuote);
+            && text!.Length > 0
+            && text[0] is Symbols.DblQuote or Symbols.SglQuote;
     }
 }

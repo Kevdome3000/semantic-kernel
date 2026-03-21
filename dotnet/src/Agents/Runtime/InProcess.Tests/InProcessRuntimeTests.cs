@@ -11,7 +11,7 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Agents.Runtime.InProcess.Tests;
 
 [Trait("Category", "Unit")]
-public class InProcessRuntimeTests()
+public class InProcessRuntimeTests
 {
     [Fact]
     [Trait("Category", "Unit")]
@@ -42,6 +42,7 @@ public class InProcessRuntimeTests()
         Assert.Equal(0, runtime.messageQueueCount);
     }
 
+
     [Fact]
     [Trait("Category", "Unit")]
     public async Task SubscriptionRegistrationLifecycleTest()
@@ -62,6 +63,7 @@ public class InProcessRuntimeTests()
         // Act
         await runtime.RemoveSubscriptionAsync(subscription.Id);
     }
+
 
     [Fact]
     [Trait("Category", "Unit")]
@@ -99,7 +101,7 @@ public class InProcessRuntimeTests()
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await runtime.TryGetUnderlyingAgentInstanceAsync<WrongAgent>(agentId));
 
         // Act: Lookup by ID
-        AgentId sameId = await runtime.GetAgentAsync(agentId, lazy: false);
+        AgentId sameId = await runtime.GetAgentAsync(agentId, false);
 
         // Assert
         Assert.Equal(agentId, sameId);
@@ -134,6 +136,7 @@ public class InProcessRuntimeTests()
             return ValueTask.FromResult(agent);
         }
     }
+
 
     [Fact]
     [Trait("Category", "Unit")]
@@ -179,6 +182,7 @@ public class InProcessRuntimeTests()
         }
     }
 
+
     [Fact]
     [Trait("Category", "Unit")]
     public async Task RuntimeSendMessageTest()
@@ -186,11 +190,12 @@ public class InProcessRuntimeTests()
         // Arrange
         await using InProcessRuntime runtime = new();
         MockAgent? agent = null;
-        await runtime.RegisterAgentFactoryAsync("MyAgent", (id, runtime) =>
-        {
-            agent = new MockAgent(id, runtime, "A test agent");
-            return ValueTask.FromResult(agent);
-        });
+        await runtime.RegisterAgentFactoryAsync("MyAgent",
+            (id, runtime) =>
+            {
+                agent = new MockAgent(id, runtime, "A test agent");
+                return ValueTask.FromResult(agent);
+            });
 
         // Act: Ensure the agent is actually created
         AgentId agentId = await runtime.GetAgentAsync("MyAgent", lazy: false);
@@ -209,6 +214,7 @@ public class InProcessRuntimeTests()
         Assert.Single(agent.ReceivedMessages);
     }
 
+
     // Agent will not deliver to self will success when runtime.DeliverToSelf is false (default)
     [Theory]
     [InlineData(false, 0)]
@@ -223,11 +229,12 @@ public class InProcessRuntimeTests()
         };
 
         MockAgent? agent = null;
-        await runtime.RegisterAgentFactoryAsync("MyAgent", (id, runtime) =>
-        {
-            agent = new MockAgent(id, runtime, "A test agent");
-            return ValueTask.FromResult(agent);
-        });
+        await runtime.RegisterAgentFactoryAsync("MyAgent",
+            (id, runtime) =>
+            {
+                agent = new MockAgent(id, runtime, "A test agent");
+                return ValueTask.FromResult(agent);
+            });
 
         // Assert
         runtime.agentInstances.Count.Should().Be(0, "No Agent should be registered in the runtime");
@@ -246,12 +253,13 @@ public class InProcessRuntimeTests()
 
         // Act
         await runtime.StartAsync();
-        await runtime.PublishMessageAsync("SelfMessage", new TopicId(TopicType), sender: agentId);
+        await runtime.PublishMessageAsync("SelfMessage", new TopicId(TopicType), agentId);
         await runtime.RunUntilIdleAsync();
 
         // Assert
         Assert.Equal(receiveCount, agent.ReceivedMessages.Count);
     }
+
 
     [Fact]
     [Trait("Category", "Unit")]
@@ -260,11 +268,12 @@ public class InProcessRuntimeTests()
         // Arrange: Create a runtime and register an agent
         await using InProcessRuntime runtime = new();
         MockAgent? agent = null;
-        await runtime.RegisterAgentFactoryAsync("MyAgent", (id, runtime) =>
-        {
-            agent = new MockAgent(id, runtime, "test agent");
-            return ValueTask.FromResult(agent);
-        });
+        await runtime.RegisterAgentFactoryAsync("MyAgent",
+            (id, runtime) =>
+            {
+                agent = new MockAgent(id, runtime, "test agent");
+                return ValueTask.FromResult(agent);
+            });
 
         // Get agent ID and instantiate agent by publishing
         AgentId agentId = await runtime.GetAgentAsync("MyAgent", lazy: false);
@@ -295,11 +304,12 @@ public class InProcessRuntimeTests()
         agent = null;
         await using InProcessRuntime newRuntime = new();
         await newRuntime.StartAsync();
-        await newRuntime.RegisterAgentFactoryAsync("MyAgent", (id, runtime) =>
-        {
-            agent = new MockAgent(id, runtime, "another agent");
-            return ValueTask.FromResult(agent);
-        });
+        await newRuntime.RegisterAgentFactoryAsync("MyAgent",
+            (id, runtime) =>
+            {
+                agent = new MockAgent(id, runtime, "another agent");
+                return ValueTask.FromResult(agent);
+            });
 
         // Assert: Show that no agent instances exist in the new runtime
         newRuntime.agentInstances.Count.Should().Be(0, "Agent should be registered in the new runtime");
@@ -314,11 +324,13 @@ public class InProcessRuntimeTests()
         agent.ReceivedMessages.Count.Should().Be(1, "Agent should be have state restored");
     }
 
+
     private sealed class TextMessage
     {
         public string Source { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
     }
+
 
     private sealed class WrongAgent : IAgent, IHostableAgent
     {
@@ -326,17 +338,24 @@ public class InProcessRuntimeTests()
 
         public AgentMetadata Metadata => throw new NotImplementedException();
 
-        public ValueTask CloseAsync() => ValueTask.CompletedTask;
+
+        public ValueTask CloseAsync()
+        {
+            return ValueTask.CompletedTask;
+        }
+
 
         public ValueTask LoadStateAsync(JsonElement state)
         {
             throw new NotImplementedException();
         }
 
+
         public ValueTask<object?> OnMessageAsync(object message, MessageContext messageContext)
         {
             throw new NotImplementedException();
         }
+
 
         public ValueTask<JsonElement> SaveStateAsync()
         {

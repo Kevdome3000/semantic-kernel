@@ -52,6 +52,7 @@ public sealed class RestApiSecurityScheme
     /// </summary>
     public Uri OpenIdConnectUrl { get; init; }
 
+
     /// <summary>
     /// Creates an instance of a <see cref="RestApiSecurityScheme"/> class.
     /// </summary>
@@ -60,6 +61,7 @@ public sealed class RestApiSecurityScheme
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
     }
+
 
     internal void Freeze()
     {

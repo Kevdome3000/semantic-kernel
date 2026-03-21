@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
+
 /// <summary>
 /// Interface for chat completion services.
 /// </summary>
@@ -28,6 +29,7 @@ public interface IChatCompletionService : IAIService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Get streaming chat contents for the chat history provided using the specified settings.

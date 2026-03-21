@@ -2,11 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-
-
 internal static class Ensure
 {
 

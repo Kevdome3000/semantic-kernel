@@ -17,6 +17,7 @@ public class AgentRuntimeExtensionsTests
     private const string TestTopic2 = "test.2.topic";
     private const string TestTopicPrefix = "test.2";
 
+
     [Fact]
     public async Task RegisterAgentTypeWithStringAsync_WithBaseAgent()
     {
@@ -28,7 +29,9 @@ public class AgentRuntimeExtensionsTests
         await using InProcessRuntime runtime = new();
 
         // Act
-        AgentType registeredType = await runtime.RegisterAgentTypeAsync<TestAgent>(agentTypeName, serviceProvider, [value]);
+        AgentType registeredType = await runtime.RegisterAgentTypeAsync<TestAgent>(agentTypeName,
+            serviceProvider,
+            value);
         AgentId registeredId = await runtime.GetAgentAsync(agentTypeName, lazy: false);
 
         // Assert
@@ -44,6 +47,7 @@ public class AgentRuntimeExtensionsTests
         TestAgent testAgent = Assert.IsType<TestAgent>(agent);
         Assert.Equal(value, testAgent.Value);
     }
+
 
     [Fact]
     public async Task RegisterAgentTypeWithStringAsync_NotWithBaseAgent()
@@ -61,6 +65,7 @@ public class AgentRuntimeExtensionsTests
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await runtime.GetAgentAsync(agentTypeName, lazy: false));
     }
 
+
     [Fact]
     public async Task RegisterImplicitAgentSubscriptionsAsync()
     {
@@ -73,7 +78,9 @@ public class AgentRuntimeExtensionsTests
         await using InProcessRuntime runtime = new();
 
         // Act
-        AgentType registeredType = await runtime.RegisterAgentTypeAsync<TestAgent>(agentTypeName, serviceProvider, [Guid.Empty]);
+        AgentType registeredType = await runtime.RegisterAgentTypeAsync<TestAgent>(agentTypeName,
+            serviceProvider,
+            Guid.Empty);
         await runtime.RegisterImplicitAgentSubscriptionsAsync<TestAgent>(agentTypeName);
 
         // Arrange
@@ -105,27 +112,32 @@ public class AgentRuntimeExtensionsTests
         }
     }
 
+
     [TypeSubscription(TestTopic1)]
     [TypePrefixSubscription(TestTopicPrefix)]
     private sealed class TestAgent : BaseAgent, IHandle<string>
     {
         public List<string> ReceivedMessages { get; } = [];
 
+
         public TestAgent(AgentId id, IAgentRuntime runtime, Guid value)
-            : base(id, runtime, "Test Subscribing Agent", null)
+            : base(id, runtime, "Test Subscribing Agent")
         {
-            this.Value = value;
+            Value = value;
         }
+
 
         public Guid Value { get; }
 
+
         public ValueTask HandleAsync(string item, MessageContext messageContext)
         {
-            this.ReceivedMessages.Add(item);
+            ReceivedMessages.Add(item);
 
             return ValueTask.CompletedTask;
         }
     }
+
 
     private sealed class NotBaseAgent : IHostableAgent
     {
@@ -133,20 +145,24 @@ public class AgentRuntimeExtensionsTests
 
         public AgentMetadata Metadata => throw new NotImplementedException();
 
+
         public ValueTask CloseAsync()
         {
             throw new NotImplementedException();
         }
+
 
         public ValueTask LoadStateAsync(JsonElement state)
         {
             throw new NotImplementedException();
         }
 
+
         public ValueTask<object?> OnMessageAsync(object message, MessageContext messageContext)
         {
             throw new NotImplementedException();
         }
+
 
         public ValueTask<JsonElement> SaveStateAsync()
         {

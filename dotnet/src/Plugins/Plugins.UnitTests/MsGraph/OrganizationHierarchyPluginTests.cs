@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Plugins.UnitTests.MsGraph;
-
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -11,6 +9,7 @@ using Microsoft.SemanticKernel.Plugins.MsGraph;
 using Moq;
 using Xunit;
 
+namespace SemanticKernel.Plugins.UnitTests.MsGraph;
 
 public class OrganizationHierarchyPluginTests
 {
@@ -21,16 +20,13 @@ public class OrganizationHierarchyPluginTests
         // Arrange
         string[] anyDirectReportsEmail =
         [
-            Guid.NewGuid().
-                ToString(),
-            Guid.NewGuid().
-                ToString()
+            Guid.NewGuid().ToString(),
+            Guid.NewGuid().ToString()
         ];
 
         Mock<IOrganizationHierarchyConnector> connectorMock = new();
 
-        connectorMock.Setup(c => c.GetDirectReportsEmailAsync(It.IsAny<CancellationToken>())).
-            ReturnsAsync(anyDirectReportsEmail);
+        connectorMock.Setup(c => c.GetDirectReportsEmailAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyDirectReportsEmail);
 
         OrganizationHierarchyPlugin target = new(connectorMock.Object);
 
@@ -54,13 +50,11 @@ public class OrganizationHierarchyPluginTests
     public async Task GetMyManagerEmailAsyncSucceedsAsync()
     {
         // Arrange
-        string anyManagerEmail = Guid.NewGuid().
-            ToString();
+        string anyManagerEmail = Guid.NewGuid().ToString();
 
         Mock<IOrganizationHierarchyConnector> connectorMock = new();
 
-        connectorMock.Setup(c => c.GetManagerEmailAsync(It.IsAny<CancellationToken>())).
-            ReturnsAsync(anyManagerEmail);
+        connectorMock.Setup(c => c.GetManagerEmailAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyManagerEmail);
 
         OrganizationHierarchyPlugin target = new(connectorMock.Object);
 
@@ -77,13 +71,11 @@ public class OrganizationHierarchyPluginTests
     public async Task GetMyManagerNameAsyncSucceedsAsync()
     {
         // Arrange
-        string anyManagerName = Guid.NewGuid().
-            ToString();
+        string anyManagerName = Guid.NewGuid().ToString();
 
         Mock<IOrganizationHierarchyConnector> connectorMock = new();
 
-        connectorMock.Setup(c => c.GetManagerNameAsync(It.IsAny<CancellationToken>())).
-            ReturnsAsync(anyManagerName);
+        connectorMock.Setup(c => c.GetManagerNameAsync(It.IsAny<CancellationToken>())).ReturnsAsync(anyManagerName);
 
         OrganizationHierarchyPlugin target = new(connectorMock.Object);
 

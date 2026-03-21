@@ -28,6 +28,10 @@ public class QueryParameterExpression(string name, object? value, Type type) : E
     /// <inheritdoc />
     public override Type Type => type;
 
+
     /// <inheritdoc />
-    protected override Expression VisitChildren(ExpressionVisitor visitor) => this;
+    protected override Expression VisitChildren(ExpressionVisitor visitor)
+    {
+        return this;
+    }
 }

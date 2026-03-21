@@ -21,14 +21,15 @@ public sealed class OrchestrationContext
         ILoggerFactory loggerFactory,
         CancellationToken cancellation)
     {
-        this.Orchestration = orchestration;
-        this.Topic = topic;
-        this.FailureCallback = failureCallback;
-        this.ResponseCallback = responseCallback;
-        this.StreamingResponseCallback = streamingCallback;
-        this.LoggerFactory = loggerFactory;
-        this.Cancellation = cancellation;
+        Orchestration = orchestration;
+        Topic = topic;
+        FailureCallback = failureCallback;
+        ResponseCallback = responseCallback;
+        StreamingResponseCallback = streamingCallback;
+        LoggerFactory = loggerFactory;
+        Cancellation = cancellation;
     }
+
 
     /// <summary>
     /// Gets the name or identifier of the orchestration.

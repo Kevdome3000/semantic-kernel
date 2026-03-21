@@ -11,6 +11,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.Embeddings;
+
 /// <summary>
 /// Provides a collection of static methods for operating on <see cref="IEmbeddingGenerationService{TValue,TEmbedding}"/> objects.
 /// </summary>
@@ -22,6 +23,7 @@ public static class EmbeddingGenerationExtensions
     /// Gets the key used to store the dimensions value in the <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/> dictionary.
     /// </summary>
     public static string DimensionsKey => "Dimensions";
+
 
     /// <summary>
     /// Generates an embedding from the given <paramref name="value"/>.
@@ -42,9 +44,9 @@ public static class EmbeddingGenerationExtensions
     {
         Verify.NotNull(generator);
 
-        return (await generator.GenerateEmbeddingsAsync([value], kernel, cancellationToken).
-            ConfigureAwait(false)).FirstOrDefault();
+        return (await generator.GenerateEmbeddingsAsync([value], kernel, cancellationToken).ConfigureAwait(false)).FirstOrDefault();
     }
+
 
     /// <summary>Creates an <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> for the specified <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/>.</summary>
     /// <param name="service">The embedding generation service to be represented as an embedding generator.</param>
@@ -58,10 +60,11 @@ public static class EmbeddingGenerationExtensions
     {
         Verify.NotNull(service);
 
-        return service is IEmbeddingGenerator<TValue, Embedding<TEmbedding>> embeddingGenerator ?
-            embeddingGenerator :
-            new EmbeddingGenerationServiceEmbeddingGenerator<TValue, TEmbedding>(service);
+        return service is IEmbeddingGenerator<TValue, Embedding<TEmbedding>> embeddingGenerator
+            ? embeddingGenerator
+            : new EmbeddingGenerationServiceEmbeddingGenerator<TValue, TEmbedding>(service);
     }
+
 
     /// <summary>Creates an <see cref="IEmbeddingGenerationService{TInput, TEmbedding}"/> for the specified <see cref="IEmbeddingGenerator{TValue, TEmbedding}"/>.</summary>
     /// <param name="generator">The embedding generator to be represented as an embedding generation service.</param>
@@ -77,10 +80,11 @@ public static class EmbeddingGenerationExtensions
     {
         Verify.NotNull(generator);
 
-        return generator is IEmbeddingGenerationService<TValue, TEmbedding> service ?
-            service :
-            new EmbeddingGeneratorEmbeddingGenerationService<TValue, TEmbedding>(generator, serviceProvider);
+        return generator is IEmbeddingGenerationService<TValue, TEmbedding> service
+            ? service
+            : new EmbeddingGeneratorEmbeddingGenerationService<TValue, TEmbedding>(generator, serviceProvider);
     }
+
 
     /// <summary>Creates a <see cref="ITextEmbeddingGenerationService"/> from a <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> where input of <see cref="string"/> and an embedding of <see cref="float"/>.</summary>
     /// <param name="generator">Input as string with embedding as floats generator</param>
@@ -92,10 +96,11 @@ public static class EmbeddingGenerationExtensions
     public static ITextEmbeddingGenerationService AsTextEmbeddingGenerationService(this IEmbeddingGenerator<string, Embedding<float>> generator, IServiceProvider? serviceProvider = null)
     {
         Verify.NotNull(generator);
-        return generator is ITextEmbeddingGenerationService service ?
-            service :
-            new EmbeddingGeneratorTextEmbeddingGenerationService(generator, serviceProvider);
+        return generator is ITextEmbeddingGenerationService service
+            ? service
+            : new EmbeddingGeneratorTextEmbeddingGenerationService(generator, serviceProvider);
     }
+
 
     /// <summary>
     /// Gets the dimensions from <paramref name="service"/>'s <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/>.
@@ -105,8 +110,11 @@ public static class EmbeddingGenerationExtensions
     public static int? GetDimensions<TValue, TEmbedding>(this IEmbeddingGenerationService<TValue, TEmbedding> service) where TEmbedding : unmanaged
     {
         Verify.NotNull(service);
-        return service.Attributes.TryGetValue(DimensionsKey, out object? value) ? value as int? : null;
+        return service.Attributes.TryGetValue(DimensionsKey, out object? value)
+            ? value as int?
+            : null;
     }
+
 
     /// <summary>Provides an implementation of <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> around an <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/>.</summary>
     private sealed class EmbeddingGenerationServiceEmbeddingGenerator<TValue, TEmbedding> : IEmbeddingGenerator<TValue, Embedding<TEmbedding>>
@@ -115,19 +123,24 @@ public static class EmbeddingGenerationExtensions
         /// <summary>The wrapped <see cref="IEmbeddingGenerationService{TValue, TEmbedding}"/></summary>
         private readonly IEmbeddingGenerationService<TValue, TEmbedding> _service;
 
+
         /// <summary>Initializes the <see cref="EmbeddingGenerationServiceEmbeddingGenerator{TValue, TEmbedding}"/> for <paramref name="service"/>.</summary>
         public EmbeddingGenerationServiceEmbeddingGenerator(IEmbeddingGenerationService<TValue, TEmbedding> service)
         {
             _service = service;
             Metadata = new EmbeddingGeneratorMetadata(
                 service.GetType().Name,
-                service.GetEndpoint() is string endpoint ? new Uri(endpoint) : null,
+                service.GetEndpoint() is string endpoint
+                    ? new Uri(endpoint)
+                    : null,
                 service.GetModelId(),
                 service.GetDimensions());
         }
 
+
         /// <inheritdoc />
         public EmbeddingGeneratorMetadata Metadata { get; }
+
 
         /// <inheritdoc />
         public void Dispose()
@@ -135,12 +148,14 @@ public static class EmbeddingGenerationExtensions
             (_service as IDisposable)?.Dispose();
         }
 
+
         /// <inheritdoc />
         public async Task<GeneratedEmbeddings<Embedding<TEmbedding>>> GenerateAsync(IEnumerable<TValue> values, EmbeddingGenerationOptions? options = null, CancellationToken cancellationToken = default)
         {
             IList<ReadOnlyMemory<TEmbedding>> result = await _service.GenerateEmbeddingsAsync(values.ToList(), null, cancellationToken).ConfigureAwait(false);
-            return new(result.Select(e => new Embedding<TEmbedding>(e)));
+            return new GeneratedEmbeddings<Embedding<TEmbedding>>(result.Select(e => new Embedding<TEmbedding>(e)));
         }
+
 
         /// <inheritdoc />
         public object? GetService(Type serviceType, object? serviceKey = null)
@@ -148,13 +163,18 @@ public static class EmbeddingGenerationExtensions
             Verify.NotNull(serviceType);
 
             return
-                serviceKey is not null ? null :
-                serviceType.IsInstanceOfType(this) ? this :
-                serviceType.IsInstanceOfType(_service) ? _service :
-                serviceType.IsInstanceOfType(Metadata) ? Metadata :
-                null;
+                serviceKey is not null
+                    ? null
+                    : serviceType.IsInstanceOfType(this)
+                        ? this
+                        : serviceType.IsInstanceOfType(_service)
+                            ? _service
+                            : serviceType.IsInstanceOfType(Metadata)
+                                ? Metadata
+                                : null;
         }
     }
+
 
     /// <summary>Provides an implementation of <see cref="IEmbeddingGenerationService{TInput, TEmbedding}"/> around an <see cref="EmbeddingGeneratorEmbeddingGenerationService{TValue, TEmbedding}"/>.</summary>
     private class EmbeddingGeneratorEmbeddingGenerationService<TValue, TEmbedding> : IEmbeddingGenerationService<TValue, TEmbedding>
@@ -163,9 +183,11 @@ public static class EmbeddingGenerationExtensions
         /// <summary>The wrapped <see cref="IEmbeddingGenerator{TValue, TEmbedding}"/></summary>
         private readonly IEmbeddingGenerator<TValue, Embedding<TEmbedding>> _generator;
 
+
         /// <summary>Initializes the <see cref="EmbeddingGeneratorEmbeddingGenerationService{TValue, TEmbedding}"/> for <paramref name="generator"/>.</summary>
         public EmbeddingGeneratorEmbeddingGenerationService(
-            IEmbeddingGenerator<TValue, Embedding<TEmbedding>> generator, IServiceProvider? serviceProvider)
+            IEmbeddingGenerator<TValue, Embedding<TEmbedding>> generator,
+            IServiceProvider? serviceProvider)
         {
             // Store the generator.
             _generator = generator;
@@ -175,18 +197,22 @@ public static class EmbeddingGenerationExtensions
             Attributes = new ReadOnlyDictionary<string, object?>(attrs);
 
             var metadata = (EmbeddingGeneratorMetadata?)generator.GetService(typeof(EmbeddingGeneratorMetadata));
+
             if (metadata?.ProviderUri is not null)
             {
                 attrs[AIServiceExtensions.EndpointKey] = metadata.ProviderUri.ToString();
             }
+
             if (metadata?.DefaultModelId is not null)
             {
                 attrs[AIServiceExtensions.ModelIdKey] = metadata.DefaultModelId;
             }
         }
 
+
         /// <inheritdoc />
         public IReadOnlyDictionary<string, object?> Attributes { get; }
+
 
         /// <inheritdoc />
         public async Task<IList<ReadOnlyMemory<TEmbedding>>> GenerateEmbeddingsAsync(IList<TValue> data, Kernel? kernel = null, CancellationToken cancellationToken = default)
@@ -198,6 +224,7 @@ public static class EmbeddingGenerationExtensions
             return embeddings.Select(e => e.Vector).ToList();
         }
     }
+
 
     private sealed class EmbeddingGeneratorTextEmbeddingGenerationService : EmbeddingGeneratorEmbeddingGenerationService<string, float>, ITextEmbeddingGenerationService
     {

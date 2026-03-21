@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Connectors.InMemory;
 
@@ -29,10 +27,11 @@ public static class InMemoryServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                options ??= sp.GetService<InMemoryVectorStoreOptions>() ?? new()
-                {
-                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
-                };
+                options ??= sp.GetService<InMemoryVectorStoreOptions>()
+                    ?? new()
+                    {
+                        EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                    };
 
                 return new InMemoryVectorStore(options);
             });
@@ -41,6 +40,7 @@ public static class InMemoryServiceCollectionExtensions
         services.AddKeyedSingleton<VectorStore>(serviceId, (sp, obj) => sp.GetRequiredKeyedService<InMemoryVectorStore>(serviceId));
         return services;
     }
+
 
     /// <summary>
     /// Register an InMemory <see cref="VectorStoreCollection{TKey, TRecord}"/> and <see cref="IVectorSearchable{TRecord}"/> with the specified service ID.
@@ -66,10 +66,11 @@ public static class InMemoryServiceCollectionExtensions
             serviceId,
             (sp, obj) =>
             {
-                options ??= sp.GetService<InMemoryCollectionOptions>() ?? new()
-                {
-                    EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
-                };
+                options ??= sp.GetService<InMemoryCollectionOptions>()
+                    ?? new()
+                    {
+                        EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
+                    };
                 return (new InMemoryCollection<TKey, TRecord>(collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
             });
 

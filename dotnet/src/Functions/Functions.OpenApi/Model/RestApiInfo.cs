@@ -22,6 +22,7 @@ public sealed class RestApiInfo
     /// </summary>
     public string? Version { get; init; }
 
+
     /// <summary>
     /// Creates a new instance of the <see cref="RestApiInfo"/> class.
     /// </summary>

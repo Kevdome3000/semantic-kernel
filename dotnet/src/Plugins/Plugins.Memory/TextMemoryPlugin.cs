@@ -1,17 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.Memory;
-
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using SemanticKernel.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.Memory;
 
+namespace Microsoft.SemanticKernel.Plugins.Memory;
 
 /// <summary>
 /// TextMemoryPlugin provides a plugin to save or recall information from the long or short term memory.
@@ -70,7 +69,7 @@ public sealed class TextMemoryPlugin
     {
         _memory = memory;
         _logger = loggerFactory?.CreateLogger(typeof(TextMemoryPlugin)) ?? NullLogger.Instance;
-        this._jsonSerializerOptions = jsonSerializerOptions ?? JsonSerializerOptions.Default;
+        _jsonSerializerOptions = jsonSerializerOptions ?? JsonSerializerOptions.Default;
     }
 
 
@@ -97,8 +96,7 @@ public sealed class TextMemoryPlugin
             _logger.LogDebug("Recalling memory with key '{0}' from collection '{1}'", key, collection);
         }
 
-        var memory = await _memory.GetAsync(collection, key, cancellationToken: cancellationToken).
-            ConfigureAwait(false);
+        var memory = await _memory.GetAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         return memory?.Metadata.Text ?? string.Empty;
     }
@@ -137,10 +135,13 @@ public sealed class TextMemoryPlugin
         }
 
         // Search memory
-        List<MemoryQueryResult> memories = await _memory.SearchAsync(collection, input, limit.Value, relevance.Value,
-                cancellationToken: cancellationToken).
-            ToListAsync(cancellationToken).
-            ConfigureAwait(false);
+        List<MemoryQueryResult> memories = await _memory.SearchAsync(collection,
+                input,
+                limit.Value,
+                relevance.Value,
+                cancellationToken: cancellationToken)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         if (memories.Count == 0)
         {
@@ -154,7 +155,7 @@ public sealed class TextMemoryPlugin
 
         return limit == 1
             ? memories[0].Metadata.Text
-            : JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text), this._jsonSerializerOptions);
+            : JsonSerializer.Serialize(memories.Select(x => x.Metadata.Text), _jsonSerializerOptions);
     }
 
 
@@ -184,8 +185,11 @@ public sealed class TextMemoryPlugin
             _logger.LogDebug("Saving memory to collection '{0}'", collection);
         }
 
-        await _memory.SaveInformationAsync(collection, input, key, cancellationToken: cancellationToken).
-            ConfigureAwait(false);
+        await _memory.SaveInformationAsync(collection,
+                input,
+                key,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
 
 
@@ -212,8 +216,7 @@ public sealed class TextMemoryPlugin
             _logger.LogDebug("Removing memory from collection '{0}'", collection);
         }
 
-        await _memory.RemoveAsync(collection, key, cancellationToken: cancellationToken).
-            ConfigureAwait(false);
+        await _memory.RemoveAsync(collection, key, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
 }

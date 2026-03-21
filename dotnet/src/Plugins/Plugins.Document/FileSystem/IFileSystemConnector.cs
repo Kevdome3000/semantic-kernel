@@ -18,6 +18,7 @@ public interface IFileSystemConnector
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<Stream> GetFileContentStreamAsync(string filePath, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Get a writeable stream to an existing file.
     /// </summary>
@@ -25,12 +26,14 @@ public interface IFileSystemConnector
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<Stream> GetWriteableFileStreamAsync(string filePath, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Create a new file and get a writeable stream to it.
     /// </summary>
     /// <param name="filePath">Path to file.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<Stream> CreateFileAsync(string filePath, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Determine whether a file exists at the specified path.

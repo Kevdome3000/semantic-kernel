@@ -28,12 +28,13 @@ public class MagenticOrchestrationTests
         MockAgent mockAgent1 = CreateMockAgent(2, "xyz");
 
         // Act: Create and execute the orchestration
-        string response = await this.ExecuteOrchestrationAsync(runtime, "answer", mockAgent1);
+        string response = await ExecuteOrchestrationAsync(runtime, "answer", mockAgent1);
 
         // Assert
         Assert.Equal("answer", response);
         Assert.Equal(1, mockAgent1.InvokeCount);
     }
+
 
     [Fact]
     public async Task MagenticOrchestrationWithMultipleAgentsAsync()
@@ -46,7 +47,11 @@ public class MagenticOrchestrationTests
         MockAgent mockAgent3 = CreateMockAgent(3, "lmn");
 
         // Act: Create and execute the orchestration
-        string response = await this.ExecuteOrchestrationAsync(runtime, "answer", mockAgent1, mockAgent2, mockAgent3);
+        string response = await ExecuteOrchestrationAsync(runtime,
+            "answer",
+            mockAgent1,
+            mockAgent2,
+            mockAgent3);
 
         // Assert
         Assert.Equal("answer", response);
@@ -54,6 +59,7 @@ public class MagenticOrchestrationTests
         Assert.Equal(0, mockAgent2.InvokeCount);
         Assert.Equal(0, mockAgent3.InvokeCount);
     }
+
 
     [Fact]
     public async Task MagenticOrchestrationMaxInvocationCountReached_WithoutPartialResultAsync()
@@ -67,33 +73,36 @@ public class MagenticOrchestrationTests
 
         string jsonStatus =
             $$"""
-            {
-                "Name": "{{mockAgent1.Name}}",
-                "Instruction":"Proceed",
-                "Reason":"TestReason",
-                "IsTaskComplete": {
-                  "Result": false,
-                  "Reason": "Test"
-                },
-                "IsTaskProgressing": {
-                  "Result": true,
-                  "Reason": "Test"
-                },
-                "IsTaskInLoop": {
-                  "Result": false,
-                  "Reason": "Test"
-                }
-            }
-            """;
+              {
+                  "Name": "{{mockAgent1.Name}}",
+                  "Instruction":"Proceed",
+                  "Reason":"TestReason",
+                  "IsTaskComplete": {
+                    "Result": false,
+                    "Reason": "Test"
+                  },
+                  "IsTaskProgressing": {
+                    "Result": true,
+                    "Reason": "Test"
+                  },
+                  "IsTaskInLoop": {
+                    "Result": false,
+                    "Reason": "Test"
+                  }
+              }
+              """;
         Mock<IChatCompletionService> chatServiceMock = CreateMockChatCompletionService(jsonStatus);
 
         FakePromptExecutionSettings settings = new();
         StandardMagenticManager manager = new(chatServiceMock.Object, settings)
         {
-            MaximumInvocationCount = 1, // Fast failure for testing
+            MaximumInvocationCount = 1 // Fast failure for testing
         };
 
-        MagenticOrchestration orchestration = new(manager, [mockAgent1, mockAgent2, mockAgent3]);
+        MagenticOrchestration orchestration = new(manager,
+            mockAgent1,
+            mockAgent2,
+            mockAgent3);
 
         // Act
         await runtime.StartAsync();
@@ -106,6 +115,7 @@ public class MagenticOrchestrationTests
         Assert.NotNull(response);
         Assert.Contains("No partial result available.", response);
     }
+
 
     [Fact]
     public async Task MagenticOrchestrationMaxInvocationCountReached_WithPartialResultAsync()
@@ -119,33 +129,36 @@ public class MagenticOrchestrationTests
 
         string jsonStatus =
             $$"""
-            {
-                "Name": "{{mockAgent1.Name}}",
-                "Instruction":"Proceed",
-                "Reason":"TestReason",
-                "IsTaskComplete": {
-                  "Result": false,
-                  "Reason": "Test"
-                },
-                "IsTaskProgressing": {
-                  "Result": true,
-                  "Reason": "Test"
-                },
-                "IsTaskInLoop": {
-                  "Result": false,
-                  "Reason": "Test"
-                }
-            }
-            """;
+              {
+                  "Name": "{{mockAgent1.Name}}",
+                  "Instruction":"Proceed",
+                  "Reason":"TestReason",
+                  "IsTaskComplete": {
+                    "Result": false,
+                    "Reason": "Test"
+                  },
+                  "IsTaskProgressing": {
+                    "Result": true,
+                    "Reason": "Test"
+                  },
+                  "IsTaskInLoop": {
+                    "Result": false,
+                    "Reason": "Test"
+                  }
+              }
+              """;
         Mock<IChatCompletionService> chatServiceMock = CreateMockChatCompletionService(jsonStatus);
 
         FakePromptExecutionSettings settings = new();
         StandardMagenticManager manager = new(chatServiceMock.Object, settings)
         {
-            MaximumInvocationCount = 2, // Fast failure for testing but at least one invocation
+            MaximumInvocationCount = 2 // Fast failure for testing but at least one invocation
         };
 
-        MagenticOrchestration orchestration = new(manager, [mockAgent1, mockAgent2, mockAgent3]);
+        MagenticOrchestration orchestration = new(manager,
+            mockAgent1,
+            mockAgent2,
+            mockAgent3);
 
         // Act
         await runtime.StartAsync();
@@ -159,6 +172,7 @@ public class MagenticOrchestrationTests
         Assert.Equal("abc", response);
     }
 
+
     [Fact]
     public async Task MagenticOrchestrationMaxResetCountReached_WithoutPartialResultAsync()
     {
@@ -171,34 +185,37 @@ public class MagenticOrchestrationTests
 
         string jsonStatus =
             $$"""
-            {
-                "Name": "{{mockAgent1.Name}}",
-                "Instruction":"Proceed",
-                "Reason":"TestReason",
-                "IsTaskComplete": {
-                  "Result": false,
-                  "Reason": "Test"
-                },
-                "IsTaskProgressing": {
-                  "Result": false,
-                  "Reason": "Test"
-                },
-                "IsTaskInLoop": {
-                  "Result": true,
-                  "Reason": "Test"
-                }
-            }
-            """;
+              {
+                  "Name": "{{mockAgent1.Name}}",
+                  "Instruction":"Proceed",
+                  "Reason":"TestReason",
+                  "IsTaskComplete": {
+                    "Result": false,
+                    "Reason": "Test"
+                  },
+                  "IsTaskProgressing": {
+                    "Result": false,
+                    "Reason": "Test"
+                  },
+                  "IsTaskInLoop": {
+                    "Result": true,
+                    "Reason": "Test"
+                  }
+              }
+              """;
         Mock<IChatCompletionService> chatServiceMock = CreateMockChatCompletionService(jsonStatus);
 
         FakePromptExecutionSettings settings = new();
         StandardMagenticManager manager = new(chatServiceMock.Object, settings)
         {
             MaximumResetCount = 1, // Fast failure for testing
-            MaximumStallCount = 0, // No stalls allowed
+            MaximumStallCount = 0 // No stalls allowed
         };
 
-        MagenticOrchestration orchestration = new(manager, [mockAgent1, mockAgent2, mockAgent3]);
+        MagenticOrchestration orchestration = new(manager,
+            mockAgent1,
+            mockAgent2,
+            mockAgent3);
 
         // Act
         await runtime.StartAsync();
@@ -212,6 +229,7 @@ public class MagenticOrchestrationTests
         Assert.Contains("No partial result available.", response);
     }
 
+
     [Fact]
     public async Task MagenticOrchestrationMaxResetCountReached_WithPartialResultAsync()
     {
@@ -224,34 +242,37 @@ public class MagenticOrchestrationTests
 
         string jsonStatus =
             $$"""
-            {
-                "Name": "{{mockAgent1.Name}}",
-                "Instruction":"Proceed",
-                "Reason":"TestReason",
-                "IsTaskComplete": {
-                  "Result": false,
-                  "Reason": "Test"
-                },
-                "IsTaskProgressing": {
-                  "Result": false,
-                  "Reason": "Test"
-                },
-                "IsTaskInLoop": {
-                  "Result": true,
-                  "Reason": "Test"
-                }
-            }
-            """;
+              {
+                  "Name": "{{mockAgent1.Name}}",
+                  "Instruction":"Proceed",
+                  "Reason":"TestReason",
+                  "IsTaskComplete": {
+                    "Result": false,
+                    "Reason": "Test"
+                  },
+                  "IsTaskProgressing": {
+                    "Result": false,
+                    "Reason": "Test"
+                  },
+                  "IsTaskInLoop": {
+                    "Result": true,
+                    "Reason": "Test"
+                  }
+              }
+              """;
         Mock<IChatCompletionService> chatServiceMock = CreateMockChatCompletionService(jsonStatus);
 
         FakePromptExecutionSettings settings = new();
         StandardMagenticManager manager = new(chatServiceMock.Object, settings)
         {
             MaximumResetCount = 1, // Fast failure for testing but at least one response
-            MaximumStallCount = 2, // Allow some stalls for at least one response
+            MaximumStallCount = 2 // Allow some stalls for at least one response
         };
 
-        MagenticOrchestration orchestration = new(manager, [mockAgent1, mockAgent2, mockAgent3]);
+        MagenticOrchestration orchestration = new(manager,
+            mockAgent1,
+            mockAgent2,
+            mockAgent3);
 
         // Act
         await runtime.StartAsync();
@@ -265,12 +286,13 @@ public class MagenticOrchestrationTests
         Assert.Contains("abc", response);
     }
 
+
     private async Task<string> ExecuteOrchestrationAsync(InProcessRuntime runtime, string answer, params Agent[] mockAgents)
     {
         // Act
         await runtime.StartAsync();
 
-        Mock<MagenticManager> manager = this.CreateMockManager(answer);
+        Mock<MagenticManager> manager = CreateMockManager(answer);
         MagenticOrchestration orchestration = new(manager.Object, mockAgents);
 
         const string InitialInput = "123";
@@ -287,17 +309,20 @@ public class MagenticOrchestrationTests
         return response;
     }
 
+
     private static MockAgent CreateMockAgent(int index, string response)
     {
-        return new()
+        return new MockAgent
         {
             Name = $"MockAgent{index}",
             Description = $"test {index}",
-            Response = [new(AuthorRole.Assistant, response)]
+            Response = [new ChatMessageContent(AuthorRole.Assistant, response)]
         };
     }
 
-    private bool _isComplete = false;
+
+    private bool _isComplete;
+
 
     private Mock<MagenticManager> CreateMockManager(string answer)
     {
@@ -305,11 +330,11 @@ public class MagenticOrchestrationTests
 
         // Setup mock for PlanAsync method
         mockManager.Setup(m => m.PlanAsync(It.IsAny<MagenticManagerContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((MagenticManagerContext context, CancellationToken _) => [new(AuthorRole.User, "test")]);
+            .ReturnsAsync((MagenticManagerContext context, CancellationToken _) => [new ChatMessageContent(AuthorRole.User, "test")]);
 
         // Setup mock for ReplanAsync method
         mockManager.Setup(m => m.ReplanAsync(It.IsAny<MagenticManagerContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((MagenticManagerContext context, CancellationToken _) => [new(AuthorRole.User, "test")]);
+            .ReturnsAsync((MagenticManagerContext context, CancellationToken _) => [new ChatMessageContent(AuthorRole.User, "test")]);
 
         // Setup mock for EvaluateTaskProgressAsync method
         mockManager
@@ -328,26 +353,26 @@ public class MagenticOrchestrationTests
             try
             {
                 return
-                    new(Name: name,
-                        Instruction: "Test instruction",
-                        Reason: "Test evaluation",
-                        IsTaskComplete: new(this._isComplete, "test"),
-                        IsTaskProgressing: new(true, "test"),
-                        IsTaskInLoop: new(true, "test"));
+                    new MagenticProgressLedger(name,
+                        "Test instruction",
+                        "Test evaluation",
+                        new LedgerState(_isComplete, "test"),
+                        new LedgerState(true, "test"),
+                        new LedgerState(true, "test"));
             }
             finally
             {
-                this._isComplete = true;
+                _isComplete = true;
             }
         }
     }
+
 
     private static Mock<IChatCompletionService> CreateMockChatCompletionService(string response)
     {
         Mock<IChatCompletionService> chatServiceMock = new(MockBehavior.Strict);
 
-        chatServiceMock.Setup(
-            (service) => service.GetChatMessageContentsAsync(
+        chatServiceMock.Setup(service => service.GetChatMessageContentsAsync(
                 It.IsAny<ChatHistory>(),
                 It.IsAny<PromptExecutionSettings>(),
                 null,
@@ -357,12 +382,14 @@ public class MagenticOrchestrationTests
         return chatServiceMock;
     }
 
+
     private sealed class FakePromptExecutionSettings : PromptExecutionSettings
     {
         public override PromptExecutionSettings Clone()
         {
             return this;
         }
+
 
         public object? ResponseFormat { get; set; }
     }

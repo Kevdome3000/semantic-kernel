@@ -85,7 +85,7 @@ public sealed class AggregateAIContextProvider : AIContextProvider
         AIContext[] subContexts = await Task.WhenAll(Providers.Select(x => x.ModelInvokingAsync(newMessages, cancellationToken)).ToList()).ConfigureAwait(false);
         subContexts = subContexts.ToArray();
 
-        AIContext combinedContext = new AIContext
+        AIContext combinedContext = new()
         {
             AIFunctions = subContexts.SelectMany(x => x.AIFunctions).ToList(),
             Instructions = string.Join("\n", subContexts.Where(x => !string.IsNullOrWhiteSpace(x.Instructions)).Select(x => x.Instructions))

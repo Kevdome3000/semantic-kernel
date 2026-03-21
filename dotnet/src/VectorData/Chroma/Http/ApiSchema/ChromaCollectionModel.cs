@@ -2,9 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
-using System.Text.Json.Serialization;
-
-
 /// <summary>
 /// Chroma collection model.
 /// </summary>

@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 /// <summary>
@@ -17,6 +15,8 @@ internal sealed class SqliteColumn(
     public string Type { get; set; } = type;
 
     public bool IsPrimary { get; set; } = isPrimary;
+
+    public bool IsNullable { get; set; }
 
     public bool HasIndex { get; set; }
 

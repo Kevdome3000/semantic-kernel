@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.AI;
-
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 /// <summary>
@@ -11,6 +9,7 @@ public sealed class SqliteVectorStoreOptions
 {
     internal static readonly SqliteVectorStoreOptions Default = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqliteVectorStoreOptions"/> class.
     /// </summary>
@@ -18,11 +17,13 @@ public sealed class SqliteVectorStoreOptions
     {
     }
 
+
     internal SqliteVectorStoreOptions(SqliteVectorStoreOptions? source)
     {
-        this.VectorVirtualTableName = source?.VectorVirtualTableName;
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+        VectorVirtualTableName = source?.VectorVirtualTableName;
+        EmbeddingGenerator = source?.EmbeddingGenerator;
     }
+
 
     /// <summary>
     /// Custom virtual table name to store vectors.

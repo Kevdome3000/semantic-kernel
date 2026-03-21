@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using Qdrant.Client.Grpc;
-
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
@@ -58,10 +53,10 @@ internal static class QdrantCollectionSearchMapping
                 var range = new global::Qdrant.Client.Grpc.DatetimeRange
                 {
                     Gte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
-                    Lte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset),
+                    Lte = Google.Protobuf.WellKnownTypes.Timestamp.FromDateTimeOffset(dateTimeOffset)
                 };
 
-                filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = property.StorageName, DatetimeRange = range } });
+                filter.Must.Add(new Condition { Field = new FieldCondition { Key = property.StorageName, DatetimeRange = range } });
                 continue;
             }
 
@@ -75,12 +70,13 @@ internal static class QdrantCollectionSearchMapping
                 _ => throw new InvalidOperationException($"Unsupported filter value type '{filterValue.GetType().Name}'.")
             };
 
-            filter.Must.Add(new Condition() { Field = new FieldCondition() { Key = property.StorageName, Match = match } });
+            filter.Must.Add(new Condition { Field = new FieldCondition { Key = property.StorageName, Match = match } });
         }
 
         return filter;
     }
 #pragma warning restore CS0618 // Type or member is obsolete
+
 
     /// <summary>
     /// Map the given <see cref="ScoredPoint"/> to a <see cref="VectorSearchResult{TRecord}"/>.
@@ -106,9 +102,13 @@ internal static class QdrantCollectionSearchMapping
     {
         // Do the mapping with error handling.
         return new VectorSearchResult<TRecord>(
-            mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, includeVectors),
+            mapper.MapFromStorageToDataModel(point.Id,
+                point.Payload,
+                point.Vectors,
+                includeVectors),
             point.Score);
     }
+
 
     internal static TRecord MapRetrievedPointToRecord<TRecord>(
         RetrievedPoint point,
@@ -121,6 +121,9 @@ internal static class QdrantCollectionSearchMapping
         where TRecord : class
     {
         // Do the mapping with error handling.
-        return mapper.MapFromStorageToDataModel(point.Id, point.Payload, point.Vectors, includeVectors);
+        return mapper.MapFromStorageToDataModel(point.Id,
+            point.Payload,
+            point.Vectors,
+            includeVectors);
     }
 }

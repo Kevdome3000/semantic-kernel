@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Plugins.UnitTests.Core;
-
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Core;
 using Xunit;
 
+namespace SemanticKernel.Plugins.UnitTests.Core;
 
 public class TextPluginTests
 {

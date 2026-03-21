@@ -3,6 +3,7 @@
 using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.DependencyInjection;
+
 /// <summary>Extension methods for interacting with <see cref="Kernel"/>.</summary>
 public static class KernelServiceCollectionExtensions
 {

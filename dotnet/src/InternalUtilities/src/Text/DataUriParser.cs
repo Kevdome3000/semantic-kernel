@@ -1,14 +1,10 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-
 #pragma warning disable CA1307 // Specify StringComparison
 #pragma warning disable CA1847 // Use StringBuilder.Append when concatenating strings
 
 namespace Microsoft.SemanticKernel.Text;
+
 /// <summary>
 /// Data Uri Scheme Parser based on RFC 2397.
 /// https://datatracker.ietf.org/doc/html/rfc2397
@@ -24,6 +20,7 @@ internal static class DataUriParser
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
     };
+
 
     /// <summary>
     /// Extension method to test whether the value is a base64 string
@@ -71,9 +68,10 @@ internal static class DataUriParser
         return true;
     }
 
+
     internal static DataUri Parse(string? dataUri)
     {
-        Verify.NotNullOrWhiteSpace(dataUri, nameof(dataUri));
+        Verify.NotNullOrWhiteSpace(dataUri);
 
         if (!dataUri.StartsWith(Scheme, StringComparison.OrdinalIgnoreCase))
         {
@@ -97,8 +95,7 @@ internal static class DataUriParser
 
         if (metadataParts.Length > 0)
         {
-            if (!string.IsNullOrWhiteSpace(metadataParts[0]) && !metadataParts[0].
-                    Contains("/"))
+            if (!string.IsNullOrWhiteSpace(metadataParts[0]) && !metadataParts[0].Contains("/"))
             {
                 throw new UriFormatException("Invalid data uri format. When provided, the MIME type must have \"type/subtype\" format.");
             }
@@ -147,6 +144,7 @@ internal static class DataUriParser
 
         return model;
     }
+
 
     /// <summary>
     /// Represents the data URI parts.

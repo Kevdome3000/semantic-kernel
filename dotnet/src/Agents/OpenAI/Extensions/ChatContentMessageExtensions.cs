@@ -22,9 +22,10 @@ public static class ChatContentMessageExtensions
     {
         return
             new ThreadInitializationMessage(
-                role: message.Role.ToMessageRole(),
-                content: AssistantMessageFactory.GetMessageContents(message));
+                message.Role.ToMessageRole(),
+                AssistantMessageFactory.GetMessageContents(message));
     }
+
 
     /// <summary>
     /// Converts a collection of <see cref="ChatMessageContent"/> instances to a collection of <see cref="ThreadInitializationMessage"/> instances.
@@ -35,6 +36,7 @@ public static class ChatContentMessageExtensions
     {
         return messages.Select(message => message.ToThreadInitializationMessage());
     }
+
 
     /// <summary>
     /// Converts a <see cref="ChatMessageContent"/> instance to a <see cref="ResponseItem"/>.
@@ -51,7 +53,7 @@ public static class ChatContentMessageExtensions
             "USER" => ResponseItem.CreateUserMessageItem(contentParts),
             "DEVELOPER" => ResponseItem.CreateDeveloperMessageItem(contentParts),
             "ASSISTANT" => ResponseItem.CreateAssistantMessageItem(contentParts),
-            _ => throw new NotSupportedException($"Unsupported role {message.Role.Label}. Only system, user, developer or assistant roles are allowed."),
+            _ => throw new NotSupportedException($"Unsupported role {message.Role.Label}. Only system, user, developer or assistant roles are allowed.")
         };
     }
 }

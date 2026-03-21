@@ -83,12 +83,12 @@ public class AgentGroupChatTests
             new(agent1, agent2, agent3)
             {
                 ExecutionSettings =
-                    new()
+                    new AgentGroupChatSettings
                     {
                         TerminationStrategy =
                         {
                             // This test is designed to take 9 turns.
-                            MaximumIterations = 9,
+                            MaximumIterations = 9
                         }
                     },
                 IsComplete = true
@@ -133,7 +133,7 @@ public class AgentGroupChatTests
         AgentGroupChat chat = Create3AgentChat();
 
         chat.ExecutionSettings =
-            new()
+            new AgentGroupChatSettings
             {
                 // Strategy that will not select an agent.
                 SelectionStrategy = new FailedSelectionStrategy(),
@@ -162,10 +162,10 @@ public class AgentGroupChatTests
         AgentGroupChat chat = Create3AgentChat();
 
         chat.ExecutionSettings =
-            new()
+            new AgentGroupChatSettings
             {
                 TerminationStrategy =
-                    new TestTerminationStrategy(shouldTerminate: true)
+                    new TestTerminationStrategy(true)
                     {
                         // Remove max-limit in order to isolate the target behavior.
                         MaximumIterations = int.MaxValue
@@ -194,10 +194,10 @@ public class AgentGroupChatTests
             new()
             {
                 ExecutionSettings =
-                    new()
+                    new AgentGroupChatSettings
                     {
                         TerminationStrategy =
-                            new TestTerminationStrategy(shouldTerminate: true)
+                            new TestTerminationStrategy(true)
                             {
                                 // Remove max-limit in order to isolate the target behavior.
                                 MaximumIterations = int.MaxValue
@@ -220,11 +220,14 @@ public class AgentGroupChatTests
         Agent agent2 = CreateMockAgent();
         Agent agent3 = CreateMockAgent();
 
-        return new(agent1, agent2, agent3);
+        return new AgentGroupChat(agent1, agent2, agent3);
     }
 
 
-    private static MockAgent CreateMockAgent() => new() { Response = [new(AuthorRole.Assistant, "test")] };
+    private static MockAgent CreateMockAgent()
+    {
+        return new MockAgent { Response = [new ChatMessageContent(AuthorRole.Assistant, "test")] };
+    }
 
 
     private sealed class TestTerminationStrategy(bool shouldTerminate) : TerminationStrategy

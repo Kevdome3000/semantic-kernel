@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Agents.Runtime;
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
 /// <summary>
-/// Extensions for logging <see cref="ConcurrentOrchestration{TInput, TOutput}"/>.
+/// Extensions for logging <see cref="ConcurrentOrchestration{TInput,TOutput}"/>.
 /// </summary>
 /// <remarks>
 /// This extension uses the <see cref="LoggerMessageAttribute"/> to
@@ -25,6 +25,7 @@ internal static partial class ConcurrentOrchestrationLogMessages
         this ILogger logger,
         AgentId agentId);
 
+
     [LoggerMessage(
         EventId = 0,
         Level = LogLevel.Trace,
@@ -33,6 +34,7 @@ internal static partial class ConcurrentOrchestrationLogMessages
         this ILogger logger,
         AgentId agentId,
         string? message);
+
 
     /// <summary>
     /// Logs result capture.

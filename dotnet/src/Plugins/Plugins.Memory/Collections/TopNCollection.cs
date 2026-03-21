@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Memory;
-
 using System.Collections;
 using System.Collections.Generic;
 
+namespace Microsoft.SemanticKernel.Memory;
 
 /// <summary>
 /// A collector for Top N matches. Keeps only the best N matches by Score.
@@ -16,7 +15,7 @@ internal sealed class TopNCollection<T>(int maxItems) : IEnumerable<ScoredValue<
 
     private readonly MinHeap<ScoredValue<T>> _heap = new(ScoredValue<T>.Min(), maxItems);
 
-    private bool _sorted = false;
+    private bool _sorted;
 
     /// <summary>
     /// Gets the maximum number of items allowed in the collection.
@@ -26,11 +25,11 @@ internal sealed class TopNCollection<T>(int maxItems) : IEnumerable<ScoredValue<
     /// <summary>
     /// Gets the current number of items in the collection.
     /// </summary>
-    public int Count => this._heap.Count;
+    public int Count => _heap.Count;
 
-    internal ScoredValue<T> this[int i] => this._heap[i];
+    internal ScoredValue<T> this[int i] => _heap[i];
 
-    internal ScoredValue<T> Top => this._heap.Top;
+    internal ScoredValue<T> Top => _heap.Top;
 
 
     /// <summary>
@@ -38,7 +37,7 @@ internal sealed class TopNCollection<T>(int maxItems) : IEnumerable<ScoredValue<
     /// </summary>
     public void Reset()
     {
-        this._heap.Clear();
+        _heap.Clear();
     }
 
 
@@ -48,25 +47,25 @@ internal sealed class TopNCollection<T>(int maxItems) : IEnumerable<ScoredValue<
     /// <param name="value">The scored value to add.</param>
     public void Add(ScoredValue<T> value)
     {
-        if (this._sorted)
+        if (_sorted)
         {
-            this._heap.Restore();
-            this._sorted = false;
+            _heap.Restore();
+            _sorted = false;
         }
 
-        if (this._heap.Count == this.MaxItems)
+        if (_heap.Count == MaxItems)
         {
             // Queue is full. We will need to dequeue the item with lowest weight
-            if (value.Score <= this.Top.Score)
+            if (value.Score <= Top.Score)
             {
                 // This score is lower than the lowest score on the queue right now. Ignore it
                 return;
             }
 
-            this._heap.RemoveTop();
+            _heap.RemoveTop();
         }
 
-        this._heap.Add(value);
+        _heap.Add(value);
     }
 
 
@@ -77,7 +76,7 @@ internal sealed class TopNCollection<T>(int maxItems) : IEnumerable<ScoredValue<
     /// <param name="score">The score associated with the value.</param>
     public void Add(T value, double score)
     {
-        this.Add(new ScoredValue<T>(value, score));
+        Add(new ScoredValue<T>(value, score));
     }
 
 
@@ -86,10 +85,10 @@ internal sealed class TopNCollection<T>(int maxItems) : IEnumerable<ScoredValue<
     /// </summary>
     public void SortByScore()
     {
-        if (!this._sorted && this._heap.Count > 0)
+        if (!_sorted && _heap.Count > 0)
         {
-            this._heap.SortDescending();
-            this._sorted = true;
+            _heap.SortDescending();
+            _sorted = true;
         }
     }
 
@@ -100,9 +99,9 @@ internal sealed class TopNCollection<T>(int maxItems) : IEnumerable<ScoredValue<
     /// <returns>A list of scored values.</returns>
     public IList<ScoredValue<T>> ToList()
     {
-        var list = new List<ScoredValue<T>>(this.Count);
+        var list = new List<ScoredValue<T>>(Count);
 
-        for (int i = 0, count = this.Count; i < count; ++i)
+        for (int i = 0, count = Count; i < count; ++i)
         {
             list.Add(this[i]);
         }
@@ -117,13 +116,13 @@ internal sealed class TopNCollection<T>(int maxItems) : IEnumerable<ScoredValue<
     /// <returns>An enumerator for the collection.</returns>
     public IEnumerator<ScoredValue<T>> GetEnumerator()
     {
-        return this._heap.GetEnumerator();
+        return _heap.GetEnumerator();
     }
 
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        return this._heap.GetEnumerator();
+        return _heap.GetEnumerator();
     }
 
 }

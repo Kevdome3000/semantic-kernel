@@ -21,32 +21,40 @@ public sealed class OrchestrationResult<TValue> : IDisposable
     private readonly ILogger _logger;
     private bool _isDisposed;
 
-    internal OrchestrationResult(OrchestrationContext context, TaskCompletionSource<TValue> completion, CancellationTokenSource orchestrationCancelSource, ILogger logger)
+
+    internal OrchestrationResult(
+        OrchestrationContext context,
+        TaskCompletionSource<TValue> completion,
+        CancellationTokenSource orchestrationCancelSource,
+        ILogger logger)
     {
-        this._cancelSource = orchestrationCancelSource;
-        this._context = context;
-        this._completion = completion;
-        this._logger = logger;
+        _cancelSource = orchestrationCancelSource;
+        _context = context;
+        _completion = completion;
+        _logger = logger;
     }
+
 
     /// <summary>
     /// Releases all resources used by the <see cref="OrchestrationResult{TValue}"/> instance.
     /// </summary>
     public void Dispose()
     {
-        this.Dispose(disposing: true);
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
+
 
     /// <summary>
     /// Gets the orchestration name associated with this orchestration result.
     /// </summary>
-    public string Orchestration => this._context.Orchestration;
+    public string Orchestration => _context.Orchestration;
 
     /// <summary>
     /// Gets the topic identifier associated with this orchestration result.
     /// </summary>
-    public TopicId Topic => this._context.Topic;
+    public TopicId Topic => _context.Topic;
+
 
     /// <summary>
     /// Asynchronously retrieves the orchestration result value.
@@ -61,15 +69,15 @@ public sealed class OrchestrationResult<TValue> : IDisposable
     public async ValueTask<TValue> GetValueAsync(TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
 #if !NETCOREAPP
-        if (this._isDisposed)
+        if (_isDisposed)
         {
-            throw new ObjectDisposedException(this.GetType().Name);
+            throw new ObjectDisposedException(GetType().Name);
         }
 #else
         ObjectDisposedException.ThrowIf(this._isDisposed, this);
 #endif
 
-        this._logger.LogOrchestrationResultAwait(this.Orchestration, this.Topic);
+        _logger.LogOrchestrationResultAwait(Orchestration, Topic);
 
         if (timeout.HasValue)
         {
@@ -84,19 +92,21 @@ public sealed class OrchestrationResult<TValue> : IDisposable
                 throw;
             }
 #else
-            Task completedTask = await Task.WhenAny(this._completion.Task, Task.Delay(timeout.Value, cancellationToken)).ConfigureAwait(false);
-            if (completedTask != this._completion.Task)
+            Task completedTask = await Task.WhenAny(_completion.Task, Task.Delay(timeout.Value, cancellationToken)).ConfigureAwait(false);
+
+            if (completedTask != _completion.Task)
             {
-                this._logger.LogOrchestrationResultTimeout(this.Orchestration, this.Topic);
+                _logger.LogOrchestrationResultTimeout(Orchestration, Topic);
                 throw new TimeoutException($"Orchestration did not complete within the allowed duration ({timeout}).");
             }
 #endif
         }
 
-        this._logger.LogOrchestrationResultComplete(this.Orchestration, this.Topic);
+        _logger.LogOrchestrationResultComplete(Orchestration, Topic);
 
-        return await this._completion.Task.ConfigureAwait(false);
+        return await _completion.Task.ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Cancel the orchestration associated with this result.
@@ -109,29 +119,30 @@ public sealed class OrchestrationResult<TValue> : IDisposable
     public void Cancel()
     {
 #if !NETCOREAPP
-        if (this._isDisposed)
+        if (_isDisposed)
         {
-            throw new ObjectDisposedException(this.GetType().Name);
+            throw new ObjectDisposedException(GetType().Name);
         }
 #else
         ObjectDisposedException.ThrowIf(this._isDisposed, this);
 #endif
 
-        this._logger.LogOrchestrationResultCancelled(this.Orchestration, this.Topic);
-        this._cancelSource.Cancel();
-        this._completion.SetCanceled();
+        _logger.LogOrchestrationResultCancelled(Orchestration, Topic);
+        _cancelSource.Cancel();
+        _completion.SetCanceled();
     }
+
 
     private void Dispose(bool disposing)
     {
-        if (!this._isDisposed)
+        if (!_isDisposed)
         {
             if (disposing)
             {
-                this._cancelSource.Dispose();
+                _cancelSource.Dispose();
             }
 
-            this._isDisposed = true;
+            _isDisposed = true;
         }
     }
 }

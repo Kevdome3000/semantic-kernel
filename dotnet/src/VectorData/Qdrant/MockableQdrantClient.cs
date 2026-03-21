@@ -1,12 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Qdrant.Client;
-using Qdrant.Client.Grpc;
-
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>
@@ -16,8 +9,10 @@ internal class MockableQdrantClient : IDisposable
 {
     /// <summary>Qdrant client that can be used to manage the collections and points in a Qdrant store.</summary>
     private readonly QdrantClient _qdrantClient;
+
     private readonly bool _ownsClient;
     private int _referenceCount = 1;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MockableQdrantClient"/> class.
@@ -28,11 +23,13 @@ internal class MockableQdrantClient : IDisposable
     {
         Verify.NotNull(qdrantClient);
 
-        this._qdrantClient = qdrantClient;
-        this._ownsClient = ownsClient;
+        _qdrantClient = qdrantClient;
+        _ownsClient = ownsClient;
     }
 
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
 
     /// <summary>
     /// Constructor for mocking purposes only.
@@ -41,23 +38,26 @@ internal class MockableQdrantClient : IDisposable
     {
     }
 
+
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     /// <summary>
     /// Gets the internal <see cref="QdrantClient"/> that this mockable instance wraps.
     /// </summary>
-    public QdrantClient QdrantClient => this._qdrantClient;
+    public QdrantClient QdrantClient => _qdrantClient;
+
 
     public void Dispose()
     {
-        if (this._ownsClient)
+        if (_ownsClient)
         {
-            if (Interlocked.Decrement(ref this._referenceCount) == 0)
+            if (Interlocked.Decrement(ref _referenceCount) == 0)
             {
-                this._qdrantClient.Dispose();
+                _qdrantClient.Dispose();
             }
         }
     }
+
 
     /// <summary>
     /// Check if a collection exists.
@@ -69,7 +69,10 @@ internal class MockableQdrantClient : IDisposable
     public virtual Task<bool> CollectionExistsAsync(
         string collectionName,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.CollectionExistsAsync(collectionName, cancellationToken);
+    {
+        return _qdrantClient.CollectionExistsAsync(collectionName, cancellationToken);
+    }
+
 
     /// <summary>
     /// Creates a new collection with the given parameters.
@@ -86,10 +89,13 @@ internal class MockableQdrantClient : IDisposable
         string collectionName,
         VectorParams vectorsConfig,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.CreateCollectionAsync(
+    {
+        return _qdrantClient.CreateCollectionAsync(
             collectionName,
             vectorsConfig,
             cancellationToken: cancellationToken);
+    }
+
 
     /// <summary>
     /// Creates a new collection with the given parameters.
@@ -106,10 +112,13 @@ internal class MockableQdrantClient : IDisposable
         string collectionName,
         VectorParamsMap? vectorsConfig = null,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.CreateCollectionAsync(
+    {
+        return _qdrantClient.CreateCollectionAsync(
             collectionName,
             vectorsConfig,
             cancellationToken: cancellationToken);
+    }
+
 
     /// <summary>
     /// Creates a payload field index in a collection.
@@ -125,7 +134,13 @@ internal class MockableQdrantClient : IDisposable
         string fieldName,
         PayloadSchemaType schemaType = PayloadSchemaType.Keyword,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.CreatePayloadIndexAsync(collectionName, fieldName, schemaType, cancellationToken: cancellationToken);
+    {
+        return _qdrantClient.CreatePayloadIndexAsync(collectionName,
+            fieldName,
+            schemaType,
+            cancellationToken: cancellationToken);
+    }
+
 
     /// <summary>
     /// Drop a collection and all its associated data.
@@ -139,7 +154,10 @@ internal class MockableQdrantClient : IDisposable
         string collectionName,
         TimeSpan? timeout = null,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.DeleteCollectionAsync(collectionName, timeout, cancellationToken);
+    {
+        return _qdrantClient.DeleteCollectionAsync(collectionName, timeout, cancellationToken);
+    }
+
 
     /// <summary>
     /// Gets the names of all existing collections.
@@ -148,7 +166,10 @@ internal class MockableQdrantClient : IDisposable
     /// The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.
     /// </param>
     public virtual Task<IReadOnlyList<string>> ListCollectionsAsync(CancellationToken cancellationToken = default)
-        => this._qdrantClient.ListCollectionsAsync(cancellationToken);
+    {
+        return _qdrantClient.ListCollectionsAsync(cancellationToken);
+    }
+
 
     /// <summary>
     /// Delete a point.
@@ -168,7 +189,15 @@ internal class MockableQdrantClient : IDisposable
         WriteOrderingType? ordering = null,
         ShardKeySelector? shardKeySelector = null,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.DeleteAsync(collectionName, id, wait, ordering, shardKeySelector, cancellationToken: cancellationToken);
+    {
+        return _qdrantClient.DeleteAsync(collectionName,
+            id,
+            wait,
+            ordering,
+            shardKeySelector,
+            cancellationToken: cancellationToken);
+    }
+
 
     /// <summary>
     /// Delete a point.
@@ -176,8 +205,8 @@ internal class MockableQdrantClient : IDisposable
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="id">The ID to delete.</param>
     /// <param name="wait">Whether to wait until the changes have been applied. Defaults to <c>true</c>.</param>
-	/// <param name="ordering">Write ordering guarantees. Defaults to <c>Weak</c>.</param>
-	/// <param name="shardKeySelector">Option for custom sharding to specify used shard keys.</param>
+    /// <param name="ordering">Write ordering guarantees. Defaults to <c>Weak</c>.</param>
+    /// <param name="shardKeySelector">Option for custom sharding to specify used shard keys.</param>
     /// <param name="cancellationToken">
     /// The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.
     /// </param>
@@ -188,7 +217,15 @@ internal class MockableQdrantClient : IDisposable
         WriteOrderingType? ordering = null,
         ShardKeySelector? shardKeySelector = null,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.DeleteAsync(collectionName, id, wait, ordering, shardKeySelector, cancellationToken: cancellationToken);
+    {
+        return _qdrantClient.DeleteAsync(collectionName,
+            id,
+            wait,
+            ordering,
+            shardKeySelector,
+            cancellationToken: cancellationToken);
+    }
+
 
     /// <summary>
     /// Delete a point.
@@ -196,8 +233,8 @@ internal class MockableQdrantClient : IDisposable
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="ids">The IDs to delete.</param>
     /// <param name="wait">Whether to wait until the changes have been applied. Defaults to <c>true</c>.</param>
-	/// <param name="ordering">Write ordering guarantees. Defaults to <c>Weak</c>.</param>
-	/// <param name="shardKeySelector">Option for custom sharding to specify used shard keys.</param>
+    /// <param name="ordering">Write ordering guarantees. Defaults to <c>Weak</c>.</param>
+    /// <param name="shardKeySelector">Option for custom sharding to specify used shard keys.</param>
     /// <param name="cancellationToken">
     /// The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.
     /// </param>
@@ -208,7 +245,15 @@ internal class MockableQdrantClient : IDisposable
         WriteOrderingType? ordering = null,
         ShardKeySelector? shardKeySelector = null,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.DeleteAsync(collectionName, ids, wait, ordering, shardKeySelector, cancellationToken: cancellationToken);
+    {
+        return _qdrantClient.DeleteAsync(collectionName,
+            ids,
+            wait,
+            ordering,
+            shardKeySelector,
+            cancellationToken: cancellationToken);
+    }
+
 
     /// <summary>
     /// Delete a point.
@@ -216,8 +261,8 @@ internal class MockableQdrantClient : IDisposable
     /// <param name="collectionName">The name of the collection.</param>
     /// <param name="ids">The IDs to delete.</param>
     /// <param name="wait">Whether to wait until the changes have been applied. Defaults to <c>true</c>.</param>
-	/// <param name="ordering">Write ordering guarantees. Defaults to <c>Weak</c>.</param>
-	/// <param name="shardKeySelector">Option for custom sharding to specify used shard keys.</param>
+    /// <param name="ordering">Write ordering guarantees. Defaults to <c>Weak</c>.</param>
+    /// <param name="shardKeySelector">Option for custom sharding to specify used shard keys.</param>
     /// <param name="cancellationToken">
     /// The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.
     /// </param>
@@ -228,7 +273,15 @@ internal class MockableQdrantClient : IDisposable
         WriteOrderingType? ordering = null,
         ShardKeySelector? shardKeySelector = null,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.DeleteAsync(collectionName, ids, wait, ordering, shardKeySelector, cancellationToken: cancellationToken);
+    {
+        return _qdrantClient.DeleteAsync(collectionName,
+            ids,
+            wait,
+            ordering,
+            shardKeySelector,
+            cancellationToken: cancellationToken);
+    }
+
 
     /// <summary>
     /// Perform insert and updates on points. If a point with a given ID already exists, it will be overwritten.
@@ -248,7 +301,15 @@ internal class MockableQdrantClient : IDisposable
         WriteOrderingType? ordering = null,
         ShardKeySelector? shardKeySelector = null,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.UpsertAsync(collectionName, points, wait, ordering, shardKeySelector, cancellationToken);
+    {
+        return _qdrantClient.UpsertAsync(collectionName,
+            points,
+            wait,
+            ordering,
+            shardKeySelector,
+            cancellationToken);
+    }
+
 
     /// <summary>
     /// Retrieve points.
@@ -270,7 +331,16 @@ internal class MockableQdrantClient : IDisposable
         ReadConsistency? readConsistency = null,
         ShardKeySelector? shardKeySelector = null,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.RetrieveAsync(collectionName, ids, withPayload, withVectors, readConsistency, shardKeySelector, cancellationToken);
+    {
+        return _qdrantClient.RetrieveAsync(collectionName,
+            ids,
+            withPayload,
+            withVectors,
+            readConsistency,
+            shardKeySelector,
+            cancellationToken);
+    }
+
 
     /// <summary>
     /// Universally query points.
@@ -311,7 +381,8 @@ internal class MockableQdrantClient : IDisposable
         LookupLocation? lookupFrom = null,
         TimeSpan? timeout = null,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.QueryAsync(
+    {
+        return _qdrantClient.QueryAsync(
             collectionName,
             query,
             prefetch,
@@ -328,6 +399,8 @@ internal class MockableQdrantClient : IDisposable
             lookupFrom,
             timeout,
             cancellationToken);
+    }
+
 
     public virtual Task<ScrollResponse> ScrollAsync(
         string collectionName,
@@ -336,7 +409,8 @@ internal class MockableQdrantClient : IDisposable
         uint limit = 10,
         OrderBy? orderBy = null,
         CancellationToken cancellationToken = default)
-        => this._qdrantClient.ScrollAsync(
+    {
+        return _qdrantClient.ScrollAsync(
             collectionName,
             filter,
             limit,
@@ -347,12 +421,14 @@ internal class MockableQdrantClient : IDisposable
             shardKeySelector: null,
             orderBy,
             cancellationToken);
+    }
+
 
     internal MockableQdrantClient Share()
     {
-        if (this._ownsClient)
+        if (_ownsClient)
         {
-            Interlocked.Increment(ref this._referenceCount);
+            Interlocked.Increment(ref _referenceCount);
         }
 
         return this;

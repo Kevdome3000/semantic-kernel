@@ -26,15 +26,16 @@ public partial class RegexTerminationStrategyTests
 
         // Act and Assert
         await VerifyResultAsync(
-            expectedResult: false,
-            new(r),
-            content: "fred");
+            false,
+            new RegexTerminationStrategy(r),
+            "fred");
 
         await VerifyResultAsync(
-            expectedResult: true,
-            new(r),
-            content: "this is a test");
+            true,
+            new RegexTerminationStrategy(r),
+            "this is a test");
     }
+
 
     private static async Task VerifyResultAsync(bool expectedResult, RegexTerminationStrategy strategyRoot, string content)
     {
@@ -48,6 +49,7 @@ public partial class RegexTerminationStrategyTests
         // Assert
         Assert.Equal(expectedResult, result);
     }
+
 
     [GeneratedRegex("(?:^|\\W)test(?:$|\\W)")]
     private static partial Regex MyRegex();

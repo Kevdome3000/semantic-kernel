@@ -1,6 +1,7 @@
 # Microsoft.SemanticKernel.Connectors.Milvus
 
-This is an implementation of the Semantic Kernel Memory Store abstraction for the [Milvus vector database](https://milvus.io).
+This is an implementation of the Semantic Kernel Memory Store abstraction for
+the [Milvus vector database](https://milvus.io).
 
 **Note:** Currently, only Milvus v2.2 is supported. v2.3 is coming soon, older versions are untested.
 
@@ -30,4 +31,6 @@ SemanticTextMemory textMemory = new(memoryStore, embeddingGenerator);
 var memoryPlugin = kernel.ImportPluginFromObject(new TextMemoryPlugin(textMemory));
 ```
 
-More information on setting up Milvus can be found [here](https://milvus.io/docs/v2.2.x/install_standalone-docker.md). The `MilvusMemoryStore` constructor provides additional configuration options, such as the vector size, the similarity metric type, etc.
+More information on setting up Milvus can be found [here](https://milvus.io/docs/v2.2.x/install_standalone-docker.md).
+The `MilvusMemoryStore` constructor provides additional configuration options, such as the vector size, the similarity
+metric type, etc.

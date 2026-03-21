@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
@@ -16,6 +14,7 @@ public class AgentThreadOperationException : KernelException
     {
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentThreadOperationException"/> class with a specified error message.
     /// </summary>
@@ -23,6 +22,7 @@ public class AgentThreadOperationException : KernelException
     public AgentThreadOperationException(string? message) : base(message)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentThreadOperationException"/> class with a specified error message and a reference to the inner exception that is the cause of this exception.

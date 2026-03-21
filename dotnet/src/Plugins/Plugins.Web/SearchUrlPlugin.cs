@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.Web;
-
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 
+namespace Microsoft.SemanticKernel.Plugins.Web;
 
 /// <summary>
 /// Get search URLs for various websites
@@ -19,7 +18,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Amazon
     /// </summary>
-    [KernelFunction, Description("Return URL for Amazon search query")]
+    [KernelFunction] [Description("Return URL for Amazon search query")]
     public string AmazonSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -33,7 +32,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Bing
     /// </summary>
-    [KernelFunction, Description("Return URL for Bing search query.")]
+    [KernelFunction] [Description("Return URL for Bing search query.")]
     public string BingSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -44,7 +43,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Bing Images
     /// </summary>
-    [KernelFunction, Description("Return URL for Bing Images search query.")]
+    [KernelFunction] [Description("Return URL for Bing Images search query.")]
     public string BingImagesSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -55,7 +54,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Bing Maps
     /// </summary>
-    [KernelFunction, Description("Return URL for Bing Maps search query.")]
+    [KernelFunction] [Description("Return URL for Bing Maps search query.")]
     public string BingMapsSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -66,7 +65,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Bing Shopping
     /// </summary>
-    [KernelFunction, Description("Return URL for Bing Shopping search query.")]
+    [KernelFunction] [Description("Return URL for Bing Shopping search query.")]
     public string BingShoppingSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -77,7 +76,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Bing News
     /// </summary>
-    [KernelFunction, Description("Return URL for Bing News search query.")]
+    [KernelFunction] [Description("Return URL for Bing News search query.")]
     public string BingNewsSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -88,7 +87,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Bing Travel
     /// </summary>
-    [KernelFunction, Description("Return URL for Bing Travel search query.")]
+    [KernelFunction] [Description("Return URL for Bing Travel search query.")]
     public string BingTravelSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -102,52 +101,57 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Brave
     /// </summary>
-    [KernelFunction, Description("Return URL for Brave search query.")]
+    [KernelFunction] [Description("Return URL for Brave search query.")]
     public string BraveSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
         return $"https://search.brave.com/search?q={encoded}";
     }
 
+
     /// <summary>
     /// Get search URL for Brave Images
     /// </summary>
-    [KernelFunction, Description("Return URL for Brave Images search query.")]
+    [KernelFunction] [Description("Return URL for Brave Images search query.")]
     public string BraveImagesSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
         return $"https://search.brave.com/images?q={encoded}";
     }
 
+
     /// <summary>
     /// Get search URL for Brave News
     /// </summary>
-    [KernelFunction, Description("Return URL for Brave News search query.")]
+    [KernelFunction] [Description("Return URL for Brave News search query.")]
     public string BraveNewsSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
         return $"https://search.brave.com/news?q={encoded}";
     }
 
+
     /// <summary>
     /// Get search URL for Brave Googles
     /// </summary>
-    [KernelFunction, Description("Return URL for Brave Googles search query.")]
+    [KernelFunction] [Description("Return URL for Brave Googles search query.")]
     public string BraveGooglesSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
         return $"https://search.brave.com/goggles?q={encoded}";
     }
 
+
     /// <summary>
     /// Get search URL for Brave Videos
     /// </summary>
-    [KernelFunction, Description("Return URL for Brave Videos search query.")]
+    [KernelFunction] [Description("Return URL for Brave Videos search query.")]
     public string BraveVideosSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
         return $"https://search.brave.com/videos?q={encoded}";
     }
+
 
     /**
      * Facebook Search URLs
@@ -155,7 +159,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Facebook
     /// </summary>
-    [KernelFunction, Description("Return URL for Facebook search query.")]
+    [KernelFunction] [Description("Return URL for Facebook search query.")]
     public string FacebookSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -169,7 +173,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for GitHub
     /// </summary>
-    [KernelFunction, Description("Return URL for GitHub search query.")]
+    [KernelFunction] [Description("Return URL for GitHub search query.")]
     public string GitHubSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -183,7 +187,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for LinkedIn
     /// </summary>
-    [KernelFunction, Description("Return URL for LinkedIn search query.")]
+    [KernelFunction] [Description("Return URL for LinkedIn search query.")]
     public string LinkedInSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -197,7 +201,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Twitter
     /// </summary>
-    [KernelFunction, Description("Return URL for Twitter search query.")]
+    [KernelFunction] [Description("Return URL for Twitter search query.")]
     public string TwitterSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);
@@ -211,7 +215,7 @@ public sealed class SearchUrlPlugin
     /// <summary>
     /// Get search URL for Wikipedia
     /// </summary>
-    [KernelFunction, Description("Return URL for Wikipedia search query.")]
+    [KernelFunction] [Description("Return URL for Wikipedia search query.")]
     public string WikipediaSearchUrl([Description("Text to search for")] string query)
     {
         string encoded = UrlEncoder.Default.Encode(query);

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.TextToAudio;
+
 /// <summary>
 /// Class with extension methods for <see cref="ITextToAudioService"/> interface.
 /// </summary>
@@ -25,6 +26,11 @@ public static class TextToAudioServiceExtensions
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => (await textToAudioService.GetAudioContentsAsync(text, executionSettings, kernel, cancellationToken).
-            ConfigureAwait(false)).Single();
+    {
+        return (await textToAudioService.GetAudioContentsAsync(text,
+                executionSettings,
+                kernel,
+                cancellationToken)
+            .ConfigureAwait(false)).Single();
+    }
 }

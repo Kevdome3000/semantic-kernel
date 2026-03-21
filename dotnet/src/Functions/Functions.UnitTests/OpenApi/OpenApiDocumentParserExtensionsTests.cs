@@ -21,13 +21,15 @@ public class OpenApiDocumentParserExtensionsTests
     /// </summary>
     private readonly OpenApiDocumentParser _sut;
 
+
     /// <summary>
     /// Creates an instance of a <see cref="OpenApiDocumentParserV31Tests"/> class.
     /// </summary>
     public OpenApiDocumentParserExtensionsTests()
     {
-        this._sut = new OpenApiDocumentParser();
+        _sut = new OpenApiDocumentParser();
     }
+
 
     [Theory]
     [InlineData("documentV2_0.json")]
@@ -39,7 +41,7 @@ public class OpenApiDocumentParserExtensionsTests
         using var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentName);
 
         // Act.
-        var restApi = await this._sut.ParseAsync(openApiDocument);
+        var restApi = await _sut.ParseAsync(openApiDocument);
 
         // Assert.
         Assert.NotNull(restApi.Operations);
@@ -78,6 +80,7 @@ public class OpenApiDocumentParserExtensionsTests
         Assert.Equal("{\"key1\":\"value1\",\"key2\":\"value2\"}", objectValue);
     }
 
+
     [Theory]
     [InlineData("documentV3_0.json")]
     [InlineData("documentV3_1.yaml")]
@@ -87,7 +90,7 @@ public class OpenApiDocumentParserExtensionsTests
         using var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentName);
 
         // Act.
-        var restApi = await this._sut.ParseAsync(openApiDocument);
+        var restApi = await _sut.ParseAsync(openApiDocument);
 
         // Assert.
         Assert.NotNull(restApi.Operations);

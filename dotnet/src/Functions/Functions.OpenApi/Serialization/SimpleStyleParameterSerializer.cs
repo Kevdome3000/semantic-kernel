@@ -24,6 +24,7 @@ internal static class SimpleStyleParameterSerializer
         Verify.NotNull(argument);
 
         var style = parameter.Style ?? RestApiParameterStyle.Simple;
+
         if (style != RestApiParameterStyle.Simple)
         {
             throw new NotSupportedException($"Unsupported Rest API parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
@@ -45,6 +46,7 @@ internal static class SimpleStyleParameterSerializer
         return argument.ToString().Trim('"');
     }
 
+
     /// <summary>
     /// Serializes an array-type parameter.
     /// </summary>
@@ -58,6 +60,6 @@ internal static class SimpleStyleParameterSerializer
             throw new ArgumentException(parameter.Name, $"Unexpected argument type '{argument.GetType()} with value '{argument}' for parameter type '{parameter.Type}'.");
         }
 
-        return ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: ",", encode: false); //1,2,3
+        return ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, ",", false); //1,2,3
     }
 }

@@ -11,6 +11,7 @@ namespace Microsoft.SemanticKernel.Memory;
 
 #pragma warning disable CS0618 // Type or member is obsolete
 
+
 /// <summary>
 /// A builder for Memory plugin.
 /// </summary>
@@ -25,20 +26,20 @@ public sealed class MemoryBuilder
 
     private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
 
+
     /// <summary>
     /// Build a new instance of <see cref="ISemanticTextMemory"/> using the settings passed so far.
     /// </summary>
     /// <returns>Instance of <see cref="ISemanticTextMemory"/>.</returns>
     public ISemanticTextMemory Build()
     {
-        var memoryStore = _memoryStoreFactory?.Invoke() ??
-                          throw new KernelException($"{nameof(IMemoryStore)} dependency was not provided. Use {nameof(WithMemoryStore)} method.");
+        var memoryStore = _memoryStoreFactory?.Invoke() ?? throw new KernelException($"{nameof(IMemoryStore)} dependency was not provided. Use {nameof(WithMemoryStore)} method.");
 
-        var embeddingGeneration = _embeddingGenerationFactory?.Invoke() ??
-                                  throw new KernelException($"{nameof(ITextEmbeddingGenerationService)} dependency was not provided. Use {nameof(WithTextEmbeddingGeneration)} method.");
+        var embeddingGeneration = _embeddingGenerationFactory?.Invoke() ?? throw new KernelException($"{nameof(ITextEmbeddingGenerationService)} dependency was not provided. Use {nameof(WithTextEmbeddingGeneration)} method.");
 
         return new SemanticTextMemory(memoryStore, embeddingGeneration);
     }
+
 
     /// <summary>
     /// Add a logger factory.
@@ -53,6 +54,7 @@ public sealed class MemoryBuilder
         return this;
     }
 
+
     /// <summary>
     /// Add an HttpClient.
     /// </summary>
@@ -65,6 +67,7 @@ public sealed class MemoryBuilder
 
         return this;
     }
+
 
     /// <summary>
     /// Add memory store.
@@ -79,6 +82,7 @@ public sealed class MemoryBuilder
         return this;
     }
 
+
     /// <summary>
     /// Add memory store factory.
     /// </summary>
@@ -91,6 +95,7 @@ public sealed class MemoryBuilder
 
         return this;
     }
+
 
     /// <summary>
     /// Add memory store factory.
@@ -105,6 +110,7 @@ public sealed class MemoryBuilder
         return this;
     }
 
+
     /// <summary>
     /// Add text embedding generation.
     /// </summary>
@@ -117,6 +123,7 @@ public sealed class MemoryBuilder
 
         return this;
     }
+
 
     /// <summary>
     /// Add text embedding generation.

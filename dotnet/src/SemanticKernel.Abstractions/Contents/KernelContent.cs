@@ -5,22 +5,23 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Agents;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Base class for all AI non-streaming results
 /// </summary>
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type", UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToNearestAncestor)]
-[JsonDerivedType(typeof(TextContent), typeDiscriminator: nameof(TextContent))]
-[JsonDerivedType(typeof(ImageContent), typeDiscriminator: nameof(ImageContent))]
-[JsonDerivedType(typeof(FunctionCallContent), typeDiscriminator: nameof(FunctionCallContent))]
-[JsonDerivedType(typeof(FunctionResultContent), typeDiscriminator: nameof(FunctionResultContent))]
-[JsonDerivedType(typeof(BinaryContent), typeDiscriminator: nameof(BinaryContent))]
-[JsonDerivedType(typeof(AudioContent), typeDiscriminator: nameof(AudioContent))]
-[JsonDerivedType(typeof(ChatMessageContent), typeDiscriminator: nameof(ChatMessageContent))]
+[JsonDerivedType(typeof(TextContent), nameof(TextContent))]
+[JsonDerivedType(typeof(ImageContent), nameof(ImageContent))]
+[JsonDerivedType(typeof(FunctionCallContent), nameof(FunctionCallContent))]
+[JsonDerivedType(typeof(FunctionResultContent), nameof(FunctionResultContent))]
+[JsonDerivedType(typeof(BinaryContent), nameof(BinaryContent))]
+[JsonDerivedType(typeof(AudioContent), nameof(AudioContent))]
+[JsonDerivedType(typeof(ChatMessageContent), nameof(ChatMessageContent))]
 #pragma warning disable SKEXP0110
-[JsonDerivedType(typeof(ActionContent), typeDiscriminator: nameof(ActionContent))]
-[JsonDerivedType(typeof(ReasoningContent), typeDiscriminator: nameof(ReasoningContent))]
-[JsonDerivedType(typeof(AnnotationContent), typeDiscriminator: nameof(AnnotationContent))]
-[JsonDerivedType(typeof(FileReferenceContent), typeDiscriminator: nameof(FileReferenceContent))]
+[JsonDerivedType(typeof(ActionContent), nameof(ActionContent))]
+[JsonDerivedType(typeof(ReasoningContent), nameof(ReasoningContent))]
+[JsonDerivedType(typeof(AnnotationContent), nameof(AnnotationContent))]
+[JsonDerivedType(typeof(FileReferenceContent), nameof(FileReferenceContent))]
 #pragma warning disable SKEXP0110
 public abstract class KernelContent
 {
@@ -51,12 +52,14 @@ public abstract class KernelContent
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, object?>? Metadata { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelContent"/> class.
     /// </summary>
     protected KernelContent()
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelContent"/> class.

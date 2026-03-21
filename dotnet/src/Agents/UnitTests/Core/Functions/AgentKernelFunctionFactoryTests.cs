@@ -25,7 +25,7 @@ public class AgentKernelFunctionFactoryTests
     public void VerifyCreateFromAgent()
     {
         // Arrange
-        var agent = new MockAgent()
+        var agent = new MockAgent
         {
             Name = "MyAgent",
             Description = "Description for MyAgent"
@@ -40,6 +40,7 @@ public class AgentKernelFunctionFactoryTests
         Assert.Equal(agent.Description, function.Description);
     }
 
+
     /// <summary>
     /// Verify calling AgentKernelFunctionFactory.CreateFromAgent with overrides.
     /// </summary>
@@ -47,7 +48,7 @@ public class AgentKernelFunctionFactoryTests
     public void VerifyCreateFromAgentWithOverrides()
     {
         // Arrange
-        var agent = new MockAgent()
+        var agent = new MockAgent
         {
             Name = "MyAgent",
             Description = "Description for MyAgent"
@@ -58,13 +59,14 @@ public class AgentKernelFunctionFactoryTests
             agent,
             "MyAgentFunction",
             "Description for MyAgentFunction"
-            );
+        );
 
         // Assert
         Assert.NotNull(function);
         Assert.Equal("MyAgentFunction", function.Name);
         Assert.Equal("Description for MyAgentFunction", function.Description);
     }
+
 
     /// <summary>
     /// Verify invoking function returned by AgentKernelFunctionFactory.CreateFromAgent.
@@ -73,7 +75,7 @@ public class AgentKernelFunctionFactoryTests
     public async Task VerifyInvokeAgentAsKernelFunctionAsync()
     {
         // Arrange
-        var agent = new MockAgent()
+        var agent = new MockAgent
         {
             Name = "MyAgent",
             Description = "Description for MyAgent"
@@ -85,7 +87,7 @@ public class AgentKernelFunctionFactoryTests
         {
             { "query", "Mock query" }
         };
-        var result = await function.InvokeAsync(new(), arguments);
+        var result = await function.InvokeAsync(new Kernel(), arguments);
 
         // Assert
         Assert.NotNull(result);
@@ -95,6 +97,7 @@ public class AgentKernelFunctionFactoryTests
         Assert.Equal("Response to: 'Mock query' with instructions: ''", items.First().ToString());
     }
 
+
     /// <summary>
     /// Verify invoking function returned by AgentKernelFunctionFactory.CreateFromAgent.
     /// </summary>
@@ -102,7 +105,7 @@ public class AgentKernelFunctionFactoryTests
     public async Task VerifyInvokeAgentAsKernelFunctionWithNoQueryAsync()
     {
         // Arrange
-        var agent = new MockAgent()
+        var agent = new MockAgent
         {
             Name = "MyAgent",
             Description = "Description for MyAgent"
@@ -110,7 +113,7 @@ public class AgentKernelFunctionFactoryTests
         var function = AgentKernelFunctionFactory.CreateFromAgent(agent);
 
         // Act
-        var result = await function.InvokeAsync(new());
+        var result = await function.InvokeAsync(new Kernel());
 
         // Assert
         Assert.NotNull(result);
@@ -120,6 +123,7 @@ public class AgentKernelFunctionFactoryTests
         Assert.Equal("Response to: '' with instructions: ''", items.First().ToString());
     }
 
+
     /// <summary>
     /// Verify invoking function returned by AgentKernelFunctionFactory.CreateFromAgent.
     /// </summary>
@@ -127,7 +131,7 @@ public class AgentKernelFunctionFactoryTests
     public async Task VerifyInvokeAgentAsKernelFunctionWithInstructionsAsync()
     {
         // Arrange
-        var agent = new MockAgent()
+        var agent = new MockAgent
         {
             Name = "MyAgent",
             Description = "Description for MyAgent"
@@ -140,7 +144,7 @@ public class AgentKernelFunctionFactoryTests
             { "query", "Mock query" },
             { "instructions", "Mock instructions" }
         };
-        var result = await function.InvokeAsync(new(), arguments);
+        var result = await function.InvokeAsync(new Kernel(), arguments);
 
         // Assert
         Assert.NotNull(result);
@@ -150,14 +154,20 @@ public class AgentKernelFunctionFactoryTests
         Assert.Equal("Response to: 'Mock query' with instructions: 'Mock instructions'", items.First().ToString());
     }
 
+
     /// <summary>
     /// Mock implementation of <see cref="Agent"/>.
     /// </summary>
     private sealed class MockAgent : Agent
     {
-        public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public override async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+            ICollection<ChatMessageContent> messages,
+            AgentThread? thread = null,
+            AgentInvokeOptions? options = null,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             var agentThread = thread ?? new MockAgentThread();
+
             foreach (var message in messages)
             {
                 await Task.Delay(100, cancellationToken);
@@ -165,26 +175,35 @@ public class AgentKernelFunctionFactoryTests
             }
         }
 
-        public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+
+        public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+            ICollection<ChatMessageContent> messages,
+            AgentThread? thread = null,
+            AgentInvokeOptions? options = null,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
+
 
         protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
+
         protected internal override IEnumerable<string> GetChannelKeys()
         {
             throw new NotImplementedException();
         }
+
 
         protected internal override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
     }
+
 
     /// <summary>
     /// Mock implementation of <see cref="AgentThread"/>
@@ -196,10 +215,12 @@ public class AgentKernelFunctionFactoryTests
             return Task.FromResult<string?>("mock_thread_id");
         }
 
+
         protected override Task DeleteInternalAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
+
 
         protected override Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
         {

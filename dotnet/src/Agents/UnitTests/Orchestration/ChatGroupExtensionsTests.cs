@@ -25,13 +25,14 @@ public class ChatGroupExtensionsTests
         Assert.Equal("AgentOne,AgentTwo,AgentThree", result);
     }
 
+
     [Fact]
     public void FormatNames_WithSingleAgent_ReturnsSingleName()
     {
         // Arrange
         GroupChatTeam group = new()
         {
-            { "AgentOne", ("agent1", "First agent description") },
+            { "AgentOne", ("agent1", "First agent description") }
         };
 
         // Act
@@ -40,6 +41,7 @@ public class ChatGroupExtensionsTests
         // Assert
         Assert.Equal("AgentOne", result);
     }
+
 
     [Fact]
     public void FormatNames_WithEmptyGroup_ReturnsEmptyString()
@@ -53,6 +55,7 @@ public class ChatGroupExtensionsTests
         // Assert
         Assert.Equal(string.Empty, result);
     }
+
 
     [Fact]
     public void FormatList_WithMultipleAgents_ReturnsMarkdownList()
@@ -77,6 +80,7 @@ public class ChatGroupExtensionsTests
             """;
         Assert.Equal(Expected, result);
     }
+
 
     [Fact]
     public void FormatList_WithEmptyGroup_ReturnsEmptyString()

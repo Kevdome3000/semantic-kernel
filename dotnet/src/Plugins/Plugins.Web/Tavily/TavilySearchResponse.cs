@@ -57,16 +57,17 @@ internal sealed class TavilySearchResponse
     [JsonExtensionData]
     public IDictionary<string, object> AdditionalProperties { get; set; } = new Dictionary<string, object>();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TavilySearchResponse" /> class.
     /// </summary>
     [JsonConstructorAttribute]
     internal TavilySearchResponse(
-            string query,
-            double responseTime,
-            IList<TavilySearchResult> results,
-            string? answer,
-            IList<TavilyImageResult>? images)
+        string query,
+        double responseTime,
+        IList<TavilySearchResult> results,
+        string? answer,
+        IList<TavilyImageResult>? images)
     {
         Query = query ?? throw new ArgumentNullException(nameof(query));
         ResponseTime = responseTime;

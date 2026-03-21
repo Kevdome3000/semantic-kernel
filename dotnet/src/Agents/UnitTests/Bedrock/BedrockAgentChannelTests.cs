@@ -2,9 +2,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgent;
+using Amazon.BedrockAgent.Model;
 using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
 using Microsoft.SemanticKernel;
@@ -20,13 +22,14 @@ namespace SemanticKernel.Agents.UnitTests.Bedrock;
 /// </summary>
 public class BedrockAgentChannelTests
 {
-    private readonly Amazon.BedrockAgent.Model.Agent _agentModel = new()
+    private readonly Agent _agentModel = new()
     {
         AgentId = "1234567890",
         AgentName = "testName",
         Description = "test description",
-        Instruction = "Instruction must have at least 40 characters",
+        Instruction = "Instruction must have at least 40 characters"
     };
+
 
     /// <summary>
     /// Verify the simple scenario of receiving messages in a <see cref="BedrockAgentChannel"/>.
@@ -36,7 +39,7 @@ public class BedrockAgentChannelTests
     {
         // Arrange
         BedrockAgentChannel channel = new();
-        List<ChatMessageContent> history = this.CreateNormalHistory();
+        List<ChatMessageContent> history = CreateNormalHistory();
 
         // Act
         await channel.ReceiveAsync(history);
@@ -44,6 +47,7 @@ public class BedrockAgentChannelTests
         // Assert
         Assert.Equal(2, await channel.GetHistoryAsync().CountAsync());
     }
+
 
     /// <summary>
     /// Verify the <see cref="BedrockAgentChannel"/> skips messages with empty content.
@@ -53,11 +57,12 @@ public class BedrockAgentChannelTests
     {
         // Arrange
         BedrockAgentChannel channel = new();
-        List<ChatMessageContent> history = [
-            new ChatMessageContent()
+        List<ChatMessageContent> history =
+        [
+            new()
             {
-                Role = AuthorRole.User,
-            },
+                Role = AuthorRole.User
+            }
         ];
 
         // Act
@@ -67,6 +72,7 @@ public class BedrockAgentChannelTests
         Assert.Empty(await channel.GetHistoryAsync().ToArrayAsync());
     }
 
+
     /// <summary>
     /// Verify the channel inserts placeholders when the message sequence is incorrect.
     /// </summary>
@@ -75,7 +81,7 @@ public class BedrockAgentChannelTests
     {
         // Arrange
         BedrockAgentChannel channel = new();
-        List<ChatMessageContent> history = this.CreateIncorrectSequenceHistory();
+        List<ChatMessageContent> history = CreateIncorrectSequenceHistory();
 
         // Act
         await channel.ReceiveAsync(history);
@@ -86,6 +92,7 @@ public class BedrockAgentChannelTests
         Assert.Equal(AuthorRole.User, (await channel.GetHistoryAsync().ToArrayAsync())[3].Role);
     }
 
+
     /// <summary>
     /// Verify the channel empties the history when reset.
     /// </summary>
@@ -94,7 +101,7 @@ public class BedrockAgentChannelTests
     {
         // Arrange
         BedrockAgentChannel channel = new();
-        List<ChatMessageContent> history = this.CreateNormalHistory();
+        List<ChatMessageContent> history = CreateNormalHistory();
 
         // Act
         await channel.ReceiveAsync(history);
@@ -109,6 +116,7 @@ public class BedrockAgentChannelTests
         Assert.Empty(await channel.GetHistoryAsync().ToArrayAsync());
     }
 
+
     /// <summary>
     /// Verify the channel correctly prepares the history for invocation.
     /// </summary>
@@ -116,34 +124,36 @@ public class BedrockAgentChannelTests
     public async Task VerifyInvokeAsync()
     {
         // Arrange
-        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
-        BedrockAgent agent = new(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
+        var (mockClient, mockRuntimeClient) = CreateMockClients();
+        BedrockAgent agent = new(_agentModel, mockClient.Object, mockRuntimeClient.Object);
 
         BedrockAgentChannel channel = new();
-        List<ChatMessageContent> history = this.CreateIncorrectSequenceHistory();
+        List<ChatMessageContent> history = CreateIncorrectSequenceHistory();
 
         // Act
         async Task InvokeAgent()
         {
             await channel.ReceiveAsync(history);
+
             await foreach (var _ in channel.InvokeAsync(agent))
             {
-                continue;
             }
         }
 
         // Assert
         await Assert.ThrowsAsync<HttpOperationException>(() => InvokeAgent());
         mockRuntimeClient.Verify(x => x.InvokeAgentAsync(
-            It.Is<InvokeAgentRequest>(r =>
-                r.AgentAliasId == BedrockAgent.WorkingDraftAgentAlias
-                && r.AgentId == this._agentModel.AgentId
-                && r.InputText == "[SILENCE]"   // Inserted by `EnsureLastMessageIsUser`.
-                && r.SessionState.ConversationHistory.Messages.Count == 6   // There is also a user message inserted between the two agent messages.
+                It.Is<InvokeAgentRequest>(r =>
+                        r.AgentAliasId == BedrockAgent.WorkingDraftAgentAlias
+                        && r.AgentId == _agentModel.AgentId
+                        && r.InputText == "[SILENCE]" // Inserted by `EnsureLastMessageIsUser`.
+                        && r.SessionState.ConversationHistory.Messages.Count == 6 // There is also a user message inserted between the two agent messages.
+                ),
+                It.IsAny<CancellationToken>()
             ),
-            It.IsAny<CancellationToken>()
-        ), Times.Once);
+            Times.Once);
     }
+
 
     /// <summary>
     /// Verify the channel returns an empty stream when invoking with an empty history.
@@ -152,13 +162,14 @@ public class BedrockAgentChannelTests
     public async Task VerifyInvokeWithEmptyHistoryAsync()
     {
         // Arrange
-        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
-        BedrockAgent agent = new(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
+        var (mockClient, mockRuntimeClient) = CreateMockClients();
+        BedrockAgent agent = new(_agentModel, mockClient.Object, mockRuntimeClient.Object);
 
         BedrockAgentChannel channel = new();
 
         // Act
         List<ChatMessageContent> history = [];
+
         await foreach ((bool _, ChatMessageContent Message) in channel.InvokeAsync(agent))
         {
             history.Add(Message);
@@ -168,6 +179,7 @@ public class BedrockAgentChannelTests
         Assert.Empty(history);
     }
 
+
     /// <summary>
     /// Verify the channel correctly prepares the history for streaming invocation.
     /// </summary>
@@ -175,34 +187,36 @@ public class BedrockAgentChannelTests
     public async Task VerifyInvokeStreamAsync()
     {
         // Arrange
-        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
-        BedrockAgent agent = new(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
+        var (mockClient, mockRuntimeClient) = CreateMockClients();
+        BedrockAgent agent = new(_agentModel, mockClient.Object, mockRuntimeClient.Object);
 
         BedrockAgentChannel channel = new();
-        List<ChatMessageContent> history = this.CreateIncorrectSequenceHistory();
+        List<ChatMessageContent> history = CreateIncorrectSequenceHistory();
 
         // Act
         async Task InvokeAgent()
         {
             await channel.ReceiveAsync(history);
+
             await foreach (var _ in channel.InvokeStreamingAsync(agent, []))
             {
-                continue;
             }
         }
 
         // Assert
         await Assert.ThrowsAsync<HttpOperationException>(() => InvokeAgent());
         mockRuntimeClient.Verify(x => x.InvokeAgentAsync(
-            It.Is<InvokeAgentRequest>(r =>
-                r.AgentAliasId == BedrockAgent.WorkingDraftAgentAlias
-                && r.AgentId == this._agentModel.AgentId
-                && r.InputText == "[SILENCE]"   // Inserted by `EnsureLastMessageIsUser`.
-                && r.SessionState.ConversationHistory.Messages.Count == 6   // There is also a user message inserted between the two agent messages.
+                It.Is<InvokeAgentRequest>(r =>
+                        r.AgentAliasId == BedrockAgent.WorkingDraftAgentAlias
+                        && r.AgentId == _agentModel.AgentId
+                        && r.InputText == "[SILENCE]" // Inserted by `EnsureLastMessageIsUser`.
+                        && r.SessionState.ConversationHistory.Messages.Count == 6 // There is also a user message inserted between the two agent messages.
+                ),
+                It.IsAny<CancellationToken>()
             ),
-            It.IsAny<CancellationToken>()
-        ), Times.Once);
+            Times.Once);
     }
+
 
     /// <summary>
     /// Verify the channel returns an empty stream when invoking with an empty history.
@@ -211,13 +225,14 @@ public class BedrockAgentChannelTests
     public async Task VerifyInvokeStreamingWithEmptyHistoryAsync()
     {
         // Arrange
-        var (mockClient, mockRuntimeClient) = this.CreateMockClients();
-        BedrockAgent agent = new(this._agentModel, mockClient.Object, mockRuntimeClient.Object);
+        var (mockClient, mockRuntimeClient) = CreateMockClients();
+        BedrockAgent agent = new(_agentModel, mockClient.Object, mockRuntimeClient.Object);
 
         BedrockAgentChannel channel = new();
 
         // Act
         List<StreamingChatMessageContent> history = [];
+
         await foreach (var message in channel.InvokeStreamingAsync(agent, []))
         {
             history.Add(message);
@@ -227,14 +242,16 @@ public class BedrockAgentChannelTests
         Assert.Empty(history);
     }
 
+
     private List<ChatMessageContent> CreateNormalHistory()
     {
         return
         [
             new ChatMessageContent(AuthorRole.User, "Hi!"),
-            new ChatMessageContent(AuthorRole.Assistant, "Hi, how can I help you?"),
+            new ChatMessageContent(AuthorRole.Assistant, "Hi, how can I help you?")
         ];
     }
+
 
     private List<ChatMessageContent> CreateIncorrectSequenceHistory()
     {
@@ -253,9 +270,10 @@ public class BedrockAgentChannelTests
             new ChatMessageContent(AuthorRole.Assistant, "Is there anything else you need?")
             {
                 AuthorName = "Agent 1"
-            },
+            }
         ];
     }
+
 
     private (Mock<IAmazonBedrockAgent>, Mock<IAmazonBedrockAgentRuntime>) CreateMockClients()
     {
@@ -263,15 +281,16 @@ public class BedrockAgentChannelTests
         Mock<IAmazonBedrockAgentRuntime> mockRuntimeClient = new();
 #pragma warning disable CA2000 // Dispose objects before losing scope
         mockRuntimeClient.Setup(x => x.InvokeAgentAsync(
-            It.IsAny<InvokeAgentRequest>(),
-            It.IsAny<CancellationToken>())
-        ).ReturnsAsync(new InvokeAgentResponse()
-        {
-            // It's not important what the response is for this test.
-            // And it's difficult to mock the response stream.
-            // Tests should expect an exception to be thrown.
-            HttpStatusCode = System.Net.HttpStatusCode.NotFound,
-        });
+                It.IsAny<InvokeAgentRequest>(),
+                It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync(new InvokeAgentResponse
+            {
+                // It's not important what the response is for this test.
+                // And it's difficult to mock the response stream.
+                // Tests should expect an exception to be thrown.
+                HttpStatusCode = HttpStatusCode.NotFound
+            });
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
         return (mockClient, mockRuntimeClient);

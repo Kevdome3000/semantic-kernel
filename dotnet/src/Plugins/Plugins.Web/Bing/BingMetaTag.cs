@@ -17,6 +17,7 @@ public sealed class BingMetaTag
     {
     }
 
+
     /// <summary>
     /// The metadata.
     /// </summary>

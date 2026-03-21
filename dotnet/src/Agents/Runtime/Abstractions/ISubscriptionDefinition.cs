@@ -14,12 +14,14 @@ public interface ISubscriptionDefinition
     /// </summary>
     string Id { get; }
 
+
     /// <summary>
     /// Determines whether the specified object is equal to the current subscription.
     /// </summary>
     /// <param name="obj">The object to compare with the current instance.</param>
     /// <returns><c>true</c> if the specified object is equal to this instance; otherwise, <c>false</c>.</returns>
     bool Equals([NotNullWhen(true)] object? obj);
+
 
     /// <summary>
     /// Determines whether the specified subscription is equal to the current subscription.
@@ -28,11 +30,13 @@ public interface ISubscriptionDefinition
     /// <returns><c>true</c> if the subscriptions are equal; otherwise, <c>false</c>.</returns>
     bool Equals(ISubscriptionDefinition? other);
 
+
     /// <summary>
     /// Returns a hash code for this subscription.
     /// </summary>
     /// <returns>A hash code for the subscription.</returns>
     int GetHashCode();
+
 
     /// <summary>
     /// Checks if a given <see cref="TopicId"/> matches the subscription.
@@ -40,6 +44,7 @@ public interface ISubscriptionDefinition
     /// <param name="topic">The topic to check.</param>
     /// <returns><c>true</c> if the topic matches the subscription; otherwise, <c>false</c>.</returns>
     bool Matches(TopicId topic);
+
 
     /// <summary>
     /// Maps a <see cref="TopicId"/> to an <see cref="AgentId"/>.

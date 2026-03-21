@@ -33,6 +33,7 @@ internal sealed class CopilotStudioTokenHandler : DelegatingHandler
 
     private IConfidentialClientApplication? _clientApplication;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CopilotStudioTokenHandler"/> class with the specified connection settings.`
     /// </summary>
@@ -41,17 +42,18 @@ internal sealed class CopilotStudioTokenHandler : DelegatingHandler
     {
         Verify.NotNull(settings, nameof(settings));
 
-        this._settings = settings;
-        this._scopes = [CopilotClient.ScopeFromSettings(this._settings)];
-        this.InnerHandler = new HttpClientHandler();
+        _settings = settings;
+        _scopes = [CopilotClient.ScopeFromSettings(_settings)];
+        InnerHandler = new HttpClientHandler();
     }
+
 
     /// <inheritdoc/>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         if (request.Headers.Authorization is null)
         {
-            AuthenticationResult authResponse = await this.AuthenticateAsync(cancellationToken).ConfigureAwait(false);
+            AuthenticationResult authResponse = await AuthenticateAsync(cancellationToken).ConfigureAwait(false);
 
             request.Headers.Authorization = new AuthenticationHeaderValue(AuthenticationHeader, authResponse.AccessToken);
         }
@@ -59,39 +61,44 @@ internal sealed class CopilotStudioTokenHandler : DelegatingHandler
         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
-    private Task<AuthenticationResult> AuthenticateAsync(CancellationToken cancellationToken) =>
-        this._settings.UseInteractiveAuthentication ?
-                this.AuthenticateInteractiveAsync(cancellationToken) :
-                this.AuthenticateServiceAsync(cancellationToken);
+
+    private Task<AuthenticationResult> AuthenticateAsync(CancellationToken cancellationToken)
+    {
+        return _settings.UseInteractiveAuthentication
+            ? AuthenticateInteractiveAsync(cancellationToken)
+            : AuthenticateServiceAsync(cancellationToken);
+    }
+
 
     private async Task<AuthenticationResult> AuthenticateServiceAsync(CancellationToken cancellationToken)
     {
-        if (this._clientApplication is null)
+        if (_clientApplication is null)
         {
-            this._clientApplication = ConfidentialClientApplicationBuilder.Create(this._settings.AppClientId)
-                .WithAuthority(AzureCloudInstance.AzurePublic, this._settings.TenantId)
-                .WithClientSecret(this._settings.AppClientSecret)
+            _clientApplication = ConfidentialClientApplicationBuilder.Create(_settings.AppClientId)
+                .WithAuthority(AzureCloudInstance.AzurePublic, _settings.TenantId)
+                .WithClientSecret(_settings.AppClientSecret)
                 .Build();
 
             MsalCacheHelper tokenCacheHelper = await CreateCacheHelper("AppTokenCache").ConfigureAwait(false);
-            tokenCacheHelper.RegisterCache(this._clientApplication.AppTokenCache);
+            tokenCacheHelper.RegisterCache(_clientApplication.AppTokenCache);
         }
 
         AuthenticationResult authResponse;
 
-        authResponse = await this._clientApplication.AcquireTokenForClient(this._scopes).ExecuteAsync(cancellationToken).ConfigureAwait(false);
+        authResponse = await _clientApplication.AcquireTokenForClient(_scopes).ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
         return authResponse;
     }
 
+
     private async Task<AuthenticationResult> AuthenticateInteractiveAsync(CancellationToken cancellationToken = default!)
     {
         IPublicClientApplication app =
-            PublicClientApplicationBuilder.Create(this._settings.AppClientId)
-             .WithAuthority(AadAuthorityAudience.AzureAdMyOrg)
-             .WithTenantId(this._settings.TenantId)
-             .WithRedirectUri("http://localhost")
-             .Build();
+            PublicClientApplicationBuilder.Create(_settings.AppClientId)
+                .WithAuthority(AadAuthorityAudience.AzureAdMyOrg)
+                .WithTenantId(_settings.TenantId)
+                .WithRedirectUri("http://localhost")
+                .Build();
 
         MsalCacheHelper tokenCacheHelper = await CreateCacheHelper("TokenCache").ConfigureAwait(false);
         tokenCacheHelper.RegisterCache(app.UserTokenCache);
@@ -103,15 +110,16 @@ internal sealed class CopilotStudioTokenHandler : DelegatingHandler
 
         try
         {
-            authResponse = await app.AcquireTokenSilent(this._scopes, account).ExecuteAsync(cancellationToken).ConfigureAwait(false);
+            authResponse = await app.AcquireTokenSilent(_scopes, account).ExecuteAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (MsalUiRequiredException)
         {
-            authResponse = await app.AcquireTokenInteractive(this._scopes).ExecuteAsync(cancellationToken).ConfigureAwait(false);
+            authResponse = await app.AcquireTokenInteractive(_scopes).ExecuteAsync(cancellationToken).ConfigureAwait(false);
         }
 
         return authResponse;
     }
+
 
     private static async Task<MsalCacheHelper> CreateCacheHelper(string cacheFileName)
     {

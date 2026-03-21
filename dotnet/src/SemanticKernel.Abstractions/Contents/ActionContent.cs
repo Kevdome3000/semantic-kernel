@@ -26,6 +26,7 @@ public sealed class ActionContent : KernelContent
         }
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ActionContent"/> class.
     /// </summary>
@@ -38,6 +39,10 @@ public sealed class ActionContent : KernelContent
         _text = text;
     }
 
+
     /// <inheritdoc/>
-    public override string ToString() => Text;
+    public override string ToString()
+    {
+        return Text;
+    }
 }

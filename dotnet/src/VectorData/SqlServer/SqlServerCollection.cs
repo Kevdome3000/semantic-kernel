@@ -1,20 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
-using Microsoft.Data.SqlTypes;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -24,7 +10,8 @@ namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix (Collection)
 public class SqlServerCollection<TKey, TRecord>
 #pragma warning restore CA1711
-    : VectorStoreCollection<TKey, TRecord>
+    : VectorStoreCollection<TKey, TRecord>,
+        IKeywordHybridSearchable<TRecord>
     where TKey : notnull
     where TRecord : class
 {
@@ -32,6 +19,7 @@ public class SqlServerCollection<TKey, TRecord>
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     private static readonly VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
+    private static readonly HybridSearchOptions<TRecord> s_defaultHybridSearchOptions = new();
 
     private readonly string _connectionString;
     private readonly CollectionModel _model;
@@ -39,6 +27,7 @@ public class SqlServerCollection<TKey, TRecord>
 
     /// <summary>The database schema.</summary>
     private readonly string? _schema;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerCollection{TKey, TRecord}"/> class.
@@ -57,28 +46,36 @@ public class SqlServerCollection<TKey, TRecord>
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(SqlServerDynamicCollection)))
-                : new SqlServerModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new SqlServerModelBuilder().Build(typeof(TRecord),
+                    typeof(TKey),
+                    options.Definition,
+                    options.EmbeddingGenerator),
             options)
     {
     }
 
-    internal SqlServerCollection(string connectionString, string name, Func<SqlServerCollectionOptions, CollectionModel> modelFactory, SqlServerCollectionOptions? options)
+
+    internal SqlServerCollection(
+        string connectionString,
+        string name,
+        Func<SqlServerCollectionOptions, CollectionModel> modelFactory,
+        SqlServerCollectionOptions? options)
     {
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNull(name);
 
         options ??= SqlServerCollectionOptions.Default;
-        this._schema = options.Schema;
+        _schema = options.Schema;
 
-        this._connectionString = connectionString;
-        this.Name = name;
-        this._model = modelFactory(options);
+        _connectionString = connectionString;
+        Name = name;
+        _model = modelFactory(options);
 
-        this._mapper = new SqlServerMapper<TRecord>(this._model);
+        _mapper = new SqlServerMapper<TRecord>(_model);
 
         var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
 
-        this._collectionMetadata = new()
+        _collectionMetadata = new()
         {
             VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
             VectorStoreName = connectionStringBuilder.InitialCatalog,
@@ -86,88 +83,111 @@ public class SqlServerCollection<TKey, TRecord>
         };
     }
 
+
     /// <inheritdoc/>
     public override string Name { get; }
+
 
     /// <inheritdoc/>
     public override async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = new(_connectionString);
         using SqlCommand command = SqlServerCommandBuilder.SelectTableName(
-            connection, this._schema, this.Name);
+            connection,
+            _schema,
+            Name);
 
         return await connection.ExecuteWithErrorHandlingAsync(
-            this._collectionMetadata,
-            "CollectionExists",
-            async () =>
-            {
-                using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-                return await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
-            },
-            cancellationToken).ConfigureAwait(false);
+                _collectionMetadata,
+                "CollectionExists",
+                async () =>
+                {
+                    using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                    return await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public override Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
-        => this.CreateCollectionAsync(ifNotExists: true, cancellationToken);
+    {
+        return CreateCollectionAsync(true, cancellationToken);
+    }
+
 
     private async Task CreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken)
     {
-        using SqlConnection connection = new(this._connectionString);
-        using SqlCommand command = SqlServerCommandBuilder.CreateTable(
+        using SqlConnection connection = new(_connectionString);
+        List<SqlCommand> commands = SqlServerCommandBuilder.CreateTable(
             connection,
-            this._schema,
-            this.Name,
+            _schema,
+            Name,
             ifNotExists,
-            this._model);
+            _model);
 
-        await connection.ExecuteWithErrorHandlingAsync(
-            this._collectionMetadata,
-            "CreateCollection",
-            () => command.ExecuteNonQueryAsync(cancellationToken),
-            cancellationToken).ConfigureAwait(false);
+        foreach (SqlCommand command in commands)
+        {
+            using (command)
+            {
+                await connection.ExecuteWithErrorHandlingAsync(
+                        _collectionMetadata,
+                        "CreateCollection",
+                        () => command.ExecuteNonQueryAsync(cancellationToken),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+        }
     }
+
 
     /// <inheritdoc/>
     public override async Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = new(_connectionString);
         using SqlCommand command = SqlServerCommandBuilder.DropTableIfExists(
-            connection, this._schema, this.Name);
+            connection,
+            _schema,
+            Name);
 
         await connection.ExecuteWithErrorHandlingAsync(
-            this._collectionMetadata,
-            "DeleteCollection",
-            () => command.ExecuteNonQueryAsync(cancellationToken),
-            cancellationToken).ConfigureAwait(false);
+                _collectionMetadata,
+                "DeleteCollection",
+                () => command.ExecuteNonQueryAsync(cancellationToken),
+                cancellationToken)
+            .ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public override async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = new(_connectionString);
         using SqlCommand command = SqlServerCommandBuilder.DeleteSingle(
             connection,
-            this._schema,
-            this.Name,
-            this._model.KeyProperty,
+            _schema,
+            Name,
+            _model.KeyProperty,
             key);
 
         await connection.ExecuteWithErrorHandlingAsync(
-            this._collectionMetadata,
-            "Delete",
-            () => command.ExecuteNonQueryAsync(cancellationToken),
-            cancellationToken).ConfigureAwait(false);
+                _collectionMetadata,
+                "Delete",
+                () => command.ExecuteNonQueryAsync(cancellationToken),
+                cancellationToken)
+            .ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public override async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = new(_connectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
         using SqlTransaction transaction = connection.BeginTransaction();
@@ -186,9 +206,9 @@ public class SqlServerCollection<TKey, TRecord>
                 {
                     if (!SqlServerCommandBuilder.DeleteMany(
                         command,
-                        this._schema,
-                        this.Name,
-                        this._model.KeyProperty,
+                        _schema,
+                        Name,
+                        _model.KeyProperty,
                         keys.Skip(taken).Take(SqlServerConstants.MaxParameterCount)))
                     {
                         break; // keys is empty, there is nothing to delete
@@ -223,8 +243,8 @@ public class SqlServerCollection<TKey, TRecord>
             throw new VectorStoreException(ex.Message, ex)
             {
                 VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
+                VectorStoreName = _collectionMetadata.VectorStoreName,
+                CollectionName = Name,
                 OperationName = "DeleteBatch"
             };
         }
@@ -240,53 +260,60 @@ public class SqlServerCollection<TKey, TRecord>
         }
     }
 
+
     /// <inheritdoc/>
     public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
         bool includeVectors = options?.IncludeVectors is true;
-        if (includeVectors && this._model.EmbeddingGenerationRequired)
+
+        if (includeVectors && _model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = new(_connectionString);
         using SqlCommand command = SqlServerCommandBuilder.SelectSingle(
             connection,
-            this._schema,
-            this.Name,
-            this._model,
+            _schema,
+            Name,
+            _model,
             key,
             includeVectors);
 
         return await connection.ExecuteWithErrorHandlingAsync(
-            this._collectionMetadata,
-            operationName: "Get",
-            async () =>
-            {
-                using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-                await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
-                return reader.HasRows
-                    ? this._mapper.MapFromStorageToDataModel(reader, includeVectors)
-                    : null;
-            },
-            cancellationToken).ConfigureAwait(false);
+                _collectionMetadata,
+                operationName: "Get",
+                async () =>
+                {
+                    using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                    await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+                    return reader.HasRows
+                        ? _mapper.MapFromStorageToDataModel(reader, includeVectors)
+                        : null;
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
+
     /// <inheritdoc/>
-    public override async IAsyncEnumerable<TRecord> GetAsync(IEnumerable<TKey> keys, RecordRetrievalOptions? options = null,
+    public override async IAsyncEnumerable<TRecord> GetAsync(
+        IEnumerable<TKey> keys,
+        RecordRetrievalOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
 
         bool includeVectors = options?.IncludeVectors is true;
-        if (includeVectors && this._model.EmbeddingGenerationRequired)
+
+        if (includeVectors && _model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = new(_connectionString);
         using SqlCommand command = connection.CreateCommand();
         int taken = 0;
 
@@ -299,9 +326,9 @@ public class SqlServerCollection<TKey, TRecord>
 
             if (!SqlServerCommandBuilder.SelectMany(
                 command,
-                this._schema,
-                this.Name,
-                this._model,
+                _schema,
+                Name,
+                _model,
                 keys.Skip(taken).Take(SqlServerConstants.MaxParameterCount),
                 includeVectors))
             {
@@ -314,20 +341,21 @@ public class SqlServerCollection<TKey, TRecord>
             }
 
             using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
-                this._collectionMetadata,
-                operationName: "GetBatch",
-                () => command.ExecuteReaderAsync(cancellationToken),
-                cancellationToken).ConfigureAwait(false);
+                    _collectionMetadata,
+                    operationName: "GetBatch",
+                    () => command.ExecuteReaderAsync(cancellationToken),
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             while (true)
             {
                 TRecord? record = await VectorStoreErrorHandler.RunOperationAsync<TRecord?, SqlException>(
-                    this._collectionMetadata,
-                    "GetBatch",
-                    async () => await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
-                        ? this._mapper.MapFromStorageToDataModel(reader, includeVectors)
-                        : null)
-                        .ConfigureAwait(false);
+                        _collectionMetadata,
+                        "GetBatch",
+                        async () => await reader.ReadAsync(cancellationToken).ConfigureAwait(false)
+                            ? _mapper.MapFromStorageToDataModel(reader, includeVectors)
+                            : null)
+                    .ConfigureAwait(false);
 
                 if (record is null)
                 {
@@ -339,6 +367,7 @@ public class SqlServerCollection<TKey, TRecord>
         } while (command.Parameters.Count == SqlServerConstants.MaxParameterCount);
     }
 
+
     /// <inheritdoc/>
     public override async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
@@ -346,10 +375,11 @@ public class SqlServerCollection<TKey, TRecord>
 
         Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings = null;
 
-        var vectorPropertyCount = this._model.VectorProperties.Count;
+        var vectorPropertyCount = _model.VectorProperties.Count;
+
         for (var i = 0; i < vectorPropertyCount; i++)
         {
-            var vectorProperty = this._model.VectorProperties[i];
+            var vectorProperty = _model.VectorProperties[i];
 
             if (SqlServerModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
@@ -361,50 +391,44 @@ public class SqlServerCollection<TKey, TRecord>
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbedding<TRecord, Embedding<float>>(record, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
-                generatedEmbeddings[vectorProperty] = [await floatTask.ConfigureAwait(false)];
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
+            generatedEmbeddings[vectorProperty] = [await vectorProperty.GenerateEmbeddingAsync(vectorProperty.GetValueAsObject(record), cancellationToken).ConfigureAwait(false)];
         }
 
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = new(_connectionString);
         using SqlCommand command = connection.CreateCommand();
         SqlServerCommandBuilder.Upsert<TKey>(
             command,
-            this._schema,
-            this.Name,
-            this._model,
+            _schema,
+            Name,
+            _model,
             [record],
             firstRecordIndex: 0,
             generatedEmbeddings);
 
-        var keyProperty = this._model.KeyProperty;
+        var keyProperty = _model.KeyProperty;
 
         await connection.ExecuteWithErrorHandlingAsync(
-            this._collectionMetadata,
-            "Upsert",
-            async () =>
-            {
-                using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-                await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
-
-                // Inject the generated key into the record if auto-generation was used
-                if (keyProperty.IsAutoGenerated && Equals(keyProperty.GetValueAsObject(record), default(TKey)))
+                _collectionMetadata,
+                "Upsert",
+                async () =>
                 {
-                    var keyValue = reader.GetFieldValue<TKey>(0);
-                    keyProperty.SetValue<TKey>(record, keyValue);
-                }
+                    using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+                    await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
 
-                return 0;
-            },
-            cancellationToken).ConfigureAwait(false);
+                    // Inject the generated key into the record if auto-generation was used
+                    if (keyProperty.IsAutoGenerated && Equals(keyProperty.GetValueAsObject(record), default(TKey)))
+                    {
+                        var keyValue = reader.GetFieldValue<TKey>(0);
+                        keyProperty.SetValue<TKey>(record, keyValue);
+                    }
+
+                    return 0;
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
@@ -416,10 +440,11 @@ public class SqlServerCollection<TKey, TRecord>
         // If an embedding generator is defined, invoke it once per property for all records.
         Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>? generatedEmbeddings = null;
 
-        var vectorPropertyCount = this._model.VectorProperties.Count;
+        var vectorPropertyCount = _model.VectorProperties.Count;
+
         for (var i = 0; i < vectorPropertyCount; i++)
         {
-            var vectorProperty = this._model.VectorProperties[i];
+            var vectorProperty = _model.VectorProperties[i];
 
             if (SqlServerModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
@@ -433,7 +458,9 @@ public class SqlServerCollection<TKey, TRecord>
             // prevent multiple enumeration.
             if (recordsList is null)
             {
-                recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+                recordsList = records is IReadOnlyList<TRecord> r
+                    ? r
+                    : records.ToList();
 
                 if (recordsList.Count == 0)
                 {
@@ -445,24 +472,19 @@ public class SqlServerCollection<TKey, TRecord>
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
-                generatedEmbeddings[vectorProperty] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
+            generatedEmbeddings[vectorProperty] = await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 
         // If key auto-generation is enabled, we need to read back generated keys and inject them into records.
         // Materialize the records' enumerable if needed, to allow iteration for key injection.
-        var keyProperty = this._model.KeyProperty;
+        var keyProperty = _model.KeyProperty;
+
         if (keyProperty.IsAutoGenerated && recordsList is null)
         {
-            recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+            recordsList = records is IReadOnlyList<TRecord> r
+                ? r
+                : records.ToList();
 
             if (recordsList.Count == 0)
             {
@@ -472,11 +494,11 @@ public class SqlServerCollection<TKey, TRecord>
             records = recordsList;
         }
 
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = new(_connectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
         using SqlTransaction transaction = connection.BeginTransaction();
-        int parametersPerRecord = this._model.Properties.Count;
+        int parametersPerRecord = _model.Properties.Count;
         int taken = 0;
         int batchSize = SqlServerConstants.MaxParameterCount / parametersPerRecord;
 
@@ -487,6 +509,7 @@ public class SqlServerCollection<TKey, TRecord>
                 // Materialize the batch to a list so we can iterate multiple times:
                 // once for building the command, once for reading back results.
                 var batch = records.Skip(taken).Take(batchSize).ToList();
+
                 if (batch.Count == 0)
                 {
                     break;
@@ -501,11 +524,11 @@ public class SqlServerCollection<TKey, TRecord>
                 {
                     if (!SqlServerCommandBuilder.Upsert<TKey>(
                         command,
-                        this._schema,
-                        this.Name,
-                        this._model,
+                        _schema,
+                        Name,
+                        _model,
                         batch,
-                        firstRecordIndex: taken,
+                        taken,
                         generatedEmbeddings))
                     {
                         break; // records is empty (shouldn't happen given check above, but defensive)
@@ -557,8 +580,8 @@ public class SqlServerCollection<TKey, TRecord>
             throw new VectorStoreException(ex.Message, ex)
             {
                 VectorStoreSystemName = SqlServerConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
+                VectorStoreName = _collectionMetadata.VectorStoreName,
+                CollectionName = Name,
                 OperationName = "UpsertBatch"
             };
         }
@@ -573,6 +596,7 @@ public class SqlServerCollection<TKey, TRecord>
         }
     }
 
+
     #region Search
 
     /// <inheritdoc />
@@ -586,7 +610,8 @@ public class SqlServerCollection<TKey, TRecord>
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
-        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
+
+        if (options.IncludeVectors && _model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
@@ -597,7 +622,7 @@ public class SqlServerCollection<TKey, TRecord>
         }
 #pragma warning restore CS0618 // Type or member is obsolete
 
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+        var vectorProperty = _model.GetVectorPropertyOrSingle(options);
 
         SqlVector<float> vector = searchValue switch
         {
@@ -606,8 +631,8 @@ public class SqlServerCollection<TKey, TRecord>
             float[] f => new(f),
             Embedding<float> e => new(e.Vector),
 
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => new(await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false)),
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => new(((Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false)).Vector),
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), SqlServerModelBuilder.SupportedVectorTypes))
@@ -617,19 +642,97 @@ public class SqlServerCollection<TKey, TRecord>
 #pragma warning disable CA2000 // Dispose objects before losing scope
         // Connection and command are going to be disposed by the ReadVectorSearchResultsAsync,
         // when the user is done with the results.
-        SqlConnection connection = new(this._connectionString);
+        SqlConnection connection = new(_connectionString);
         SqlCommand command = SqlServerCommandBuilder.SelectVector(
             connection,
-            this._schema,
-            this.Name,
+            _schema,
+            Name,
             vectorProperty,
-            this._model,
+            _model,
             top,
             options,
             vector);
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-        await foreach (var record in this.ReadVectorSearchResultsAsync(connection, command, options.IncludeVectors, cancellationToken).ConfigureAwait(false))
+        await foreach (var record in ReadVectorSearchResultsAsync(connection,
+                command,
+                options.IncludeVectors,
+                cancellationToken)
+            .ConfigureAwait(false))
+        {
+            yield return record;
+        }
+    }
+
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(
+        TInput searchValue,
+        ICollection<string> keywords,
+        int top,
+        HybridSearchOptions<TRecord>? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        where TInput : notnull
+    {
+        Verify.NotNull(searchValue);
+        Verify.NotNull(keywords);
+        Verify.NotLessThan(top, 1);
+
+        options ??= s_defaultHybridSearchOptions;
+
+        if (options.IncludeVectors && _model.EmbeddingGenerationRequired)
+        {
+            throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
+        }
+#pragma warning disable CS0618 // Type or member is obsolete
+        if (options.OldFilter is not null)
+        {
+            throw new NotSupportedException("The obsolete Filter is not supported by the SQL Server connector, use Filter instead.");
+        }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        var vectorProperty = _model.GetVectorPropertyOrSingle(new VectorSearchOptions<TRecord> { VectorProperty = options.VectorProperty });
+        var textDataProperty = _model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
+
+        SqlVector<float> vector = searchValue switch
+        {
+            SqlVector<float> v => v,
+            ReadOnlyMemory<float> r => new(r),
+            float[] f => new(f),
+            Embedding<float> e => new(e.Vector),
+
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => new(((Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false)).Vector),
+
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), SqlServerModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
+
+        var keywordsCombined = string.Join(" ", keywords);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        // Connection and command are going to be disposed by the ReadVectorSearchResultsAsync,
+        // when the user is done with the results.
+        SqlConnection connection = new(_connectionString);
+        SqlCommand command = SqlServerCommandBuilder.SelectHybrid(
+            connection,
+            _schema,
+            Name,
+            vectorProperty,
+            textDataProperty,
+            _model,
+            top,
+            options,
+            vector,
+            keywordsCombined);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+
+        await foreach (var record in ReadHybridSearchResultsAsync(connection,
+                command,
+                options,
+                cancellationToken)
+            .ConfigureAwait(false))
         {
             yield return record;
         }
@@ -637,17 +740,22 @@ public class SqlServerCollection<TKey, TRecord>
 
     #endregion Search
 
+
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreCollectionMetadata)
+                    ? _collectionMetadata
+                    : serviceType.IsInstanceOfType(this)
+                        ? this
+                        : null;
     }
+
 
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ReadVectorSearchResultsAsync(
         SqlConnection connection,
@@ -657,19 +765,24 @@ public class SqlServerCollection<TKey, TRecord>
     {
         try
         {
-            var vectorProperties = includeVectors ? this._model.VectorProperties : [];
+            var vectorProperties = includeVectors
+                ? _model.VectorProperties
+                : [];
 
             using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
-                this._collectionMetadata,
-                operationName: "VectorizedSearch",
-                () => command.ExecuteReaderAsync(cancellationToken),
-                cancellationToken).ConfigureAwait(false);
+                    _collectionMetadata,
+                    operationName: "VectorizedSearch",
+                    () => command.ExecuteReaderAsync(cancellationToken),
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             int scoreIndex = -1;
+
             while (await reader.ReadWithErrorHandlingAsync(
-                this._collectionMetadata,
-                operationName: "VectorizedSearch",
-                cancellationToken).ConfigureAwait(false))
+                    _collectionMetadata,
+                    operationName: "VectorizedSearch",
+                    cancellationToken)
+                .ConfigureAwait(false))
             {
                 if (scoreIndex < 0)
                 {
@@ -677,7 +790,7 @@ public class SqlServerCollection<TKey, TRecord>
                 }
 
                 yield return new VectorSearchResult<TRecord>(
-                    this._mapper.MapFromStorageToDataModel(reader, includeVectors),
+                    _mapper.MapFromStorageToDataModel(reader, includeVectors),
                     reader.GetDouble(scoreIndex));
             }
         }
@@ -688,38 +801,88 @@ public class SqlServerCollection<TKey, TRecord>
         }
     }
 
+
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> ReadHybridSearchResultsAsync(
+        SqlConnection connection,
+        SqlCommand command,
+        HybridSearchOptions<TRecord> options,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        try
+        {
+            using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
+                    _collectionMetadata,
+                    operationName: "HybridSearch",
+                    () => command.ExecuteReaderAsync(cancellationToken),
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            int scoreIndex = -1;
+
+            while (await reader.ReadWithErrorHandlingAsync(
+                    _collectionMetadata,
+                    operationName: "HybridSearch",
+                    cancellationToken)
+                .ConfigureAwait(false))
+            {
+                if (scoreIndex < 0)
+                {
+                    scoreIndex = reader.GetOrdinal("score");
+                }
+
+                yield return new VectorSearchResult<TRecord>(
+                    _mapper.MapFromStorageToDataModel(reader, options.IncludeVectors),
+                    reader.GetDouble(scoreIndex));
+            }
+        }
+        finally
+        {
+            command.Dispose();
+            connection.Dispose();
+        }
+    }
+
+
     /// <inheritdoc />
-    public override async IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        FilteredRecordRetrievalOptions<TRecord>? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public override async IAsyncEnumerable<TRecord> GetAsync(
+        Expression<Func<TRecord, bool>> filter,
+        int top,
+        FilteredRecordRetrievalOptions<TRecord>? options = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
         options ??= new();
 
-        using SqlConnection connection = new(this._connectionString);
+        using SqlConnection connection = new(_connectionString);
         using SqlCommand command = SqlServerCommandBuilder.SelectWhere(
             filter,
             top,
             options,
             connection,
-            this._schema,
-            this.Name,
-            this._model);
+            _schema,
+            Name,
+            _model);
 
         using SqlDataReader reader = await connection.ExecuteWithErrorHandlingAsync(
-            this._collectionMetadata,
-            operationName: "GetAsync",
-            () => command.ExecuteReaderAsync(cancellationToken),
-            cancellationToken).ConfigureAwait(false);
-
-        var vectorProperties = options.IncludeVectors ? this._model.VectorProperties : [];
-        while (await reader.ReadWithErrorHandlingAsync(
-                this._collectionMetadata,
+                _collectionMetadata,
                 operationName: "GetAsync",
-                cancellationToken).ConfigureAwait(false))
+                () => command.ExecuteReaderAsync(cancellationToken),
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        var vectorProperties = options.IncludeVectors
+            ? _model.VectorProperties
+            : [];
+
+        while (await reader.ReadWithErrorHandlingAsync(
+                _collectionMetadata,
+                operationName: "GetAsync",
+                cancellationToken)
+            .ConfigureAwait(false))
         {
-            yield return this._mapper.MapFromStorageToDataModel(reader, options.IncludeVectors);
+            yield return _mapper.MapFromStorageToDataModel(reader, options.IncludeVectors);
         }
     }
 }

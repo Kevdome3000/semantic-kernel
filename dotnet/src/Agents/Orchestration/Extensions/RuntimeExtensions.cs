@@ -16,10 +16,20 @@ public static class RuntimeExtensions
     /// <summary>
     /// Sends a message to the specified agent.
     /// </summary>
-    public static async ValueTask PublishMessageAsync(this IAgentRuntime runtime, object message, AgentType agentType, CancellationToken cancellationToken = default)
+    public static async ValueTask PublishMessageAsync(
+        this IAgentRuntime runtime,
+        object message,
+        AgentType agentType,
+        CancellationToken cancellationToken = default)
     {
-        await runtime.PublishMessageAsync(message, new TopicId(agentType), sender: null, messageId: null, cancellationToken).ConfigureAwait(false);
+        await runtime.PublishMessageAsync(message,
+                new TopicId(agentType),
+                null,
+                null,
+                cancellationToken)
+            .ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Registers an agent factory for the specified agent type and associates it with the runtime.
@@ -38,6 +48,7 @@ public static class RuntimeExtensions
         return registeredType;
     }
 
+
     /// <summary>
     /// Subscribes the specified agent type to its own dedicated topic.
     /// </summary>
@@ -47,6 +58,7 @@ public static class RuntimeExtensions
     {
         await runtime.AddSubscriptionAsync(new TypeSubscription(agentType, agentType)).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Subscribes the specified agent type to the provided topics.

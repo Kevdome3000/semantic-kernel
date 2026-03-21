@@ -19,27 +19,34 @@ public static class StreamingChatMessageContentExtensions
 
         ChatResponseUpdate update = new()
         {
-            AdditionalProperties = content.Metadata is not null ? new AdditionalPropertiesDictionary(content.Metadata) : null,
+            AdditionalProperties = content.Metadata is not null
+                ? new AdditionalPropertiesDictionary(content.Metadata)
+                : null,
             AuthorName = content.AuthorName,
             ModelId = content.ModelId,
             RawRepresentation = content.InnerContent,
-            Role = content.Role is not null ? new ChatRole(content.Role.Value.Label) : null,
+            Role = content.Role is not null
+                ? new ChatRole(content.Role.Value.Label)
+                : null
         };
 
         foreach (var item in content.Items)
         {
             AIContent? aiContent = null;
+
             switch (item)
             {
                 case StreamingTextContent tc:
-                    aiContent = new Microsoft.Extensions.AI.TextContent(tc.Text);
+                    aiContent = new Extensions.AI.TextContent(tc.Text);
                     break;
 
                 case StreamingFunctionCallUpdateContent fcc:
-                    aiContent = new Microsoft.Extensions.AI.FunctionCallContent(
+                    aiContent = new Extensions.AI.FunctionCallContent(
                         fcc.CallId ?? string.Empty,
                         fcc.Name ?? string.Empty,
-                        !string.IsNullOrWhiteSpace(fcc.Arguments) ? JsonSerializer.Deserialize<IDictionary<string, object?>>(fcc.Arguments, AbstractionsJsonContext.Default.IDictionaryStringObject!) : null);
+                        !string.IsNullOrWhiteSpace(fcc.Arguments)
+                            ? JsonSerializer.Deserialize<IDictionary<string, object?>>(fcc.Arguments, AbstractionsJsonContext.Default.IDictionaryStringObject!)
+                            : null);
                     break;
             }
 

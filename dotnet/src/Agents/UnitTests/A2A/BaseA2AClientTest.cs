@@ -13,31 +13,34 @@ public class BaseA2AClientTest : IDisposable
     internal HttpClient HttpClient { get; }
     internal A2AClient Client { get; }
 
+
     internal BaseA2AClientTest()
     {
-        this.MessageHandlerStub = new MultipleHttpMessageHandlerStub();
-        this.HttpClient = new HttpClient(this.MessageHandlerStub, disposeHandler: false);
-        this.Client = new A2AClient(new Uri("http://127.0.0.1/"), this.HttpClient);
+        MessageHandlerStub = new MultipleHttpMessageHandlerStub();
+        HttpClient = new HttpClient(MessageHandlerStub, false);
+        Client = new A2AClient(new Uri("http://127.0.0.1/"), HttpClient);
     }
+
 
     /// <inheritdoc />
     public void Dispose()
     {
-        this.MessageHandlerStub.Dispose();
-        this.HttpClient.Dispose();
+        MessageHandlerStub.Dispose();
+        HttpClient.Dispose();
 
         GC.SuppressFinalize(this);
     }
 
+
     protected async Task<AgentCard> CreateAgentCardAsync()
     {
-        var capabilities = new AgentCapabilities()
+        var capabilities = new AgentCapabilities
         {
             Streaming = false,
-            PushNotifications = false,
+            PushNotifications = false
         };
 
-        var invoiceQuery = new AgentSkill()
+        var invoiceQuery = new AgentSkill
         {
             Id = "id_invoice_agent",
             Name = "InvoiceQuery",
@@ -45,11 +48,11 @@ public class BaseA2AClientTest : IDisposable
             Tags = ["invoice", "semantic-kernel"],
             Examples =
             [
-                "List the latest invoices for Contoso.",
-            ],
+                "List the latest invoices for Contoso."
+            ]
         };
 
-        return new AgentCard()
+        return new AgentCard
         {
             Name = "InvoiceAgent",
             Description = "Handles requests relating to invoices.",
@@ -58,7 +61,7 @@ public class BaseA2AClientTest : IDisposable
             DefaultInputModes = ["text"],
             DefaultOutputModes = ["text"],
             Capabilities = capabilities,
-            Skills = [invoiceQuery],
+            Skills = [invoiceQuery]
         };
     }
 }

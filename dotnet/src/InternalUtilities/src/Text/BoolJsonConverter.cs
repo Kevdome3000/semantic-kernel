@@ -1,13 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Text;
 
 #pragma warning disable CA1812 // Instantiated via JsonConverterAttribute
+
 
 /// <summary>
 /// Deserializes a bool from a string. This is useful when deserializing a <see cref="PromptExecutionSettings"/> instance that contains bool properties.
@@ -23,10 +19,12 @@ internal sealed class BoolJsonConverter : JsonConverter<bool>
         if (reader.TokenType == JsonTokenType.String)
         {
             string? value = reader.GetString();
+
             if (value is null)
             {
                 return false;
             }
+
             if (bool.TryParse(value, out var boolValue))
             {
                 return boolValue;
@@ -34,17 +32,20 @@ internal sealed class BoolJsonConverter : JsonConverter<bool>
 
             throw new ArgumentException($"Value '{value}' can be parsed as a boolean value");
         }
-        else if (reader.TokenType == JsonTokenType.True)
+
+        if (reader.TokenType == JsonTokenType.True)
         {
             return true;
         }
-        else if (reader.TokenType == JsonTokenType.False)
+
+        if (reader.TokenType == JsonTokenType.False)
         {
             return false;
         }
 
         throw new ArgumentException($"Invalid token type found '{reader.TokenType}', expected a boolean value.");
     }
+
 
     /// <inheritdoc/>
     public override void Write(Utf8JsonWriter writer, bool value, JsonSerializerOptions options)

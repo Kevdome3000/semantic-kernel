@@ -15,9 +15,21 @@ public sealed class AgentExtensionsTests
     {
         // Arrange
         var agentMock = new Mock<Agent>();
-        AgentThread ThreadFactory() => Mock.Of<AgentThread>();
-        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => Mock.Of<AgentThread>();
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
+
+        AgentThread ThreadFactory()
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o)
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
 
         // Act
         var result = agentMock.Object.AsAIAgent(ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
@@ -27,54 +39,95 @@ public sealed class AgentExtensionsTests
         Assert.IsType<SemanticKernelAIAgent>(result);
     }
 
+
     [Fact]
     public void AsAIAgent_WithNullSemanticKernelAgent_ThrowsArgumentNullException()
     {
         // Arrange
         Agent nullAgent = null!;
-        AgentThread ThreadFactory() => Mock.Of<AgentThread>();
-        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => Mock.Of<AgentThread>();
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
+
+        AgentThread ThreadFactory()
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o)
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => nullAgent.AsAIAgent(ThreadFactory, ThreadDeserializationFactory, ThreadSerializer));
     }
+
 
     [Fact]
     public void AsAIAgent_WithNullThreadFactory_ThrowsArgumentNullException()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
-        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => Mock.Of<AgentThread>();
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
+
+        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o)
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => agentMock.Object.AsAIAgent(null!, ThreadDeserializationFactory, ThreadSerializer));
     }
+
 
     [Fact]
     public void AsAIAgent_WithNullThreadDeserializationFactory_ThrowsArgumentNullException()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
-        AgentThread ThreadFactory() => Mock.Of<AgentThread>();
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
+
+        AgentThread ThreadFactory()
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => agentMock.Object.AsAIAgent(ThreadFactory, null!, ThreadSerializer));
     }
+
 
     [Fact]
     public void AsAIAgent_WithNullThreadSerializer_ThrowsArgumentNullException()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
-        AgentThread ThreadFactory() => Mock.Of<AgentThread>();
-        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => Mock.Of<AgentThread>();
+
+        AgentThread ThreadFactory()
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o)
+        {
+            return Mock.Of<AgentThread>();
+        }
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => agentMock.Object.AsAIAgent(ThreadFactory, ThreadDeserializationFactory, null!));
     }
+
 
     [Fact]
     public void AsAIAgent_WithValidFactories_CreatesWorkingAdapter()
@@ -90,8 +143,15 @@ public sealed class AgentExtensionsTests
             return expectedThread;
         }
 
-        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => expectedThread;
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
+        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o)
+        {
+            return expectedThread;
+        }
+
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
 
         // Act
         var result = agentMock.Object.AsAIAgent(ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
@@ -104,6 +164,7 @@ public sealed class AgentExtensionsTests
         Assert.Same(expectedThread, ((SemanticKernelAIAgentThread)thread).InnerThread);
     }
 
+
     [Fact]
     public void AsAIAgent_WithDeserializationFactory_CreatesWorkingAdapter()
     {
@@ -112,7 +173,10 @@ public sealed class AgentExtensionsTests
         var expectedThread = Mock.Of<AgentThread>();
         var deserializationCallCount = 0;
 
-        AgentThread ThreadFactory() => Mock.Of<AgentThread>();
+        AgentThread ThreadFactory()
+        {
+            return Mock.Of<AgentThread>();
+        }
 
         AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o)
         {
@@ -120,7 +184,10 @@ public sealed class AgentExtensionsTests
             return expectedThread;
         }
 
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
 
         // Act
         var result = agentMock.Object.AsAIAgent(ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);

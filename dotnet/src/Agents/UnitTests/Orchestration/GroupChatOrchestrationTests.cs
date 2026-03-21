@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
@@ -31,6 +32,7 @@ public class GroupChatOrchestrationTests
         Assert.Equal(1, mockAgent1.InvokeCount);
     }
 
+
     [Fact]
     public async Task GroupChatOrchestrationWithMultipleAgentsAsync()
     {
@@ -42,7 +44,10 @@ public class GroupChatOrchestrationTests
         MockAgent mockAgent3 = CreateMockAgent(3, "lmn");
 
         // Act: Create and execute the orchestration
-        string response = await ExecuteOrchestrationAsync(runtime, mockAgent1, mockAgent2, mockAgent3);
+        string response = await ExecuteOrchestrationAsync(runtime,
+            mockAgent1,
+            mockAgent2,
+            mockAgent3);
 
         // Assert
         Assert.Equal("lmn", response);
@@ -51,12 +56,13 @@ public class GroupChatOrchestrationTests
         Assert.Equal(1, mockAgent3.InvokeCount);
     }
 
+
     private static async Task<string> ExecuteOrchestrationAsync(InProcessRuntime runtime, params Agent[] mockAgents)
     {
         // Act
         await runtime.StartAsync();
 
-        GroupChatOrchestration orchestration = new(new RoundRobinGroupChatManager() { MaximumInvocationCount = mockAgents.Length }, mockAgents);
+        GroupChatOrchestration orchestration = new(new RoundRobinGroupChatManager { MaximumInvocationCount = mockAgents.Length }, mockAgents);
 
         const string InitialInput = "123";
         OrchestrationResult<string> result = await orchestration.InvokeAsync(InitialInput, runtime);
@@ -72,12 +78,13 @@ public class GroupChatOrchestrationTests
         return response;
     }
 
+
     private static MockAgent CreateMockAgent(int index, string response)
     {
-        return new()
+        return new MockAgent
         {
             Description = $"test {index}",
-            Response = [new(AuthorRole.Assistant, response)]
+            Response = [new ChatMessageContent(AuthorRole.Assistant, response)]
         };
     }
 }

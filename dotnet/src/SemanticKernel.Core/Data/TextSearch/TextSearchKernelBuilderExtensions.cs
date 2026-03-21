@@ -25,7 +25,10 @@ public static class TextSearchKernelBuilderExtensions
         VectorStoreTextSearchOptions? options = null,
         string? serviceId = default)
     {
-        builder.Services.AddVectorStoreTextSearch<TRecord>(stringMapper, resultMapper, options, serviceId);
+        builder.Services.AddVectorStoreTextSearch<TRecord>(stringMapper,
+            resultMapper,
+            options,
+            serviceId);
         return builder;
     }
 }

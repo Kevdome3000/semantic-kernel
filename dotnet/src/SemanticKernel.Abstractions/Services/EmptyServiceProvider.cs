@@ -4,9 +4,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>Empty <see cref="IServiceProvider"/> implementation that returns null from all <see cref="IServiceProvider.GetService"/> calls.</summary>
 internal sealed class EmptyServiceProvider : IServiceProvider, IKeyedServiceProvider
 {
@@ -15,26 +17,40 @@ internal sealed class EmptyServiceProvider : IServiceProvider, IKeyedServiceProv
     /// <summary>Singleton instance of <see cref="EmptyServiceProvider"/>.</summary>
     public static IServiceProvider Instance { get; } = new EmptyServiceProvider();
 
-    /// <inheritdoc/>
-    public object? GetService(Type serviceType) => s_results.GetOrAdd(serviceType, GetEmpty);
 
     /// <inheritdoc/>
-    public object? GetKeyedService(Type serviceType, object? serviceKey) => s_results.GetOrAdd(serviceType, GetEmpty);
+    public object? GetService(Type serviceType)
+    {
+        return s_results.GetOrAdd(serviceType, GetEmpty);
+    }
+
 
     /// <inheritdoc/>
-    public object GetRequiredKeyedService(Type serviceType, object? serviceKey) =>
-        throw new InvalidOperationException(serviceKey is null ? $"No service for type '{serviceType}' has been registered." : $"No service for type '{serviceType}' and service key '{serviceKey}' has been registered.");
+    public object? GetKeyedService(Type serviceType, object? serviceKey)
+    {
+        return s_results.GetOrAdd(serviceType, GetEmpty);
+    }
+
+
+    /// <inheritdoc/>
+    public object GetRequiredKeyedService(Type serviceType, object? serviceKey)
+    {
+        throw new InvalidOperationException(serviceKey is null
+            ? $"No service for type '{serviceType}' has been registered."
+            : $"No service for type '{serviceType}' and service key '{serviceKey}' has been registered.");
+    }
+
 
     private static object? GetEmpty(Type serviceType)
     {
-        if (serviceType.IsConstructedGenericType &&
-            serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+        if (serviceType.IsConstructedGenericType && serviceType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
         {
             return CreateArray(serviceType.GenericTypeArguments[0], 0);
         }
 
         return null;
     }
+
 
     [UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode", Justification = "VerifyAotCompatibility ensures elementType is not a ValueType")]
     private static Array CreateArray(Type elementType, int length)
@@ -49,9 +65,10 @@ internal sealed class EmptyServiceProvider : IServiceProvider, IKeyedServiceProv
         return Array.CreateInstance(elementType, length);
     }
 
+
     private static bool VerifyAotCompatibility =>
 #if NET
-            !System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported;
+        !RuntimeFeature.IsDynamicCodeSupported;
 #else
             false;
 #endif

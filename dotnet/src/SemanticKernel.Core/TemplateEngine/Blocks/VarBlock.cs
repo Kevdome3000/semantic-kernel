@@ -4,11 +4,13 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
+
 internal sealed partial class VarBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.Variable;
 
     internal string Name { get; } = string.Empty;
+
 
     public VarBlock(string? content, ILoggerFactory? loggerFactory = null) : base(content?.Trim(), loggerFactory)
     {
@@ -21,6 +23,7 @@ internal sealed partial class VarBlock : Block, ITextRendering
 
         Name = Content.Substring(1);
     }
+
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
     // ReSharper disable TemplateIsNotCompileTimeConstantProblem
@@ -52,11 +55,9 @@ internal sealed partial class VarBlock : Block, ITextRendering
             return false;
         }
 
-        if (!ValidNameRegex().
-                IsMatch(Name))
+        if (!ValidNameRegex().IsMatch(Name))
         {
-            errorMsg = $"The variable name '{Name}' contains invalid characters. " +
-                       "Only alphanumeric chars and underscore are allowed.";
+            errorMsg = $"The variable name '{Name}' contains invalid characters. " + "Only alphanumeric chars and underscore are allowed.";
 
             Logger.LogError(errorMsg);
 
@@ -66,6 +67,7 @@ internal sealed partial class VarBlock : Block, ITextRendering
         return true;
     }
 #pragma warning restore CA2254
+
 
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
@@ -89,6 +91,7 @@ internal sealed partial class VarBlock : Block, ITextRendering
 
         return null;
     }
+
 
 #if NET
     [GeneratedRegex("^[a-zA-Z0-9_]*$")]

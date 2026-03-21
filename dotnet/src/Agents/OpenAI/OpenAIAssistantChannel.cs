@@ -22,6 +22,7 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
     private readonly AssistantClient _client = client;
     private readonly string _threadId = threadId;
 
+
     /// <inheritdoc/>
     protected override async Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken)
     {
@@ -31,7 +32,11 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
         {
             try
             {
-                await AssistantThreadActions.CreateMessageAsync(this._client, this._threadId, message, cancellationToken).ConfigureAwait(false);
+                await AssistantThreadActions.CreateMessageAsync(_client,
+                        _threadId,
+                        message,
+                        cancellationToken)
+                    .ConfigureAwait(false);
             }
             catch (ClientResultException ex)
             {
@@ -44,36 +49,74 @@ internal sealed class OpenAIAssistantChannel(AssistantClient client, string thre
         }
     }
 
+
     /// <inheritdoc/>
     protected override IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(
         OpenAIAssistantAgent agent,
         CancellationToken cancellationToken)
     {
         return ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id, agent.GetDisplayName(), agent.Description, agent.Kernel, []),
-            () => AssistantThreadActions.InvokeAsync(agent, this._client, this._threadId, invocationOptions: null, providersAdditionalInstructions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken),
+            () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id,
+                agent.GetDisplayName(),
+                agent.Description,
+                agent.Kernel,
+                []),
+            () => AssistantThreadActions.InvokeAsync(agent,
+                _client,
+                _threadId,
+                invocationOptions: null,
+                providersAdditionalInstructions: null,
+                Logger,
+                agent.Kernel,
+                agent.Arguments,
+                cancellationToken),
             cancellationToken);
     }
+
 
     /// <inheritdoc/>
     protected override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(OpenAIAssistantAgent agent, IList<ChatMessageContent> messages, CancellationToken cancellationToken = default)
     {
         return ActivityExtensions.RunWithActivityAsync(
-            () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id, agent.GetDisplayName(), agent.Description, agent.Kernel, messages),
-            () => AssistantThreadActions.InvokeStreamingAsync(agent, this._client, this._threadId, messages, invocationOptions: null, providersAdditionalInstructions: null, this.Logger, agent.Kernel, agent.Arguments, cancellationToken),
+            () => ModelDiagnostics.StartAgentInvocationActivity(agent.Id,
+                agent.GetDisplayName(),
+                agent.Description,
+                agent.Kernel,
+                messages),
+            () => AssistantThreadActions.InvokeStreamingAsync(agent,
+                _client,
+                _threadId,
+                messages,
+                invocationOptions: null,
+                providersAdditionalInstructions: null,
+                Logger,
+                agent.Kernel,
+                agent.Arguments,
+                cancellationToken),
             cancellationToken);
     }
+
 
     /// <inheritdoc/>
     protected override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken)
     {
-        return AssistantThreadActions.GetMessagesAsync(this._client, this._threadId, null, cancellationToken);
+        return AssistantThreadActions.GetMessagesAsync(_client,
+            _threadId,
+            null,
+            cancellationToken);
     }
 
-    /// <inheritdoc/>
-    protected override Task ResetAsync(CancellationToken cancellationToken = default) =>
-        this._client.DeleteThreadAsync(this._threadId, cancellationToken);
 
     /// <inheritdoc/>
-    protected override string Serialize() => this._threadId;
+    protected override Task ResetAsync(CancellationToken cancellationToken = default)
+    {
+        return _client.DeleteThreadAsync(_threadId, cancellationToken);
+    }
+
+
+    /// <inheritdoc/>
+    protected override string Serialize()
+    {
+        return _threadId;
+    }
 }

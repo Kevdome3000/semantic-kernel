@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.Extensions.VectorData;
@@ -16,16 +15,18 @@ public class VectorStoreVectorProperty : VectorStoreProperty
 {
     private int _dimensions;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreVectorProperty"/> class.
     /// </summary>
     /// <param name="name">The name of the property on the data model. If the record is mapped to a .NET type, this corresponds to the .NET property name on that type.</param>
     /// <param name="dimensions">The number of dimensions that the vector has.</param>
     public VectorStoreVectorProperty(string name, int dimensions)
-        : base(name, type: null)
+        : base(name, null)
     {
-        this.Dimensions = dimensions;
+        Dimensions = dimensions;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreVectorProperty"/> class.
@@ -36,8 +37,9 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     public VectorStoreVectorProperty(string name, Type type, int dimensions)
         : base(name, type)
     {
-        this.Dimensions = dimensions;
+        Dimensions = dimensions;
     }
+
 
     /// <summary>
     /// Gets or sets the default embedding generator to use for this property.
@@ -57,7 +59,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// </remarks>
     public int Dimensions
     {
-        get => this._dimensions;
+        get => _dimensions;
 
         set
         {
@@ -66,7 +68,7 @@ public class VectorStoreVectorProperty : VectorStoreProperty
                 throw new ArgumentOutOfRangeException(nameof(value), "Dimensions must be greater than zero.");
             }
 
-            this._dimensions = value;
+            _dimensions = value;
         }
     }
 
@@ -93,13 +95,16 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// </summary>
     public Type? EmbeddingType { get; set; }
 
+
     internal virtual VectorPropertyModel CreatePropertyModel()
-        => new(this.Name, this.Type ?? throw new InvalidOperationException(VectorDataStrings.MissingTypeOnPropertyDefinition(this)))
+    {
+        return new VectorPropertyModel(Name, Type ?? throw new InvalidOperationException(VectorDataStrings.MissingTypeOnPropertyDefinition(this)))
         {
-            Dimensions = this.Dimensions,
-            IndexKind = this.IndexKind,
-            DistanceFunction = this.DistanceFunction,
-            EmbeddingGenerator = this.EmbeddingGenerator,
-            EmbeddingType = this.EmbeddingType!
+            Dimensions = Dimensions,
+            IndexKind = IndexKind,
+            DistanceFunction = DistanceFunction,
+            EmbeddingGenerator = EmbeddingGenerator,
+            EmbeddingType = EmbeddingType!
         };
+    }
 }

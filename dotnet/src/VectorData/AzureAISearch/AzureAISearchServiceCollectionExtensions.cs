@@ -1,15 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using Azure;
-using Azure.Core;
-using Azure.Core.Serialization;
-using Azure.Search.Documents;
-using Azure.Search.Documents.Indexes;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Http;
@@ -24,6 +14,7 @@ public static class AzureAISearchServiceCollectionExtensions
     private const string DynamicCodeMessage = "The Azure AI Search provider is currently incompatible with trimming.";
     private const string UnreferencedCodeMessage = "The Azure AI Search provider is currently incompatible with NativeAOT.";
 
+
     /// <summary>
     /// Registers a <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
     /// with <see cref="SearchIndexClient"/> returned by <paramref name="clientProvider"/>
@@ -37,7 +28,14 @@ public static class AzureAISearchServiceCollectionExtensions
         Func<IServiceProvider, SearchIndexClient>? clientProvider = default,
         Func<IServiceProvider, AzureAISearchVectorStoreOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedAzureAISearchVectorStore(services, serviceKey: null, clientProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedAzureAISearchVectorStore(services,
+            null,
+            clientProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
@@ -61,19 +59,27 @@ public static class AzureAISearchServiceCollectionExtensions
     {
         Verify.NotNull(services);
 
-        services.Add(new ServiceDescriptor(typeof(AzureAISearchVectorStore), serviceKey, (sp, _) =>
-        {
-            var client = clientProvider is not null ? clientProvider(sp) : sp.GetRequiredService<SearchIndexClient>();
-            var options = GetStoreOptions(sp, optionsProvider);
+        services.Add(new ServiceDescriptor(typeof(AzureAISearchVectorStore),
+            serviceKey,
+            (sp, _) =>
+            {
+                var client = clientProvider is not null
+                    ? clientProvider(sp)
+                    : sp.GetRequiredService<SearchIndexClient>();
+                var options = GetStoreOptions(sp, optionsProvider);
 
-            return new AzureAISearchVectorStore(client, options);
-        }, lifetime));
+                return new AzureAISearchVectorStore(client, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<AzureAISearchVectorStore>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStore),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<AzureAISearchVectorStore>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
@@ -88,7 +94,15 @@ public static class AzureAISearchServiceCollectionExtensions
         TokenCredential tokenCredential,
         AzureAISearchVectorStoreOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedAzureAISearchVectorStore(services, serviceKey: null, endpoint, tokenCredential, options, lifetime);
+    {
+        return AddKeyedAzureAISearchVectorStore(services,
+            serviceKey: null,
+            endpoint,
+            tokenCredential,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
@@ -114,12 +128,17 @@ public static class AzureAISearchServiceCollectionExtensions
         Verify.NotNull(endpoint);
         Verify.NotNull(tokenCredential);
 
-        return AddKeyedAzureAISearchVectorStore(services, serviceKey, sp =>
-        {
-            var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
-            return new SearchIndexClient(endpoint, tokenCredential, searchClientOptions);
-        }, _ => options!, lifetime);
+        return AddKeyedAzureAISearchVectorStore(services,
+            serviceKey,
+            sp =>
+            {
+                var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
+                return new SearchIndexClient(endpoint, tokenCredential, searchClientOptions);
+            },
+            _ => options!,
+            lifetime);
     }
+
 
     /// <summary>
     /// Registers a <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
@@ -134,7 +153,15 @@ public static class AzureAISearchServiceCollectionExtensions
         AzureKeyCredential keyCredential,
         AzureAISearchVectorStoreOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedAzureAISearchVectorStore(services, serviceKey: null, endpoint, keyCredential, options, lifetime);
+    {
+        return AddKeyedAzureAISearchVectorStore(services,
+            serviceKey: null,
+            endpoint,
+            keyCredential,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="AzureAISearchVectorStore"/> as <see cref="VectorStore"/>
@@ -160,12 +187,17 @@ public static class AzureAISearchServiceCollectionExtensions
         Verify.NotNull(endpoint);
         Verify.NotNull(keyCredential);
 
-        return AddKeyedAzureAISearchVectorStore(services, serviceKey, sp =>
-        {
-            var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
-            return new SearchIndexClient(endpoint, keyCredential, searchClientOptions);
-        }, _ => options!, lifetime);
+        return AddKeyedAzureAISearchVectorStore(services,
+            serviceKey,
+            sp =>
+            {
+                var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
+                return new SearchIndexClient(endpoint, keyCredential, searchClientOptions);
+            },
+            _ => options!,
+            lifetime);
     }
+
 
     /// <summary>
     /// Registers a <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -182,7 +214,15 @@ public static class AzureAISearchServiceCollectionExtensions
         Func<IServiceProvider, AzureAISearchCollectionOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey: null, name, clientProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedAzureAISearchCollection<TRecord>(services,
+            null,
+            name,
+            clientProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -210,25 +250,37 @@ public static class AzureAISearchServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(name);
 
-        services.Add(new ServiceDescriptor(typeof(AzureAISearchCollection<string, TRecord>), serviceKey, (sp, _) =>
-        {
-            var client = clientProvider is not null ? clientProvider(sp) : sp.GetRequiredService<SearchIndexClient>();
-            var options = GetCollectionOptions(sp, optionsProvider);
+        services.Add(new ServiceDescriptor(typeof(AzureAISearchCollection<string, TRecord>),
+            serviceKey,
+            (sp, _) =>
+            {
+                var client = clientProvider is not null
+                    ? clientProvider(sp)
+                    : sp.GetRequiredService<SearchIndexClient>();
+                var options = GetCollectionOptions(sp, optionsProvider);
 
-            return new AzureAISearchCollection<string, TRecord>(client, name, options);
-        }, lifetime));
+                return new AzureAISearchCollection<string, TRecord>(client, name, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<string, TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<AzureAISearchCollection<string, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<string, TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<AzureAISearchCollection<string, TRecord>>(key),
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<AzureAISearchCollection<string, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<AzureAISearchCollection<string, TRecord>>(key),
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IKeywordHybridSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<AzureAISearchCollection<string, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IKeywordHybridSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<AzureAISearchCollection<string, TRecord>>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -245,7 +297,16 @@ public static class AzureAISearchServiceCollectionExtensions
         AzureAISearchCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey: null, name, endpoint, tokenCredential, options, lifetime);
+    {
+        return AddKeyedAzureAISearchCollection<TRecord>(services,
+            serviceKey: null,
+            name,
+            endpoint,
+            tokenCredential,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -274,12 +335,18 @@ public static class AzureAISearchServiceCollectionExtensions
         Verify.NotNull(endpoint);
         Verify.NotNull(tokenCredential);
 
-        return AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey, name, sp =>
-        {
-            var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
-            return new SearchIndexClient(endpoint, tokenCredential, searchClientOptions);
-        }, _ => options!, lifetime);
+        return AddKeyedAzureAISearchCollection<TRecord>(services,
+            serviceKey,
+            name,
+            sp =>
+            {
+                var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
+                return new SearchIndexClient(endpoint, tokenCredential, searchClientOptions);
+            },
+            _ => options!,
+            lifetime);
     }
+
 
     /// <summary>
     /// Registers a <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -296,7 +363,16 @@ public static class AzureAISearchServiceCollectionExtensions
         AzureAISearchCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey: null, name, endpoint, keyCredential, options, lifetime);
+    {
+        return AddKeyedAzureAISearchCollection<TRecord>(services,
+            serviceKey: null,
+            name,
+            endpoint,
+            keyCredential,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="AzureAISearchCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -325,12 +401,18 @@ public static class AzureAISearchServiceCollectionExtensions
         Verify.NotNull(endpoint);
         Verify.NotNull(keyCredential);
 
-        return AddKeyedAzureAISearchCollection<TRecord>(services, serviceKey, name, sp =>
-        {
-            var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
-            return new SearchIndexClient(endpoint, keyCredential, searchClientOptions);
-        }, _ => options!, lifetime);
+        return AddKeyedAzureAISearchCollection<TRecord>(services,
+            serviceKey,
+            name,
+            sp =>
+            {
+                var searchClientOptions = BuildSearchClientOptions(options?.JsonSerializerOptions);
+                return new SearchIndexClient(endpoint, keyCredential, searchClientOptions);
+            },
+            _ => options!,
+            lifetime);
     }
+
 
     /// <summary>
     /// Build a <see cref="SearchClientOptions"/> instance, using the provided <see cref="JsonSerializerOptions"/> if it's not null and add the SK user agent string.
@@ -341,6 +423,7 @@ public static class AzureAISearchServiceCollectionExtensions
     {
         var searchClientOptions = new SearchClientOptions();
         searchClientOptions.Diagnostics.ApplicationId = HttpHeaderConstant.Values.UserAgent;
+
         if (jsonSerializerOptions != null)
         {
             searchClientOptions.Serializer = new JsonObjectSerializer(jsonSerializerOptions);
@@ -349,9 +432,11 @@ public static class AzureAISearchServiceCollectionExtensions
         return searchClientOptions;
     }
 
+
     private static AzureAISearchVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, AzureAISearchVectorStoreOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.
@@ -363,9 +448,11 @@ public static class AzureAISearchServiceCollectionExtensions
             : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
 
+
     private static AzureAISearchCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, AzureAISearchCollectionOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.

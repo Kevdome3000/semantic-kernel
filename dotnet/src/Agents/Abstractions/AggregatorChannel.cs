@@ -1,11 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.SemanticKernel.Agents;
 
 /// <summary>
@@ -16,18 +9,20 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
 {
     private readonly AgentChat _chat = chat;
 
+
     /// <inheritdoc/>
     protected internal override IAsyncEnumerable<ChatMessageContent> GetHistoryAsync(CancellationToken cancellationToken = default)
     {
-        return this._chat.GetChatMessagesAsync(cancellationToken);
+        return _chat.GetChatMessagesAsync(cancellationToken);
     }
+
 
     /// <inheritdoc/>
     protected internal override async IAsyncEnumerable<(bool IsVisible, ChatMessageContent Message)> InvokeAsync(AggregatorAgent agent, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         ChatMessageContent? lastMessage = null;
 
-        await foreach (ChatMessageContent message in this._chat.InvokeAsync(cancellationToken).ConfigureAwait(false))
+        await foreach (ChatMessageContent message in _chat.InvokeAsync(cancellationToken).ConfigureAwait(false))
         {
             // For AggregatorMode.Flat, the entire aggregated chat is merged into the owning chat.
             if (agent.Mode == AggregatorMode.Flat)
@@ -43,7 +38,12 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
         if (agent.Mode == AggregatorMode.Nested && lastMessage is not null)
         {
             ChatMessageContent message =
-                new(lastMessage.Role, lastMessage.Items, lastMessage.ModelId, lastMessage.InnerContent, lastMessage.Encoding, lastMessage.Metadata)
+                new(lastMessage.Role,
+                    lastMessage.Items,
+                    lastMessage.ModelId,
+                    lastMessage.InnerContent,
+                    lastMessage.Encoding,
+                    lastMessage.Metadata)
                 {
                     AuthorName = agent.Name
                 };
@@ -52,16 +52,18 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
         }
     }
 
+
     /// <inheritdoc/>
     protected internal override async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(AggregatorAgent agent, IList<ChatMessageContent> messages, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         int initialCount = 0;
-        await foreach (var _ in this._chat.GetChatMessagesAsync(cancellationToken).ConfigureAwait(false))
+
+        await foreach (var _ in _chat.GetChatMessagesAsync(cancellationToken).ConfigureAwait(false))
         {
             initialCount++;
         }
 
-        await foreach (StreamingChatMessageContent message in this._chat.InvokeStreamingAsync(cancellationToken).ConfigureAwait(false))
+        await foreach (StreamingChatMessageContent message in _chat.InvokeStreamingAsync(cancellationToken).ConfigureAwait(false))
         {
             if (agent.Mode == AggregatorMode.Flat)
             {
@@ -70,7 +72,8 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
         }
 
         List<ChatMessageContent> history = [];
-        await foreach (var item in this._chat.GetChatMessagesAsync(cancellationToken).ConfigureAwait(false))
+
+        await foreach (var item in _chat.GetChatMessagesAsync(cancellationToken).ConfigureAwait(false))
         {
             history.Add(item);
         }
@@ -88,24 +91,32 @@ internal sealed class AggregatorChannel(AgentChat chat) : AgentChannel<Aggregato
             {
                 ChatMessageContent finalMessage = history[0]; // Order descending
                 yield return new StreamingChatMessageContent(finalMessage.Role, finalMessage.Content) { AuthorName = finalMessage.AuthorName };
+
                 messages.Add(finalMessage);
             }
         }
     }
 
+
     /// <inheritdoc/>
     protected internal override Task ReceiveAsync(IEnumerable<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
         // Always receive the initial history from the owning chat.
-        this._chat.AddChatMessages([.. history]);
+        _chat.AddChatMessages([.. history]);
 
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc/>
-    protected internal override Task ResetAsync(CancellationToken cancellationToken = default) =>
-        this._chat.ResetAsync(cancellationToken);
 
-    protected internal override string Serialize() =>
-        JsonSerializer.Serialize(this._chat.Serialize());
+    /// <inheritdoc/>
+    protected internal override Task ResetAsync(CancellationToken cancellationToken = default)
+    {
+        return _chat.ResetAsync(cancellationToken);
+    }
+
+
+    protected internal override string Serialize()
+    {
+        return JsonSerializer.Serialize(_chat.Serialize());
+    }
 }

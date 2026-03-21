@@ -18,12 +18,16 @@ public static class A2AAgentExtensions
     /// <returns>The Semantic Kernel Agent Framework <see cref="Agent"/> exposed as a Microsoft Agent Framework <see cref="MAAI.AIAgent"/></returns>
     [Experimental("SKEXP0110")]
     public static MAAI.AIAgent AsAIAgent(this A2AAgent a2aAgent)
-        => a2aAgent.AsAIAgent(
+    {
+        return a2aAgent.AsAIAgent(
             () => new A2AAgentThread(a2aAgent.Client),
             (json, options) =>
             {
-                var agentId = JsonSerializer.Deserialize<string>(json);
-                return agentId is null ? new A2AAgentThread(a2aAgent.Client) : new A2AAgentThread(a2aAgent.Client, agentId);
+                var agentId = json.Deserialize<string>();
+                return agentId is null
+                    ? new A2AAgentThread(a2aAgent.Client)
+                    : new A2AAgentThread(a2aAgent.Client, agentId);
             },
             (thread, options) => JsonSerializer.SerializeToElement((thread as A2AAgentThread)?.Id));
+    }
 }

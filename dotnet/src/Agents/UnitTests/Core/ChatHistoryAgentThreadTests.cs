@@ -32,6 +32,7 @@ public class ChatHistoryAgentThreadTests
         Assert.False(thread.IsDeleted);
     }
 
+
     /// <summary>
     /// Tests that deleting a thread marks it as deleted.
     /// </summary>
@@ -48,6 +49,7 @@ public class ChatHistoryAgentThreadTests
         // Assert
         Assert.True(thread.IsDeleted);
     }
+
 
     /// <summary>
     /// Tests that adding a new message to the thread adds it to the message history.
@@ -67,6 +69,7 @@ public class ChatHistoryAgentThreadTests
         Assert.Single(messages);
         Assert.Equal("Hello", messages[0].Content);
     }
+
 
     /// <summary>
     /// Tests that GetMessagesAsync returns all messages in the thread.
@@ -91,6 +94,7 @@ public class ChatHistoryAgentThreadTests
         Assert.Equal("Hi there", messages[1].Content);
     }
 
+
     /// <summary>
     /// Tests that GetMessagesAsync throws an InvalidOperationException if the thread is deleted.
     /// </summary>
@@ -105,6 +109,7 @@ public class ChatHistoryAgentThreadTests
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await thread.GetMessagesAsync().ToListAsync());
     }
+
 
     /// <summary>
     /// Tests that GetMessagesAsync creates the thread if it has not been created yet.

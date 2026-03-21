@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Xunit;
@@ -24,11 +24,12 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
         // Arrange & Act & Assert
         Assert.Throws<ArgumentNullException>(() => new OpenAIResponseAgentThread(null!));
         Assert.Throws<ArgumentNullException>(() => new OpenAIResponseAgentThread(null!, "threadId"));
-        Assert.Throws<ArgumentNullException>(() => new OpenAIResponseAgentThread(this.Client, responseId: null!));
+        Assert.Throws<ArgumentNullException>(() => new OpenAIResponseAgentThread(Client, responseId: null!));
 
-        var agentThread = new OpenAIResponseAgentThread(this.Client);
+        var agentThread = new OpenAIResponseAgentThread(Client);
         Assert.NotNull(agentThread);
     }
+
 
     /// <summary>
     /// Tests that the constructor for resuming a thread uses the provided parameters.
@@ -37,12 +38,13 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
     public void ConstructorForResumingThreadShouldUseParams()
     {
         // Arrange & Act
-        var agentThread = new OpenAIResponseAgentThread(this.Client, "threadId");
+        var agentThread = new OpenAIResponseAgentThread(Client, "threadId");
 
         // Assert
         Assert.NotNull(agentThread);
         Assert.Equal("threadId", agentThread.Id);
     }
+
 
     /// <summary>
     /// Verify <see cref="OpenAIResponseAgentThread.GetMessagesAsync(System.Threading.CancellationToken)"/> returns expected when store is disabled.
@@ -51,16 +53,17 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
     public async Task VerifyGetMessagesWhenThreadIsUnusedAsync()
     {
         // Arrange
-        var thread = new OpenAIResponseAgentThread(this.Client);
+        var thread = new OpenAIResponseAgentThread(Client);
 
         // Act
         var messages = thread.GetMessagesAsync();
 
         // Assert
         Assert.NotNull(messages);
-        var messagesList = await messages!.ToListAsync<ChatMessageContent>();
+        var messagesList = await messages!.ToListAsync();
         Assert.Empty(messagesList);
     }
+
 
     /// <summary>
     /// Verify <see cref="OpenAIResponseAgentThread.GetMessagesAsync(System.Threading.CancellationToken)"/> returned when store is disabled.
@@ -69,20 +72,21 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
     public async Task VerifyGetMessagesWhenStoreEnabledAsync()
     {
         // Arrange
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-             new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(MessagesResponse) }
-         );
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(MessagesResponse) }
+        );
         var responseId = "resp_67e8ff743ea08191b085bea42b4d83e809a3a922c4f4221b";
-        var thread = new OpenAIResponseAgentThread(this.Client, responseId: responseId);
+        var thread = new OpenAIResponseAgentThread(Client, responseId: responseId);
 
         // Act
         var messages = thread.GetMessagesAsync();
 
         // Assert
         Assert.NotNull(messages);
-        var messagesList = await messages!.ToListAsync<ChatMessageContent>();
+        var messagesList = await messages!.ToListAsync();
         Assert.Equal(3, messagesList.Count);
     }
+
 
     /// <summary>
     /// Verify <see cref="OpenAIResponseAgentThread.CreateInternalAsync(System.Threading.CancellationToken)"/> returns null.
@@ -91,7 +95,7 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
     public async Task VerifyCreateReturnsNullIdAsync()
     {
         // Arrange
-        var thread = new OpenAIResponseAgentThread(this.Client);
+        var thread = new OpenAIResponseAgentThread(Client);
 
         // Act
         await thread.CreateAsync();
@@ -100,6 +104,7 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
         Assert.Null(thread.Id);
     }
 
+
     /// <summary>
     /// Verify <see cref="OpenAIResponseAgentThread.DeleteInternalAsync(System.Threading.CancellationToken)"/> doesn'tthrows if the thread has not been created.
     /// </summary>
@@ -107,11 +112,12 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
     public async Task VerifyDeleteAsyncFailedIfThreadNotCreatedAsync()
     {
         // Arrange
-        var thread = new OpenAIResponseAgentThread(this.Client);
+        var thread = new OpenAIResponseAgentThread(Client);
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await thread.DeleteAsync());
     }
+
 
     /// <summary>
     /// Verify <see cref="OpenAIResponseAgentThread.DeleteInternalAsync(System.Threading.CancellationToken)"/> doesn't throw.
@@ -120,15 +126,16 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
     public async Task VerifyDeleteAsyncAsync()
     {
         // Arrange
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-             new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(DeleteResponse) }
-         );
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(DeleteResponse) }
+        );
         var responseId = "resp_68382fc3f69c819192418d768950631e09dd5437357ceaf3";
-        var thread = new OpenAIResponseAgentThread(this.Client, responseId: responseId);
+        var thread = new OpenAIResponseAgentThread(Client, responseId: responseId);
 
         // Act & Assert
         await thread.DeleteAsync();
     }
+
 
     /// <summary>
     /// Verify <see cref="OpenAIResponseAgentThread.CreateInternalAsync(System.Threading.CancellationToken)"/> throws if the thread is deleted.
@@ -137,16 +144,17 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
     public async Task VerifyCreateAfterDeleteThrowsAsync()
     {
         // Arrange
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-             new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(DeleteResponse) }
-         );
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(DeleteResponse) }
+        );
         var responseId = "resp_68382fc3f69c819192418d768950631e09dd5437357ceaf3";
-        var thread = new OpenAIResponseAgentThread(this.Client, responseId: responseId);
+        var thread = new OpenAIResponseAgentThread(Client, responseId: responseId);
         await thread.DeleteAsync();
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await thread.CreateAsync());
     }
+
 
     /// <summary>
     /// Verify <see cref="OpenAIResponseAgentThread.DeleteInternalAsync(System.Threading.CancellationToken)"/> does throw.
@@ -155,17 +163,19 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
     public async Task VerifyDeleteAsyncWithErrorAsync()
     {
         // Arrange
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-             new HttpResponseMessage(System.Net.HttpStatusCode.NotFound) { Content = new StringContent(DeleteErrorResponse) }
-         );
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent(DeleteErrorResponse) }
+        );
         var responseId = "resp_68382fc3f69c819192418d768950631e09dd5437357ceaf3";
-        var thread = new OpenAIResponseAgentThread(this.Client, responseId: responseId);
+        var thread = new OpenAIResponseAgentThread(Client, responseId: responseId);
 
         // Act & Assert
         await Assert.ThrowsAsync<AgentThreadOperationException>(async () => await thread.DeleteAsync());
     }
 
+
     #region private
+
     private const string MessagesResponse =
         """
         {
@@ -213,7 +223,7 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
           "last_id": "msg_67e8ff7258a081919e7964ac7b344bc909a3a922c4f4221b",
           "has_more": false
         }
-        
+
         """;
 
     private const string DeleteResponse =
@@ -236,5 +246,8 @@ public sealed class OpenAIResponseAgentThreadTests : BaseOpenAIResponseClientTes
             }
         }
         """;
+
     #endregion
+
+
 }

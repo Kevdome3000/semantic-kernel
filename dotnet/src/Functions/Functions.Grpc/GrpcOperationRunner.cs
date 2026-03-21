@@ -1,24 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Plugins.Grpc.Model;
+
 namespace Microsoft.SemanticKernel.Plugins.Grpc;
-
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Reflection;
-using System.Reflection.Emit;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Threading;
-using System.Threading.Tasks;
-using global::Grpc.Core;
-using global::Grpc.Net.Client;
-using Model;
-using ProtoBuf;
-
 
 /// <summary>
 /// Runs gRPC operation runner.
@@ -52,9 +36,9 @@ internal sealed class GrpcOperationRunner(HttpClient httpClient)
 
         var stringArgument = CastToStringArguments(arguments, operation);
 
-        var address = this.GetAddress(operation, stringArgument);
+        var address = GetAddress(operation, stringArgument);
 
-        var channelOptions = new GrpcChannelOptions { HttpClient = this._httpClient, DisposeHttpClient = false };
+        var channelOptions = new GrpcChannelOptions { HttpClient = _httpClient, DisposeHttpClient = false };
 
         using var channel = GrpcChannel.ForAddress(address, channelOptions);
 
@@ -62,21 +46,23 @@ internal sealed class GrpcOperationRunner(HttpClient httpClient)
 
         var responseType = BuildGrpcOperationDataContractType(operation.Response);
 
-        var method = new Method<object, object>
-        (
+        var method = new Method<object, object>(
             MethodType.Unary,
             operation.FullServiceName,
             operation.Name,
-            this.CreateMarshaller<object>(requestType),
-            this.CreateMarshaller<object>(responseType)
+            CreateMarshaller<object>(requestType),
+            CreateMarshaller<object>(responseType)
         );
 
         var invoker = channel.CreateCallInvoker();
 
-        var request = this.GenerateOperationRequest(operation, requestType, stringArgument);
+        var request = GenerateOperationRequest(operation, requestType, stringArgument);
 
-        var response = await invoker.AsyncUnaryCall(method, null, new CallOptions(cancellationToken: cancellationToken), request).
-            ConfigureAwait(false);
+        var response = await invoker.AsyncUnaryCall(method,
+                null,
+                new CallOptions(cancellationToken: cancellationToken),
+                request)
+            .ConfigureAwait(false);
 
         return ConvertResponse(response, responseType);
     }
@@ -91,15 +77,16 @@ internal sealed class GrpcOperationRunner(HttpClient httpClient)
     /// <exception cref="KernelException">Thrown when an argument has an unsupported, non-string type.</exception>
     private static Dictionary<string, string> CastToStringArguments(KernelArguments arguments, GrpcOperation operation)
     {
-        return arguments.ToDictionary(item => item.Key, item =>
-        {
-            if (item.Value is string stringValue)
+        return arguments.ToDictionary(item => item.Key,
+            item =>
             {
-                return stringValue;
-            }
+                if (item.Value is string stringValue)
+                {
+                    return stringValue;
+                }
 
-            throw new KernelException($"Non-string gRPC operation arguments are not supported in Release Candidate 1. This feature will be available soon, but for now, please ensure that all arguments are strings. Operation '{operation.Name}' argument '{item.Key}' is of type '{item.Value?.GetType()}'.");
-        });
+                throw new KernelException($"Non-string gRPC operation arguments are not supported in Release Candidate 1. This feature will be available soon, but for now, please ensure that all arguments are strings. Operation '{operation.Name}' argument '{item.Key}' is of type '{item.Value?.GetType()}'.");
+            });
     }
 
 
@@ -183,15 +170,13 @@ internal sealed class GrpcOperationRunner(HttpClient httpClient)
     private object GenerateOperationRequest(GrpcOperation operation, Type type, Dictionary<string, string> arguments)
     {
         //Getting 'payload' argument to by used as gRPC request message
-        if (!arguments.TryGetValue(GrpcOperation.PayloadArgumentName, out string? payload) ||
-            string.IsNullOrEmpty(payload))
+        if (!arguments.TryGetValue(GrpcOperation.PayloadArgumentName, out string? payload) || string.IsNullOrEmpty(payload))
         {
             throw new KernelException($"No '{GrpcOperation.PayloadArgumentName}' argument representing gRPC request message is found for the '{operation.Name}' gRPC operation.");
         }
 
         //Deserializing JSON payload to gRPC request message
-        return JsonSerializer.Deserialize(payload!, type, s_propertyCaseInsensitiveOptions) ??
-               throw new KernelException($"Unable to create gRPC request message for the '{operation.Name}' gRPC operation.");
+        return JsonSerializer.Deserialize(payload!, type, s_propertyCaseInsensitiveOptions) ?? throw new KernelException($"Unable to create gRPC request message for the '{operation.Name}' gRPC operation.");
     }
 
 
@@ -220,17 +205,26 @@ internal sealed class GrpcOperationRunner(HttpClient httpClient)
 
             //Creating a private backing field for the property
             var fieldBuilder = typeBuilder.DefineField(fieldName + "_", propertyType, FieldAttributes.Private);
-            var propertyBuilder = typeBuilder.DefineProperty(propertyName, PropertyAttributes.None, propertyType, null);
+            var propertyBuilder = typeBuilder.DefineProperty(propertyName,
+                PropertyAttributes.None,
+                propertyType,
+                null);
 
             //Creating the property get method and binding it to the private filed
-            var getterBuilder = typeBuilder.DefineMethod("get_" + propertyName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, propertyType, Type.EmptyTypes);
+            var getterBuilder = typeBuilder.DefineMethod("get_" + propertyName,
+                MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig,
+                propertyType,
+                Type.EmptyTypes);
             var getterIl = getterBuilder.GetILGenerator();
             getterIl.Emit(OpCodes.Ldarg_0);
             getterIl.Emit(OpCodes.Ldfld, fieldBuilder);
             getterIl.Emit(OpCodes.Ret);
 
             //Creating the property set method and binding it to the private filed
-            var setterBuilder = typeBuilder.DefineMethod("set_" + propertyName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, null, [propertyType]);
+            var setterBuilder = typeBuilder.DefineMethod("set_" + propertyName,
+                MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig,
+                null,
+                [propertyType]);
             var setterIl = setterBuilder.GetILGenerator();
             setterIl.Emit(OpCodes.Ldarg_0);
             setterIl.Emit(OpCodes.Ldarg_1);
@@ -250,8 +244,7 @@ internal sealed class GrpcOperationRunner(HttpClient httpClient)
         var dataContractAttributeBuilder = new CustomAttributeBuilder(typeof(ProtoContractAttribute).GetConstructor(Type.EmptyTypes)!, []);
         typeBuilder.SetCustomAttribute(dataContractAttributeBuilder);
 
-        return typeBuilder.CreateTypeInfo() ??
-               throw new KernelException($"Impossible to create type for '{dataContractMetadata.Name}' data contract.");
+        return typeBuilder.CreateTypeInfo() ?? throw new KernelException($"Impossible to create type for '{dataContractMetadata.Name}' data contract.");
     }
 
 
@@ -260,8 +253,9 @@ internal sealed class GrpcOperationRunner(HttpClient httpClient)
     /// </summary>
     /// <param name="type">The protobuf data type name.</param>
     /// <returns>The .net type.</returns>
-    private static Type GetNetType(string type) =>
-        type switch
+    private static Type GetNetType(string type)
+    {
+        return type switch
         {
             "TYPE_DOUBLE" => typeof(double),
             "TYPE_FLOAT" => typeof(float),
@@ -278,7 +272,8 @@ internal sealed class GrpcOperationRunner(HttpClient httpClient)
             "TYPE_SFIXED64" => typeof(long),
             "TYPE_SINT32" => typeof(int),
             "TYPE_SINT64" => typeof(long),
-            _ => throw new ArgumentException($"Unknown type {type}", nameof(type)),
+            _ => throw new ArgumentException($"Unknown type {type}", nameof(type))
         };
+    }
 
 }

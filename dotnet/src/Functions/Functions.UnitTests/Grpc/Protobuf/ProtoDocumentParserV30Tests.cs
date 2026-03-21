@@ -1,13 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.Grpc.Protobuf;
-
 using System.IO;
-using System.Linq;
 using Microsoft.SemanticKernel.Plugins.Grpc.Protobuf;
-using TestPlugins;
+using SemanticKernel.Functions.UnitTests.Grpc.Protobuf.TestPlugins;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.Grpc.Protobuf;
 
 public sealed class ProtoDocumentParserV30Tests
 {
@@ -27,9 +25,9 @@ public sealed class ProtoDocumentParserV30Tests
     /// </summary>
     public ProtoDocumentParserV30Tests()
     {
-        this._protoDocument = ResourcePluginsProvider.LoadFromResource("protoV3.proto");
+        _protoDocument = ResourcePluginsProvider.LoadFromResource("protoV3.proto");
 
-        this._sut = new ProtoDocumentParser();
+        _sut = new ProtoDocumentParser();
     }
 
 
@@ -37,7 +35,7 @@ public sealed class ProtoDocumentParserV30Tests
     public void ShouldCreateOperationsForAllServicesInProtoDocument()
     {
         // Act
-        var operations = this._sut.Parse(this._protoDocument, "fake_name");
+        var operations = _sut.Parse(_protoDocument, "fake_name");
 
         // Assert
         Assert.NotNull(operations);
@@ -57,7 +55,7 @@ public sealed class ProtoDocumentParserV30Tests
     public void ShouldParseSimpleOperationRequestDataContract()
     {
         // Act
-        var operations = this._sut.Parse(this._protoDocument, "fake_name");
+        var operations = _sut.Parse(_protoDocument, "fake_name");
 
         // Assert
         Assert.NotNull(operations);
@@ -86,7 +84,7 @@ public sealed class ProtoDocumentParserV30Tests
     public void ShouldParseSimpleOperationResponseDataContract()
     {
         // Act
-        var operations = this._sut.Parse(this._protoDocument, "fake_name");
+        var operations = _sut.Parse(_protoDocument, "fake_name");
 
         // Assert
         Assert.NotNull(operations);

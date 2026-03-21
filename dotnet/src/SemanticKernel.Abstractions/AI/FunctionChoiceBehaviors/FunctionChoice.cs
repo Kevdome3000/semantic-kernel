@@ -31,6 +31,7 @@ public readonly struct FunctionChoice : IEquatable<FunctionChoice>
     /// </summary>
     public string Label { get; }
 
+
     /// <summary>
     /// Creates a new FunctionChoice instance with the provided label.
     /// </summary>
@@ -41,6 +42,7 @@ public readonly struct FunctionChoice : IEquatable<FunctionChoice>
         Label = label!;
     }
 
+
     /// <summary>
     /// Returns a value indicating whether two FunctionChoice instances are equivalent, as determined by a
     /// case-insensitive comparison of their labels.
@@ -49,7 +51,10 @@ public readonly struct FunctionChoice : IEquatable<FunctionChoice>
     /// <param name="right"> the second FunctionChoice instance to compare </param>
     /// <returns> true if left and right are both null or have equivalent labels; false otherwise </returns>
     public static bool operator ==(FunctionChoice left, FunctionChoice right)
-        => left.Equals(right);
+    {
+        return left.Equals(right);
+    }
+
 
     /// <summary>
     /// Returns a value indicating whether two FunctionChoice instances are not equivalent, as determined by a
@@ -59,11 +64,17 @@ public readonly struct FunctionChoice : IEquatable<FunctionChoice>
     /// <param name="right"> the second FunctionChoice instance to compare </param>
     /// <returns> false if left and right are both null or have equivalent labels; true otherwise </returns>
     public static bool operator !=(FunctionChoice left, FunctionChoice right)
-        => !(left == right);
+    {
+        return !(left == right);
+    }
+
 
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)
-        => obj is FunctionChoice other && this == other;
+    {
+        return obj is FunctionChoice other && this == other;
+    }
+
 
     /// <inheritdoc/>
     public bool Equals(FunctionChoice other)

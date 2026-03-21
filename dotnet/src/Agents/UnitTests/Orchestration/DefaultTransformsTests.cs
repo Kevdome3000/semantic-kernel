@@ -31,6 +31,7 @@ public class DefaultTransformsTests
         Assert.Equal(input, result);
     }
 
+
     [Fact]
     public async Task FromInputAsync_WithChatMessageContent_ReturnsInputAsListAsync()
     {
@@ -44,6 +45,7 @@ public class DefaultTransformsTests
         Assert.Single(result);
         Assert.Equal(input, result.First());
     }
+
 
     [Fact]
     public async Task FromInputAsync_WithStringInput_ReturnsUserChatMessageAsync()
@@ -60,6 +62,7 @@ public class DefaultTransformsTests
         Assert.Equal(AuthorRole.User, message.Role);
         Assert.Equal(input, message.Content);
     }
+
 
     [Fact]
     public async Task FromInputAsync_WithObjectInput_SerializesAsJsonAsync()
@@ -79,6 +82,7 @@ public class DefaultTransformsTests
         Assert.Equal(expectedJson, message.Content);
     }
 
+
     [Fact]
     public async Task ToOutputAsync_WithOutputTypeMatchingInputList_ReturnsSameListAsync()
     {
@@ -96,6 +100,7 @@ public class DefaultTransformsTests
         Assert.Same(input, result);
     }
 
+
     [Fact]
     public async Task ToOutputAsync_WithOutputTypeChatMessageContent_ReturnsSingleMessageAsync()
     {
@@ -111,6 +116,7 @@ public class DefaultTransformsTests
         // Assert
         Assert.Same(input[0], result);
     }
+
 
     [Fact]
     public async Task ToOutputAsync_WithOutputTypeString_ReturnsContentOfSingleMessageAsync()
@@ -128,6 +134,7 @@ public class DefaultTransformsTests
         // Assert
         Assert.Equal(expected, result);
     }
+
 
     [Fact]
     public async Task ToOutputAsync_WithOutputTypeDeserializable_DeserializesFromContentAsync()
@@ -148,6 +155,7 @@ public class DefaultTransformsTests
         Assert.Equal(expected.Name, result.Name);
     }
 
+
     [Fact]
     public async Task ToOutputAsync_WithInvalidJson_ThrowsExceptionAsync()
     {
@@ -162,6 +170,7 @@ public class DefaultTransformsTests
             await DefaultTransforms.ToOutput<TestObject>(input)
         );
     }
+
 
     [Fact]
     public async Task ToOutputAsync_WithMultipleMessagesAndNonMatchingType_ThrowsExceptionAsync()
@@ -179,6 +188,7 @@ public class DefaultTransformsTests
         );
     }
 
+
     [Fact]
     public async Task ToOutputAsync_WithNullContent_HandlesGracefullyAsync()
     {
@@ -194,6 +204,7 @@ public class DefaultTransformsTests
         // Assert
         Assert.Equal(string.Empty, result);
     }
+
 
     private sealed class TestObject
     {

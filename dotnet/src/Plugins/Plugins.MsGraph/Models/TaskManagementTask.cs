@@ -32,6 +32,7 @@ public class TaskManagementTask
     /// </summary>
     public bool IsCompleted { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TaskManagementTask"/> class.
     /// </summary>
@@ -40,12 +41,17 @@ public class TaskManagementTask
     /// <param name="reminder">Reminder date/time for the task.</param>
     /// <param name="due">Task's due date/time.</param>
     /// <param name="isCompleted">True if the task is completed, otherwise false.</param>
-    public TaskManagementTask(string? id, string? title, string? reminder = null, string? due = null, bool isCompleted = false)
+    public TaskManagementTask(
+        string? id,
+        string? title,
+        string? reminder = null,
+        string? due = null,
+        bool isCompleted = false)
     {
-        this.Id = id;
-        this.Title = title;
-        this.Reminder = reminder;
-        this.Due = due;
-        this.IsCompleted = isCompleted;
+        Id = id;
+        Title = title;
+        Reminder = reminder;
+        Due = due;
+        IsCompleted = isCompleted;
     }
 }

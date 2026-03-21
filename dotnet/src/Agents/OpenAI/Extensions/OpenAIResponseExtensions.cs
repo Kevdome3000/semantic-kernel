@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Responses;
@@ -12,11 +11,11 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 internal static class OpenAIResponseExtensions
 {
     /// <summary>
-    /// Converts a <see cref="OpenAIResponse"/> instance to a <see cref="ChatMessageContent"/>.
+    /// Converts a <see cref="ResponseResult"/> instance to a <see cref="ChatMessageContent"/>.
     /// </summary>
     /// <param name="response">The response to convert.</param>
     /// <returns>A <see cref="ChatMessageContent"/> instance.</returns>
-    public static ChatMessageContent ToChatMessageContent(this OpenAIResponse response)
+    public static ChatMessageContent ToChatMessageContent(this ResponseResult response)
     {
         var messageItem = response.OutputItems
             .FirstOrDefault(item => item is MessageResponseItem);
@@ -34,8 +33,9 @@ internal static class OpenAIResponseExtensions
             modelId: response.Model,
             items: items,
             innerContent: response
-            );
+        );
     }
+
 
     /// <summary>
     /// Converts a <see cref="ResponseItem"/> instance to a <see cref="ChatMessageContent"/>.
@@ -49,7 +49,8 @@ internal static class OpenAIResponseExtensions
             var role = messageResponseItem.Role.ToAuthorRole();
             return new ChatMessageContent(role, item.ToChatMessageContentItemCollection(), innerContent: messageResponseItem);
         }
-        else if (item is ReasoningResponseItem reasoningResponseItem)
+
+        if (item is ReasoningResponseItem reasoningResponseItem)
         {
             if (reasoningResponseItem.SummaryParts is not null && reasoningResponseItem.SummaryParts.Count > 0)
             {
@@ -63,6 +64,7 @@ internal static class OpenAIResponseExtensions
         return null;
     }
 
+
     /// <summary>
     /// Converts a <see cref="ResponseItem"/> instance to a <see cref="ChatMessageContent"/>.
     /// </summary>
@@ -74,14 +76,17 @@ internal static class OpenAIResponseExtensions
         {
             return messageResponseItem.Content.ToChatMessageContentItemCollection();
         }
-        else if (item is ReasoningResponseItem reasoningResponseItem)
+
+        if (item is ReasoningResponseItem reasoningResponseItem)
         {
             return reasoningResponseItem.SummaryParts.ToChatMessageContentItemCollection();
         }
-        else if (item is FunctionCallResponseItem functionCallResponseItem)
+
+        if (item is FunctionCallResponseItem functionCallResponseItem)
         {
             Exception? exception = null;
             KernelArguments? arguments = null;
+
             try
             {
                 arguments = JsonSerializer.Deserialize<KernelArguments>(functionCallResponseItem.FunctionArguments);
@@ -90,12 +95,12 @@ internal static class OpenAIResponseExtensions
             {
                 exception = new KernelException("Error: Function call arguments were invalid JSON.", ex);
             }
-            var functionName = FunctionName.Parse(functionCallResponseItem.FunctionName, "-");
+            var functionName = FunctionName.Parse(functionCallResponseItem.FunctionName);
             var functionCallContent = new FunctionCallContent(
-                    functionName: functionName.Name,
-                    pluginName: functionName.PluginName,
-                    id: functionCallResponseItem.CallId,
-                    arguments: arguments)
+                functionName.Name,
+                functionName.PluginName,
+                functionCallResponseItem.CallId,
+                arguments)
             {
                 InnerContent = functionCallResponseItem,
                 Exception = exception
@@ -104,6 +109,7 @@ internal static class OpenAIResponseExtensions
         }
         return [];
     }
+
 
     /// <summary>
     /// Converts a <see cref="FunctionCallResponseItem"/> to a <see cref="FunctionCallContent"/>.
@@ -114,6 +120,7 @@ internal static class OpenAIResponseExtensions
     {
         Exception? exception = null;
         KernelArguments? arguments = null;
+
         try
         {
             arguments = JsonSerializer.Deserialize<KernelArguments>(functionCallResponseItem.FunctionArguments);
@@ -122,17 +129,18 @@ internal static class OpenAIResponseExtensions
         {
             exception = new KernelException("Error: Function call arguments were invalid JSON.", ex);
         }
-        var functionName = FunctionName.Parse(functionCallResponseItem.FunctionName, "-");
+        var functionName = FunctionName.Parse(functionCallResponseItem.FunctionName);
         return new FunctionCallContent(
-                functionName: functionName.Name,
-                pluginName: functionName.PluginName,
-                id: functionCallResponseItem.CallId,
-                arguments: arguments)
+            functionName.Name,
+            functionName.PluginName,
+            functionCallResponseItem.CallId,
+            arguments)
         {
             InnerContent = functionCallResponseItem,
             Exception = exception
         };
     }
+
 
     /// <summary>
     /// Converts a <see cref="FunctionCallResponseItem"/> to a <see cref="FunctionCallContent"/>.
@@ -143,13 +151,14 @@ internal static class OpenAIResponseExtensions
     public static StreamingFunctionCallUpdateContent ToStreamingFunctionCallUpdateContent(this FunctionCallResponseItem functionCallResponseItem, string functionArguments)
     {
         return new StreamingFunctionCallUpdateContent(
-                callId: functionCallResponseItem.CallId,
-                name: functionCallResponseItem.FunctionName,
-                arguments: functionArguments)
+            functionCallResponseItem.CallId,
+            functionCallResponseItem.FunctionName,
+            functionArguments)
         {
-            InnerContent = functionCallResponseItem,
+            InnerContent = functionCallResponseItem
         };
     }
+
 
     /// <summary>
     /// Converts a <see cref="MessageRole"/> to an <see cref="AuthorRole"/>.
@@ -164,14 +173,17 @@ internal static class OpenAIResponseExtensions
             MessageRole.Developer => AuthorRole.Developer,
             MessageRole.System => AuthorRole.System,
             MessageRole.User => AuthorRole.User,
-            _ => new AuthorRole("unknown"),
+            _ => new AuthorRole("unknown")
         };
     }
 
+
     #region private
+
     private static ChatMessageContentItemCollection ToChatMessageContentItemCollection(this IList<ResponseContentPart> content)
     {
         var collection = new ChatMessageContentItemCollection();
+
         foreach (var part in content)
         {
             if (part.Kind is ResponseContentPartKind.OutputText or ResponseContentPartKind.InputText)
@@ -194,9 +206,11 @@ internal static class OpenAIResponseExtensions
         return collection;
     }
 
+
     private static ChatMessageContentItemCollection ToChatMessageContentItemCollection(this IList<ReasoningSummaryPart> parts)
     {
         var collection = new ChatMessageContentItemCollection();
+
         foreach (var part in parts)
         {
             if (part is ReasoningSummaryTextPart text)
@@ -206,6 +220,8 @@ internal static class OpenAIResponseExtensions
         }
         return collection;
     }
+
     #endregion
+
 
 }

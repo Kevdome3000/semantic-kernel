@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Chroma;
-
-using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 /// <summary>
 /// Interface for client to make requests to Chroma API.
@@ -54,7 +51,12 @@ public interface IChromaClient
     /// <param name="embeddings">Array of embedding vectors.</param>
     /// <param name="metadatas">Array of embedding metadatas.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    Task UpsertEmbeddingsAsync(string collectionId, string[] ids, ReadOnlyMemory<float>[] embeddings, object[]? metadatas = null, CancellationToken cancellationToken = default);
+    Task UpsertEmbeddingsAsync(
+        string collectionId,
+        string[] ids,
+        ReadOnlyMemory<float>[] embeddings,
+        object[]? metadatas = null,
+        CancellationToken cancellationToken = default);
 
 
     /// <summary>
@@ -65,7 +67,11 @@ public interface IChromaClient
     /// <param name="include">Array of entities to include in response (e.g. "embeddings", "metadatas" "documents"). For more information see: https://github.com/chroma-core/chroma/blob/main/chromadb/api/types.py</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Instance of <see cref="ChromaEmbeddingsModel"/> model.</returns>
-    Task<ChromaEmbeddingsModel> GetEmbeddingsAsync(string collectionId, string[] ids, string[]? include = null, CancellationToken cancellationToken = default);
+    Task<ChromaEmbeddingsModel> GetEmbeddingsAsync(
+        string collectionId,
+        string[] ids,
+        string[]? include = null,
+        CancellationToken cancellationToken = default);
 
 
     /// <summary>
@@ -86,5 +92,10 @@ public interface IChromaClient
     /// <param name="include">Array of entities to include in response (e.g. "embeddings", "metadatas" "documents"). For more information see: https://github.com/chroma-core/chroma/blob/main/chromadb/api/types.py</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>Instance of <see cref="ChromaQueryResultModel"/> model.</returns>
-    Task<ChromaQueryResultModel> QueryEmbeddingsAsync(string collectionId, ReadOnlyMemory<float>[] queryEmbeddings, int nResults, string[]? include = null, CancellationToken cancellationToken = default);
+    Task<ChromaQueryResultModel> QueryEmbeddingsAsync(
+        string collectionId,
+        ReadOnlyMemory<float>[] queryEmbeddings,
+        int nResults,
+        string[]? include = null,
+        CancellationToken cancellationToken = default);
 }

@@ -1,18 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Linq.Expressions;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using Microsoft.Extensions.VectorData.ProviderServices.Filter;
-using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 #pragma warning disable MEVD9001 // Experimental: filter translation base types
+
 
 // This class is a modification of MongoDBFilterTranslator that uses the same query language
 // (https://docs.pinecone.io/guides/data/understanding-metadata#metadata-query-language),
@@ -33,43 +26,53 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
 
         var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
-        return this.Translate(preprocessedExpression);
+        return Translate(preprocessedExpression);
     }
 
+
     private Metadata Translate(Expression? node)
-        => node switch
+    {
+        return node switch
         {
             BinaryExpression
-            {
-                NodeType: ExpressionType.Equal or ExpressionType.NotEqual
-                or ExpressionType.GreaterThan or ExpressionType.GreaterThanOrEqual
-                or ExpressionType.LessThan or ExpressionType.LessThanOrEqual
-            } binary
-            => this.TranslateEqualityComparison(binary),
+                {
+                    NodeType: ExpressionType.Equal
+                    or ExpressionType.NotEqual
+                    or ExpressionType.GreaterThan
+                    or ExpressionType.GreaterThanOrEqual
+                    or ExpressionType.LessThan
+                    or ExpressionType.LessThanOrEqual
+                } binary
+                => TranslateEqualityComparison(binary),
 
             BinaryExpression { NodeType: ExpressionType.AndAlso or ExpressionType.OrElse } andOr
-                => this.TranslateAndOr(andOr),
+                => TranslateAndOr(andOr),
             UnaryExpression { NodeType: ExpressionType.Not } not
-                => this.TranslateNot(not),
+                => TranslateNot(not),
             // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
             UnaryExpression { NodeType: ExpressionType.Convert } convert when Nullable.GetUnderlyingType(convert.Type) == convert.Operand.Type
-                => this.Translate(convert.Operand),
+                => Translate(convert.Operand),
 
             // Special handling for bool constant as the filter expression (r => r.Bool)
             Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)
                 => this.GenerateEqualityComparison(property, true, ExpressionType.Equal),
 
-            MethodCallExpression methodCall => this.TranslateMethodCall(methodCall),
+            MethodCallExpression methodCall => TranslateMethodCall(methodCall),
 
             _ => throw new NotSupportedException("The following NodeType is unsupported: " + node?.NodeType)
         };
+    }
+
 
     private Metadata TranslateEqualityComparison(BinaryExpression binary)
-        => this.TryBindProperty(binary.Left, out var property) && binary.Right is ConstantExpression { Value: var rightConstant }
-            ? this.GenerateEqualityComparison(property, rightConstant, binary.NodeType)
+    {
+        return this.TryBindProperty(binary.Left, out var property) && binary.Right is ConstantExpression { Value: var rightConstant }
+            ? GenerateEqualityComparison(property, rightConstant, binary.NodeType)
             : this.TryBindProperty(binary.Right, out property) && binary.Left is ConstantExpression { Value: var leftConstant }
-                ? this.GenerateEqualityComparison(property, leftConstant, binary.NodeType)
+                ? GenerateEqualityComparison(property, leftConstant, binary.NodeType)
                 : throw new NotSupportedException("Invalid equality/comparison");
+    }
+
 
     private Metadata GenerateEqualityComparison(PropertyModel property, object? value, ExpressionType nodeType)
     {
@@ -98,6 +101,7 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
         return new Metadata { [property.StorageName] = new Metadata { [filterOperator] = ToMetadata(value) } };
     }
 
+
     private Metadata TranslateAndOr(BinaryExpression andOr)
     {
         var mongoOperator = andOr.NodeType switch
@@ -107,12 +111,12 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
             _ => throw new UnreachableException()
         };
 
-        var (left, right) = (this.Translate(andOr.Left), this.Translate(andOr.Right));
+        var (left, right) = (Translate(andOr.Left), Translate(andOr.Right));
 
         List<MetadataValue?>? nestedLeft = GetListOrNull(left, mongoOperator);
         List<MetadataValue?>? nestedRight = GetListOrNull(right, mongoOperator);
 
-        switch ((nestedLeft, nestedRight))
+        switch (nestedLeft, nestedRight)
         {
             case (not null, not null):
                 nestedLeft.AddRange(nestedRight);
@@ -128,15 +132,18 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
         }
     }
 
+
     private Metadata TranslateNot(UnaryExpression not)
     {
         switch (not.Operand)
         {
             // Special handling for !(a == b) and !(a != b)
             case BinaryExpression { NodeType: ExpressionType.Equal or ExpressionType.NotEqual } binary:
-                return this.TranslateEqualityComparison(
+                return TranslateEqualityComparison(
                     Expression.MakeBinary(
-                        binary.NodeType is ExpressionType.Equal ? ExpressionType.NotEqual : ExpressionType.Equal,
+                        binary.NodeType is ExpressionType.Equal
+                            ? ExpressionType.NotEqual
+                            : ExpressionType.Equal,
                         binary.Left,
                         binary.Right));
 
@@ -145,10 +152,12 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
                 return this.GenerateEqualityComparison(property, false, ExpressionType.Equal);
         }
 
-        var operand = this.Translate(not.Operand);
+        var operand = Translate(not.Operand);
 
         // Identify NOT over $in, transform to $nin (https://www.mongodb.com/docs/manual/reference/operator/query/nin/#mongodb-query-op.-nin)
-        if (operand.Count == 1 && operand.First() is { Key: var fieldName, Value: MetadataValue nested } && nested.Value is Metadata nestedMetadata
+        if (operand.Count == 1
+            && operand.First() is { Key: var fieldName, Value: MetadataValue nested }
+            && nested.Value is Metadata nestedMetadata
             && GetListOrNull(nestedMetadata, "$in") is List<MetadataValue> values)
         {
             return new Metadata { [fieldName] = new Metadata { ["$nin"] = values } };
@@ -157,17 +166,19 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
         throw new NotSupportedException("Pinecone does not support the NOT operator in vector search pre-filters");
     }
 
+
     private Metadata TranslateMethodCall(MethodCallExpression methodCall)
     {
         return methodCall switch
         {
             // Enumerable.Contains(), List.Contains(), MemoryExtensions.Contains()
             _ when TryMatchContains(methodCall, out var source, out var item)
-                => this.TranslateContains(source, item),
+                => TranslateContains(source, item),
 
             _ => throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}")
         };
     }
+
 
     private Metadata TranslateContains(Expression source, Expression item)
     {
@@ -217,9 +228,19 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
         }
     }
 
+
     private static MetadataValue? ToMetadata(object? value)
-        => value is null ? null : PineconeFieldMapping.ConvertToMetadataValue(value);
+    {
+        return value is null
+            ? null
+            : PineconeFieldMapping.ConvertToMetadataValue(value);
+    }
+
 
     private static List<MetadataValue?>? GetListOrNull(Metadata value, string mongoOperator)
-        => value.Count == 1 && value.First() is var element && element.Key == mongoOperator ? element.Value?.Value as List<MetadataValue?> : null;
+    {
+        return value.Count == 1 && value.First() is var element && element.Key == mongoOperator
+            ? element.Value?.Value as List<MetadataValue?>
+            : null;
+    }
 }

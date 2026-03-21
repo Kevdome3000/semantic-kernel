@@ -20,14 +20,16 @@ public sealed class CrewAIEnterpriseTests
     private readonly Mock<ICrewAIEnterpriseClient> _mockClient;
     private readonly CrewAIEnterprise _crewAIEnterprise;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CrewAIEnterpriseTests"/> class.
     /// </summary>
     public CrewAIEnterpriseTests()
     {
-        this._mockClient = new Mock<ICrewAIEnterpriseClient>(MockBehavior.Strict);
-        this._crewAIEnterprise = new CrewAIEnterprise(this._mockClient.Object, NullLoggerFactory.Instance);
+        _mockClient = new Mock<ICrewAIEnterpriseClient>(MockBehavior.Strict);
+        _crewAIEnterprise = new CrewAIEnterprise(_mockClient.Object, NullLoggerFactory.Instance);
     }
+
 
     /// <summary>
     /// Tests the successful kickoff of a CrewAI task.
@@ -37,15 +39,20 @@ public sealed class CrewAIEnterpriseTests
     {
         // Arrange
         var response = new CrewAIKickoffResponse { KickoffId = "12345" };
-        this._mockClient.Setup(client => client.KickoffAsync(It.IsAny<object>(), null, null, null, It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(response);
+        _mockClient.Setup(client => client.KickoffAsync(It.IsAny<object>(),
+                null,
+                null,
+                null,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
 
         // Act
-        var result = await this._crewAIEnterprise.KickoffAsync(new { });
+        var result = await _crewAIEnterprise.KickoffAsync(new { });
 
         // Assert
         Assert.Equal("12345", result);
     }
+
 
     /// <summary>
     /// Tests the failure of a CrewAI task kickoff.
@@ -54,12 +61,17 @@ public sealed class CrewAIEnterpriseTests
     public async Task KickoffAsyncFailureAsync()
     {
         // Arrange
-        this._mockClient.Setup(client => client.KickoffAsync(It.IsAny<object>(), null, null, null, It.IsAny<CancellationToken>()))
-                        .ThrowsAsync(new InvalidOperationException("Kickoff failed"));
+        _mockClient.Setup(client => client.KickoffAsync(It.IsAny<object>(),
+                null,
+                null,
+                null,
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Kickoff failed"));
 
         // Act & Assert
-        await Assert.ThrowsAsync<KernelException>(() => this._crewAIEnterprise.KickoffAsync(new { }));
+        await Assert.ThrowsAsync<KernelException>(() => _crewAIEnterprise.KickoffAsync(new { }));
     }
+
 
     /// <summary>
     /// Tests the successful retrieval of CrewAI task status.
@@ -69,15 +81,16 @@ public sealed class CrewAIEnterpriseTests
     {
         // Arrange
         var response = new CrewAIStatusResponse { State = CrewAIKickoffState.Running };
-        this._mockClient.Setup(client => client.GetStatusAsync("12345", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(response);
+        _mockClient.Setup(client => client.GetStatusAsync("12345", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
 
         // Act
-        var result = await this._crewAIEnterprise.GetCrewKickoffStatusAsync("12345");
+        var result = await _crewAIEnterprise.GetCrewKickoffStatusAsync("12345");
 
         // Assert
         Assert.Equal(CrewAIKickoffState.Running, result.State);
     }
+
 
     /// <summary>
     /// Tests the failure of CrewAI task status retrieval.
@@ -86,12 +99,13 @@ public sealed class CrewAIEnterpriseTests
     public async Task GetCrewStatusAsyncFailureAsync()
     {
         // Arrange
-        this._mockClient.Setup(client => client.GetStatusAsync("12345", It.IsAny<CancellationToken>()))
-                        .ThrowsAsync(new InvalidOperationException("Status retrieval failed"));
+        _mockClient.Setup(client => client.GetStatusAsync("12345", It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Status retrieval failed"));
 
         // Act & Assert
-        await Assert.ThrowsAsync<KernelException>(() => this._crewAIEnterprise.GetCrewKickoffStatusAsync("12345"));
+        await Assert.ThrowsAsync<KernelException>(() => _crewAIEnterprise.GetCrewKickoffStatusAsync("12345"));
     }
+
 
     /// <summary>
     /// Tests the successful completion of a CrewAI task.
@@ -101,16 +115,17 @@ public sealed class CrewAIEnterpriseTests
     {
         // Arrange
         var response = new CrewAIStatusResponse { State = CrewAIKickoffState.Success, Result = "Completed" };
-        this._mockClient.SetupSequence(client => client.GetStatusAsync("12345", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(new CrewAIStatusResponse { State = CrewAIKickoffState.Running })
-                        .ReturnsAsync(response);
+        _mockClient.SetupSequence(client => client.GetStatusAsync("12345", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new CrewAIStatusResponse { State = CrewAIKickoffState.Running })
+            .ReturnsAsync(response);
 
         // Act
-        var result = await this._crewAIEnterprise.WaitForCrewCompletionAsync("12345");
+        var result = await _crewAIEnterprise.WaitForCrewCompletionAsync("12345");
 
         // Assert
         Assert.Equal("Completed", result);
     }
+
 
     /// <summary>
     /// Tests the failure of a CrewAI task completion.
@@ -120,13 +135,14 @@ public sealed class CrewAIEnterpriseTests
     {
         // Arrange
         var response = new CrewAIStatusResponse { State = CrewAIKickoffState.Failed, Result = "Error" };
-        this._mockClient.SetupSequence(client => client.GetStatusAsync("12345", It.IsAny<CancellationToken>()))
-                        .ReturnsAsync(new CrewAIStatusResponse { State = CrewAIKickoffState.Running })
-                        .ReturnsAsync(response);
+        _mockClient.SetupSequence(client => client.GetStatusAsync("12345", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new CrewAIStatusResponse { State = CrewAIKickoffState.Running })
+            .ReturnsAsync(response);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<KernelException>(() => this._crewAIEnterprise.WaitForCrewCompletionAsync("12345"));
+        var exception = await Assert.ThrowsAsync<KernelException>(() => _crewAIEnterprise.WaitForCrewCompletionAsync("12345"));
     }
+
 
     /// <summary>
     /// Tests the successful creation of a Kernel plugin.
@@ -141,7 +157,7 @@ public sealed class CrewAIEnterpriseTests
         };
 
         // Act
-        var plugin = this._crewAIEnterprise.CreateKernelPlugin("TestPlugin", "Test Description", inputDefinitions);
+        var plugin = _crewAIEnterprise.CreateKernelPlugin("TestPlugin", "Test Description", inputDefinitions);
 
         // Assert
         Assert.NotNull(plugin);

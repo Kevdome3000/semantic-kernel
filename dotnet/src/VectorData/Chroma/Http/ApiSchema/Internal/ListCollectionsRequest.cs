@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Chroma;
-
 using System.Net.Http;
 
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 internal sealed class ListCollectionsRequest
 {

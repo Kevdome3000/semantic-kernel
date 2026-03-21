@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
-using Azure.Search.Documents.Indexes;
-using Microsoft.Extensions.VectorData;
-
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
@@ -13,6 +9,7 @@ public sealed class AzureAISearchCollectionOptions : VectorStoreCollectionOption
 {
     internal static readonly AzureAISearchCollectionOptions Default = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAISearchCollectionOptions"/> class.
     /// </summary>
@@ -20,10 +17,12 @@ public sealed class AzureAISearchCollectionOptions : VectorStoreCollectionOption
     {
     }
 
+
     internal AzureAISearchCollectionOptions(AzureAISearchCollectionOptions? source) : base(source)
     {
-        this.JsonSerializerOptions = source?.JsonSerializerOptions;
+        JsonSerializerOptions = source?.JsonSerializerOptions;
     }
+
 
     /// <summary>
     /// Gets or sets the JSON serializer options to use when converting between the data model and the Azure AI Search record.

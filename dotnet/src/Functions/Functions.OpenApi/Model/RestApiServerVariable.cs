@@ -65,11 +65,15 @@ public sealed class RestApiServerVariable
         return Enum?.Contains(value!) ?? true;
     }
 
+
     internal void Freeze()
     {
-        Enum = Enum is not null ? new ReadOnlyCollection<string>(Enum) : null;
+        Enum = Enum is not null
+            ? new ReadOnlyCollection<string>(Enum)
+            : null;
         _freezable.Freeze();
     }
+
 
     private string? _argumentName;
     private readonly Freezable _freezable = new();

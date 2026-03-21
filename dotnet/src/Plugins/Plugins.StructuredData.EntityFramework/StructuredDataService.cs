@@ -1,15 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 #if NET
 using OData2Linq;
 #else
-using Community.OData.Linq;
 #endif
 
 #pragma warning disable CA1308 // Normalize strings to uppercase
@@ -27,15 +20,17 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     /// </summary>
     public TContext Context { get; }
 
+
     /// <summary>
     /// Initializes a new instance with a connection string.
     /// </summary>
     /// <param name="connectionString">The connection string.</param>
     public StructuredDataService(string connectionString)
     {
-        this.Context = (TContext)Activator.CreateInstance(typeof(TContext), connectionString)!;
-        this._internalContext = true;
+        Context = (TContext)Activator.CreateInstance(typeof(TContext), connectionString)!;
+        _internalContext = true;
     }
+
 
     /// <summary>
     /// Initializes a new instance with an existing DbContext.
@@ -45,8 +40,9 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     {
         Verify.NotNull(dbContext);
 
-        this.Context = dbContext;
+        Context = dbContext;
     }
+
 
     /// <summary>
     /// Provides a queryable result set for the specified entity.
@@ -59,7 +55,7 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     public IQueryable<TEntity> Select<TEntity>(string? query = null)
         where TEntity : class
     {
-        var result = this.Context.Set<TEntity>().AsQueryable();
+        var result = Context.Set<TEntity>().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query))
         {
@@ -68,6 +64,7 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
 
         return result;
     }
+
 
     /// <summary>
     /// Inserts an entity and returns it with any generated values.
@@ -80,12 +77,13 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     {
         Verify.NotNull(entity);
 
-        this.Context.Set<TEntity>().Add(entity);
+        Context.Set<TEntity>().Add(entity);
 
-        await this.Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return entity;
     }
+
 
     /// <summary>
     /// Updates an entity and returns the number of affected rows.
@@ -100,31 +98,33 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
 
         try
         {
-            var entry = this.Context.Entry(entity);
+            var entry = Context.Entry(entity);
+
             if (entry.State == EntityState.Detached)
             {
                 // Get primary key values from the entity
-                var objectContext = ((IObjectContextAdapter)this.Context).ObjectContext;
+                var objectContext = ((IObjectContextAdapter)Context).ObjectContext;
                 var objectSet = objectContext.CreateObjectSet<TEntity>();
                 var keyNames = objectSet.EntitySet.ElementType.KeyMembers.Select(k => k.Name).ToArray();
                 var keyValues = keyNames.Select(k => entry.Property(k).CurrentValue).ToArray();
 
                 // Try to find existing entity with same key
-                var existingEntity = this.Context.Set<TEntity>().Find(keyValues);
+                var existingEntity = Context.Set<TEntity>().Find(keyValues);
+
                 if (existingEntity != null)
                 {
                     // If entity exists, update its values
-                    this.Context.Entry(existingEntity).CurrentValues.SetValues(entity);
+                    Context.Entry(existingEntity).CurrentValues.SetValues(entity);
                 }
                 else
                 {
                     // If no existing entity, attach and mark as modified
-                    this.Context.Set<TEntity>().Attach(entity);
+                    Context.Set<TEntity>().Attach(entity);
                     entry.State = EntityState.Modified;
                 }
             }
 
-            return await this.Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return await Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)
         {
@@ -132,6 +132,7 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
             throw new InvalidOperationException($"Failed to update entity: {e.Message}", e);
         }
     }
+
 
     /// <summary>
     /// Deletes an entity and returns the number of affected rows.
@@ -143,35 +144,38 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
     public async Task<int> DeleteAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class
     {
         Verify.NotNull(entity);
+
         try
         {
-            var entry = this.Context.Entry(entity);
+            var entry = Context.Entry(entity);
+
             if (entry.State == EntityState.Detached)
             {
                 // Get primary key values from the entity
-                var objectContext = ((IObjectContextAdapter)this.Context).ObjectContext;
+                var objectContext = ((IObjectContextAdapter)Context).ObjectContext;
                 var objectSet = objectContext.CreateObjectSet<TEntity>();
                 var keyNames = objectSet.EntitySet.ElementType.KeyMembers.Select(k => k.Name).ToArray();
                 var keyValues = keyNames.Select(k => entry.Property(k).CurrentValue).ToArray();
 
                 // Try to find existing entity with same key
-                var existingEntity = this.Context.Set<TEntity>().Find(keyValues);
+                var existingEntity = Context.Set<TEntity>().Find(keyValues);
+
                 if (existingEntity is not null)
                 {
-                    this.Context.Set<TEntity>().Remove(existingEntity);
+                    Context.Set<TEntity>().Remove(existingEntity);
                 }
                 else
                 {
                     // If no existing entity, attach and remove
-                    this.Context.Set<TEntity>().Attach(entity);
-                    this.Context.Set<TEntity>().Remove(entity);
+                    Context.Set<TEntity>().Attach(entity);
+                    Context.Set<TEntity>().Remove(entity);
                 }
             }
             else
             {
-                this.Context.Set<TEntity>().Remove(entity);
+                Context.Set<TEntity>().Remove(entity);
             }
-            return await this.Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return await Context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (Exception e)
         {
@@ -180,32 +184,35 @@ public class StructuredDataService<TContext> : IDisposable where TContext : DbCo
         }
     }
 
+
     /// <summary>
     /// Disposes resources used by the service.
     /// </summary>
     protected virtual void Dispose(bool disposing)
     {
-        if (this._disposed)
+        if (_disposed)
         {
             return;
         }
 
-        if (disposing && this._internalContext)
+        if (disposing && _internalContext)
         {
-            this.Context.Dispose();
+            Context.Dispose();
         }
 
-        this._disposed = true;
+        _disposed = true;
     }
+
 
     /// <summary>
     /// Disposes the context if it was created internally.
     /// </summary>
     public void Dispose()
     {
-        this.Dispose(true);
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
+
 
     private readonly bool _internalContext;
     private bool _disposed;

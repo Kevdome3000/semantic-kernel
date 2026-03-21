@@ -1,13 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using NRedisStack.Search;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
@@ -41,8 +34,9 @@ internal static class RedisCollectionCreateMapping
         typeof(ulong?),
         typeof(float?),
         typeof(double?),
-        typeof(decimal?),
+        typeof(decimal?)
     ];
+
 
     /// <summary>
     /// Map from the given list of <see cref="VectorStoreProperty"/> items to the Redis <see cref="Schema"/>.
@@ -54,7 +48,9 @@ internal static class RedisCollectionCreateMapping
     public static Schema MapToSchema(IEnumerable<PropertyModel> properties, bool useDollarPrefix)
     {
         var schema = new Schema();
-        var fieldNamePrefix = useDollarPrefix ? "$." : string.Empty;
+        var fieldNamePrefix = useDollarPrefix
+            ? "$."
+            : string.Empty;
 
         // Loop through all properties and create the index fields.
         foreach (var property in properties)
@@ -97,7 +93,7 @@ internal static class RedisCollectionCreateMapping
                         {
                             schema.AddTagField(new FieldName($"{fieldNamePrefix}{storageName}.*", storageName));
                         }
-                        else if (RedisCollectionCreateMapping.s_supportedFilterableNumericDataTypes.Contains(dataProperty.Type))
+                        else if (s_supportedFilterableNumericDataTypes.Contains(dataProperty.Type))
                         {
                             schema.AddNumericField(new FieldName($"{fieldNamePrefix}{storageName}", storageName));
                         }
@@ -114,12 +110,14 @@ internal static class RedisCollectionCreateMapping
                     var vectorType = GetSDKVectorType(vectorProperty);
                     var dimensions = vectorProperty.Dimensions.ToString(CultureInfo.InvariantCulture);
                     var distanceAlgorithm = GetSDKDistanceAlgorithm(vectorProperty);
-                    schema.AddVectorField(new FieldName($"{fieldNamePrefix}{storageName}", storageName), indexKind, new Dictionary<string, object>()
-                    {
-                        ["TYPE"] = vectorType,
-                        ["DIM"] = dimensions,
-                        ["DISTANCE_METRIC"] = distanceAlgorithm
-                    });
+                    schema.AddVectorField(new FieldName($"{fieldNamePrefix}{storageName}", storageName),
+                        indexKind,
+                        new Dictionary<string, object>
+                        {
+                            ["TYPE"] = vectorType,
+                            ["DIM"] = dimensions,
+                            ["DISTANCE_METRIC"] = distanceAlgorithm
+                        });
                     continue;
             }
         }
@@ -127,10 +125,13 @@ internal static class RedisCollectionCreateMapping
         return schema;
 
         static bool IsTagsType(Type type)
-            => (type.IsArray && type.GetElementType() == typeof(string))
-                || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && type.GenericTypeArguments[0] == typeof(string))
-                || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(HashSet<>) && type.GenericTypeArguments[0] == typeof(string));
+        {
+            return type.IsArray && type.GetElementType() == typeof(string)
+                || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && type.GenericTypeArguments[0] == typeof(string)
+                || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(HashSet<>) && type.GenericTypeArguments[0] == typeof(string);
+        }
     }
+
 
     /// <summary>
     /// Get the configured <see cref="Schema.VectorField.VectorAlgo"/> from the given <paramref name="vectorProperty"/>.
@@ -140,12 +141,15 @@ internal static class RedisCollectionCreateMapping
     /// <returns>The chosen <see cref="Schema.VectorField.VectorAlgo"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if a index type was chosen that isn't supported by Redis.</exception>
     public static Schema.VectorField.VectorAlgo GetSDKIndexKind(VectorPropertyModel vectorProperty)
-        => vectorProperty.IndexKind switch
+    {
+        return vectorProperty.IndexKind switch
         {
             IndexKind.Hnsw or null => Schema.VectorField.VectorAlgo.HNSW,
             IndexKind.Flat => Schema.VectorField.VectorAlgo.FLAT,
             _ => throw new InvalidOperationException($"Index kind '{vectorProperty.IndexKind}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Redis VectorStore.")
         };
+    }
+
 
     /// <summary>
     /// Get the configured distance metric from the given <paramref name="vectorProperty"/>.
@@ -155,7 +159,8 @@ internal static class RedisCollectionCreateMapping
     /// <returns>The chosen distance metric.</returns>
     /// <exception cref="InvalidOperationException">Thrown if a distance function is chosen that isn't supported by Redis.</exception>
     public static string GetSDKDistanceAlgorithm(VectorPropertyModel vectorProperty)
-        => vectorProperty.DistanceFunction switch
+    {
+        return vectorProperty.DistanceFunction switch
         {
             DistanceFunction.CosineSimilarity or null => "COSINE",
             DistanceFunction.CosineDistance => "COSINE",
@@ -164,6 +169,8 @@ internal static class RedisCollectionCreateMapping
 
             _ => throw new NotSupportedException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Redis VectorStore.")
         };
+    }
+
 
     /// <summary>
     /// Get the vector type to pass to the SDK based on the data type of the vector property.
@@ -172,7 +179,8 @@ internal static class RedisCollectionCreateMapping
     /// <returns>The SDK required vector type.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the property data type is not supported by the connector.</exception>
     public static string GetSDKVectorType(VectorPropertyModel vectorProperty)
-        => (Nullable.GetUnderlyingType(vectorProperty.EmbeddingType) ?? vectorProperty.EmbeddingType) switch
+    {
+        return (Nullable.GetUnderlyingType(vectorProperty.EmbeddingType) ?? vectorProperty.EmbeddingType) switch
         {
             Type t when t == typeof(ReadOnlyMemory<float>) => "FLOAT32",
             Type t when t == typeof(Embedding<float>) => "FLOAT32",
@@ -184,4 +192,5 @@ internal static class RedisCollectionCreateMapping
             null => throw new UnreachableException("null embedding type"),
             _ => throw new InvalidOperationException($"Vector data type '{vectorProperty.Type.Name}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Redis VectorStore.")
         };
+    }
 }

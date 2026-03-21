@@ -38,16 +38,17 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
     {
         get
         {
-            if (this.Metadata == null)
+            if (Metadata == null)
             {
                 return null;
             }
 
-            this.Metadata.TryGetValue(OpenAIAssistantAgent.TemplateMetadataKey, out string? templateFormat);
+            Metadata.TryGetValue(OpenAIAssistantAgent.TemplateMetadataKey, out string? templateFormat);
 
             return templateFormat;
         }
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantDefinition"/> class.
@@ -55,5 +56,7 @@ public sealed class OpenAIAssistantDefinition : OpenAIAssistantCapabilities
     /// <param name="modelId">The targeted model.</param>
     [JsonConstructor]
     public OpenAIAssistantDefinition(string modelId)
-        : base(modelId) { }
+        : base(modelId)
+    {
+    }
 }

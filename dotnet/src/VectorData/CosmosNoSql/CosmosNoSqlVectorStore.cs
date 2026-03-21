@@ -1,16 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Azure.Cosmos;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 
@@ -36,6 +26,7 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CosmosNoSqlVectorStore"/> class.
     /// </summary>
@@ -49,6 +40,7 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
         Verify.NotNull(database);
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CosmosNoSqlVectorStore"/> class.
     /// </summary>
@@ -56,27 +48,33 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     /// <param name="databaseName">Database name for Azure CosmosDB NoSQL.</param>
     /// <param name="clientOptions">Optional configuration options for <see cref="CosmosClient"/>.</param>
     /// <param name="storeOptions">Optional configuration options for <see cref="VectorStore"/>.</param>
-    public CosmosNoSqlVectorStore(string connectionString, string databaseName,
-        CosmosClientOptions? clientOptions = null, CosmosNoSqlVectorStoreOptions? storeOptions = null)
-        : this(new ClientWrapper(new CosmosClient(connectionString, clientOptions), ownsClient: true), client => client.GetDatabase(databaseName), storeOptions)
+    public CosmosNoSqlVectorStore(
+        string connectionString,
+        string databaseName,
+        CosmosClientOptions? clientOptions = null,
+        CosmosNoSqlVectorStoreOptions? storeOptions = null)
+        : this(new ClientWrapper(new CosmosClient(connectionString, clientOptions), true), client => client.GetDatabase(databaseName), storeOptions)
     {
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNullOrWhiteSpace(databaseName);
     }
 
-    private CosmosNoSqlVectorStore(ClientWrapper clientWrapper,
-        Func<CosmosClient, Database> databaseProvider, CosmosNoSqlVectorStoreOptions? options)
+
+    private CosmosNoSqlVectorStore(
+        ClientWrapper clientWrapper,
+        Func<CosmosClient, Database> databaseProvider,
+        CosmosNoSqlVectorStoreOptions? options)
     {
         try
         {
-            this._database = databaseProvider(clientWrapper.Client);
-            this._embeddingGenerator = options?.EmbeddingGenerator;
-            this._jsonSerializerOptions = options?.JsonSerializerOptions;
+            _database = databaseProvider(clientWrapper.Client);
+            _embeddingGenerator = options?.EmbeddingGenerator;
+            _jsonSerializerOptions = options?.JsonSerializerOptions;
 
-            this._metadata = new()
+            _metadata = new()
             {
                 VectorStoreSystemName = CosmosNoSqlConstants.VectorStoreSystemName,
-                VectorStoreName = this._database.Id
+                VectorStoreName = _database.Id
             };
         }
         catch (Exception)
@@ -87,15 +85,17 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
             throw;
         }
 
-        this._clientWrapper = clientWrapper;
+        _clientWrapper = clientWrapper;
     }
+
 
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
-        this._clientWrapper.Dispose();
+        _clientWrapper.Dispose();
         base.Dispose(disposing);
     }
+
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
@@ -109,15 +109,16 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new CosmosNoSqlCollection<TKey, TRecord>(
-                this._clientWrapper.Share(),
-                _ => this._database,
+                _clientWrapper.Share(),
+                _ => _database,
                 name,
                 new()
                 {
                     Definition = definition,
-                    JsonSerializerOptions = this._jsonSerializerOptions,
-                    EmbeddingGenerator = this._embeddingGenerator
+                    JsonSerializerOptions = _jsonSerializerOptions,
+                    EmbeddingGenerator = _embeddingGenerator
                 });
+
 
     /// <inheritdoc />
     [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
@@ -128,17 +129,18 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new CosmosNoSqlDynamicCollection(
-            this._clientWrapper.Share(),
-            _ => this._database,
+            _clientWrapper.Share(),
+            _ => _database,
             name,
             new()
             {
                 Definition = definition,
-                JsonSerializerOptions = this._jsonSerializerOptions,
-                EmbeddingGenerator = this._embeddingGenerator
+                JsonSerializerOptions = _jsonSerializerOptions,
+                EmbeddingGenerator = _embeddingGenerator
             }
         );
 #pragma warning restore IDE0090
+
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -147,10 +149,10 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
 
         const string OperationName = "ListCollectionNamesAsync";
         using var feedIterator = VectorStoreErrorHandler.RunOperation<FeedIterator<string>, CosmosException>(
-            this._metadata,
+            _metadata,
             OperationName,
-            () => this._database.GetContainerQueryIterator<string>(Query));
-        using var errorHandlingFeedIterator = new ErrorHandlingFeedIterator<string>(feedIterator, this._metadata, OperationName);
+            () => _database.GetContainerQueryIterator<string>(Query));
+        using var errorHandlingFeedIterator = new ErrorHandlingFeedIterator<string>(feedIterator, _metadata, OperationName);
 
         while (feedIterator.HasMoreResults)
         {
@@ -163,19 +165,22 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
         }
     }
 
+
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
@@ -183,10 +188,14 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(Database) ? this._database :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreMetadata)
+                    ? _metadata
+                    : serviceType == typeof(Database)
+                        ? _database
+                        : serviceType.IsInstanceOfType(this)
+                            ? this
+                            : null;
     }
 }

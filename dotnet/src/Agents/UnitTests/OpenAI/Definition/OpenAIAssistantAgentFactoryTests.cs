@@ -23,28 +23,31 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
     private readonly HttpClient _httpClient;
     private readonly Kernel _kernel;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgentTests"/> class.
     /// </summary>
     public OpenAIAssistantAgentFactoryTests()
     {
-        this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
+        _messageHandlerStub = new HttpMessageHandlerStub();
+        _httpClient = new HttpClient(_messageHandlerStub, false);
 
-        OpenAIClient openAIClient = OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential("fakekey"), httpClient: this._httpClient);
+        OpenAIClient openAIClient = OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential("fakekey"), httpClient: _httpClient);
 
         var builder = Kernel.CreateBuilder();
-        builder.Services.AddSingleton<OpenAIClient>(openAIClient);
-        this._kernel = builder.Build();
+        builder.Services.AddSingleton(openAIClient);
+        _kernel = builder.Build();
     }
+
 
     /// <inheritdoc/>
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        this._messageHandlerStub.Dispose();
-        this._httpClient.Dispose();
+        _messageHandlerStub.Dispose();
+        _httpClient.Dispose();
     }
+
 
     /// <summary>
     /// Verify can create an instance of <see cref="Agent"/> using <see cref="OpenAIAssistantAgentFactory"/>
@@ -59,23 +62,24 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
             Name = "OpenAIAssistantAgent",
             Description = "OpenAIAssistantAgent Description",
             Instructions = "OpenAIAssistantAgent Instructions",
-            Model = new()
+            Model = new ModelDefinition
             {
                 Id = "gpt-4o-mini"
             },
-            Tools = [
-                new AgentToolDefinition()
+            Tools =
+            [
+                new AgentToolDefinition
                 {
                     Id = "tool1",
-                    Type = "code_interpreter",
-                },
+                    Type = "code_interpreter"
+                }
             ]
         };
         OpenAIAssistantAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantCreateResponse);
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantCreateResponse);
 
         // Act
-        var agent = await factory.CreateAsync(this._kernel, agentDefinition);
+        var agent = await factory.CreateAsync(_kernel, agentDefinition);
 
         // Assert
         Assert.NotNull(agent);
@@ -83,8 +87,9 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
         Assert.Equal(agentDefinition.Name, agent.Name);
         Assert.Equal(agentDefinition.Description, agent.Description);
         Assert.Equal(agentDefinition.Instructions, agent.Instructions);
-        Assert.Equal(this._kernel, agent.Kernel);
+        Assert.Equal(_kernel, agent.Kernel);
     }
+
 
     /// <summary>
     /// Verify can get an instance of <see cref="Agent"/> using <see cref="OpenAIAssistantAgentFactory"/>
@@ -96,13 +101,13 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
         AgentDefinition agentDefinition = new()
         {
             Id = "asst_GQ8RUQKakmfsGPd2LdF6lJvD",
-            Type = OpenAIAssistantAgentFactory.OpenAIAssistantAgentType,
+            Type = OpenAIAssistantAgentFactory.OpenAIAssistantAgentType
         };
         OpenAIAssistantAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantGetResponse);
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantGetResponse);
 
         // Act
-        var agent = await factory.CreateAsync(this._kernel, agentDefinition);
+        var agent = await factory.CreateAsync(_kernel, agentDefinition);
 
         // Assert
         Assert.NotNull(agent);
@@ -110,8 +115,9 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
         Assert.Equal("StoryAgent", agent.Name);
         Assert.Equal("Store Telling Agent", agent.Description);
         Assert.Equal("Tell a story suitable for children about the topic provided by the user.", agent.Instructions);
-        Assert.Equal(this._kernel, agent.Kernel);
+        Assert.Equal(_kernel, agent.Kernel);
     }
+
 
     /// <summary>
     /// OpenAI Assistant create response.
@@ -166,8 +172,15 @@ public class OpenAIAssistantAgentFactoryTests : IDisposable
         }
         """;
 
+
     #region private
-    private void SetupResponse(HttpStatusCode statusCode, string response) =>
-        this._messageHandlerStub.SetupResponses(statusCode, [response]);
+
+    private void SetupResponse(HttpStatusCode statusCode, string response)
+    {
+        _messageHandlerStub.SetupResponses(statusCode, response);
+    }
+
     #endregion
+
+
 }

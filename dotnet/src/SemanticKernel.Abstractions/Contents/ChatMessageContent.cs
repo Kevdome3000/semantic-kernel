@@ -8,6 +8,7 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Represents chat message content return from a <see cref="IChatCompletionService" /> service.
 /// </summary>
@@ -39,16 +40,14 @@ public class ChatMessageContent : KernelContent
         get
         {
             var textContent = Items.OfType<TextContent>()
-                .
-                FirstOrDefault();
+                .FirstOrDefault();
 
             return textContent?.Text;
         }
         set
         {
             var textContent = Items.OfType<TextContent>()
-                .
-                FirstOrDefault();
+                .FirstOrDefault();
 
             if (textContent is not null)
             {
@@ -57,7 +56,7 @@ public class ChatMessageContent : KernelContent
             else if (value is not null)
             {
                 Items.Add(new TextContent(
-                        text: value,
+                        value,
                         ModelId,
                         InnerContent,
                         Encoding,
@@ -86,8 +85,7 @@ public class ChatMessageContent : KernelContent
         get
         {
             var textContent = Items.OfType<TextContent>()
-                .
-                FirstOrDefault();
+                .FirstOrDefault();
 
             if (textContent is not null)
             {
@@ -101,8 +99,7 @@ public class ChatMessageContent : KernelContent
             _encoding = value;
 
             var textContent = Items.OfType<TextContent>()
-                .
-                FirstOrDefault();
+                .FirstOrDefault();
 
             if (textContent is not null)
             {
@@ -122,6 +119,7 @@ public class ChatMessageContent : KernelContent
     [JsonIgnore]
     public object? Source { get; set; }
 
+
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
@@ -130,6 +128,7 @@ public class ChatMessageContent : KernelContent
     {
         _encoding = Encoding.UTF8;
     }
+
 
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
@@ -154,6 +153,7 @@ public class ChatMessageContent : KernelContent
         Content = content;
     }
 
+
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
@@ -177,11 +177,13 @@ public class ChatMessageContent : KernelContent
         _items = items;
     }
 
+
     /// <inheritdoc/>
     public override string ToString()
     {
         return Content ?? string.Empty;
     }
+
 
     private ChatMessageContentItemCollection? _items;
 

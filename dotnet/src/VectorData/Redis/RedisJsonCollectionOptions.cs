@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
-using Microsoft.Extensions.VectorData;
-
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>
@@ -12,6 +9,7 @@ public sealed class RedisJsonCollectionOptions : VectorStoreCollectionOptions
 {
     internal static readonly RedisJsonCollectionOptions Default = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RedisJsonCollectionOptions"/> class.
     /// </summary>
@@ -19,11 +17,13 @@ public sealed class RedisJsonCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
+
     internal RedisJsonCollectionOptions(RedisJsonCollectionOptions? source) : base(source)
     {
-        this.PrefixCollectionNameToKeyNames = source?.PrefixCollectionNameToKeyNames ?? Default.PrefixCollectionNameToKeyNames;
-        this.JsonSerializerOptions = source?.JsonSerializerOptions;
+        PrefixCollectionNameToKeyNames = source?.PrefixCollectionNameToKeyNames ?? Default.PrefixCollectionNameToKeyNames;
+        JsonSerializerOptions = source?.JsonSerializerOptions;
     }
+
 
     /// <summary>
     /// Gets or sets a value indicating whether the collection name should be prefixed to the

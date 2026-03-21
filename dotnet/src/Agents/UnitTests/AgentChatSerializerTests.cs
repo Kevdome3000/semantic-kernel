@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -29,7 +30,7 @@ public class AgentChatSerializerTests
 
         // Serialize and deserialize chat
         AgentChatState chatState = chat.Serialize();
-        string jsonState = await this.SerializeChatAsync(chat);
+        string jsonState = await SerializeChatAsync(chat);
         AgentChatState? restoredState = JsonSerializer.Deserialize<AgentChatState>(jsonState);
 
         // Validate state
@@ -47,6 +48,7 @@ public class AgentChatSerializerTests
         Assert.Empty(restoredState.Channels);
     }
 
+
     /// <summary>
     /// Verify serialization cycle for a <see cref="AgentChat"/> with only user message (no channels).
     /// </summary>
@@ -59,7 +61,7 @@ public class AgentChatSerializerTests
 
         // Serialize and deserialize chat
         AgentChatState chatState = chat.Serialize();
-        string jsonState = await this.SerializeChatAsync(chat);
+        string jsonState = await SerializeChatAsync(chat);
         AgentChatState? restoredState = JsonSerializer.Deserialize<AgentChatState>(jsonState);
 
         // Validate state
@@ -77,6 +79,7 @@ public class AgentChatSerializerTests
         Assert.Empty(restoredState.Channels);
     }
 
+
     /// <summary>
     /// Verify serialization cycle for a <see cref="AgentChat"/> with history and channels.
     /// </summary>
@@ -90,7 +93,7 @@ public class AgentChatSerializerTests
 
         // Serialize and deserialize chat
         AgentChatState chatState = chat.Serialize();
-        string jsonState = await this.SerializeChatAsync(chat);
+        string jsonState = await SerializeChatAsync(chat);
         AgentChatState? restoredState = JsonSerializer.Deserialize<AgentChatState>(jsonState);
 
         // Validate state
@@ -108,6 +111,7 @@ public class AgentChatSerializerTests
         Assert.Single(restoredState.Channels);
     }
 
+
     /// <summary>
     /// Verify serialization cycle for a <see cref="AgentChat"/> with a <see cref="AggregatorAgent"/>.
     /// </summary>
@@ -121,7 +125,7 @@ public class AgentChatSerializerTests
 
         // Serialize and deserialize chat
         AgentChatState chatState = chat.Serialize();
-        string jsonState = await this.SerializeChatAsync(chat);
+        string jsonState = await SerializeChatAsync(chat);
         AgentChatState? restoredState = JsonSerializer.Deserialize<AgentChatState>(jsonState);
 
         // Validate state
@@ -139,6 +143,7 @@ public class AgentChatSerializerTests
         Assert.Single(restoredState.Channels);
     }
 
+
     /// <summary>
     /// Verify Deserialization cycle for a <see cref="AgentChat"/> with history and channels.
     /// </summary>
@@ -151,7 +156,7 @@ public class AgentChatSerializerTests
         ChatMessageContent[] messages = await chat.InvokeAsync().ToArrayAsync();
 
         // Serialize and deserialize chat
-        AgentChatSerializer serializer = await this.CreateSerializerAsync(chat);
+        AgentChatSerializer serializer = await CreateSerializerAsync(chat);
         Assert.Equal(2, serializer.Participants.Count());
 
         TestChat copy = new(CreateMockAgent(), CreateMockAgent());
@@ -167,6 +172,7 @@ public class AgentChatSerializerTests
         Assert.Equal(3, history.Length);
     }
 
+
     /// <summary>
     /// Verify deserialization cycle for a <see cref="AgentChat"/> with <see cref="AggregatorAgent"/>.
     /// </summary>
@@ -179,7 +185,7 @@ public class AgentChatSerializerTests
         ChatMessageContent[] messages = await chat.InvokeAsync().ToArrayAsync();
 
         // Serialize and deserialize chat
-        AgentChatSerializer serializer = await this.CreateSerializerAsync(chat);
+        AgentChatSerializer serializer = await CreateSerializerAsync(chat);
         Assert.Single(serializer.Participants);
 
         TestChat copy = new(new AggregatorAgent(() => new TestChat(CreateMockAgent())) { Name = "Group" });
@@ -195,6 +201,7 @@ public class AgentChatSerializerTests
         Assert.Equal(3, history.Length);
     }
 
+
     /// <summary>
     /// Verify deserialization into a <see cref="AgentChat"/> that already has history and channels.
     /// </summary>
@@ -205,7 +212,7 @@ public class AgentChatSerializerTests
         TestChat chat = new(CreateMockAgent());
 
         // Serialize and deserialize chat
-        AgentChatSerializer serializer = await this.CreateSerializerAsync(chat);
+        AgentChatSerializer serializer = await CreateSerializerAsync(chat);
 
         TestChat copy = new(CreateMockAgent());
         ChatMessageContent[] messages = await copy.InvokeAsync().ToArrayAsync();
@@ -213,6 +220,7 @@ public class AgentChatSerializerTests
         // Verify exception
         await Assert.ThrowsAsync<KernelException>(() => serializer.DeserializeAsync(copy));
     }
+
 
     /// <summary>
     /// Verify deserialization into a <see cref="AgentChat"/> with only user message (no channels).
@@ -224,7 +232,7 @@ public class AgentChatSerializerTests
         TestChat chat = new(CreateMockAgent());
 
         // Serialize and deserialize chat
-        AgentChatSerializer serializer = await this.CreateSerializerAsync(chat);
+        AgentChatSerializer serializer = await CreateSerializerAsync(chat);
 
         TestChat copy = new(CreateMockAgent());
         copy.AddChatMessage(new ChatMessageContent(AuthorRole.User, "test"));
@@ -233,9 +241,10 @@ public class AgentChatSerializerTests
         await Assert.ThrowsAsync<KernelException>(() => serializer.DeserializeAsync(copy));
     }
 
+
     private async Task<AgentChatSerializer> CreateSerializerAsync(TestChat chat)
     {
-        string jsonState = await this.SerializeChatAsync(chat);
+        string jsonState = await SerializeChatAsync(chat);
         await using MemoryStream stream = new();
         await using StreamWriter writer = new(stream);
         writer.Write(jsonState);
@@ -244,6 +253,7 @@ public class AgentChatSerializerTests
 
         return await AgentChatSerializer.DeserializeAsync(stream);
     }
+
 
     private async Task<string> SerializeChatAsync(TestChat chat)
     {
@@ -255,19 +265,28 @@ public class AgentChatSerializerTests
         return reader.ReadToEnd();
     }
 
-    private static MockAgent CreateMockAgent() => new() { Response = [new(AuthorRole.Assistant, "sup")] };
+
+    private static MockAgent CreateMockAgent()
+    {
+        return new MockAgent { Response = [new ChatMessageContent(AuthorRole.Assistant, "sup")] };
+    }
+
 
     private sealed class TestChat(params Agent[] agents) : AgentChat
     {
         public override IReadOnlyList<Agent> Agents => agents;
 
+
         public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-            CancellationToken cancellationToken = default) =>
-                this.InvokeAgentAsync(this.Agents[0], cancellationToken);
+            CancellationToken cancellationToken = default)
+        {
+            return InvokeAgentAsync(Agents[0], cancellationToken);
+        }
+
 
         public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }

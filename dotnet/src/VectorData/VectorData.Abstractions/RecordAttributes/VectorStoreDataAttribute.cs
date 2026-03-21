@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.VectorData;
 /// this property can have an associated vector field containing an embedding for this data.
 /// The characteristics defined here influence how the property is treated by the vector store.
 /// </remarks>
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Property)]
 public sealed class VectorStoreDataAttribute : Attribute
 {
     /// <summary>

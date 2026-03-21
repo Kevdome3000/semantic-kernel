@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
+
 /// <summary>
 /// Base class for blocks parsed from a prompt template
 /// </summary>
@@ -25,6 +24,7 @@ internal abstract class Block
     /// </summary>
     private protected ILogger Logger { get; }
 
+
     /// <summary>
     /// Base constructor. Prevent external instantiation.
     /// </summary>
@@ -35,6 +35,7 @@ internal abstract class Block
         Content = content ?? string.Empty;
         Logger = loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance;
     }
+
 
     /// <summary>
     /// Check if the block content is valid.

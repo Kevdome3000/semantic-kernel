@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -46,6 +43,7 @@ public readonly struct StructuredDataOperation : IEquatable<StructuredDataOperat
     /// </summary>
     public string Label { get; }
 
+
     /// <summary>
     /// Creates a new <see cref="StructuredDataOperation"/> instance with the provided label.
     /// </summary>
@@ -53,33 +51,52 @@ public readonly struct StructuredDataOperation : IEquatable<StructuredDataOperat
     public StructuredDataOperation(string label)
     {
         Verify.NotNullOrWhiteSpace(label);
-        this.Label = label;
+        Label = label;
     }
+
 
     /// <summary>
     /// Compares two <see cref="StructuredDataOperation"/> instances for equality.
     /// </summary>
     public static bool operator ==(StructuredDataOperation left, StructuredDataOperation right)
-        => left.Equals(right);
+    {
+        return left.Equals(right);
+    }
+
 
     /// <summary>
     /// Compares two <see cref="StructuredDataOperation"/> instances for inequality.
     /// </summary>
     public static bool operator !=(StructuredDataOperation left, StructuredDataOperation right)
-        => !(left == right);
+    {
+        return !(left == right);
+    }
+
 
     /// <inheritdoc/>
     public override bool Equals(object? obj)
-        => obj is StructuredDataOperation other && this == other;
+    {
+        return obj is StructuredDataOperation other && this == other;
+    }
+
 
     /// <inheritdoc/>
     public bool Equals(StructuredDataOperation other)
-        => string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
+    {
+        return string.Equals(Label, other.Label, StringComparison.OrdinalIgnoreCase);
+    }
+
 
     /// <inheritdoc/>
     public override int GetHashCode()
-        => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label);
+    {
+        return StringComparer.OrdinalIgnoreCase.GetHashCode(Label);
+    }
+
 
     /// <inheritdoc/>
-    public override string ToString() => this.Label;
+    public override string ToString()
+    {
+        return Label;
+    }
 }

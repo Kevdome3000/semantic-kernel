@@ -21,6 +21,7 @@ public sealed class TextSearchStoreSourceRetrievalRequest
         SourceLink = sourceLink;
     }
 
+
     /// <summary>
     /// Gets or sets the source ID of the document to retrieve.
     /// </summary>

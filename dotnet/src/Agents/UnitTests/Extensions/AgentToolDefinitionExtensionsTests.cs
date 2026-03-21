@@ -18,16 +18,16 @@ public class AgentToolDefinitionExtensionsTests
     public void VerifyGetOption()
     {
         // Arrange
-        var agentToolDefinition = new AgentToolDefinition()
+        var agentToolDefinition = new AgentToolDefinition
         {
             Type = "function",
             Id = "MyPlugin.Function1",
-            Options = new Dictionary<string, object?>()
+            Options = new Dictionary<string, object?>
             {
                 { "null", null },
                 { "string", "string" },
                 { "int", 1 },
-                { "array", new string[] { "1", "2", "3" } },
+                { "array", new[] { "1", "2", "3" } }
             }
         };
 
@@ -35,7 +35,7 @@ public class AgentToolDefinitionExtensionsTests
         Assert.Null(agentToolDefinition.GetOption<string>("null"));
         Assert.Equal("string", agentToolDefinition.GetOption<string>("string"));
         Assert.Equal(1, agentToolDefinition.GetOption<int>("int"));
-        Assert.Equal(new string[] { "1", "2", "3" }, agentToolDefinition.GetOption<string[]>("array"));
+        Assert.Equal(new[] { "1", "2", "3" }, agentToolDefinition.GetOption<string[]>("array"));
         Assert.Throws<InvalidCastException>(() => agentToolDefinition.GetOption<string[]>("string"));
         Assert.Throws<ArgumentNullException>(() => agentToolDefinition.GetOption<string>(null!));
     }

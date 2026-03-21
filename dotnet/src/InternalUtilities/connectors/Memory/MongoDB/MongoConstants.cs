@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.VectorData;
-
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
@@ -52,7 +47,7 @@ internal static class MongoConstants
         typeof(float),
         typeof(double),
         typeof(decimal),
-        typeof(DateTime),
+        typeof(DateTime)
     ];
 
     /// <summary>A <see cref="HashSet{Type}"/> containing the supported vector types.</summary>

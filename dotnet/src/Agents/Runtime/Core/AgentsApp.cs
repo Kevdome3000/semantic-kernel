@@ -16,14 +16,16 @@ public class AgentsApp
 {
     private int _runningCount;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentsApp"/> class.
     /// </summary>
     /// <param name="host">The underlying application host.</param>
     internal AgentsApp(IHost host)
     {
-        this.Host = host;
+        Host = host;
     }
+
 
     /// <summary>
     /// Gets the underlying host responsible for managing application lifetime.
@@ -33,17 +35,18 @@ public class AgentsApp
     /// <summary>
     /// Gets the service provider for dependency resolution.
     /// </summary>
-    public IServiceProvider Services => this.Host.Services;
+    public IServiceProvider Services => Host.Services;
 
     /// <summary>
     /// Gets the application lifetime object to manage startup and shutdown events.
     /// </summary>
-    public IHostApplicationLifetime ApplicationLifetime => this.Services.GetRequiredService<IHostApplicationLifetime>();
+    public IHostApplicationLifetime ApplicationLifetime => Services.GetRequiredService<IHostApplicationLifetime>();
 
     /// <summary>
     /// Gets the agent runtime responsible for handling agent messaging and operations.
     /// </summary>
-    public IAgentRuntime AgentRuntime => this.Services.GetRequiredService<IAgentRuntime>();
+    public IAgentRuntime AgentRuntime => Services.GetRequiredService<IAgentRuntime>();
+
 
     /// <summary>
     /// Starts the application by initiating the host.
@@ -51,13 +54,14 @@ public class AgentsApp
     /// </summary>
     public async ValueTask StartAsync()
     {
-        if (Interlocked.Exchange(ref this._runningCount, 1) != 0)
+        if (Interlocked.Exchange(ref _runningCount, 1) != 0)
         {
             throw new InvalidOperationException("Application is already running.");
         }
 
-        await this.Host.StartAsync().ConfigureAwait(false);
+        await Host.StartAsync().ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Shuts down the application by stopping the host.
@@ -65,13 +69,14 @@ public class AgentsApp
     /// </summary>
     public async ValueTask ShutdownAsync()
     {
-        if (Interlocked.Exchange(ref this._runningCount, 0) != 1)
+        if (Interlocked.Exchange(ref _runningCount, 0) != 1)
         {
             throw new InvalidOperationException("Application is already stopped.");
         }
 
-        await this.Host.StopAsync().ConfigureAwait(false);
+        await Host.StopAsync().ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Publishes a message to the specified topic.
@@ -82,16 +87,25 @@ public class AgentsApp
     /// <param name="topic">The topic to which the message will be published.</param>
     /// <param name="messageId">An optional unique identifier for the message.</param>
     /// <param name="cancellationToken">A token to cancel the operation if needed.</param>
-    public async ValueTask PublishMessageAsync<TMessage>(TMessage message, TopicId topic, string? messageId = null, CancellationToken cancellationToken = default)
+    public async ValueTask PublishMessageAsync<TMessage>(
+        TMessage message,
+        TopicId topic,
+        string? messageId = null,
+        CancellationToken cancellationToken = default)
         where TMessage : notnull
     {
-        if (Volatile.Read(ref this._runningCount) == 0)
+        if (Volatile.Read(ref _runningCount) == 0)
         {
-            await this.StartAsync().ConfigureAwait(false);
+            await StartAsync().ConfigureAwait(false);
         }
 
-        await this.AgentRuntime.PublishMessageAsync(message, topic, messageId: messageId, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await AgentRuntime.PublishMessageAsync(message,
+                topic,
+                messageId: messageId,
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Waits for the host to complete its shutdown process.
@@ -99,6 +113,6 @@ public class AgentsApp
     /// <param name="cancellationToken">A token to cancel the operation if needed.</param>
     public Task WaitForShutdownAsync(CancellationToken cancellationToken = default)
     {
-        return this.Host.WaitForShutdownAsync(cancellationToken);
+        return Host.WaitForShutdownAsync(cancellationToken);
     }
 }

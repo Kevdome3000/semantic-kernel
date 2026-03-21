@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
-
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 
 /// <summary>
@@ -11,6 +9,7 @@ public sealed class CosmosMongoCollectionOptions : VectorStoreCollectionOptions
 {
     internal static readonly CosmosMongoCollectionOptions Default = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CosmosMongoCollectionOptions"/> class.
     /// </summary>
@@ -18,12 +17,14 @@ public sealed class CosmosMongoCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
+
     internal CosmosMongoCollectionOptions(CosmosMongoCollectionOptions? source) : base(source)
     {
-        this.NumLists = source?.NumLists ?? Default.NumLists;
-        this.EfConstruction = source?.EfConstruction ?? Default.EfConstruction;
-        this.EfSearch = source?.EfSearch ?? Default.EfSearch;
+        NumLists = source?.NumLists ?? Default.NumLists;
+        EfConstruction = source?.EfConstruction ?? Default.EfConstruction;
+        EfSearch = source?.EfSearch ?? Default.EfSearch;
     }
+
 
     /// <summary>
     /// This integer is the number of clusters that the inverted file (IVF) index uses to group the vector data. Default is 1.

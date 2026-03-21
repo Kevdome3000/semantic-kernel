@@ -7,6 +7,7 @@ namespace Microsoft.SemanticKernel;
 
 #pragma warning disable CA1716 // Identifiers should not match keywords
 
+
 /// <summary>
 /// Represents a selector which will return a combination of the containing instances of T and it's pairing <see cref="PromptExecutionSettings"/>
 /// from the specified provider based on the model settings.

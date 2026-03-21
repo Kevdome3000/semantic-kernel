@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ProviderServices;
-
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOptions)
@@ -14,15 +9,20 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
     private static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
-        SupportsMultipleVectors = true,
+        SupportsMultipleVectors = true
     };
 
+
     protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
-        => keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
+    {
+        return keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
+    }
+
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(int) && type != typeof(long) && type != typeof(string) && type != typeof(Guid))
@@ -31,9 +31,14 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
         }
     }
 
+
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "int, long, short, string, bool, float, double, byte[], Guid";
+        supportedTypes = "int, long, short, string, bool, float, double, byte[], Guid, DateTime, DateTimeOffset"
+#if NET
+            + ", DateOnly, TimeOnly"
+#endif
+            ;
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -48,11 +53,22 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
             || type == typeof(float)
             || type == typeof(double)
             || type == typeof(byte[])
-            || type == typeof(Guid);
+            || type == typeof(Guid)
+            || type == typeof(DateTime)
+            || type == typeof(DateTimeOffset)
+#if NET
+            || type == typeof(DateOnly)
+            || type == typeof(TimeOnly)
+#endif
+            ;
     }
 
+
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-        => IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    {
+        return IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    }
+
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {

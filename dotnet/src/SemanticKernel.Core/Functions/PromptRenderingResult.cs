@@ -3,6 +3,7 @@
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Contains result after prompt rendering process.
 /// </summary>
@@ -15,6 +16,7 @@ internal sealed class PromptRenderingResult
     public PromptExecutionSettings? ExecutionSettings { get; set; }
 
     public FunctionResult? FunctionResult { get; set; }
+
 
     public PromptRenderingResult(IAIService aiService, string renderedPrompt)
     {

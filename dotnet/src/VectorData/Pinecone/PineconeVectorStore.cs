@@ -1,15 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -31,6 +22,7 @@ public sealed class PineconeVectorStore : VectorStore
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeVectorStore"/> class.
     /// </summary>
@@ -40,14 +32,15 @@ public sealed class PineconeVectorStore : VectorStore
     {
         Verify.NotNull(pineconeClient);
 
-        this._pineconeClient = pineconeClient;
-        this._embeddingGenerator = options?.EmbeddingGenerator;
+        _pineconeClient = pineconeClient;
+        _embeddingGenerator = options?.EmbeddingGenerator;
 
-        this._metadata = new()
+        _metadata = new()
         {
             VectorStoreSystemName = PineconeConstants.VectorStoreSystemName
         };
     }
+
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
@@ -61,13 +54,14 @@ public sealed class PineconeVectorStore : VectorStore
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new PineconeCollection<TKey, TRecord>(
-                this._pineconeClient,
+                _pineconeClient,
                 name,
-                new PineconeCollectionOptions()
+                new PineconeCollectionOptions
                 {
                     Definition = definition,
-                    EmbeddingGenerator = this._embeddingGenerator
+                    EmbeddingGenerator = _embeddingGenerator
                 });
+
 
     /// <inheritdoc />
 #if NET
@@ -76,23 +70,25 @@ public sealed class PineconeVectorStore : VectorStore
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new PineconeDynamicCollection(
-            this._pineconeClient,
+            _pineconeClient,
             name,
-            new()
+            new PineconeCollectionOptions
             {
                 Definition = definition,
-                EmbeddingGenerator = this._embeddingGenerator
+                EmbeddingGenerator = _embeddingGenerator
             }
         );
 #pragma warning restore IDE0090
+
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var indexList = await VectorStoreErrorHandler.RunOperationAsync<IndexList, PineconeApiException>(
-            this._metadata,
-            "ListCollections",
-            () => this._pineconeClient.ListIndexesAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
+                _metadata,
+                "ListCollections",
+                () => _pineconeClient.ListIndexesAsync(cancellationToken: cancellationToken))
+            .ConfigureAwait(false);
 
         if (indexList.Indexes is not null)
         {
@@ -103,19 +99,22 @@ public sealed class PineconeVectorStore : VectorStore
         }
     }
 
+
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
@@ -123,10 +122,14 @@ public sealed class PineconeVectorStore : VectorStore
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(PineconeClient) ? this._pineconeClient :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreMetadata)
+                    ? _metadata
+                    : serviceType == typeof(PineconeClient)
+                        ? _pineconeClient
+                        : serviceType.IsInstanceOfType(this)
+                            ? this
+                            : null;
     }
 }

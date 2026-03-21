@@ -18,28 +18,36 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
 {
     private readonly AIFunction _aiFunction;
 
+
     public AIFunctionKernelFunction(AIFunction aiFunction) :
         base(
-            name: aiFunction.Name,
-            description: aiFunction.Description,
-            parameters: MapParameterMetadata(aiFunction),
-            jsonSerializerOptions: aiFunction.JsonSerializerOptions,
+            aiFunction.Name,
+            aiFunction.Description,
+            MapParameterMetadata(aiFunction),
+            aiFunction.JsonSerializerOptions,
             new KernelReturnParameterMetadata(AbstractionsJsonContext.Default.Options)
             {
                 Description = aiFunction.UnderlyingMethod?.ReturnParameter.GetCustomAttribute<DescriptionAttribute>()?.Description,
                 ParameterType = aiFunction.UnderlyingMethod?.ReturnParameter.ParameterType,
-                Schema = new KernelJsonSchema(aiFunction.ReturnJsonSchema ?? AIJsonUtilities.CreateJsonSchema(aiFunction.UnderlyingMethod?.ReturnParameter.ParameterType)),
+                Schema = new KernelJsonSchema(aiFunction.ReturnJsonSchema ?? AIJsonUtilities.CreateJsonSchema(aiFunction.UnderlyingMethod?.ReturnParameter.ParameterType))
             })
     {
         // Kernel functions created from AI functions are always fully qualified
         _aiFunction = aiFunction;
     }
 
+
     private AIFunctionKernelFunction(AIFunctionKernelFunction other, string? pluginName) :
-        base(other.Name, pluginName, other.Description, other.Metadata.Parameters, AbstractionsJsonContext.Default.Options, other.Metadata.ReturnParameter)
+        base(other.Name,
+            pluginName,
+            other.Description,
+            other.Metadata.Parameters,
+            AbstractionsJsonContext.Default.Options,
+            other.Metadata.ReturnParameter)
     {
         _aiFunction = other._aiFunction;
     }
+
 
     public override KernelFunction Clone(string? pluginName = null)
     {
@@ -52,24 +60,31 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
         return new AIFunctionKernelFunction(this, pluginName);
     }
 
+
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
-        Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
+        Kernel kernel,
+        KernelArguments arguments,
+        CancellationToken cancellationToken)
     {
         if (_aiFunction is KernelFunction kernelFunction)
         {
             return await kernelFunction.InvokeAsync(kernel, arguments, cancellationToken).ConfigureAwait(false);
         }
 
-        object? result = await _aiFunction.InvokeAsync(new(arguments), cancellationToken).ConfigureAwait(false);
+        object? result = await _aiFunction.InvokeAsync(new AIFunctionArguments(arguments), cancellationToken).ConfigureAwait(false);
         return new FunctionResult(this, result);
     }
 
+
     protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
-        Kernel kernel, KernelArguments arguments, [EnumeratorCancellation] CancellationToken cancellationToken)
+        Kernel kernel,
+        KernelArguments arguments,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        object? result = await _aiFunction.InvokeAsync(new(arguments), cancellationToken).ConfigureAwait(false);
+        object? result = await _aiFunction.InvokeAsync(new AIFunctionArguments(arguments), cancellationToken).ConfigureAwait(false);
         yield return (TResult)result!;
     }
+
 
     private static IReadOnlyList<KernelParameterMetadata> MapParameterMetadata(AIFunction aiFunction)
     {
@@ -86,24 +101,30 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
 
         List<KernelParameterMetadata> kernelParams = [];
         var parameterInfos = aiFunction.UnderlyingMethod?.GetParameters().ToDictionary(p => p.Name!, StringComparer.Ordinal);
+
         foreach (var param in properties.EnumerateObject())
         {
             ParameterInfo? paramInfo = null;
             parameterInfos?.TryGetValue(param.Name, out paramInfo);
-            kernelParams.Add(new(param.Name, aiFunction.JsonSerializerOptions)
+            kernelParams.Add(new KernelParameterMetadata(param.Name, aiFunction.JsonSerializerOptions)
             {
-                Description = param.Value.TryGetProperty("description", out JsonElement description) ? description.GetString() : null,
-                DefaultValue = param.Value.TryGetProperty("default", out JsonElement defaultValue) ? defaultValue : null,
+                Description = param.Value.TryGetProperty("description", out JsonElement description)
+                    ? description.GetString()
+                    : null,
+                DefaultValue = param.Value.TryGetProperty("default", out JsonElement defaultValue)
+                    ? defaultValue
+                    : null,
                 IsRequired = requiredParameters?.Contains(param.Name) ?? false,
                 ParameterType = paramInfo?.ParameterType,
                 Schema = param.Value.TryGetProperty("schema", out JsonElement schema)
                     ? new KernelJsonSchema(schema)
-                    : new KernelJsonSchema(param.Value),
+                    : new KernelJsonSchema(param.Value)
             });
         }
 
         return kernelParams;
     }
+
 
     /// <summary>
     /// Gets the names of the required parameters from the AI function's JSON schema.

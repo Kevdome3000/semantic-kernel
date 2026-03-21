@@ -1,11 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Data.Common;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
@@ -78,6 +73,7 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
         return record;
     }
 
+
     private static object? GetPropertyValue(DbDataReader reader, string propertyName, Type propertyType)
     {
         int ordinal = reader.GetOrdinal(propertyName);
@@ -97,6 +93,12 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
             Type t when t == typeof(double) => reader.GetDouble(ordinal),
             Type t when t == typeof(string) => reader.GetString(ordinal),
             Type t when t == typeof(Guid) => reader.GetGuid(ordinal),
+            Type t when t == typeof(DateTime) => reader.GetDateTime(ordinal),
+            Type t when t == typeof(DateTimeOffset) => reader.GetFieldValue<DateTimeOffset>(ordinal),
+#if NET
+            Type t when t == typeof(DateOnly) => reader.GetFieldValue<DateOnly>(ordinal),
+            Type t when t == typeof(TimeOnly) => reader.GetFieldValue<TimeOnly>(ordinal),
+#endif
             Type t when t == typeof(byte[]) => (byte[])reader[ordinal],
             Type t when t == typeof(ReadOnlyMemory<float>) => (byte[])reader[ordinal],
             Type t when t == typeof(Embedding<float>) => (byte[])reader[ordinal],

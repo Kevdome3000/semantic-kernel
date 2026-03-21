@@ -1,21 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Http;
+using Microsoft.SemanticKernel.Plugins.Grpc.Model;
+using Microsoft.SemanticKernel.Plugins.Grpc.Protobuf;
+
 namespace Microsoft.SemanticKernel.Plugins.Grpc;
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using System.Text.Json.Nodes;
-using System.Threading;
-using System.Threading.Tasks;
-using Extensions.DependencyInjection;
-using Extensions.Logging;
-using Extensions.Logging.Abstractions;
-using Http;
-using Model;
-using Protobuf;
-
 
 /// <summary>
 /// <see cref="Kernel"/> extensions methods for gRPC functionality.
@@ -109,8 +98,7 @@ public static class GrpcKernelExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        if (kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger &&
-            logger.IsEnabled(LogLevel.Trace))
+        if (kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger && logger.IsEnabled(LogLevel.Trace))
         {
             logger.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
         }
@@ -138,8 +126,7 @@ public static class GrpcKernelExtensions
             throw new FileNotFoundException($"No .proto document for the specified path - {filePath} is found.");
         }
 
-        if (kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger &&
-            logger.IsEnabled(LogLevel.Trace))
+        if (kernel.LoggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger && logger.IsEnabled(LogLevel.Trace))
         {
             logger.LogTrace("Registering gRPC functions from {0} .proto document", filePath);
         }
@@ -190,8 +177,11 @@ public static class GrpcKernelExtensions
             catch (Exception ex) when (!ex.IsCriticalException())
             {
                 //Logging the exception and keep registering other gRPC functions
-                logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}",
-                    pluginName, operation.Name, ex.Message);
+                logger.LogWarning(ex,
+                    "Something went wrong while rendering the gRPC function. Function: {0}.{1}. Error: {2}",
+                    pluginName,
+                    operation.Name,
+                    ex.Message);
             }
         }
 
@@ -217,12 +207,14 @@ public static class GrpcKernelExtensions
         {
             try
             {
-                return await runner.RunAsync(operation, arguments, cancellationToken).
-                    ConfigureAwait(false);
+                return await runner.RunAsync(operation, arguments, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsCriticalException() && loggerFactory.CreateLogger(typeof(GrpcKernelExtensions)) is ILogger logger && logger.IsEnabled(LogLevel.Warning))
             {
-                logger.LogWarning(ex, "Something went wrong while rendering the gRPC function. Function: {0}. Error: {1}", operation.Name, ex.Message);
+                logger.LogWarning(ex,
+                    "Something went wrong while rendering the gRPC function. Function: {0}. Error: {1}",
+                    operation.Name,
+                    ex.Message);
 
                 throw;
             }

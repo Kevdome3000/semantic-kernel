@@ -9,17 +9,19 @@ using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// A builder class for creating <see cref="FunctionCallContent"/> objects from incremental function call updates represented by <see cref="StreamingFunctionCallUpdateContent"/>.
 /// </summary>
 public sealed class FunctionCallContentBuilder
 {
-    private Dictionary<string, string>? _functionCallIdsByIndex = null;
+    private Dictionary<string, string>? _functionCallIdsByIndex;
 
-    private Dictionary<string, string>? _functionNamesByIndex = null;
+    private Dictionary<string, string>? _functionNamesByIndex;
 
-    private Dictionary<string, StringBuilder>? _functionArgumentBuildersByIndex = null;
+    private Dictionary<string, StringBuilder>? _functionArgumentBuildersByIndex;
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
+
 
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionCallContentBuilder"/> class.
@@ -30,6 +32,7 @@ public sealed class FunctionCallContentBuilder
     {
     }
 
+
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionCallContentBuilder"/> class.
     /// </summary>
@@ -39,6 +42,7 @@ public sealed class FunctionCallContentBuilder
     {
         _jsonSerializerOptions = jsonSerializerOptions;
     }
+
 
     /// <summary>
     /// Extracts function call updates from the content and track them for later building.
@@ -56,6 +60,7 @@ public sealed class FunctionCallContentBuilder
                 ref _functionArgumentBuildersByIndex);
         }
     }
+
 
     /// <summary>
     /// Builds a list of <see cref="FunctionCallContent"/> out of function call updates tracked by the <see cref="Append"/> method.
@@ -86,9 +91,9 @@ public sealed class FunctionCallContentBuilder
                 (KernelArguments? arguments, Exception? exception) = GetFunctionArgumentsSafe(functionCallIndexAndId.Key);
 
                 functionCalls[i] = new FunctionCallContent(
-                    functionName: functionName,
-                    pluginName: pluginName,
-                    id: functionCallIndexAndId.Value,
+                    functionName,
+                    pluginName,
+                    functionCallIndexAndId.Value,
                     arguments)
                 {
                     Exception = exception
@@ -110,6 +115,7 @@ public sealed class FunctionCallContentBuilder
 
         return functionCalls ?? [];
     }
+
 
     /// <summary>
     /// Gets function arguments for a given function call index.
@@ -154,8 +160,7 @@ public sealed class FunctionCallContentBuilder
 
                 foreach (var name in names)
                 {
-                    arguments[name] = arguments[name]?.
-                        ToString();
+                    arguments[name] = arguments[name]?.ToString();
                 }
             }
         }
@@ -166,6 +171,7 @@ public sealed class FunctionCallContentBuilder
 
         return (arguments, exception);
     }
+
 
     /// <summary>
     /// Tracks streaming function call update contents.
@@ -207,7 +213,7 @@ public sealed class FunctionCallContentBuilder
         {
             if (!(functionArgumentBuildersByIndex ??= []).TryGetValue(functionCallIndex, out StringBuilder? arguments))
             {
-                functionArgumentBuildersByIndex[functionCallIndex] = arguments = new();
+                functionArgumentBuildersByIndex[functionCallIndex] = arguments = new StringBuilder();
             }
 
             arguments.Append(argumentsUpdate);

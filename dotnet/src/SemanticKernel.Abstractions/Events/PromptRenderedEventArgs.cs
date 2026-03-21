@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides a <see cref="CancelKernelEventArgs"/> used in events raised just after a prompt has been rendered.
 /// </summary>
@@ -12,6 +13,7 @@ public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
 {
     private string _renderedPrompt;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderedEventArgs"/> class.
     /// </summary>
@@ -19,10 +21,11 @@ public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
     /// <param name="arguments">The arguments associated with the operation.</param>
     /// <param name="renderedPrompt">The prompt that was rendered by the associated operation.</param>
     public PromptRenderedEventArgs(KernelFunction function, KernelArguments arguments, string renderedPrompt) :
-        base(function, arguments, metadata: null)
+        base(function, arguments, null)
     {
         RenderedPrompt = renderedPrompt;
     }
+
 
     /// <summary>Gets or sets the rendered prompt.</summary>
     /// <remarks>

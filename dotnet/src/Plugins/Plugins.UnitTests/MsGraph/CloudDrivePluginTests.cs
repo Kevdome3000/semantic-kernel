@@ -32,6 +32,7 @@ public class CloudDrivePluginTests
         connectorMock.VerifyAll();
     }
 
+
     [Fact]
     public async Task CreateLinkAsyncSucceedsAsync()
     {
@@ -40,7 +41,10 @@ public class CloudDrivePluginTests
         string anyLink = Guid.NewGuid().ToString();
 
         Mock<ICloudDriveConnector> connectorMock = new();
-        connectorMock.Setup(c => c.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        connectorMock.Setup(c => c.CreateShareLinkAsync(It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(anyLink);
 
         CloudDrivePlugin target = new(connectorMock.Object);
@@ -52,6 +56,7 @@ public class CloudDrivePluginTests
         Assert.Equal(anyLink, actual);
         connectorMock.VerifyAll();
     }
+
 
     [Fact]
     public async Task GetFileContentAsyncSucceedsAsync()

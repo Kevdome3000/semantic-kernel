@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Concurrent;
 
@@ -15,6 +14,7 @@ internal static class ConcurrentMessages
     /// </summary>
     public static readonly ChatMessageContent Empty = new();
 
+
     /// <summary>
     /// The input task for a <see cref="ConcurrentOrchestration{TInput, TOutput}"/>.
     /// </summary>
@@ -25,6 +25,7 @@ internal static class ConcurrentMessages
         /// </summary>
         public IList<ChatMessageContent> Messages { get; init; } = [];
     }
+
 
     /// <summary>
     /// A result from a <see cref="ConcurrentOrchestration{TInput, TOutput}"/>.
@@ -37,18 +38,30 @@ internal static class ConcurrentMessages
         public ChatMessageContent Message { get; init; } = Empty;
     }
 
+
     /// <summary>
     /// Extension method to convert a <see cref="string"/> to a <see cref="Result"/>.
     /// </summary>
-    public static Result AsResultMessage(this string text, AuthorRole? role = null) => new() { Message = new ChatMessageContent(role ?? AuthorRole.Assistant, text) };
+    public static Result AsResultMessage(this string text, AuthorRole? role = null)
+    {
+        return new Result { Message = new ChatMessageContent(role ?? AuthorRole.Assistant, text) };
+    }
+
 
     /// <summary>
     /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Result"/>.
     /// </summary>
-    public static Result AsResultMessage(this ChatMessageContent message) => new() { Message = message };
+    public static Result AsResultMessage(this ChatMessageContent message)
+    {
+        return new Result { Message = message };
+    }
+
 
     /// <summary>
     /// Extension method to convert a collection of <see cref="ChatMessageContent"/> to a <see cref="ConcurrentMessages.Request"/>.
     /// </summary>
-    public static Request AsInputMessage(this IEnumerable<ChatMessageContent> messages) => new() { Messages = [.. messages] };
+    public static Request AsInputMessage(this IEnumerable<ChatMessageContent> messages)
+    {
+        return new Request { Messages = [.. messages] };
+    }
 }

@@ -16,11 +16,11 @@ public class MagenticManagerContextTests
     {
         // Arrange
         MagenticTeam mockTeam = [];
-        List<ChatMessageContent> task = [new ChatMessageContent(AuthorRole.User, "Test task")];
+        List<ChatMessageContent> task = [new(AuthorRole.User, "Test task")];
         List<ChatMessageContent> history =
         [
-            new ChatMessageContent(AuthorRole.User, "Test message 1"),
-            new ChatMessageContent(AuthorRole.Assistant, "Test response 1")
+            new(AuthorRole.User, "Test message 1"),
+            new(AuthorRole.Assistant, "Test response 1")
         ];
 
         const int ResponseCount = 5;
@@ -28,7 +28,12 @@ public class MagenticManagerContextTests
         const int ResetCount = 1;
 
         // Act
-        MagenticManagerContext context = new(mockTeam, task, history, ResponseCount, StallCount, ResetCount);
+        MagenticManagerContext context = new(mockTeam,
+            task,
+            history,
+            ResponseCount,
+            StallCount,
+            ResetCount);
 
         // Assert
         Assert.Equal(mockTeam, context.Team);
@@ -39,16 +44,22 @@ public class MagenticManagerContextTests
         Assert.Equal(ResetCount, context.ResetCount);
     }
 
+
     [Fact]
     public void ReadOnlyCollections_ShouldNotAllowModification()
     {
         // Arrange
         MagenticTeam mockTeam = [];
-        List<ChatMessageContent> task = [new ChatMessageContent(AuthorRole.User, "Test task")];
-        List<ChatMessageContent> history = [new ChatMessageContent(AuthorRole.User, "Test message")];
+        List<ChatMessageContent> task = [new(AuthorRole.User, "Test task")];
+        List<ChatMessageContent> history = [new(AuthorRole.User, "Test message")];
 
         // Act
-        MagenticManagerContext context = new(mockTeam, task, history, 0, 0, 0);
+        MagenticManagerContext context = new(mockTeam,
+            task,
+            history,
+            0,
+            0,
+            0);
 
         // Assert
         // Verify that the collections exposed as IReadOnlyList don't allow modifications

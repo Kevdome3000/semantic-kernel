@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateCollectionSchema
@@ -10,8 +7,9 @@ internal sealed class WeaviateCollectionSchema
     [JsonConstructor]
     public WeaviateCollectionSchema(string collectionName)
     {
-        this.CollectionName = collectionName;
+        CollectionName = collectionName;
     }
+
 
     [JsonPropertyName("class")]
     public string CollectionName { get; set; }

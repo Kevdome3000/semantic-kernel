@@ -27,6 +27,7 @@ public class AgentsAppTests
         agentsApp.Host.Should().BeSameAs(mockHost.Object);
     }
 
+
     [Fact]
     public void Services_ShouldReturnHostServices()
     {
@@ -42,6 +43,7 @@ public class AgentsAppTests
         // Assert
         result.Should().BeSameAs(mockServiceProvider.Object);
     }
+
 
     [Fact]
     public void ApplicationLifetime_ShouldGetFromServices()
@@ -64,6 +66,7 @@ public class AgentsAppTests
         result.Should().BeSameAs(mockLifetime.Object);
     }
 
+
     [Fact]
     public void AgentRuntime_ShouldGetFromServices()
     {
@@ -85,6 +88,7 @@ public class AgentsAppTests
         result.Should().BeSameAs(mockAgentRuntime.Object);
     }
 
+
     [Fact]
     public async Task StartAsync_ShouldStartHost()
     {
@@ -102,6 +106,7 @@ public class AgentsAppTests
         mockHost.Verify(h => h.StartAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
+
     [Fact]
     public async Task StartAsync_WhenAlreadyRunning_ShouldThrowInvalidOperationException()
     {
@@ -113,6 +118,7 @@ public class AgentsAppTests
         await agentsApp.StartAsync();
         await Assert.ThrowsAsync<InvalidOperationException>(() => agentsApp.StartAsync().AsTask());
     }
+
 
     [Fact]
     public async Task ShutdownAsync_ShouldStopHost()
@@ -132,6 +138,7 @@ public class AgentsAppTests
         mockHost.Verify(h => h.StopAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
+
     [Fact]
     public async Task ShutdownAsync_WhenNotRunning_ShouldThrowInvalidOperationException()
     {
@@ -142,6 +149,7 @@ public class AgentsAppTests
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => agentsApp.ShutdownAsync().AsTask());
     }
+
 
     [Fact]
     public async Task PublishMessageAsync_WhenNotRunning_ShouldStartHostFirst()
@@ -169,14 +177,15 @@ public class AgentsAppTests
         mockHost.Verify(h => h.StartAsync(It.IsAny<CancellationToken>()), Times.Once);
         mockAgentRuntime.Verify(
             r =>
-            r.PublishMessageAsync(
-                message,
-                topic,
-                It.IsAny<AgentId?>(),
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()),
-                Times.Once);
+                r.PublishMessageAsync(
+                    message,
+                    topic,
+                    It.IsAny<AgentId?>(),
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()),
+            Times.Once);
     }
+
 
     [Fact]
     public async Task PublishMessageAsync_WhenRunning_ShouldNotStartHostAgain()
@@ -211,8 +220,9 @@ public class AgentsAppTests
                     It.IsAny<AgentId?>(),
                     It.IsAny<string>(),
                     It.IsAny<CancellationToken>()),
-                    Times.Once);
+            Times.Once);
     }
+
 
     [Fact]
     public async Task PublishMessageAsync_ShouldPassAllParameters()
@@ -234,7 +244,10 @@ public class AgentsAppTests
         string messageId = "test-message-id";
 
         // Act
-        await agentsApp.PublishMessageAsync(message, topic, messageId, CancellationToken.None);
+        await agentsApp.PublishMessageAsync(message,
+            topic,
+            messageId,
+            CancellationToken.None);
 
         // Assert
         mockAgentRuntime.Verify(
@@ -245,8 +258,9 @@ public class AgentsAppTests
                     It.IsAny<AgentId?>(),
                     messageId,
                     CancellationToken.None),
-                    Times.Once);
+            Times.Once);
     }
+
 
     [Fact]
     public async Task WaitForShutdownAsync_ShouldBlock()
@@ -258,6 +272,7 @@ public class AgentsAppTests
         await agentsApp.StartAsync();
 
         ValueTask shutdownTask = ValueTask.CompletedTask;
+
         try
         {
             // Assert - Verify initial state

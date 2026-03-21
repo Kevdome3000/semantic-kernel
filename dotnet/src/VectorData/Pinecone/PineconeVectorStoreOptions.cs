@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.AI;
-
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>
@@ -14,6 +12,7 @@ public sealed class PineconeVectorStoreOptions
     /// </summary>
     public IEmbeddingGenerator? EmbeddingGenerator { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PineconeVectorStoreOptions"/> class.
     /// </summary>
@@ -21,8 +20,9 @@ public sealed class PineconeVectorStoreOptions
     {
     }
 
+
     internal PineconeVectorStoreOptions(PineconeVectorStoreOptions? source)
     {
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+        EmbeddingGenerator = source?.EmbeddingGenerator;
     }
 }

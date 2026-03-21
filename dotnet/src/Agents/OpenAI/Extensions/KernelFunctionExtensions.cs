@@ -25,7 +25,7 @@ public static class KernelFunctionExtensions
             return new FunctionToolDefinition(FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName))
             {
                 Description = function.Description,
-                Parameters = parameterData,
+                Parameters = parameterData
             };
         }
 
@@ -34,6 +34,7 @@ public static class KernelFunctionExtensions
             Description = function.Description
         };
     }
+
 
     /// <summary>
     /// Converts a <see cref="KernelFunction"/> into a <see cref="ResponseTool"/> representation.
@@ -53,20 +54,25 @@ public static class KernelFunctionExtensions
         {
             BinaryData parameterData = function.Metadata.CreateParameterSpec();
             return ResponseTool.CreateFunctionTool(
-                functionName: FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName),
-                functionParameters: parameterData,
-                strictModeEnabled: functionSchemaIsStrict,
-                functionDescription: function.Description);
+                FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName),
+                parameterData,
+                functionSchemaIsStrict,
+                function.Description);
         }
 
         return ResponseTool.CreateFunctionTool(
-            functionName: FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName),
-            functionParameters: s_emptyFunctionParameters,
+            FunctionName.ToFullyQualifiedName(function.Name, pluginName ?? function.PluginName),
+            s_emptyFunctionParameters,
             null,
-            functionDescription: function.Description);
+            function.Description);
     }
 
+
     #region private
+
     private static readonly BinaryData s_emptyFunctionParameters = BinaryData.FromString("{}");
+
     #endregion
+
+
 }

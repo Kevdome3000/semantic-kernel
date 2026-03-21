@@ -19,6 +19,7 @@ internal sealed class GroupChatAgentActor :
 {
     private readonly List<ChatMessageContent> _cache;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatAgentActor"/> class.
     /// </summary>
@@ -27,16 +28,26 @@ internal sealed class GroupChatAgentActor :
     /// <param name="context">The orchestration context.</param>
     /// <param name="agent">An <see cref="Agent"/>.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public GroupChatAgentActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, Agent agent, ILogger<GroupChatAgentActor>? logger = null)
-        : base(id, runtime, context, agent, logger)
+    public GroupChatAgentActor(
+        AgentId id,
+        IAgentRuntime runtime,
+        OrchestrationContext context,
+        Agent agent,
+        ILogger<GroupChatAgentActor>? logger = null)
+        : base(id,
+            runtime,
+            context,
+            agent,
+            logger)
     {
-        this._cache = [];
+        _cache = [];
     }
+
 
     /// <inheritdoc/>
     public ValueTask HandleAsync(GroupChatMessages.Group item, MessageContext messageContext)
     {
-        this._cache.AddRange(item.Messages);
+        _cache.AddRange(item.Messages);
 
 #if !NETCOREAPP
         return Task.CompletedTask.AsValueTask();
@@ -45,22 +56,24 @@ internal sealed class GroupChatAgentActor :
 #endif
     }
 
+
     /// <inheritdoc/>
     public async ValueTask HandleAsync(GroupChatMessages.Reset item, MessageContext messageContext)
     {
-        await this.DeleteThreadAsync(messageContext.CancellationToken).ConfigureAwait(false);
+        await DeleteThreadAsync(messageContext.CancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(GroupChatMessages.Speak item, MessageContext messageContext)
     {
-        this.Logger.LogChatAgentInvoke(this.Id);
+        Logger.LogChatAgentInvoke(Id);
 
-        ChatMessageContent response = await this.InvokeAsync(this._cache, messageContext.CancellationToken).ConfigureAwait(false);
+        ChatMessageContent response = await InvokeAsync(_cache, messageContext.CancellationToken).ConfigureAwait(false);
 
-        this.Logger.LogChatAgentResult(this.Id, response.Content);
+        Logger.LogChatAgentResult(Id, response.Content);
 
-        this._cache.Clear();
-        await this.PublishMessageAsync(response.AsGroupMessage(), this.Context.Topic).ConfigureAwait(false);
+        _cache.Clear();
+        await PublishMessageAsync(response.AsGroupMessage(), Context.Topic).ConfigureAwait(false);
     }
 }

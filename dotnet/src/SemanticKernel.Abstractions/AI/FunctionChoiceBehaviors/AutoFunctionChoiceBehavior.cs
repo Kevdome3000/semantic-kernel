@@ -17,6 +17,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// </summary>
     internal readonly bool AutoInvoke = true;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionChoiceBehavior"/> class.
     /// </summary>
@@ -24,6 +25,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     internal AutoFunctionChoiceBehavior()
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionChoiceBehavior"/> class.
@@ -43,6 +45,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
         Options = options;
     }
 
+
     /// <summary>
     /// Fully qualified names of the functions to provide to AI model.
     /// If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
@@ -59,6 +62,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     [JsonPropertyName("options")]
     public FunctionChoiceBehaviorOptions? Options { get; set; }
 
+
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)
     {
@@ -68,7 +72,7 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
         {
             Choice = FunctionChoice.Auto,
             Functions = functions,
-            AutoInvoke = AutoInvoke,
+            AutoInvoke = AutoInvoke
         };
     }
 }

@@ -5,8 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -30,6 +28,7 @@ public abstract class ChatHistoryAgent : Agent
     [Experimental("SKEXP0110")]
     public IChatHistoryReducer? HistoryReducer { get; init; }
 
+
     /// <summary>
     /// Invokes the assistant to respond to the provided history.
     /// </summary>
@@ -43,6 +42,7 @@ public abstract class ChatHistoryAgent : Agent
         KernelArguments? arguments = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Invokes the assistant to respond to the provided history with streaming response.
@@ -58,6 +58,7 @@ public abstract class ChatHistoryAgent : Agent
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Reduces the provided history.
     /// </summary>
@@ -65,8 +66,11 @@ public abstract class ChatHistoryAgent : Agent
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns><see langword="true"/> if reduction occurred.</returns>
     [Experimental("SKEXP0110")]
-    public Task<bool> ReduceAsync(ChatHistory history, CancellationToken cancellationToken = default) =>
-        history.ReduceInPlaceAsync(this.HistoryReducer, cancellationToken);
+    public Task<bool> ReduceAsync(ChatHistory history, CancellationToken cancellationToken = default)
+    {
+        return history.ReduceInPlaceAsync(HistoryReducer, cancellationToken);
+    }
+
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
@@ -76,15 +80,16 @@ public abstract class ChatHistoryAgent : Agent
 
         // Agents with different reducers shall not share the same channel.
         // Agents with the same or equivalent reducer shall share the same channel.
-        if (this.HistoryReducer != null)
+        if (HistoryReducer != null)
         {
             // Explicitly include the reducer type to eliminate the possibility of hash collisions
             // with custom implementations of IChatHistoryReducer.
-            yield return this.HistoryReducer.GetType().FullName!;
+            yield return HistoryReducer.GetType().FullName!;
 
-            yield return this.HistoryReducer.GetHashCode().ToString(CultureInfo.InvariantCulture);
+            yield return HistoryReducer.GetHashCode().ToString(CultureInfo.InvariantCulture);
         }
     }
+
 
     /// <inheritdoc/>
     [Experimental("SKEXP0110")]
@@ -93,7 +98,7 @@ public abstract class ChatHistoryAgent : Agent
         ChatHistoryChannel channel =
             new()
             {
-                Logger = this.ActiveLoggerFactory.CreateLogger<ChatHistoryChannel>()
+                Logger = ActiveLoggerFactory.CreateLogger<ChatHistoryChannel>()
             };
 
         return Task.FromResult<AgentChannel>(channel);

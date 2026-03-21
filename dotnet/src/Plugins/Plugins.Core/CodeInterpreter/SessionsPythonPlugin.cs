@@ -30,6 +30,7 @@ public sealed partial class SessionsPythonPlugin
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger _logger;
 
+
     /// <summary>
     /// Initializes a new instance of the SessionsPythonTool class.
     /// </summary>
@@ -47,15 +48,16 @@ public sealed partial class SessionsPythonPlugin
         Verify.NotNull(httpClientFactory, nameof(httpClientFactory));
         Verify.NotNull(settings.Endpoint, nameof(settings.Endpoint));
 
-        this._settings = settings;
+        _settings = settings;
 
         // Ensure the endpoint won't change by reference
-        this._poolManagementEndpoint = GetBaseEndpoint(settings.Endpoint);
+        _poolManagementEndpoint = GetBaseEndpoint(settings.Endpoint);
 
-        this._authTokenProvider = authTokenProvider;
-        this._httpClientFactory = httpClientFactory;
-        this._logger = loggerFactory?.CreateLogger(typeof(SessionsPythonPlugin)) ?? NullLogger.Instance;
+        _authTokenProvider = authTokenProvider;
+        _httpClientFactory = httpClientFactory;
+        _logger = loggerFactory?.CreateLogger(typeof(SessionsPythonPlugin)) ?? NullLogger.Instance;
     }
+
 
     /// <summary>
     /// Executes the provided Python code.
@@ -71,38 +73,45 @@ public sealed partial class SessionsPythonPlugin
     /// <returns> The result of the Python code execution. </returns>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="HttpRequestException"></exception>
-    [KernelFunction, Description("""
-        Executes the provided Python code.
-        Start and end the code snippet with double quotes to define it as a string.
-        Insert \n within the string wherever a new line should appear.
-        Add spaces directly after \n sequences to replicate indentation.
-        Use \" to include double quotes within the code without ending the string.
-        Keep everything in a single line; the \n sequences will represent line breaks
-        when the string is processed or displayed.
-        """)]
+    [KernelFunction] [Description("""
+                                  Executes the provided Python code.
+                                  Start and end the code snippet with double quotes to define it as a string.
+                                  Insert \n within the string wherever a new line should appear.
+                                  Add spaces directly after \n sequences to replicate indentation.
+                                  Use \" to include double quotes within the code without ending the string.
+                                  Keep everything in a single line; the \n sequences will represent line breaks
+                                  when the string is processed or displayed.
+                                  """)]
     public async Task<SessionsPythonCodeExecutionResult> ExecuteCodeAsync(
-        [Description("The valid Python code to execute.")] string code,
+        [Description("The valid Python code to execute.")]
+        string code,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(code, nameof(code));
 
-        if (this._settings.SanitizeInput)
+        if (_settings.SanitizeInput)
         {
             code = SanitizeCodeInput(code);
         }
 
-        this._logger.LogTrace("Executing Python code: {Code}", code);
+        _logger.LogTrace("Executing Python code: {Code}", code);
 
-        using var httpClient = this._httpClientFactory.CreateClient();
+        using var httpClient = _httpClientFactory.CreateClient();
 
-        var requestBody = new SessionsPythonCodeExecutionProperties(this._settings, code);
+        var requestBody = new SessionsPythonCodeExecutionProperties(_settings, code);
 
         using var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
 
-        using var response = await this.SendAsync(httpClient, HttpMethod.Post, "executions", cancellationToken, content).ConfigureAwait(false);
+        using var response = await SendAsync(httpClient,
+                HttpMethod.Post,
+                "executions",
+                cancellationToken,
+                content)
+            .ConfigureAwait(false);
 
         return JsonSerializer.Deserialize<SessionsPythonCodeExecutionResult>(await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false))!;
     }
+
 
     /// <summary>
     /// Uploads a file to the `/mnt/data` directory of the current session.
@@ -114,34 +123,42 @@ public sealed partial class SessionsPythonPlugin
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="HttpRequestException"></exception>
     /// <exception cref="InvalidOperationException">Thrown when file operations are disabled or the path is not allowed.</exception>
-    [KernelFunction, Description("Uploads a file to the `/mnt/data` directory of the current session.")]
+    [KernelFunction] [Description("Uploads a file to the `/mnt/data` directory of the current session.")]
     public async Task<SessionsRemoteFileMetadata> UploadFileAsync(
-        [Description("The name of the remote file, relative to `/mnt/data`.")] string remoteFileName,
-        [Description("The path to the file on the local machine.")] string localFilePath,
+        [Description("The name of the remote file, relative to `/mnt/data`.")]
+        string remoteFileName,
+        [Description("The path to the file on the local machine.")]
+        string localFilePath,
         CancellationToken cancellationToken = default)
     {
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
         Verify.NotNullOrWhiteSpace(localFilePath, nameof(localFilePath));
 
-        var validatedLocalPath = this.ValidateLocalPathForUpload(localFilePath);
+        var validatedLocalPath = ValidateLocalPathForUpload(localFilePath);
 
-        this._logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", validatedLocalPath, remoteFileName);
+        _logger.LogInformation("Uploading file: {LocalFilePath} to {RemoteFileName}", validatedLocalPath, remoteFileName);
 
-        using var httpClient = this._httpClientFactory.CreateClient();
+        using var httpClient = _httpClientFactory.CreateClient();
 
         using var fileContent = new ByteArrayContent(File.ReadAllBytes(validatedLocalPath));
 
-        using var multipartFormDataContent = new MultipartFormDataContent()
+        using var multipartFormDataContent = new MultipartFormDataContent
         {
-            { fileContent, "file", remoteFileName },
+            { fileContent, "file", remoteFileName }
         };
 
-        using var response = await this.SendAsync(httpClient, HttpMethod.Post, "files", cancellationToken, multipartFormDataContent).ConfigureAwait(false);
+        using var response = await SendAsync(httpClient,
+                HttpMethod.Post,
+                "files",
+                cancellationToken,
+                multipartFormDataContent)
+            .ConfigureAwait(false);
 
         var stringContent = await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
 
         return JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(stringContent)!;
     }
+
 
     /// <summary>
     /// Downloads a file from the `/mnt/data` directory of the current session.
@@ -159,16 +176,21 @@ public sealed partial class SessionsPythonPlugin
         Verify.NotNullOrWhiteSpace(remoteFileName, nameof(remoteFileName));
 
         string? validatedLocalPath = null;
+
         if (!string.IsNullOrWhiteSpace(localFilePath))
         {
-            validatedLocalPath = this.ValidateLocalPathForDownload(localFilePath);
+            validatedLocalPath = ValidateLocalPathForDownload(localFilePath);
         }
 
-        this._logger.LogTrace("Downloading file: {RemoteFileName} to {LocalFileName}", remoteFileName, validatedLocalPath);
+        _logger.LogTrace("Downloading file: {RemoteFileName} to {LocalFileName}", remoteFileName, validatedLocalPath);
 
-        using var httpClient = this._httpClientFactory.CreateClient();
+        using var httpClient = _httpClientFactory.CreateClient();
 
-        using var response = await this.SendAsync(httpClient, HttpMethod.Get, $"files/{Uri.EscapeDataString(remoteFileName)}/content", cancellationToken).ConfigureAwait(false);
+        using var response = await SendAsync(httpClient,
+                HttpMethod.Get,
+                $"files/{Uri.EscapeDataString(remoteFileName)}/content",
+                cancellationToken)
+            .ConfigureAwait(false);
 
         var fileContent = await response.Content.ReadAsByteArrayAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
 
@@ -187,19 +209,24 @@ public sealed partial class SessionsPythonPlugin
         return fileContent;
     }
 
+
     /// <summary>
     /// Lists all entities: files or directories in the `/mnt/data` directory of the current session.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The list of files in the session.</returns>
-    [KernelFunction, Description("Lists all entities: files or directories in the `/mnt/data` directory of the current session.")]
+    [KernelFunction] [Description("Lists all entities: files or directories in the `/mnt/data` directory of the current session.")]
     public async Task<IReadOnlyList<SessionsRemoteFileMetadata>> ListFilesAsync(CancellationToken cancellationToken = default)
     {
-        this._logger.LogTrace("Listing files for Session ID: {SessionId}", this._settings.SessionId);
+        _logger.LogTrace("Listing files for Session ID: {SessionId}", _settings.SessionId);
 
-        using var httpClient = this._httpClientFactory.CreateClient();
+        using var httpClient = _httpClientFactory.CreateClient();
 
-        using var response = await this.SendAsync(httpClient, HttpMethod.Get, "files", cancellationToken).ConfigureAwait(false);
+        using var response = await SendAsync(httpClient,
+                HttpMethod.Get,
+                "files",
+                cancellationToken)
+            .ConfigureAwait(false);
 
         var jsonElementResult = JsonElement.Parse(await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false));
 
@@ -207,6 +234,7 @@ public sealed partial class SessionsPythonPlugin
 
         return files.Deserialize<SessionsRemoteFileMetadata[]>()!;
     }
+
 
     private static Uri GetBaseEndpoint(Uri endpoint)
     {
@@ -222,6 +250,7 @@ public sealed partial class SessionsPythonPlugin
 
         return endpoint;
     }
+
 
     /// <summary>
     /// Sanitize input to the python REPL.
@@ -240,6 +269,7 @@ public sealed partial class SessionsPythonPlugin
         return code;
     }
 
+
     /// <summary>
     /// Add headers to the HTTP request.
     /// </summary>
@@ -249,11 +279,12 @@ public sealed partial class SessionsPythonPlugin
     {
         request.Headers.Add("User-Agent", $"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion} (Language=dotnet)");
 
-        if (this._authTokenProvider is not null)
+        if (_authTokenProvider is not null)
         {
-            request.Headers.Add("Authorization", $"Bearer {(await this._authTokenProvider(cancellationToken).ConfigureAwait(false))}");
+            request.Headers.Add("Authorization", $"Bearer {await _authTokenProvider(cancellationToken).ConfigureAwait(false)}");
         }
     }
+
 
     /// <summary>
     /// Sends an HTTP request to the specified path with the specified method and content.
@@ -264,29 +295,35 @@ public sealed partial class SessionsPythonPlugin
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <param name="httpContent">The content to send with the request.</param>
     /// <returns>The HTTP response message.</returns>
-    private async Task<HttpResponseMessage> SendAsync(HttpClient httpClient, HttpMethod method, string path, CancellationToken cancellationToken, HttpContent? httpContent = null)
+    private async Task<HttpResponseMessage> SendAsync(
+        HttpClient httpClient,
+        HttpMethod method,
+        string path,
+        CancellationToken cancellationToken,
+        HttpContent? httpContent = null)
     {
         // The query string is the same for all operations
-        var pathWithQueryString = $"{path}?identifier={this._settings.SessionId}&api-version={ApiVersion}";
+        var pathWithQueryString = $"{path}?identifier={_settings.SessionId}&api-version={ApiVersion}";
 
-        var uri = new Uri(this._poolManagementEndpoint, pathWithQueryString);
+        var uri = new Uri(_poolManagementEndpoint, pathWithQueryString);
 
         // If a list of allowed domains has been provided, the host of the provided
         // uri is checked to verify it is in the allowed domain list.
-        if (!this._settings.AllowedDomains?.Contains(uri.Host) ?? false)
+        if (!_settings.AllowedDomains?.Contains(uri.Host) ?? false)
         {
             throw new InvalidOperationException("Sending requests to the provided location is not allowed.");
         }
 
         using var request = new HttpRequestMessage(method, uri)
         {
-            Content = httpContent,
+            Content = httpContent
         };
 
-        await this.AddHeadersAsync(request, cancellationToken).ConfigureAwait(false);
+        await AddHeadersAsync(request, cancellationToken).ConfigureAwait(false);
 
         return await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Validates that the local file path is within allowed upload directories.
@@ -296,13 +333,13 @@ public sealed partial class SessionsPythonPlugin
     /// <exception cref="InvalidOperationException">Thrown when file operations are disabled or the path is not allowed.</exception>
     private string ValidateLocalPathForUpload(string localFilePath)
     {
-        if (!this._settings.EnableDangerousFileUploads)
+        if (!_settings.EnableDangerousFileUploads)
         {
             throw new InvalidOperationException(
                 "File upload is disabled. Set 'EnableDangerousFileUploads' to true and configure 'AllowedUploadDirectories' to enable.");
         }
 
-        if (this._settings.AllowedUploadDirectories is null || !this._settings.AllowedUploadDirectories.Any())
+        if (_settings.AllowedUploadDirectories is null || !_settings.AllowedUploadDirectories.Any())
         {
             throw new InvalidOperationException(
                 "File upload requires 'AllowedUploadDirectories' to be configured.");
@@ -310,7 +347,7 @@ public sealed partial class SessionsPythonPlugin
 
         var canonicalPath = Path.GetFullPath(localFilePath);
 
-        foreach (var allowedDir in this._settings.AllowedUploadDirectories)
+        foreach (var allowedDir in _settings.AllowedUploadDirectories)
         {
             var canonicalAllowedDir = Path.GetFullPath(allowedDir);
             // Ensure we match the directory correctly by appending separator
@@ -329,6 +366,7 @@ public sealed partial class SessionsPythonPlugin
             $"Access denied: '{localFilePath}' is not within allowed upload directories.");
     }
 
+
     /// <summary>
     /// Validates that the local file path is within allowed download directories.
     /// </summary>
@@ -338,13 +376,14 @@ public sealed partial class SessionsPythonPlugin
     private string ValidateLocalPathForDownload(string localFilePath)
     {
         // If no restrictions configured, allow all paths (permissive by default for downloads)
-        if (this._settings.AllowedDownloadDirectories is null || !this._settings.AllowedDownloadDirectories.Any())
+        if (_settings.AllowedDownloadDirectories is null || !_settings.AllowedDownloadDirectories.Any())
         {
             return Path.GetFullPath(localFilePath);
         }
 
         // Get the directory of the target file path
         var targetDirectory = Path.GetDirectoryName(localFilePath);
+
         if (string.IsNullOrEmpty(targetDirectory))
         {
             targetDirectory = ".";
@@ -353,7 +392,7 @@ public sealed partial class SessionsPythonPlugin
         var canonicalTargetDir = Path.GetFullPath(targetDirectory);
         var canonicalFilePath = Path.GetFullPath(localFilePath);
 
-        foreach (var allowedDir in this._settings.AllowedDownloadDirectories)
+        foreach (var allowedDir in _settings.AllowedDownloadDirectories)
         {
             var canonicalAllowedDir = Path.GetFullPath(allowedDir);
             // Ensure we match the directory correctly by appending separator
@@ -372,9 +411,11 @@ public sealed partial class SessionsPythonPlugin
             $"Access denied: '{localFilePath}' is not within allowed download directories.");
     }
 
+
 #if NET
     [GeneratedRegex(@"^(\s|`)*(?i:python)?\s*", RegexOptions.ExplicitCapture)]
     private static partial Regex RemoveLeadingWhitespaceBackticksPython();
+
 
     [GeneratedRegex(@"(\s|`)*$", RegexOptions.ExplicitCapture)]
     private static partial Regex RemoveTrailingWhitespaceBackticks();

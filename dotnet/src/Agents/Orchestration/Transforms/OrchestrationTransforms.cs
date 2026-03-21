@@ -15,6 +15,7 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration.Transforms;
 /// <returns>A <see cref="ValueTask{TResult}"/> containing an enumerable of <see cref="ChatMessageContent"/> representing the transformed input.</returns>
 public delegate ValueTask<IEnumerable<ChatMessageContent>> OrchestrationInputTransform<TInput>(TInput input, CancellationToken cancellationToken = default);
 
+
 /// <summary>
 /// Delegate for transforming a <see cref="ChatMessageContent"/> into an output of type <typeparamref name="TOutput"/>.
 /// This is typically used to convert a chat response into a desired output format.
@@ -23,6 +24,7 @@ public delegate ValueTask<IEnumerable<ChatMessageContent>> OrchestrationInputTra
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
 /// <returns>A <see cref="ValueTask{TResult}"/> containing the transformed output of type <typeparamref name="TOutput"/>.</returns>
 public delegate ValueTask<TOutput> OrchestrationOutputTransform<TOutput>(IList<ChatMessageContent> result, CancellationToken cancellationToken = default);
+
 
 /// <summary>
 /// Delegate for transforming the internal result message for an orchestration into a <see cref="ChatMessageContent"/>.

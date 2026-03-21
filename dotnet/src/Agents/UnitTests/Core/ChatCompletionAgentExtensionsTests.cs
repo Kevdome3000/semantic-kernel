@@ -14,7 +14,7 @@ public sealed class ChatCompletionAgentExtensionsTests
     public void AsAIAgent_WithValidChatCompletionAgent_ReturnsSemanticKernelAIAgent()
     {
         // Arrange
-        var chatCompletionAgent = new ChatCompletionAgent()
+        var chatCompletionAgent = new ChatCompletionAgent
         {
             Name = "TestAgent",
             Instructions = "Test instructions"
@@ -28,6 +28,7 @@ public sealed class ChatCompletionAgentExtensionsTests
         Assert.IsType<SemanticKernelAIAgent>(result);
     }
 
+
     [Fact]
     public void AsAIAgent_WithNullChatCompletionAgent_ThrowsArgumentNullException()
     {
@@ -38,11 +39,12 @@ public sealed class ChatCompletionAgentExtensionsTests
         Assert.Throws<ArgumentNullException>(() => nullAgent.AsAIAgent());
     }
 
+
     [Fact]
     public void AsAIAgent_CreatesWorkingThreadFactory()
     {
         // Arrange
-        var chatCompletionAgent = new ChatCompletionAgent()
+        var chatCompletionAgent = new ChatCompletionAgent
         {
             Name = "TestAgent",
             Instructions = "Test instructions"
@@ -59,11 +61,12 @@ public sealed class ChatCompletionAgentExtensionsTests
         Assert.IsType<ChatHistoryAgentThread>(threadAdapter.InnerThread);
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithNullChatHistory_CreatesNewThread()
     {
         // Arrange
-        var chatCompletionAgent = new ChatCompletionAgent()
+        var chatCompletionAgent = new ChatCompletionAgent
         {
             Name = "TestAgent",
             Instructions = "Test instructions"
@@ -81,11 +84,12 @@ public sealed class ChatCompletionAgentExtensionsTests
         Assert.IsType<ChatHistoryAgentThread>(threadAdapter.InnerThread);
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithValidChatHistory_CreatesThreadWithHistory()
     {
         // Arrange
-        var chatCompletionAgent = new ChatCompletionAgent()
+        var chatCompletionAgent = new ChatCompletionAgent
         {
             Name = "TestAgent",
             Instructions = "Test instructions"
@@ -109,11 +113,12 @@ public sealed class ChatCompletionAgentExtensionsTests
         Assert.Equal(2, chatHistoryThread.ChatHistory.Count);
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadSerializer_SerializesChatHistory()
     {
         // Arrange
-        var chatCompletionAgent = new ChatCompletionAgent()
+        var chatCompletionAgent = new ChatCompletionAgent
         {
             Name = "TestAgent",
             Instructions = "Test instructions"

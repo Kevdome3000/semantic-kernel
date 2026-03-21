@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 internal sealed class SqliteWhereMatchCondition(string operand, object value)
@@ -13,6 +11,6 @@ internal sealed class SqliteWhereMatchCondition(string operand, object value)
 
         Verify.True(parameterNames.Count > 0, $"Cannot build '{nameof(SqliteWhereMatchCondition)}' condition without parameter name.");
 
-        return $"{this.GetOperand()} {MatchOperator} {parameterNames[0]}";
+        return $"{GetOperand()} {MatchOperator} {parameterNames[0]}";
     }
 }

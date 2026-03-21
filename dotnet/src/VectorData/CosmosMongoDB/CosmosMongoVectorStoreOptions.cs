@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.AI;
-
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 
 /// <summary>
@@ -16,10 +14,12 @@ public sealed class CosmosMongoVectorStoreOptions
     {
     }
 
+
     internal CosmosMongoVectorStoreOptions(CosmosMongoVectorStoreOptions? source)
     {
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+        EmbeddingGenerator = source?.EmbeddingGenerator;
     }
+
 
     /// <summary>
     /// Gets or sets the default embedding generator to use when generating vectors embeddings with this vector store.

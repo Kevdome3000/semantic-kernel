@@ -54,6 +54,7 @@ public class AzureAIAgentInvokeOptionsTests
         Assert.Equal(originalOptions.Metadata, clonedOptions.Metadata);
     }
 
+
     /// <summary>
     /// Tests the constructor of <see cref="AzureAIAgentInvokeOptions"/> to ensure it correctly clones properties from an instance of <see cref="AgentInvokeOptions"/>.
     /// </summary>

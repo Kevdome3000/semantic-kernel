@@ -1,11 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Chroma;
-
-using System;
 using System.Net.Http;
-using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 internal sealed class UpsertEmbeddingsRequest
 {
@@ -22,26 +19,37 @@ internal sealed class UpsertEmbeddingsRequest
     public object[]? Metadatas { get; set; }
 
 
-    public static UpsertEmbeddingsRequest Create(string collectionId, string[] ids, ReadOnlyMemory<float>[] embeddings, object[]? metadatas = null)
+    public static UpsertEmbeddingsRequest Create(
+        string collectionId,
+        string[] ids,
+        ReadOnlyMemory<float>[] embeddings,
+        object[]? metadatas = null)
     {
-        return new UpsertEmbeddingsRequest(collectionId, ids, embeddings, metadatas);
+        return new UpsertEmbeddingsRequest(collectionId,
+            ids,
+            embeddings,
+            metadatas);
     }
 
 
     public HttpRequestMessage Build()
     {
-        return HttpRequest.CreatePostRequest($"collections/{this.CollectionId}/upsert", this);
+        return HttpRequest.CreatePostRequest($"collections/{CollectionId}/upsert", this);
     }
 
 
     #region private ================================================================================
 
-    private UpsertEmbeddingsRequest(string collectionId, string[] ids, ReadOnlyMemory<float>[] embeddings, object[]? metadatas = null)
+    private UpsertEmbeddingsRequest(
+        string collectionId,
+        string[] ids,
+        ReadOnlyMemory<float>[] embeddings,
+        object[]? metadatas = null)
     {
-        this.CollectionId = collectionId;
-        this.Ids = ids;
-        this.Embeddings = embeddings;
-        this.Metadatas = metadatas;
+        CollectionId = collectionId;
+        Ids = ids;
+        Embeddings = embeddings;
+        Metadatas = metadatas;
     }
 
     #endregion

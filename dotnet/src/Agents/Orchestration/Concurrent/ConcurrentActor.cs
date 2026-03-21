@@ -14,6 +14,7 @@ internal sealed class ConcurrentActor : AgentActor, IHandle<ConcurrentMessages.R
 {
     private readonly AgentType _handoffActor;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ConcurrentActor"/> class.
     /// </summary>
@@ -23,21 +24,32 @@ internal sealed class ConcurrentActor : AgentActor, IHandle<ConcurrentMessages.R
     /// <param name="agent">An <see cref="Agent"/>.</param>
     /// <param name="resultActor">Identifies the actor collecting results.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public ConcurrentActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, Agent agent, AgentType resultActor, ILogger<ConcurrentActor>? logger = null)
-        : base(id, runtime, context, agent, logger)
+    public ConcurrentActor(
+        AgentId id,
+        IAgentRuntime runtime,
+        OrchestrationContext context,
+        Agent agent,
+        AgentType resultActor,
+        ILogger<ConcurrentActor>? logger = null)
+        : base(id,
+            runtime,
+            context,
+            agent,
+            logger)
     {
-        this._handoffActor = resultActor;
+        _handoffActor = resultActor;
     }
+
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(ConcurrentMessages.Request item, MessageContext messageContext)
     {
-        this.Logger.LogConcurrentAgentInvoke(this.Id);
+        Logger.LogConcurrentAgentInvoke(Id);
 
-        ChatMessageContent response = await this.InvokeAsync(item.Messages, messageContext.CancellationToken).ConfigureAwait(false);
+        ChatMessageContent response = await InvokeAsync(item.Messages, messageContext.CancellationToken).ConfigureAwait(false);
 
-        this.Logger.LogConcurrentAgentResult(this.Id, response.Content);
+        Logger.LogConcurrentAgentResult(Id, response.Content);
 
-        await this.PublishMessageAsync(response.AsResultMessage(), this._handoffActor, messageContext.CancellationToken).ConfigureAwait(false);
+        await PublishMessageAsync(response.AsResultMessage(), _handoffActor, messageContext.CancellationToken).ConfigureAwait(false);
     }
 }

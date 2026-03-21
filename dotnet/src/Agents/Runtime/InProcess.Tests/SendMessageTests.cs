@@ -15,20 +15,28 @@ public class SendMessageTests
     [Fact]
     public async Task Test_SendMessage_ReturnsValue()
     {
-        static string ProcessFunc(string s) => $"Processed({s})";
+        static string ProcessFunc(string s)
+        {
+            return $"Processed({s})";
+        }
 
         MessagingTestFixture fixture = new();
 
         await fixture.RegisterFactoryMapInstances(nameof(ProcessorAgent),
-            (id, runtime) => ValueTask.FromResult(new ProcessorAgent(id, runtime, ProcessFunc, string.Empty)));
+            (id, runtime) => ValueTask.FromResult(new ProcessorAgent(id,
+                runtime,
+                ProcessFunc,
+                string.Empty)));
 
         AgentId targetAgent = new(nameof(ProcessorAgent), Guid.NewGuid().ToString());
         object? maybeResult = await fixture.RunSendTestAsync(targetAgent, new BasicMessage { Content = "1" });
 
-        maybeResult.Should().NotBeNull()
+        maybeResult.Should()
+            .NotBeNull()
             .And.BeOfType<BasicMessage>()
             .And.Match<BasicMessage>(m => m.Content == "Processed(1)");
     }
+
 
     [Fact]
     public async Task Test_SendMessage_Cancellation()
@@ -44,6 +52,7 @@ public class SendMessageTests
         await testAction.Should().ThrowAsync<OperationCanceledException>();
     }
 
+
     [Fact]
     public async Task Test_SendMessage_Error()
     {
@@ -58,6 +67,7 @@ public class SendMessageTests
         await testAction.Should().ThrowAsync<TestException>();
     }
 
+
     [Fact]
     public async Task Test_SendMessage_FromSendMessageHandler()
     {
@@ -69,7 +79,10 @@ public class SendMessageTests
         Dictionary<AgentId, ReceiverAgent> receiverAgents = fixture.GetAgentInstances<ReceiverAgent>();
 
         await fixture.RegisterFactoryMapInstances(nameof(SendOnAgent),
-            (id, runtime) => ValueTask.FromResult(new SendOnAgent(id, runtime, string.Empty, targetGuids)));
+            (id, runtime) => ValueTask.FromResult(new SendOnAgent(id,
+                runtime,
+                string.Empty,
+                targetGuids)));
 
         await fixture.RegisterFactoryMapInstances(nameof(ReceiverAgent),
             (id, runtime) => ValueTask.FromResult(new ReceiverAgent(id, runtime, string.Empty)));
@@ -80,7 +93,9 @@ public class SendMessageTests
 
         // We do not actually expect to wait the timeout here, but it is still better than waiting the 10 min
         // timeout that the tests default to. A failure will fail regardless of what timeout value we set.
-        TimeSpan timeout = Debugger.IsAttached ? TimeSpan.FromSeconds(120) : TimeSpan.FromSeconds(10);
+        TimeSpan timeout = Debugger.IsAttached
+            ? TimeSpan.FromSeconds(120)
+            : TimeSpan.FromSeconds(10);
         Task timeoutTask = Task.Delay(timeout);
 
         Task completedTask = await Task.WhenAny([testTask, timeoutTask]);

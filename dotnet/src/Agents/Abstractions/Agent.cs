@@ -1,18 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 namespace Microsoft.SemanticKernel.Agents;
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.SemanticKernel.Arguments.Extensions;
-using Microsoft.SemanticKernel.ChatCompletion;
-
-
 /// <summary>
 /// Base abstraction for all Semantic Kernel agents.  An agent instance
 /// may participate in one or more conversations, or <see cref="AgentChat"/>.
@@ -36,8 +24,7 @@ public abstract class Agent
     /// <value>
     /// The identifier of the agent. The default is a random GUID value, but that can be overridden.
     /// </value>
-    public string Id { get; init; } = Guid.NewGuid().
-        ToString();
+    public string Id { get; init; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets the name of the agent (optional).
@@ -86,6 +73,7 @@ public abstract class Agent
     /// </summary>
     public IPromptTemplate? Template { get; set; }
 
+
     /// <summary>
     /// Invoke the agent with no message assuming that all required instructions are already provided to the agent or on the thread.
     /// </summary>
@@ -101,8 +89,12 @@ public abstract class Agent
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeAsync((ICollection<ChatMessageContent>)[], thread, options, cancellationToken);
+        return this.InvokeAsync((ICollection<ChatMessageContent>)[],
+            thread,
+            options,
+            cancellationToken);
     }
+
 
     /// <summary>
     /// Invoke the agent with the provided message and arguments.
@@ -128,8 +120,12 @@ public abstract class Agent
     {
         Verify.NotNull(message);
 
-        return this.InvokeAsync(new ChatMessageContent(AuthorRole.User, message), thread, options, cancellationToken);
+        return this.InvokeAsync(new ChatMessageContent(AuthorRole.User, message),
+            thread,
+            options,
+            cancellationToken);
     }
+
 
     /// <summary>
     /// Invoke the agent with the provided message and arguments.
@@ -150,8 +146,12 @@ public abstract class Agent
     {
         Verify.NotNull(message);
 
-        return this.InvokeAsync([message], thread, options, cancellationToken);
+        return this.InvokeAsync([message],
+            thread,
+            options,
+            cancellationToken);
     }
+
 
     /// <summary>
     /// Invoke the agent with the provided message and arguments.
@@ -170,6 +170,7 @@ public abstract class Agent
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Invoke the agent with no message assuming that all required instructions are already provided to the agent or on the thread.
     /// </summary>
@@ -185,8 +186,12 @@ public abstract class Agent
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return this.InvokeStreamingAsync((ICollection<ChatMessageContent>)[], thread, options, cancellationToken);
+        return this.InvokeStreamingAsync((ICollection<ChatMessageContent>)[],
+            thread,
+            options,
+            cancellationToken);
     }
+
 
     /// <summary>
     /// Invoke the agent with the provided message and arguments.
@@ -212,8 +217,12 @@ public abstract class Agent
     {
         Verify.NotNull(message);
 
-        return this.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, message), thread, options, cancellationToken);
+        return this.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, message),
+            thread,
+            options,
+            cancellationToken);
     }
+
 
     /// <summary>
     /// Invoke the agent with the provided message and arguments.
@@ -234,8 +243,12 @@ public abstract class Agent
     {
         Verify.NotNull(message);
 
-        return this.InvokeStreamingAsync([message], thread, options, cancellationToken);
+        return this.InvokeStreamingAsync([message],
+            thread,
+            options,
+            cancellationToken);
     }
+
 
     /// <summary>
     /// Invoke the agent with the provided message and arguments.
@@ -254,15 +267,17 @@ public abstract class Agent
         AgentInvokeOptions? options = null,
         CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// The <see cref="ILogger"/> associated with this  <see cref="Agent"/>.
     /// </summary>
-    protected ILogger Logger => this._logger ??= this.ActiveLoggerFactory.CreateLogger(this.GetType());
+    protected ILogger Logger => _logger ??= ActiveLoggerFactory.CreateLogger(this.GetType());
 
     /// <summary>
     /// Get the active logger factory, if defined; otherwise, provide the default.
     /// </summary>
-    protected virtual ILoggerFactory ActiveLoggerFactory => this.LoggerFactory ?? NullLoggerFactory.Instance;
+    protected virtual ILoggerFactory ActiveLoggerFactory => LoggerFactory ?? NullLoggerFactory.Instance;
+
 
     /// <summary>
     /// Formats the system instructions for the agent.
@@ -273,17 +288,18 @@ public abstract class Agent
     /// <returns>The formatted system instructions for the agent.</returns>
     protected async Task<string?> RenderInstructionsAsync(Kernel kernel, KernelArguments? arguments, CancellationToken cancellationToken)
     {
-        if (this.Template is null)
+        if (Template is null)
         {
             // Use the instructions as-is
-            return this.Instructions;
+            return Instructions;
         }
 
-        var mergedArguments = this.Arguments.Merge(arguments);
+        var mergedArguments = Arguments.Merge(arguments);
 
         // Use the provided template as the instructions
-        return await this.Template.RenderAsync(kernel, mergedArguments, cancellationToken).ConfigureAwait(false);
+        return await Template.RenderAsync(kernel, mergedArguments, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Set of keys to establish channel affinity.  Minimum expected key-set:
@@ -315,6 +331,7 @@ public abstract class Agent
     [Experimental("SKEXP0110")]
     protected internal abstract Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken);
 
+
     /// <summary>
     /// Produce an <see cref="AgentChannel"/> appropriate for the agent type based on the provided state.
     /// </summary>
@@ -328,7 +345,9 @@ public abstract class Agent
     [Experimental("SKEXP0110")]
     protected internal abstract Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken);
 
+
     private ILogger? _logger;
+
 
     /// <summary>
     /// Ensures that the thread exists, is of the expected type, and is active, plus adds the provided message to the thread.
@@ -366,11 +385,12 @@ public abstract class Agent
         // Notify the thread that new messages are available.
         foreach (var message in messages)
         {
-            await this.NotifyThreadOfNewMessage(thread, message, cancellationToken).ConfigureAwait(false);
+            await NotifyThreadOfNewMessage(thread, message, cancellationToken).ConfigureAwait(false);
         }
 
         return concreteThreadType;
     }
+
 
     /// <summary>
     /// Notfiy the given thread that a new message is available.
@@ -401,6 +421,7 @@ public abstract class Agent
         return thread.OnNewMessageAsync(message, cancellationToken);
     }
 
+
     /// <summary>
     /// Default formatting for additional instructions for the AI agent based on the provided context and invocation options.
     /// </summary>
@@ -416,9 +437,11 @@ public abstract class Agent
         IEnumerable<string> ProcessInstructions()
         {
             bool hasInstructions = false;
+
             if (options?.AdditionalInstructions is not null)
             {
                 yield return options!.AdditionalInstructions;
+
                 hasInstructions = true;
             }
 

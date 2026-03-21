@@ -13,11 +13,17 @@ public class PipeDelimitedStyleParametersSerializerTests
     public void ItShouldThrowExceptionForUnsupportedParameterStyle()
     {
         // Arrange
-        var parameter = new RestApiParameter(name: "p1", type: "string", isRequired: false, expand: false, location: RestApiParameterLocation.Query, style: RestApiParameterStyle.Form);
+        var parameter = new RestApiParameter("p1",
+            "string",
+            false,
+            false,
+            RestApiParameterLocation.Query,
+            RestApiParameterStyle.Form);
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
+
 
     [Theory]
     [InlineData("integer")]
@@ -28,24 +34,30 @@ public class PipeDelimitedStyleParametersSerializerTests
     public void ItShouldThrowExceptionIfParameterTypeIsNotArray(string parameterType)
     {
         // Arrange
-        var parameter = new RestApiParameter(name: "p1", type: parameterType, isRequired: false, expand: false, location: RestApiParameterLocation.Query, style: RestApiParameterStyle.PipeDelimited);
+        var parameter = new RestApiParameter("p1",
+            parameterType,
+            false,
+            false,
+            RestApiParameterLocation.Query,
+            RestApiParameterStyle.PipeDelimited);
 
         // Act & Assert
         Assert.Throws<NotSupportedException>(() => PipeDelimitedStyleParameterSerializer.Serialize(parameter, "fake-argument"));
     }
+
 
     [Fact]
     public void ItShouldCreateAmpersandSeparatedParameterPerArrayItem()
     {
         // Arrange
         var parameter = new RestApiParameter(
-                name: "id",
-                type: "array",
-                isRequired: true,
-                expand: true, //Specifies to generate a separate parameter for each array item.
-                location: RestApiParameterLocation.Query,
-                style: RestApiParameterStyle.PipeDelimited,
-                arrayItemType: "integer");
+            "id",
+            "array",
+            true,
+            true, //Specifies to generate a separate parameter for each array item.
+            RestApiParameterLocation.Query,
+            RestApiParameterStyle.PipeDelimited,
+            "integer");
 
         // Act
         var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(1, 2, 3));
@@ -56,18 +68,19 @@ public class PipeDelimitedStyleParametersSerializerTests
         Assert.Equal("id=1&id=2&id=3", result);
     }
 
+
     [Fact]
     public void ItShouldCreateParameterWithPipeSeparatedValuePerArrayItem()
     {
         // Arrange
         var parameter = new RestApiParameter(
-                name: "id",
-                type: "array",
-                isRequired: true,
-                expand: false, //Specify generating a parameter with pipe-separated values for each array item.
-                location: RestApiParameterLocation.Query,
-                style: RestApiParameterStyle.PipeDelimited,
-                arrayItemType: "integer");
+            "id",
+            "array",
+            true,
+            false, //Specify generating a parameter with pipe-separated values for each array item.
+            RestApiParameterLocation.Query,
+            RestApiParameterStyle.PipeDelimited,
+            "integer");
 
         // Act
         var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray("1", "2", "3"));
@@ -78,6 +91,7 @@ public class PipeDelimitedStyleParametersSerializerTests
         Assert.Equal("id=1|2|3", result);
     }
 
+
     [Theory]
     [InlineData(":", "%3a")]
     [InlineData("/", "%2f")]
@@ -86,7 +100,12 @@ public class PipeDelimitedStyleParametersSerializerTests
     public void ItShouldEncodeSpecialSymbolsInPipeDelimitedParameterValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
-        var parameter = new RestApiParameter(name: "id", type: "array", isRequired: false, expand: false, location: RestApiParameterLocation.Query, style: RestApiParameterStyle.PipeDelimited);
+        var parameter = new RestApiParameter("id",
+            "array",
+            false,
+            false,
+            RestApiParameterLocation.Query,
+            RestApiParameterStyle.PipeDelimited);
 
         // Act
         var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(specialSymbol));
@@ -97,6 +116,7 @@ public class PipeDelimitedStyleParametersSerializerTests
         Assert.EndsWith(encodedEquivalent, result, StringComparison.Ordinal);
     }
 
+
     [Theory]
     [InlineData(":", "%3a")]
     [InlineData("/", "%2f")]
@@ -105,7 +125,12 @@ public class PipeDelimitedStyleParametersSerializerTests
     public void ItShouldEncodeSpecialSymbolsInAmpersandDelimitedParameterValues(string specialSymbol, string encodedEquivalent)
     {
         // Arrange
-        var parameter = new RestApiParameter(name: "id", type: "array", isRequired: false, expand: true, location: RestApiParameterLocation.Query, style: RestApiParameterStyle.PipeDelimited);
+        var parameter = new RestApiParameter("id",
+            "array",
+            false,
+            true,
+            RestApiParameterLocation.Query,
+            RestApiParameterStyle.PipeDelimited);
 
         // Act
         var result = PipeDelimitedStyleParameterSerializer.Serialize(parameter, new JsonArray(specialSymbol));

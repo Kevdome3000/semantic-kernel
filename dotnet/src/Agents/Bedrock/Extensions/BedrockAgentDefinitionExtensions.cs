@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Amazon.BedrockAgent;
 using Amazon.BedrockAgent.Model;
 
 namespace Microsoft.SemanticKernel.Agents.Bedrock;
@@ -17,6 +18,7 @@ internal static class BedrockAgentDefinitionExtensions
     private const string FunctionType = "function";
     private const string KnowledgeBaseId = "knowledge_base_id";
 
+
     internal static async Task CreateToolsAsync(this AgentDefinition agentDefinition, BedrockAgent agent, CancellationToken cancellationToken)
     {
         if (agentDefinition.Tools is null || agentDefinition.Tools.Count == 0)
@@ -25,18 +27,21 @@ internal static class BedrockAgentDefinitionExtensions
         }
 
         var codeInterpreter = agentDefinition.GetFirstToolDefinition(CodeInterpreterType);
+
         if (codeInterpreter is not null)
         {
             await agent.CreateCodeInterpreterActionGroupAsync(cancellationToken).ConfigureAwait(false);
         }
 
         var functionSchema = agentDefinition.GetFunctionSchema();
+
         if (functionSchema is not null)
         {
             await agent.CreateKernelFunctionActionGroupAsync(functionSchema, cancellationToken).ConfigureAwait(false);
         }
 
         var knowledgeBases = agentDefinition.GetToolDefinitions(KnowledgeBaseType);
+
         if (knowledgeBases is not null)
         {
             foreach (var knowledgeBase in knowledgeBases)
@@ -51,15 +56,18 @@ internal static class BedrockAgentDefinitionExtensions
         }
     }
 
+
     internal static FunctionSchema? GetFunctionSchema(this AgentDefinition agentDefinition)
     {
         var functionTools = agentDefinition.GetToolDefinitions(FunctionType);
+
         if (functionTools is null)
         {
             return null;
         }
 
         List<Function> functions = [];
+
         foreach (var functionTool in functionTools)
         {
             functions.Add(new Function
@@ -72,10 +80,12 @@ internal static class BedrockAgentDefinitionExtensions
                 // Only after the user confirms, the function call request will be issued by the agent.
                 // If the user denies the confirmation, the agent will act as if the function does not exist.
                 // Currently, we do not support this feature, so we set it to "DISABLED".
-                RequireConfirmation = Amazon.BedrockAgent.RequireConfirmation.DISABLED,
+                RequireConfirmation = RequireConfirmation.DISABLED
             });
         }
 
-        return functions.Count == 0 ? null : new FunctionSchema { Functions = functions };
+        return functions.Count == 0
+            ? null
+            : new FunctionSchema { Functions = functions };
     }
 }

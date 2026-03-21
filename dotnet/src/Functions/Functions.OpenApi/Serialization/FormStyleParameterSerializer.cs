@@ -25,6 +25,7 @@ internal static class FormStyleParameterSerializer
         Verify.NotNull(argument);
 
         var style = parameter.Style ?? RestApiParameterStyle.Form;
+
         if (style != RestApiParameterStyle.Form)
         {
             throw new NotSupportedException($"Unsupported Rest API parameter style '{parameter.Style}' for parameter '{parameter.Name}'");
@@ -46,6 +47,7 @@ internal static class FormStyleParameterSerializer
         return $"{parameter.Name}={HttpUtility.UrlEncode(argument.ToString().Trim('"'))}";
     }
 
+
     /// <summary>
     /// Serializes an array-type parameter.
     /// </summary>
@@ -61,9 +63,9 @@ internal static class FormStyleParameterSerializer
 
         if (parameter.Expand)
         {
-            return ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters(parameter.Name, array, delimiter: "&"); // id=1&id=2&id=3
+            return ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters(parameter.Name, array, "&"); // id=1&id=2&id=3
         }
 
-        return $"{parameter.Name}={ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: ",")}"; // id=1,2,3
+        return $"{parameter.Name}={ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, ",")}"; // id=1,2,3
     }
 }

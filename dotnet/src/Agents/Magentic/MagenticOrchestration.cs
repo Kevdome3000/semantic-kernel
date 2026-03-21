@@ -20,6 +20,7 @@ public class MagenticOrchestration<TInput, TOutput> :
 
     private readonly MagenticManager _manager;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MagenticOrchestration{TInput, TOutput}"/> class.
     /// </summary>
@@ -33,8 +34,13 @@ public class MagenticOrchestration<TInput, TOutput> :
         _manager = manager;
     }
 
+
     /// <inheritdoc />
-    protected override ValueTask StartAsync(IAgentRuntime runtime, TopicId topic, IEnumerable<ChatMessageContent> input, AgentType? entryAgent)
+    protected override ValueTask StartAsync(
+        IAgentRuntime runtime,
+        TopicId topic,
+        IEnumerable<ChatMessageContent> input,
+        AgentType? entryAgent)
     {
         if (!entryAgent.HasValue)
         {
@@ -43,13 +49,19 @@ public class MagenticOrchestration<TInput, TOutput> :
         return runtime.PublishMessageAsync(input.AsInputTaskMessage(), entryAgent.Value);
     }
 
+
     /// <inheritdoc />
-    protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(IAgentRuntime runtime, OrchestrationContext context, RegistrationContext registrar, ILogger logger)
+    protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(
+        IAgentRuntime runtime,
+        OrchestrationContext context,
+        RegistrationContext registrar,
+        ILogger logger)
     {
         AgentType outputType = await registrar.RegisterResultTypeAsync<MagenticMessages.Result>(response => [response.Message]).ConfigureAwait(false);
 
         int agentCount = 0;
         MagenticTeam team = [];
+
         foreach (Agent agent in Members)
         {
             ++agentCount;
@@ -59,23 +71,33 @@ public class MagenticOrchestration<TInput, TOutput> :
 
             team[name] = (agentType, description ?? DefaultAgentDescription);
 
-            logger.LogRegisterActor(OrchestrationLabel, agentType, "MEMBER", agentCount);
+            logger.LogRegisterActor(OrchestrationLabel,
+                agentType,
+                "MEMBER",
+                agentCount);
 
             await runtime.SubscribeAsync(agentType, context.Topic).ConfigureAwait(false);
         }
 
         AgentType managerType =
             await runtime.RegisterOrchestrationAgentAsync(
-                FormatAgentType(context.Topic, "Manager"),
-                (agentId, runtime) =>
-                {
-                    MagenticManagerActor actor = new(agentId, runtime, context, _manager, team, outputType, context.LoggerFactory.CreateLogger<MagenticManagerActor>());
+                    FormatAgentType(context.Topic, "Manager"),
+                    (agentId, runtime) =>
+                    {
+                        MagenticManagerActor actor = new(agentId,
+                            runtime,
+                            context,
+                            _manager,
+                            team,
+                            outputType,
+                            context.LoggerFactory.CreateLogger<MagenticManagerActor>());
 #if !NETCOREAPP
                     return actor.AsValueTask<IHostableAgent>();
 #else
-                    return ValueTask.FromResult<IHostableAgent>(actor);
+                        return ValueTask.FromResult<IHostableAgent>(actor);
 #endif
-                }).ConfigureAwait(false);
+                    })
+                .ConfigureAwait(false);
         logger.LogRegisterActor(OrchestrationLabel, managerType, "MANAGER");
 
         await runtime.SubscribeAsync(managerType, context.Topic).ConfigureAwait(false);
@@ -87,7 +109,11 @@ public class MagenticOrchestration<TInput, TOutput> :
                 FormatAgentType(context.Topic, $"Agent_{agentCount}"),
                 (agentId, runtime) =>
                 {
-                    MagenticAgentActor actor = new(agentId, runtime, context, agent, context.LoggerFactory.CreateLogger<MagenticAgentActor>());
+                    MagenticAgentActor actor = new(agentId,
+                        runtime,
+                        context,
+                        agent,
+                        context.LoggerFactory.CreateLogger<MagenticAgentActor>());
 #if !NETCOREAPP
                     return actor.AsValueTask<IHostableAgent>();
 #else

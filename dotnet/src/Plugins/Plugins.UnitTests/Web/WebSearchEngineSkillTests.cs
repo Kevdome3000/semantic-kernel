@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Plugins.UnitTests.Web;
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -10,6 +8,7 @@ using Microsoft.SemanticKernel.Plugins.Web;
 using Moq;
 using Xunit;
 
+namespace SemanticKernel.Plugins.UnitTests.Web;
 
 public sealed class WebSearchEnginePluginTests
 {
@@ -20,19 +19,20 @@ public sealed class WebSearchEnginePluginTests
         // Arrange
         IEnumerable<string> expected =
         [
-            Guid.NewGuid().
-                ToString()
+            Guid.NewGuid().ToString()
         ];
 
         Mock<IWebSearchEngineConnector> connectorMock = new();
 
-        connectorMock.Setup(c => c.SearchAsync<string>(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(expected);
+        connectorMock.Setup(c => c.SearchAsync<string>(It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expected);
 
         WebSearchEnginePlugin target = new(connectorMock.Object);
 
-        string anyQuery = Guid.NewGuid().
-            ToString();
+        string anyQuery = Guid.NewGuid().ToString();
 
         // Act
         await target.SearchAsync(anyQuery);
@@ -50,13 +50,15 @@ public sealed class WebSearchEnginePluginTests
 
         Mock<IWebSearchEngineConnector> connectorMock = new();
 
-        connectorMock.Setup(c => c.SearchAsync<WebPage>(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>())).
-            ReturnsAsync(expected);
+        connectorMock.Setup(c => c.SearchAsync<WebPage>(It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expected);
 
         WebSearchEnginePlugin target = new(connectorMock.Object);
 
-        string anyQuery = Guid.NewGuid().
-            ToString();
+        string anyQuery = Guid.NewGuid().ToString();
 
         // Act
         await target.GetSearchResultsAsync(anyQuery);

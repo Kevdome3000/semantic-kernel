@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Transforms;
 
@@ -20,6 +19,7 @@ public sealed class StructuredOutputTransform<TOutput>
     private readonly IChatCompletionService _service;
     private readonly PromptExecutionSettings _executionSettings;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="StructuredOutputTransform{TOutput}"/> class.
     /// </summary>
@@ -30,14 +30,16 @@ public sealed class StructuredOutputTransform<TOutput>
         Verify.NotNull(service, nameof(service));
         Verify.NotNull(executionSettings, nameof(executionSettings));
 
-        this._service = service;
-        this._executionSettings = executionSettings;
+        _service = service;
+        _executionSettings = executionSettings;
     }
+
 
     /// <summary>
     /// Gets or sets the instructions to be used as the system message for the chat completion.
     /// </summary>
     public string Instructions { get; init; } = DefaultInstructions;
+
 
     /// <summary>
     /// Transforms the provided <see cref="ChatMessageContent"/> into a strongly-typed structured output by invoking the chat completion service and deserializing the response.
@@ -49,13 +51,16 @@ public sealed class StructuredOutputTransform<TOutput>
     public async ValueTask<TOutput> TransformAsync(IList<ChatMessageContent> messages, CancellationToken cancellationToken = default)
     {
         ChatHistory history =
-            [
-                new ChatMessageContent(AuthorRole.System, this.Instructions),
-                .. messages,
-            ];
-        ChatMessageContent response = await this._service.GetChatMessageContentAsync(history, this._executionSettings, kernel: null, cancellationToken).ConfigureAwait(false);
+        [
+            new ChatMessageContent(AuthorRole.System, Instructions),
+            .. messages
+        ];
+        ChatMessageContent response = await _service.GetChatMessageContentAsync(history,
+                _executionSettings,
+                kernel: null,
+                cancellationToken)
+            .ConfigureAwait(false);
         return
-            JsonSerializer.Deserialize<TOutput>(response.Content ?? string.Empty) ??
-            throw new InvalidOperationException($"Unable to transform result into {typeof(TOutput).Name}");
+            JsonSerializer.Deserialize<TOutput>(response.Content ?? string.Empty) ?? throw new InvalidOperationException($"Unable to transform result into {typeof(TOutput).Name}");
     }
 }

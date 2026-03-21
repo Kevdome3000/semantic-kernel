@@ -1,14 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -16,7 +7,10 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class PromptYamlKernelExtensions
 {
+
+
     #region CreateFunctionFromPromptYaml
+
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt function using the specified YAML.
     /// </summary>
@@ -34,9 +28,12 @@ public static class PromptYamlKernelExtensions
     {
         return KernelFunctionYaml.FromPromptYaml(text, promptTemplateFactory, kernel.LoggerFactory);
     }
+
     #endregion
 
+
     #region CreatePluginFromDirectoryYaml
+
     /// <summary>Creates a plugin containing one function per YAML file in the <paramref name="pluginDirectory"/>.</summary>
     /// <remarks>
     /// <para>
@@ -75,8 +72,12 @@ public static class PromptYamlKernelExtensions
     {
         Verify.NotNull(kernel);
 
-        return CreatePluginFromPromptDirectoryYaml(pluginDirectory, pluginName, promptTemplateFactory, kernel.Services);
+        return CreatePluginFromPromptDirectoryYaml(pluginDirectory,
+            pluginName,
+            promptTemplateFactory,
+            kernel.Services);
     }
+
 
     /// <summary>Creates a plugin containing one function per YAML file in the <paramref name="pluginDirectory"/>.</summary>
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
@@ -104,7 +105,10 @@ public static class PromptYamlKernelExtensions
 
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogTrace("Registering function {0}.{1} loaded from {2}", pluginName, functionName, functionFile);
+                logger.LogTrace("Registering function {0}.{1} loaded from {2}",
+                    pluginName,
+                    functionName,
+                    functionFile);
             }
 
             functions.Add(KernelFunctionYaml.FromPromptYaml(functionYaml, promptTemplateFactory, loggerFactory));
@@ -112,9 +116,12 @@ public static class PromptYamlKernelExtensions
 
         return KernelPluginFactory.CreateFromFunctions(pluginName, null, functions);
     }
+
     #endregion
 
+
     #region ImportPlugin/AddFromPromptDirectoryYaml
+
     /// <summary>Creates a plugin containing one function per YAML file in the <paramref name="pluginDirectory"/>.</summary>
     /// and imports it into the <paramref name="kernel"/>'s plugin collection.
     /// <remarks>
@@ -152,11 +159,16 @@ public static class PromptYamlKernelExtensions
         string? pluginName = null,
         IPromptTemplateFactory? promptTemplateFactory = null)
     {
-        KernelPlugin plugin = CreatePluginFromPromptDirectoryYaml(kernel, pluginDirectory, pluginName, promptTemplateFactory);
+        KernelPlugin plugin = CreatePluginFromPromptDirectoryYaml(kernel,
+            pluginDirectory,
+            pluginName,
+            promptTemplateFactory);
         kernel.Plugins.Add(plugin);
         return plugin;
     }
+
     #endregion
+
 
     /// <summary>Creates a plugin containing one function per YAML file in the <paramref name="pluginDirectory"/>.</summary>
     /// and adds it into the plugin collection.
@@ -198,7 +210,10 @@ public static class PromptYamlKernelExtensions
         Verify.NotNull(plugins);
 
         plugins.Services.AddSingleton<KernelPlugin>(services =>
-            CreatePluginFromPromptDirectoryYaml(pluginDirectory, pluginName, promptTemplateFactory, services));
+            CreatePluginFromPromptDirectoryYaml(pluginDirectory,
+                pluginName,
+                promptTemplateFactory,
+                services));
 
         return plugins;
     }

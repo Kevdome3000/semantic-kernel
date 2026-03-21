@@ -1,12 +1,7 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Factory for creating TypeConverter instances based on a provided type.
 /// </summary>
@@ -65,15 +60,14 @@ internal static class TypeConverterFactory
 
         if (type.IsEnum) { return CreateEnumConverter(type); }
 
-        if (type.GetCustomAttribute<TypeConverterAttribute>() is TypeConverterAttribute tca &&
-            Type.GetType(tca.ConverterTypeName, throwOnError: false) is Type converterType &&
-            Activator.CreateInstance(converterType) is TypeConverter converter)
+        if (type.GetCustomAttribute<TypeConverterAttribute>() is TypeConverterAttribute tca && Type.GetType(tca.ConverterTypeName, false) is Type converterType && Activator.CreateInstance(converterType) is TypeConverter converter)
         {
             return converter;
         }
 
         return null;
     }
+
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2067:UnrecognizedReflectionPattern", Justification = "Trimmer does not trim enums. See the PR - https://github.com/dotnet/runtime/pull/100347 for more details.")]
     private static EnumConverter CreateEnumConverter(Type type)

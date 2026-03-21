@@ -33,6 +33,7 @@ public class OpenAIThreadCreationOptionsTests
         ValidateSerialization(options);
     }
 
+
     /// <summary>
     /// Verify initialization.
     /// </summary>
@@ -45,8 +46,8 @@ public class OpenAIThreadCreationOptionsTests
             {
                 Messages = [new ChatMessageContent(AuthorRole.User, "test")],
                 VectorStoreId = "#vs",
-                Metadata = new Dictionary<string, string>() { { "a", "1" } },
-                CodeInterpreterFileIds = ["file1"],
+                Metadata = new Dictionary<string, string> { { "a", "1" } },
+                CodeInterpreterFileIds = ["file1"]
             };
 
         // Assert
@@ -58,6 +59,7 @@ public class OpenAIThreadCreationOptionsTests
         // Act and Assert
         ValidateSerialization(options);
     }
+
 
     private static void ValidateSerialization(OpenAIThreadCreationOptions source)
     {

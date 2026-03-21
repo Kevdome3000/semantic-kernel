@@ -17,17 +17,21 @@ public static class ChatMessageContentExtensions
 
         ChatMessage message = new()
         {
-            AdditionalProperties = content.Metadata is not null ? new(content.Metadata) : null,
+            AdditionalProperties = content.Metadata is not null
+                ? new AdditionalPropertiesDictionary(content.Metadata)
+                : null,
             AuthorName = content.AuthorName,
             RawRepresentation = content.InnerContent,
-            Role = content.Role.Label is string label ? new ChatRole(label) : ChatRole.User,
+            Role = content.Role.Label is string label
+                ? new ChatRole(label)
+                : ChatRole.User
         };
 
         foreach (var item in content.Items)
         {
             AIContent? aiContent = item switch
             {
-                TextContent tc => new Microsoft.Extensions.AI.TextContent(tc.Text),
+                TextContent tc => new Extensions.AI.TextContent(tc.Text),
                 ImageContent ic => ic.DataUri is not null
                     ? new DataContent(ic.DataUri, ic.MimeType)
                     : ic.Uri is not null
@@ -43,8 +47,8 @@ public static class ChatMessageContentExtensions
                     : bc.Uri is not null
                         ? new UriContent(bc.Uri, bc.MimeType ?? "application/octet-stream")
                         : null,
-                FunctionCallContent fcc => new Microsoft.Extensions.AI.FunctionCallContent(fcc.Id ?? string.Empty, fcc.FunctionName, fcc.Arguments),
-                FunctionResultContent frc => new Microsoft.Extensions.AI.FunctionResultContent(frc.CallId ?? string.Empty, frc.Result),
+                FunctionCallContent fcc => new Extensions.AI.FunctionCallContent(fcc.Id ?? string.Empty, fcc.FunctionName, fcc.Arguments),
+                FunctionResultContent frc => new Extensions.AI.FunctionResultContent(frc.CallId ?? string.Empty, frc.Result),
                 _ => null
             };
 
@@ -53,7 +57,9 @@ public static class ChatMessageContentExtensions
                 continue;
             }
             aiContent.RawRepresentation = item.InnerContent;
-            aiContent.AdditionalProperties = item.Metadata is not null ? new(item.Metadata) : null;
+            aiContent.AdditionalProperties = item.Metadata is not null
+                ? new AdditionalPropertiesDictionary(item.Metadata)
+                : null;
 
             message.Contents.Add(aiContent);
         }

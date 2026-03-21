@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.SemanticKernel.Agents.Runtime.Abstractions.Tests;
 
 [Trait("Category", "Unit")]
-public class AgentIdTests()
+public class AgentIdTests
 {
     [Theory]
     [InlineData(null)]
@@ -24,6 +24,7 @@ public class AgentIdTests()
         Assert.Contains("Invalid AgentId key", exception.Message);
     }
 
+
     [Fact]
     public void AgentIdShouldInitializeCorrectlyTest()
     {
@@ -32,6 +33,7 @@ public class AgentIdTests()
         agentId.Type.Should().Be("TestType");
         agentId.Key.Should().Be("TestKey");
     }
+
 
     [Fact]
     public void AgentIdShouldConvertFromTupleTest()
@@ -43,6 +45,7 @@ public class AgentIdTests()
         agentId.Key.Should().Be("TupleKey");
     }
 
+
     [Fact]
     public void AgentIdShouldConvertFromAgentType()
     {
@@ -53,6 +56,7 @@ public class AgentIdTests()
         agentId.Key.Should().Be("TestKey");
     }
 
+
     [Fact]
     public void AgentIdShouldParseFromStringTest()
     {
@@ -61,6 +65,7 @@ public class AgentIdTests()
         agentId.Type.Should().Be("ParsedType");
         agentId.Key.Should().Be("ParsedKey");
     }
+
 
     [Fact]
     public void AgentIdShouldCompareEqualityCorrectlyTest()
@@ -75,6 +80,7 @@ public class AgentIdTests()
         (agentId1 != agentId3).Should().BeTrue();
     }
 
+
     [Fact]
     public void AgentIdShouldGenerateCorrectHashCodeTest()
     {
@@ -86,6 +92,7 @@ public class AgentIdTests()
         agentId1.GetHashCode().Should().NotBe(agentId3.GetHashCode());
     }
 
+
     [Fact]
     public void AgentIdShouldConvertExplicitlyFromStringTest()
     {
@@ -95,6 +102,7 @@ public class AgentIdTests()
         agentId.Key.Should().Be("ConvertedKey");
     }
 
+
     [Fact]
     public void AgentIdShouldReturnCorrectToStringTest()
     {
@@ -103,6 +111,7 @@ public class AgentIdTests()
         agentId.ToString().Should().Be("ToStringType/ToStringKey");
     }
 
+
     [Fact]
     public void AgentIdShouldCompareInequalityForWrongTypeTest()
     {
@@ -110,6 +119,7 @@ public class AgentIdTests()
 
         (!agentId1.Equals(Guid.NewGuid())).Should().BeTrue();
     }
+
 
     [Fact]
     public void AgentIdShouldCompareInequalityCorrectlyTest()

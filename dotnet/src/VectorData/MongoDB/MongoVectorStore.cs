@@ -1,15 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
@@ -32,6 +23,7 @@ public sealed class MongoVectorStore : VectorStore
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoVectorStore"/> class.
     /// </summary>
@@ -41,15 +33,16 @@ public sealed class MongoVectorStore : VectorStore
     {
         Verify.NotNull(mongoDatabase);
 
-        this._mongoDatabase = mongoDatabase;
-        this._embeddingGenerator = options?.EmbeddingGenerator;
+        _mongoDatabase = mongoDatabase;
+        _embeddingGenerator = options?.EmbeddingGenerator;
 
-        this._metadata = new()
+        _metadata = new()
         {
             VectorStoreSystemName = MongoConstants.VectorStoreSystemName,
             VectorStoreName = mongoDatabase.DatabaseNamespace?.DatabaseName
         };
     }
+
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
@@ -63,13 +56,14 @@ public sealed class MongoVectorStore : VectorStore
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new MongoCollection<TKey, TRecord>(
-                this._mongoDatabase,
+                _mongoDatabase,
                 name,
-                new()
+                new MongoCollectionOptions
                 {
                     Definition = definition,
-                    EmbeddingGenerator = this._embeddingGenerator
+                    EmbeddingGenerator = _embeddingGenerator
                 });
+
 
     /// <inheritdoc />
 #if NET
@@ -78,15 +72,16 @@ public sealed class MongoVectorStore : VectorStore
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new MongoDynamicCollection(
-            this._mongoDatabase,
+            _mongoDatabase,
             name,
-            new()
+            new MongoCollectionOptions
             {
                 Definition = definition,
-                EmbeddingGenerator = this._embeddingGenerator,
+                EmbeddingGenerator = _embeddingGenerator
             }
         );
 #pragma warning restore IDE0090
+
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -94,10 +89,11 @@ public sealed class MongoVectorStore : VectorStore
         const string OperationName = "ListCollectionNames";
 
         using var cursor = await VectorStoreErrorHandler.RunOperationAsync<IAsyncCursor<string>, MongoException>(
-            this._metadata,
-            OperationName,
-            () => this._mongoDatabase.ListCollectionNamesAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
-        using var errorHandlingAsyncCursor = new ErrorHandlingAsyncCursor<string>(cursor, this._metadata, OperationName);
+                _metadata,
+                OperationName,
+                () => _mongoDatabase.ListCollectionNamesAsync(cancellationToken: cancellationToken))
+            .ConfigureAwait(false);
+        using var errorHandlingAsyncCursor = new ErrorHandlingAsyncCursor<string>(cursor, _metadata, OperationName);
 
         while (await cursor.MoveNextAsync(cancellationToken).ConfigureAwait(false))
         {
@@ -108,19 +104,22 @@ public sealed class MongoVectorStore : VectorStore
         }
     }
 
+
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
@@ -128,10 +127,14 @@ public sealed class MongoVectorStore : VectorStore
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(IMongoDatabase) ? this._mongoDatabase :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreMetadata)
+                    ? _metadata
+                    : serviceType == typeof(IMongoDatabase)
+                        ? _mongoDatabase
+                        : serviceType.IsInstanceOfType(this)
+                            ? this
+                            : null;
     }
 }

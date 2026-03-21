@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.ImageToText;
+
 /// <summary>
 /// Class sponsor that holds extension methods for <see cref ="IImageToTextService" /> interface.
 /// </summary>
@@ -25,6 +26,11 @@ public static class ImageToTextExtensions
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => (await imageToTextService.GetTextContentsAsync(content, executionSettings, kernel, cancellationToken).
-            ConfigureAwait(false)).Single();
+    {
+        return (await imageToTextService.GetTextContentsAsync(content,
+                executionSettings,
+                kernel,
+                cancellationToken)
+            .ConfigureAwait(false)).Single();
+    }
 }

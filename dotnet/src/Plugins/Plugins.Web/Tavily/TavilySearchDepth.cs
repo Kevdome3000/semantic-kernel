@@ -13,6 +13,7 @@ public enum TavilySearchDepth
     /// Basic search costs 1 API Credit.
     /// </summary>
     Basic,
+
     /// <summary>
     /// Advanced search costs 2 API Credits.
     /// </summary>

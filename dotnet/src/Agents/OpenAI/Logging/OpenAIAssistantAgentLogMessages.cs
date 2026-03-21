@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents.OpenAI;
-
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+
+namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 #pragma warning disable SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
 
@@ -44,6 +44,7 @@ internal static partial class OpenAIAssistantAgentLogMessages
         string channelType,
         string threadId);
 
+
     /// <summary>
     /// Logs <see cref="OpenAIAssistantAgent"/> restoring serialized channel (started).
     /// </summary>
@@ -56,6 +57,7 @@ internal static partial class OpenAIAssistantAgentLogMessages
         string methodName,
         string channelType,
         string threadId);
+
 
     /// <summary>
     /// Logs <see cref="OpenAIAssistantAgent"/> restored serialized channel (complete).

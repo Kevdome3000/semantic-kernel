@@ -13,8 +13,9 @@ internal sealed class MockHttpClientFactory(Mock<HttpMessageHandler> mockHandler
 {
     public HttpClient CreateClient(string name)
     {
-        return new(mockHandler.Object);
+        return new HttpClient(mockHandler.Object);
     }
+
 
     public void Dispose()
     {

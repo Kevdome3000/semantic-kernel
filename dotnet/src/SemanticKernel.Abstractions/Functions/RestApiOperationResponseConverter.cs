@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Globalization;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Converts a object of <see cref="RestApiOperationResponse"/> type to string type.
 /// </summary>
@@ -16,8 +17,13 @@ public class RestApiOperationResponseConverter : TypeConverter
         return destinationType == typeof(string) || base.CanConvertTo(context, destinationType);
     }
 
+
     /// <inheritdoc/>
-    public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+    public override object? ConvertTo(
+        ITypeDescriptorContext? context,
+        CultureInfo? culture,
+        object? value,
+        Type destinationType)
     {
         // Convert object content to a string based on the type of the `Content` property.
         // More granular conversion logic can be built based on the value of the `ContentType` property, if needed.
@@ -36,6 +42,9 @@ public class RestApiOperationResponseConverter : TypeConverter
             }
         }
 
-        return base.ConvertTo(context, culture, value, destinationType);
+        return base.ConvertTo(context,
+            culture,
+            value,
+            destinationType);
     }
 }

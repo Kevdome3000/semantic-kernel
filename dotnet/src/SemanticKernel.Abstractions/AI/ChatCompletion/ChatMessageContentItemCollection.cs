@@ -7,6 +7,7 @@ using System.Collections.Generic;
 namespace Microsoft.SemanticKernel.ChatCompletion;
 #pragma warning disable CA1033 // Interface methods should be callable by child types
 
+
 /// <summary>
 /// Contains collection of chat message content items of type <see cref="KernelContent"/>.
 /// </summary>
@@ -19,6 +20,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     {
         _items = [];
     }
+
 
     /// <summary>
     /// Gets or sets the content item at the specified index in the collection.
@@ -42,6 +44,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     /// </summary>
     public int Count => _items.Count;
 
+
     /// <summary>
     /// Adds a content item to the collection.
     /// </summary>
@@ -52,6 +55,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
         Verify.NotNull(item);
         _items.Add(item);
     }
+
 
     /// <summary>
     /// Removes all content items from the collection.
@@ -74,6 +78,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
 
         return _items.Contains(item);
     }
+
 
     /// <summary>
     /// Copies all of the content items in the collection to an array, starting at the specified destination array index.
@@ -102,6 +107,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
         return _items.IndexOf(item);
     }
 
+
     /// <summary>
     /// Inserts a content item into the collection at the specified index.
     /// </summary>
@@ -113,6 +119,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
         Verify.NotNull(item);
         _items.Insert(index, item);
     }
+
 
     /// <summary>
     /// Removes the first occurrence of the specified content item from the collection.
@@ -126,6 +133,7 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
 
         return _items.Remove(item);
     }
+
 
     /// <summary>
     /// Removes the content item at the specified index from the collection.
@@ -157,5 +165,6 @@ public class ChatMessageContentItemCollection : IList<KernelContent>, IReadOnlyL
     private readonly List<KernelContent> _items;
 
     #endregion
+
 
 }

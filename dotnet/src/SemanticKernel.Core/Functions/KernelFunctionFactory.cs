@@ -10,12 +10,15 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides factory methods for creating commonly-used implementations of <see cref="KernelFunction"/>, such as
 /// those backed by a prompt to be submitted to an LLM or those backed by a .NET method.
 /// </summary>
 public static class KernelFunctionFactory
 {
+
+
     #region FromMethod
 
     /// <summary>
@@ -36,9 +39,17 @@ public static class KernelFunctionFactory
         string? description = null,
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
-        ILoggerFactory? loggerFactory = null) =>
-        CreateFromMethod(method.Method, method.Target, functionName, description,
-            parameters, returnParameter, loggerFactory);
+        ILoggerFactory? loggerFactory = null)
+    {
+        return CreateFromMethod(method.Method,
+            method.Target,
+            functionName,
+            description,
+            parameters,
+            returnParameter,
+            loggerFactory);
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
@@ -58,8 +69,18 @@ public static class KernelFunctionFactory
         string? description = null,
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
-        ILoggerFactory? loggerFactory = null) =>
-        CreateFromMethod(method.Method, jsonSerializerOptions, method.Target, functionName, description, parameters, returnParameter, loggerFactory);
+        ILoggerFactory? loggerFactory = null)
+    {
+        return CreateFromMethod(method.Method,
+            jsonSerializerOptions,
+            method.Target,
+            functionName,
+            description,
+            parameters,
+            returnParameter,
+            loggerFactory);
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
@@ -71,8 +92,11 @@ public static class KernelFunctionFactory
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     public static KernelFunction CreateFromMethod(
         Delegate method,
-        KernelFunctionFromMethodOptions? options) =>
-        CreateFromMethod(method.Method, method.Target, options);
+        KernelFunctionFromMethodOptions? options)
+    {
+        return CreateFromMethod(method.Method, method.Target, options);
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
@@ -84,8 +108,14 @@ public static class KernelFunctionFactory
     public static KernelFunction CreateFromMethod(
         Delegate method,
         JsonSerializerOptions jsonSerializerOptions,
-        KernelFunctionFromMethodOptions? options) =>
-        CreateFromMethod(method.Method, jsonSerializerOptions, method.Target, options);
+        KernelFunctionFromMethodOptions? options)
+    {
+        return CreateFromMethod(method.Method,
+            jsonSerializerOptions,
+            method.Target,
+            options);
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -108,9 +138,17 @@ public static class KernelFunctionFactory
         string? description = null,
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
-        ILoggerFactory? loggerFactory = null) =>
-        KernelFunctionFromMethod.Create(method, target, functionName, description,
-            parameters, returnParameter, loggerFactory);
+        ILoggerFactory? loggerFactory = null)
+    {
+        return KernelFunctionFromMethod.Create(method,
+            target,
+            functionName,
+            description,
+            parameters,
+            returnParameter,
+            loggerFactory);
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -133,8 +171,18 @@ public static class KernelFunctionFactory
         string? description = null,
         IEnumerable<KernelParameterMetadata>? parameters = null,
         KernelReturnParameterMetadata? returnParameter = null,
-        ILoggerFactory? loggerFactory = null) =>
-        KernelFunctionFromMethod.Create(method, jsonSerializerOptions, target, functionName, description, parameters, returnParameter, loggerFactory);
+        ILoggerFactory? loggerFactory = null)
+    {
+        return KernelFunctionFromMethod.Create(method,
+            jsonSerializerOptions,
+            target,
+            functionName,
+            description,
+            parameters,
+            returnParameter,
+            loggerFactory);
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -149,8 +197,11 @@ public static class KernelFunctionFactory
     public static KernelFunction CreateFromMethod(
         MethodInfo method,
         object? target,
-        KernelFunctionFromMethodOptions? options) =>
-        KernelFunctionFromMethod.Create(method, target, options);
+        KernelFunctionFromMethodOptions? options)
+    {
+        return KernelFunctionFromMethod.Create(method, target, options);
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -165,9 +216,16 @@ public static class KernelFunctionFactory
         MethodInfo method,
         JsonSerializerOptions jsonSerializerOptions,
         object? target,
-        KernelFunctionFromMethodOptions? options) =>
-        KernelFunctionFromMethod.Create(method, jsonSerializerOptions, target, options);
+        KernelFunctionFromMethodOptions? options)
+    {
+        return KernelFunctionFromMethod.Create(method,
+            jsonSerializerOptions,
+            target,
+            options);
+    }
+
     #endregion
+
 
     #region FromPrompt
 
@@ -194,8 +252,9 @@ public static class KernelFunctionFactory
         string? description = null,
         string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory? loggerFactory = null) =>
-        KernelFunctionFromPrompt.Create(
+        ILoggerFactory? loggerFactory = null)
+    {
+        return KernelFunctionFromPrompt.Create(
             promptTemplate,
             CreateSettingsDictionary(executionSettings is null
                 ? null
@@ -205,6 +264,8 @@ public static class KernelFunctionFactory
             templateFormat,
             promptTemplateFactory,
             loggerFactory: loggerFactory);
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
@@ -229,8 +290,18 @@ public static class KernelFunctionFactory
         string? description = null,
         string? templateFormat = null,
         IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory? loggerFactory = null) =>
-        KernelFunctionFromPrompt.Create(promptTemplate, jsonSerializerOptions, CreateSettingsDictionary(executionSettings), functionName, description, templateFormat, promptTemplateFactory, loggerFactory: loggerFactory);
+        ILoggerFactory? loggerFactory = null)
+    {
+        return KernelFunctionFromPrompt.Create(promptTemplate,
+            jsonSerializerOptions,
+            CreateSettingsDictionary(executionSettings),
+            functionName,
+            description,
+            templateFormat,
+            promptTemplateFactory,
+            loggerFactory: loggerFactory);
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
@@ -247,7 +318,11 @@ public static class KernelFunctionFactory
     public static KernelFunction CreateFromPrompt(
         PromptTemplateConfig promptConfig,
         IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptConfig, promptTemplateFactory, loggerFactory);
+        ILoggerFactory? loggerFactory = null)
+    {
+        return KernelFunctionFromPrompt.Create(promptConfig, promptTemplateFactory, loggerFactory);
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
@@ -264,7 +339,14 @@ public static class KernelFunctionFactory
         PromptTemplateConfig promptConfig,
         JsonSerializerOptions jsonSerializerOptions,
         IPromptTemplateFactory? promptTemplateFactory = null,
-        ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptConfig, jsonSerializerOptions, promptTemplateFactory, loggerFactory);
+        ILoggerFactory? loggerFactory = null)
+    {
+        return KernelFunctionFromPrompt.Create(promptConfig,
+            jsonSerializerOptions,
+            promptTemplateFactory,
+            loggerFactory);
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template and prompt template configuration.
@@ -278,7 +360,11 @@ public static class KernelFunctionFactory
     public static KernelFunction CreateFromPrompt(
         IPromptTemplate promptTemplate,
         PromptTemplateConfig promptConfig,
-        ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptTemplate, promptConfig, loggerFactory);
+        ILoggerFactory? loggerFactory = null)
+    {
+        return KernelFunctionFromPrompt.Create(promptTemplate, promptConfig, loggerFactory);
+    }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template and prompt template configuration.
@@ -292,13 +378,23 @@ public static class KernelFunctionFactory
         IPromptTemplate promptTemplate,
         PromptTemplateConfig promptConfig,
         JsonSerializerOptions jsonSerializerOptions,
-        ILoggerFactory? loggerFactory = null) => KernelFunctionFromPrompt.Create(promptTemplate, promptConfig, jsonSerializerOptions, loggerFactory);
+        ILoggerFactory? loggerFactory = null)
+    {
+        return KernelFunctionFromPrompt.Create(promptTemplate,
+            promptConfig,
+            jsonSerializerOptions,
+            loggerFactory);
+    }
+
     #endregion
+
 
     /// <summary>
     /// Wraps the specified settings into a dictionary with the default service ID as the key.
     /// </summary>
     [return: NotNullIfNotNull(nameof(settings))]
-    private static Dictionary<string, PromptExecutionSettings>? CreateSettingsDictionary(IEnumerable<PromptExecutionSettings>? settings) =>
-        settings?.ToDictionary(s => s.ServiceId ?? PromptExecutionSettings.DefaultServiceId, s => s);
+    private static Dictionary<string, PromptExecutionSettings>? CreateSettingsDictionary(IEnumerable<PromptExecutionSettings>? settings)
+    {
+        return settings?.ToDictionary(s => s.ServiceId ?? PromptExecutionSettings.DefaultServiceId, s => s);
+    }
 }

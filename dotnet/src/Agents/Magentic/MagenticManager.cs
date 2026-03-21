@@ -22,10 +22,12 @@ public abstract class MagenticManager
     /// </summary>
     internal const int DefaultMaximumStallCount = 3;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MagenticManager"/> class.
     /// </summary>
     protected MagenticManager() { }
+
 
     /// <summary>
     /// Gets or sets the maximum number of invocations allowed for the group chat manager.
@@ -47,6 +49,7 @@ public abstract class MagenticManager
     /// </summary>
     public OrchestrationInteractiveCallback? InteractiveCallback { get; init; }
 
+
     /// <summary>
     /// Prepares the chat messages for the next step in the group chat process.
     /// </summary>
@@ -54,6 +57,7 @@ public abstract class MagenticManager
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>An array of chat message content to be processed.</returns>
     public abstract ValueTask<IList<ChatMessageContent>> PlanAsync(MagenticManagerContext context, CancellationToken cancellationToken);
+
 
     /// <summary>
     /// Resets the group chat state and prepares the initial chat messages.
@@ -63,6 +67,7 @@ public abstract class MagenticManager
     /// <returns>An array of chat message content representing the reset state.</returns>
     public abstract ValueTask<IList<ChatMessageContent>> ReplanAsync(MagenticManagerContext context, CancellationToken cancellationToken);
 
+
     /// <summary>
     /// Evaluates the progress of the current group chat task.
     /// </summary>
@@ -70,6 +75,7 @@ public abstract class MagenticManager
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>A <see cref="MagenticProgressLedger"/> representing the progress evaluation.</returns>
     public abstract ValueTask<MagenticProgressLedger> EvaluateTaskProgressAsync(MagenticManagerContext context, CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Prepares the final answer for the group chat task.

@@ -20,6 +20,7 @@ public class HandoffsTests
         Assert.Equal("first", orchestrationHandoffs.FirstAgentName);
     }
 
+
     [Fact]
     public void DictionaryConstructors_InvalidFirstAgent()
     {
@@ -27,6 +28,7 @@ public class HandoffsTests
         Assert.Throws<ArgumentException>(() => new OrchestrationHandoffs(string.Empty));
         Assert.Throws<ArgumentException>(() => new OrchestrationHandoffs(" "));
     }
+
 
     [Fact]
     public void Add_WithAgentObjects_CreatesHandoffRelationships()
@@ -52,6 +54,7 @@ public class HandoffsTests
         Assert.Equal("Target Agent 2", sourceHandoffs["target2"]);
     }
 
+
     [Fact]
     public void Add_WithAgentAndCustomDescription_UsesCustomDescription()
     {
@@ -72,6 +75,7 @@ public class HandoffsTests
         Assert.Single(sourceHandoffs);
         Assert.Equal(customDescription, sourceHandoffs["target"]);
     }
+
 
     [Fact]
     public void Add_WithAgentAndTargetName_AddsHandoffWithDescription()
@@ -94,6 +98,7 @@ public class HandoffsTests
         Assert.Equal(description, sourceHandoffs[targetName]);
     }
 
+
     [Fact]
     public void Add_WithSourceNameAndTargetName_AddsHandoffWithDescription()
     {
@@ -114,6 +119,7 @@ public class HandoffsTests
         Assert.Single(sourceHandoffs);
         Assert.Equal(description, sourceHandoffs[targetName]);
     }
+
 
     [Fact]
     public void Add_WithMultipleSourcesAndTargets_CreatesCorrectStructure()
@@ -151,6 +157,7 @@ public class HandoffsTests
         Assert.Equal("Target Agent 3", source2Handoffs["target3"]);
     }
 
+
     [Fact]
     public void StaticAdd_CreatesNewOrchestrationHandoffs()
     {
@@ -177,14 +184,15 @@ public class HandoffsTests
         Assert.Equal("Target Agent 2", sourceHandoffs["target2"]);
     }
 
+
     [Fact]
     public void Add_WithAgentsWithNoNameUsesId()
     {
         // Arrange
         OrchestrationHandoffs handoffs = new("source-id");
 
-        Agent sourceAgent = CreateAgent(id: "source-id", name: null);
-        Agent targetAgent = CreateAgent(id: "target-id", name: null, description: "Target Description");
+        Agent sourceAgent = CreateAgent("source-id", name: null);
+        Agent targetAgent = CreateAgent("target-id", name: null, description: "Target Description");
 
         // Act
         handoffs.Add(sourceAgent, targetAgent);
@@ -199,6 +207,7 @@ public class HandoffsTests
         Assert.Equal("Target Description", sourceHandoffs["target-id"]);
     }
 
+
     [Fact]
     public void Add_WithTargetWithNoDescription_UsesEmptyString()
     {
@@ -206,7 +215,7 @@ public class HandoffsTests
         OrchestrationHandoffs handoffs = new("source");
 
         Agent sourceAgent = CreateAgent("source", "Source Agent");
-        Agent targetAgent = CreateAgent("target", null);
+        Agent targetAgent = CreateAgent("target");
 
         // Act
         handoffs.Add(sourceAgent, targetAgent);
@@ -219,6 +228,7 @@ public class HandoffsTests
         Assert.Equal(string.Empty, sourceHandoffs["target"]);
     }
 
+
     private static ChatCompletionAgent CreateAgent(string id, string? description = null, string? name = null)
     {
         ChatCompletionAgent mockAgent =
@@ -226,7 +236,7 @@ public class HandoffsTests
             {
                 Id = id,
                 Description = description,
-                Name = name,
+                Name = name
             };
 
         return mockAgent;

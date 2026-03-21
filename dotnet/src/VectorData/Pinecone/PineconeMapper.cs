@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Diagnostics;
-using Microsoft.Extensions.AI;
-using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -17,12 +14,14 @@ internal sealed class PineconeMapper<TRecord>(Extensions.VectorData.ProviderServ
     public Vector MapFromDataToStorageModel(TRecord dataModel, Embedding<float>? generatedEmbedding)
     {
         var keyObject = model.KeyProperty.GetValueAsObject(dataModel!);
+
         if (keyObject is null)
         {
             throw new InvalidOperationException($"Key property '{model.KeyProperty.ModelName}' on provided record of type '{typeof(TRecord).Name}' may not be null.");
         }
 
         var metadata = new Metadata();
+
         foreach (var property in model.DataProperties)
         {
             if (property.GetValueAsObject(dataModel!) is { } value)
@@ -58,18 +57,20 @@ internal sealed class PineconeMapper<TRecord>(Extensions.VectorData.ProviderServ
         return result;
     }
 
+
     /// <inheritdoc />
     public TRecord MapFromStorageToDataModel(Vector storageModel, bool includeVectors)
     {
         var outputRecord = model.CreateRecord<TRecord>()!;
 
-        model.KeyProperty.SetValueAsObject(outputRecord, model.KeyProperty.Type switch
-        {
-            var t when t == typeof(string) => storageModel.Id,
-            var t when t == typeof(Guid) => Guid.Parse(storageModel.Id),
+        model.KeyProperty.SetValueAsObject(outputRecord,
+            model.KeyProperty.Type switch
+            {
+                var t when t == typeof(string) => storageModel.Id,
+                var t when t == typeof(Guid) => Guid.Parse(storageModel.Id),
 
-            _ => throw new UnreachableException()
-        });
+                _ => throw new UnreachableException()
+            });
 
         if (includeVectors is true)
         {

@@ -16,7 +16,10 @@ public sealed class CopilotStudioAgentExtensionsTests
     public void AsAIAgent_WithValidCopilotStudioAgent_ReturnsSemanticKernelAIAgent()
     {
         // Arrange
-        var clientMock = new Mock<CopilotClient>(null, null, null, null);
+        var clientMock = new Mock<CopilotClient>(null,
+            null,
+            null,
+            null);
         var copilotStudioAgent = new CopilotStudioAgent(clientMock.Object);
 
         // Act
@@ -26,6 +29,7 @@ public sealed class CopilotStudioAgentExtensionsTests
         Assert.NotNull(result);
         Assert.IsType<SemanticKernelAIAgent>(result);
     }
+
 
     [Fact]
     public void AsAIAgent_WithNullCopilotStudioAgent_ThrowsArgumentNullException()
@@ -37,11 +41,15 @@ public sealed class CopilotStudioAgentExtensionsTests
         Assert.Throws<ArgumentNullException>(() => nullAgent.AsAIAgent());
     }
 
+
     [Fact]
     public void AsAIAgent_CreatesWorkingThreadFactory()
     {
         // Arrange
-        var clientMock = new Mock<CopilotClient>(null, null, null, null);
+        var clientMock = new Mock<CopilotClient>(null,
+            null,
+            null,
+            null);
         var copilotStudioAgent = new CopilotStudioAgent(clientMock.Object);
 
         // Act
@@ -55,11 +63,15 @@ public sealed class CopilotStudioAgentExtensionsTests
         Assert.IsType<CopilotStudioAgentThread>(threadAdapter.InnerThread);
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithNullAgentId_CreatesNewThread()
     {
         // Arrange
-        var clientMock = new Mock<CopilotClient>(null, null, null, null);
+        var clientMock = new Mock<CopilotClient>(null,
+            null,
+            null,
+            null);
         var copilotStudioAgent = new CopilotStudioAgent(clientMock.Object);
         var jsonElement = JsonSerializer.SerializeToElement((string?)null);
 
@@ -74,11 +86,15 @@ public sealed class CopilotStudioAgentExtensionsTests
         Assert.IsType<CopilotStudioAgentThread>(threadAdapter.InnerThread);
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadDeserializationFactory_WithValidAgentId_CreatesThreadWithId()
     {
         // Arrange
-        var clientMock = new Mock<CopilotClient>(null, null, null, null);
+        var clientMock = new Mock<CopilotClient>(null,
+            null,
+            null,
+            null);
         var copilotStudioAgent = new CopilotStudioAgent(clientMock.Object);
         var agentId = "test-agent-id";
         var jsonElement = JsonSerializer.SerializeToElement(agentId);
@@ -94,11 +110,15 @@ public sealed class CopilotStudioAgentExtensionsTests
         Assert.IsType<CopilotStudioAgentThread>(threadAdapter.InnerThread);
     }
 
+
     [Fact]
     public void AsAIAgent_ThreadSerializer_SerializesThreadId()
     {
         // Arrange
-        var clientMock = new Mock<CopilotClient>(null, null, null, null);
+        var clientMock = new Mock<CopilotClient>(null,
+            null,
+            null,
+            null);
         var copilotStudioAgent = new CopilotStudioAgent(clientMock.Object);
         var expectedThreadId = "test-thread-id";
         var copilotStudioThread = new CopilotStudioAgentThread(clientMock.Object, expectedThreadId);

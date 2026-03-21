@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Runtime;
 using Microsoft.SemanticKernel.Agents.Runtime.Core;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 
@@ -26,6 +25,7 @@ internal sealed class GroupChatManagerActor :
     private readonly ChatHistory _chat;
     private readonly GroupChatTeam _team;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatManagerActor"/> class.
     /// </summary>
@@ -36,65 +36,81 @@ internal sealed class GroupChatManagerActor :
     /// <param name="team">The team of agents being orchestrated</param>
     /// <param name="orchestrationType">Identifies the orchestration agent.</param>
     /// <param name="logger">The logger to use for the actor</param>
-    public GroupChatManagerActor(AgentId id, IAgentRuntime runtime, OrchestrationContext context, GroupChatManager manager, GroupChatTeam team, AgentType orchestrationType, ILogger? logger = null)
-        : base(id, runtime, context, DefaultDescription, logger)
+    public GroupChatManagerActor(
+        AgentId id,
+        IAgentRuntime runtime,
+        OrchestrationContext context,
+        GroupChatManager manager,
+        GroupChatTeam team,
+        AgentType orchestrationType,
+        ILogger? logger = null)
+        : base(id,
+            runtime,
+            context,
+            DefaultDescription,
+            logger)
     {
-        this._chat = [];
-        this._manager = manager;
-        this._orchestrationType = orchestrationType;
-        this._team = team;
+        _chat = [];
+        _manager = manager;
+        _orchestrationType = orchestrationType;
+        _team = team;
     }
+
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(GroupChatMessages.InputTask item, MessageContext messageContext)
     {
-        this.Logger.LogChatManagerInit(this.Id);
+        Logger.LogChatManagerInit(Id);
 
-        this._chat.AddRange(item.Messages);
+        _chat.AddRange(item.Messages);
 
-        await this.PublishMessageAsync(item.Messages.AsGroupMessage(), this.Context.Topic).ConfigureAwait(false);
+        await PublishMessageAsync(item.Messages.AsGroupMessage(), Context.Topic).ConfigureAwait(false);
 
-        await this.ManageAsync(messageContext).ConfigureAwait(false);
+        await ManageAsync(messageContext).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(GroupChatMessages.Group item, MessageContext messageContext)
     {
-        this.Logger.LogChatManagerInvoke(this.Id);
+        Logger.LogChatManagerInvoke(Id);
 
-        this._chat.AddRange(item.Messages);
+        _chat.AddRange(item.Messages);
 
-        await this.ManageAsync(messageContext).ConfigureAwait(false);
+        await ManageAsync(messageContext).ConfigureAwait(false);
     }
+
 
     private async ValueTask ManageAsync(MessageContext messageContext)
     {
-        if (this._manager.InteractiveCallback != null)
+        if (_manager.InteractiveCallback != null)
         {
-            GroupChatManagerResult<bool> inputResult = await this._manager.ShouldRequestUserInput(this._chat, messageContext.CancellationToken).ConfigureAwait(false);
-            this.Logger.LogChatManagerInput(this.Id, inputResult.Value, inputResult.Reason);
+            GroupChatManagerResult<bool> inputResult = await _manager.ShouldRequestUserInput(_chat, messageContext.CancellationToken).ConfigureAwait(false);
+            Logger.LogChatManagerInput(Id, inputResult.Value, inputResult.Reason);
+
             if (inputResult.Value)
             {
-                ChatMessageContent input = await this._manager.InteractiveCallback.Invoke().ConfigureAwait(false);
-                this.Logger.LogChatManagerUserInput(this.Id, input.Content);
-                this._chat.Add(input);
-                await this.PublishMessageAsync(input.AsGroupMessage(), this.Context.Topic).ConfigureAwait(false);
+                ChatMessageContent input = await _manager.InteractiveCallback.Invoke().ConfigureAwait(false);
+                Logger.LogChatManagerUserInput(Id, input.Content);
+                _chat.Add(input);
+                await PublishMessageAsync(input.AsGroupMessage(), Context.Topic).ConfigureAwait(false);
             }
         }
 
-        GroupChatManagerResult<bool> terminateResult = await this._manager.ShouldTerminate(this._chat, messageContext.CancellationToken).ConfigureAwait(false);
-        this.Logger.LogChatManagerTerminate(this.Id, terminateResult.Value, terminateResult.Reason);
+        GroupChatManagerResult<bool> terminateResult = await _manager.ShouldTerminate(_chat, messageContext.CancellationToken).ConfigureAwait(false);
+        Logger.LogChatManagerTerminate(Id, terminateResult.Value, terminateResult.Reason);
+
         if (terminateResult.Value)
         {
-            GroupChatManagerResult<string> filterResult = await this._manager.FilterResults(this._chat, messageContext.CancellationToken).ConfigureAwait(false);
-            this.Logger.LogChatManagerResult(this.Id, filterResult.Value, filterResult.Reason);
-            await this.PublishMessageAsync(filterResult.Value.AsResultMessage(), this._orchestrationType, messageContext.CancellationToken).ConfigureAwait(false);
+            GroupChatManagerResult<string> filterResult = await _manager.FilterResults(_chat, messageContext.CancellationToken).ConfigureAwait(false);
+            Logger.LogChatManagerResult(Id, filterResult.Value, filterResult.Reason);
+            await PublishMessageAsync(filterResult.Value.AsResultMessage(), _orchestrationType, messageContext.CancellationToken).ConfigureAwait(false);
             return;
         }
 
-        GroupChatManagerResult<string> selectionResult = await this._manager.SelectNextAgent(this._chat, this._team, messageContext.CancellationToken).ConfigureAwait(false);
-        AgentType selectionType = this._team[selectionResult.Value].Type;
-        this.Logger.LogChatManagerSelect(this.Id, selectionType);
-        await this.PublishMessageAsync(new GroupChatMessages.Speak(), selectionType, messageContext.CancellationToken).ConfigureAwait(false);
+        GroupChatManagerResult<string> selectionResult = await _manager.SelectNextAgent(_chat, _team, messageContext.CancellationToken).ConfigureAwait(false);
+        AgentType selectionType = _team[selectionResult.Value].Type;
+        Logger.LogChatManagerSelect(Id, selectionType);
+        await PublishMessageAsync(new GroupChatMessages.Speak(), selectionType, messageContext.CancellationToken).ConfigureAwait(false);
     }
 }

@@ -16,8 +16,10 @@ internal static class AuthorRoleExtensions
     /// of the agent conversation.  Should this conversation method experience a
     /// system message, it will be converted to assistant role.
     /// </remarks>
-    public static MessageRole ToMessageRole(this AuthorRole authorRole) =>
-        authorRole == AuthorRole.User ?
-            MessageRole.User :
-            MessageRole.Assistant;
+    public static MessageRole ToMessageRole(this AuthorRole authorRole)
+    {
+        return authorRole == AuthorRole.User
+            ? MessageRole.User
+            : MessageRole.Assistant;
+    }
 }

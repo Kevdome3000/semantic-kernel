@@ -55,6 +55,7 @@ public sealed class CollectionModel
     /// </summary>
     public bool EmbeddingGenerationRequired { get; }
 
+
     internal CollectionModel(
         Type recordType,
         IRecordCreator recordCreator,
@@ -63,29 +64,30 @@ public sealed class CollectionModel
         IReadOnlyList<VectorPropertyModel> vectorProperties,
         IReadOnlyDictionary<string, PropertyModel> propertyMap)
     {
-        this._recordType = recordType;
-        this._recordCreator = recordCreator;
+        _recordType = recordType;
+        _recordCreator = recordCreator;
 
-        this.KeyProperties = keyProperties;
-        this.DataProperties = dataProperties;
-        this.VectorProperties = vectorProperties;
-        this.PropertyMap = propertyMap;
-        this.Properties = propertyMap.Values.ToList();
+        KeyProperties = keyProperties;
+        DataProperties = dataProperties;
+        VectorProperties = vectorProperties;
+        PropertyMap = propertyMap;
+        Properties = propertyMap.Values.ToList();
 
-        this.EmbeddingGenerationRequired = vectorProperties.Any(p => p.EmbeddingType != p.Type);
+        EmbeddingGenerationRequired = vectorProperties.Any(p => p.EmbeddingType != p.Type);
     }
+
 
     /// <summary>
     /// Returns the single key property in the model, and throws if there are multiple key properties.
-    /// Suitable for connectors where validation is in place for single keys only (<see cref="CollectionModelBuildingOptions.SupportsMultipleKeys"/>).
     /// </summary>
-    public KeyPropertyModel KeyProperty => this._singleKeyProperty ??= this.KeyProperties.Single();
+    public KeyPropertyModel KeyProperty => _singleKeyProperty ??= KeyProperties.Single();
 
     /// <summary>
     /// Returns the single vector property in the model, and throws if there are multiple vector properties.
     /// Suitable for connectors where validation is in place for single vectors only (<see cref="CollectionModelBuildingOptions.SupportsMultipleVectors"/>).
     /// </summary>
-    public VectorPropertyModel VectorProperty => this._singleVectorProperty ??= this.VectorProperties.Single();
+    public VectorPropertyModel VectorProperty => _singleVectorProperty ??= VectorProperties.Single();
+
 
     /// <summary>
     /// Instantiates a new record of the specified type.
@@ -96,10 +98,11 @@ public sealed class CollectionModel
     // populated.
     public TRecord CreateRecord<TRecord>()
     {
-        Debug.Assert(typeof(TRecord) == this._recordType, "Type mismatch between record type and model type.");
+        Debug.Assert(typeof(TRecord) == _recordType, "Type mismatch between record type and model type.");
 
-        return this._recordCreator.Create<TRecord>();
+        return _recordCreator.Create<TRecord>();
     }
+
 
     /// <summary>
     /// Gets the vector property with the provided name if a name is provided, and falls back
@@ -111,29 +114,30 @@ public sealed class CollectionModel
     {
         if (searchOptions.VectorProperty is not null)
         {
-            return this.GetMatchingProperty<TRecord, VectorPropertyModel>(searchOptions.VectorProperty, data: false);
+            return GetMatchingProperty<TRecord, VectorPropertyModel>(searchOptions.VectorProperty, false);
         }
 
         // If vector property name is not provided, check if there is a single vector property, or throw if there are no vectors or more than one.
         // TODO: Make a single switch expression + coalesce from the following - dotnet format fails on it for now
-        if (this._singleVectorProperty is null)
+        if (_singleVectorProperty is null)
         {
-            switch (this.VectorProperties)
+            switch (VectorProperties)
             {
                 case [var singleProperty]:
-                    this._singleVectorProperty = singleProperty;
+                    _singleVectorProperty = singleProperty;
                     break;
 
                 case { Count: 0 }:
-                    throw new InvalidOperationException($"The '{this._recordType.Name}' type does not have any vector properties.");
+                    throw new InvalidOperationException($"The '{_recordType.Name}' type does not have any vector properties.");
 
                 default:
-                    throw new InvalidOperationException($"The '{this._recordType.Name}' type has multiple vector properties, please specify your chosen property via options.");
+                    throw new InvalidOperationException($"The '{_recordType.Name}' type has multiple vector properties, please specify your chosen property via options.");
             }
         }
 
-        return this._singleVectorProperty;
+        return _singleVectorProperty;
     }
+
 
     /// <summary>
     /// Gets the text data property with the provided name that has full text search indexing enabled, or falls back
@@ -145,17 +149,17 @@ public sealed class CollectionModel
     {
         if (expression is not null)
         {
-            var property = this.GetMatchingProperty<TRecord, DataPropertyModel>(expression, data: true);
+            var property = GetMatchingProperty<TRecord, DataPropertyModel>(expression, true);
 
             return property.IsFullTextIndexed
                 ? property
-                : throw new InvalidOperationException($"The property '{property.ModelName}' on '{this._recordType.Name}' must have full text search indexing enabled.");
+                : throw new InvalidOperationException($"The property '{property.ModelName}' on '{_recordType.Name}' must have full text search indexing enabled.");
         }
 
-        if (this._singleFullTextSearchProperty is null)
+        if (_singleFullTextSearchProperty is null)
         {
             // If text data property name is not provided, check if a single full text indexed text property exists or throw otherwise.
-            var fullTextStringProperties = this.DataProperties
+            var fullTextStringProperties = DataProperties
                 .Where(l => l.Type == typeof(string) && l.IsFullTextIndexed)
                 .ToList();
 
@@ -166,19 +170,20 @@ public sealed class CollectionModel
                 // If there are no properties, throw.
                 // If there are multiple properties, throw.
                 case [var singleProperty]:
-                    this._singleFullTextSearchProperty = singleProperty;
+                    _singleFullTextSearchProperty = singleProperty;
                     break;
 
                 case { Count: 0 }:
-                    throw new InvalidOperationException($"The '{this._recordType.Name}' type does not have any text data properties that have full text indexing enabled.");
+                    throw new InvalidOperationException($"The '{_recordType.Name}' type does not have any text data properties that have full text indexing enabled.");
 
                 default:
-                    throw new InvalidOperationException($"The '{this._recordType.Name}' type has multiple text data properties that have full text indexing enabled, please specify your chosen property via options.");
+                    throw new InvalidOperationException($"The '{_recordType.Name}' type has multiple text data properties that have full text indexing enabled, please specify your chosen property via options.");
             }
         }
 
-        return this._singleFullTextSearchProperty;
+        return _singleFullTextSearchProperty;
     }
+
 
     /// <summary>
     /// Gets the data or key property selected by the provided expression.
@@ -186,7 +191,10 @@ public sealed class CollectionModel
     /// <param name="expression">The property selector.</param>
     /// <exception cref="InvalidOperationException">The provided property name is not a valid data or key property name.</exception>
     public PropertyModel GetDataOrKeyProperty<TRecord>(Expression<Func<TRecord, object?>> expression)
-        => this.GetMatchingProperty<TRecord, PropertyModel>(expression, data: true);
+    {
+        return GetMatchingProperty<TRecord, PropertyModel>(expression, true);
+    }
+
 
     private TProperty GetMatchingProperty<TRecord, TProperty>(Expression<Func<TRecord, object?>> expression, bool data)
         where TProperty : PropertyModel
@@ -218,7 +226,7 @@ public sealed class CollectionModel
             _ => throw new InvalidOperationException("Property selector lambda is invalid")
         };
 
-        if (!this.PropertyMap.TryGetValue(propertyName, out var property))
+        if (!PropertyMap.TryGetValue(propertyName, out var property))
         {
             throw new InvalidOperationException($"Property '{propertyName}' could not be found.");
         }
@@ -231,7 +239,7 @@ public sealed class CollectionModel
         {
             if (expression is MemberExpression { Expression: ConstantExpression constant, Member: FieldInfo fieldInfo }
                 && constant.Type.Attributes.HasFlag(TypeAttributes.NestedPrivate)
-                && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), inherit: true))
+                && Attribute.IsDefined(constant.Type, typeof(CompilerGeneratedAttribute), true))
             {
                 capturedValue = fieldInfo.GetValue(constant.Value);
                 return true;

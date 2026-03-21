@@ -42,6 +42,7 @@ public struct AgentId : IEquatable<AgentId>
 
     internal static Regex KeyRegex2 => KeyRegex;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentId"/> struct.
     /// </summary>
@@ -56,9 +57,10 @@ public struct AgentId : IEquatable<AgentId>
             throw new ArgumentException($"Invalid AgentId key: '{key}'. Must only contain ASCII characters 32-126.");
         }
 
-        this.Type = type;
-        this.Key = key;
+        Type = type;
+        Key = key;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentId"/> struct from a tuple.
@@ -68,6 +70,7 @@ public struct AgentId : IEquatable<AgentId>
         : this(kvPair.Type, kvPair.Key)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentId"/> struct from an <see cref="AgentType"/>.
@@ -79,18 +82,27 @@ public struct AgentId : IEquatable<AgentId>
     {
     }
 
+
     /// <summary>
     /// Convert a string of the format "type/key" into an <see cref="AgentId"/>.
     /// </summary>
     /// <param name="maybeAgentId">The agent ID string.</param>
     /// <returns>An instance of <see cref="AgentId"/>.</returns>
-    public static AgentId FromStr(string maybeAgentId) => new(maybeAgentId.ToKeyValuePair(nameof(Type), nameof(Key)));
+    public static AgentId FromStr(string maybeAgentId)
+    {
+        return new AgentId(maybeAgentId.ToKeyValuePair(nameof(Type), nameof(Key)));
+    }
+
 
     /// <summary>
     /// Returns the string representation of the <see cref="AgentId"/>.
     /// </summary>
     /// <returns>A string in the format "type/key".</returns>
-    public override readonly string ToString() => $"{this.Type}/{this.Key}";
+    public override readonly string ToString()
+    {
+        return $"{Type}/{Key}";
+    }
+
 
     /// <summary>
     /// Determines whether the specified object is equal to the current <see cref="AgentId"/>.
@@ -99,14 +111,16 @@ public struct AgentId : IEquatable<AgentId>
     /// <returns><c>true</c> if the specified object is equal to the current <see cref="AgentId"/>; otherwise, <c>false</c>.</returns>
     public override readonly bool Equals([NotNullWhen(true)] object? obj)
     {
-        return (obj is AgentId other && this.Equals(other));
+        return obj is AgentId other && Equals(other);
     }
+
 
     /// <inheritdoc/>
     public readonly bool Equals(AgentId other)
     {
-        return this.Type == other.Type && this.Key == other.Key;
+        return Type == other.Type && Key == other.Key;
     }
+
 
     /// <summary>
     /// Returns a hash code for this <see cref="AgentId"/>.
@@ -114,23 +128,35 @@ public struct AgentId : IEquatable<AgentId>
     /// <returns>A hash code for the current instance.</returns>
     public override readonly int GetHashCode()
     {
-        return HashCode.Combine(this.Type, this.Key);
+        return HashCode.Combine(Type, Key);
     }
+
 
     /// <summary>
     /// Explicitly converts a string to an <see cref="AgentId"/>.
     /// </summary>
     /// <param name="id">The string representation of an agent ID.</param>
     /// <returns>An instance of <see cref="AgentId"/>.</returns>
-    public static explicit operator AgentId(string id) => FromStr(id);
+    public static explicit operator AgentId(string id)
+    {
+        return FromStr(id);
+    }
+
 
     /// <summary>
     /// Equality operator for <see cref="AgentId"/>.
     /// </summary>
-    public static bool operator ==(AgentId left, AgentId right) => left.Equals(right);
+    public static bool operator ==(AgentId left, AgentId right)
+    {
+        return left.Equals(right);
+    }
+
 
     /// <summary>
     /// Inequality operator for <see cref="AgentId"/>.
     /// </summary>
-    public static bool operator !=(AgentId left, AgentId right) => !left.Equals(right);
+    public static bool operator !=(AgentId left, AgentId right)
+    {
+        return !left.Equals(right);
+    }
 }

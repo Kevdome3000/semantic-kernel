@@ -18,14 +18,15 @@ public class AuthorRoleExtensionsTests
     [Fact]
     public void VerifyToMessageRole()
     {
-        this.VerifyRoleConversion(AuthorRole.Assistant, MessageRole.Assistant);
-        this.VerifyRoleConversion(AuthorRole.User, MessageRole.User);
+        VerifyRoleConversion(AuthorRole.Assistant, MessageRole.Assistant);
+        VerifyRoleConversion(AuthorRole.User, MessageRole.User);
 
         // Conversion isn't designed to, and won't, encounter these roles; however,
         // this is defined the behavior:
-        this.VerifyRoleConversion(AuthorRole.System, MessageRole.Assistant);
-        this.VerifyRoleConversion(AuthorRole.Tool, MessageRole.Assistant);
+        VerifyRoleConversion(AuthorRole.System, MessageRole.Assistant);
+        VerifyRoleConversion(AuthorRole.Tool, MessageRole.Assistant);
     }
+
 
     private void VerifyRoleConversion(AuthorRole inputRole, MessageRole expectedRole)
     {

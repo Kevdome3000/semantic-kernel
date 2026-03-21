@@ -25,6 +25,7 @@ public sealed class TextSearchStoreSourceRetrievalResponse
         Text = text;
     }
 
+
     /// <summary>
     /// Gets or sets the source ID of the document that was retrieved.
     /// </summary>

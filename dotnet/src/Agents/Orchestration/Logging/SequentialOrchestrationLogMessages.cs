@@ -8,7 +8,7 @@ using Microsoft.SemanticKernel.Agents.Runtime;
 namespace Microsoft.SemanticKernel.Agents.Orchestration;
 
 /// <summary>
-/// Extensions for logging <see cref="SequentialOrchestration{TInput, TOutput}"/>.
+/// Extensions for logging <see cref="SequentialOrchestration{TInput,TOutput}"/>.
 /// </summary>
 /// <remarks>
 /// This extension uses the <see cref="LoggerMessageAttribute"/> to
@@ -24,6 +24,7 @@ internal static partial class SequentialOrchestrationLogMessages
     public static partial void LogSequentialAgentInvoke(
         this ILogger logger,
         AgentId agentId);
+
 
     [LoggerMessage(
         EventId = 0,

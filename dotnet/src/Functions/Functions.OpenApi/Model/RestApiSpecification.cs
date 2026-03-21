@@ -40,11 +40,13 @@ public sealed class RestApiSpecification
         Operations = operations;
     }
 
+
     internal void Freeze()
     {
         if (SecurityRequirements is not null)
         {
             SecurityRequirements = new ReadOnlyCollection<RestApiSecurityRequirement>(SecurityRequirements);
+
             foreach (var securityRequirement in SecurityRequirements)
             {
                 securityRequirement.Freeze();
@@ -52,6 +54,7 @@ public sealed class RestApiSpecification
         }
 
         Operations = new ReadOnlyCollection<RestApiOperation>(Operations);
+
         foreach (var operation in Operations)
         {
             operation.Freeze();

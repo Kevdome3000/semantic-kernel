@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents.Chat;
-
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+namespace Microsoft.SemanticKernel.Agents.Chat;
 
 /// <summary>
 /// Defines aggregation behavior for <see cref="AggregatorTerminationStrategy"/>.
@@ -23,7 +22,7 @@ public enum AggregateTerminationCondition
     /// <summary>
     /// Any single aggregated strategy will terminate.
     /// </summary>
-    Any,
+    Any
 
 }
 
@@ -50,15 +49,14 @@ public sealed class AggregatorTerminationStrategy(params TerminationStrategy[] s
     /// <inheritdoc/>
     protected override async Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken = default)
     {
-        this.Logger.LogAggregatorTerminationStrategyEvaluating(nameof(ShouldAgentTerminateAsync), this._strategies.Length, this.Condition);
+        Logger.LogAggregatorTerminationStrategyEvaluating(nameof(ShouldAgentTerminateAsync), _strategies.Length, Condition);
 
-        var strategyExecution = this._strategies.Select(s => s.ShouldTerminateAsync(agent, history, cancellationToken));
+        var strategyExecution = _strategies.Select(s => s.ShouldTerminateAsync(agent, history, cancellationToken));
 
-        var results = await Task.WhenAll(strategyExecution).
-            ConfigureAwait(false);
+        var results = await Task.WhenAll(strategyExecution).ConfigureAwait(false);
 
         bool shouldTerminate =
-            this.Condition == AggregateTerminationCondition.All
+            Condition == AggregateTerminationCondition.All
                 ? results.All(r => r)
                 : results.Any(r => r);
 

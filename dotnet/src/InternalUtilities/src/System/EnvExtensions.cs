@@ -1,8 +1,7 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace System;
+
 [ExcludeFromCodeCoverage]
 internal static class EnvExtensions
 {
@@ -14,14 +13,12 @@ internal static class EnvExtensions
     {
         string? value = Environment.GetEnvironmentVariable(name);
 
-        if (string.Equals(bool.TrueString, value, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals("1", value, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(bool.TrueString, value, StringComparison.OrdinalIgnoreCase) || string.Equals("1", value, StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
 
-        if (string.Equals(bool.FalseString, value, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals("0", value, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(bool.FalseString, value, StringComparison.OrdinalIgnoreCase) || string.Equals("0", value, StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }

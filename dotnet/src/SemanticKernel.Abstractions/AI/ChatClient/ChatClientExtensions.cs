@@ -45,6 +45,7 @@ public static class ChatClientExtensions
         return chatClient.GetResponseAsync(messageList, chatOptions, cancellationToken);
     }
 
+
     /// <summary>Get ChatClient streaming response for the prompt, settings and kernel.</summary>
     /// <param name="chatClient">Target chat client service.</param>
     /// <param name="prompt">The standardized prompt input.</param>
@@ -79,6 +80,7 @@ public static class ChatClientExtensions
         return chatClient.GetStreamingResponseAsync(messageList, chatOptions, cancellationToken);
     }
 
+
     /// <summary>Creates an <see cref="IChatCompletionService"/> for the specified <see cref="IChatClient"/>.</summary>
     /// <param name="client">The chat client to be represented as a chat completion service.</param>
     /// <param name="serviceProvider">An optional <see cref="IServiceProvider"/> that can be used to resolve services to use in the instance.</param>
@@ -92,6 +94,7 @@ public static class ChatClientExtensions
 
         return client as IChatCompletionService ?? new ChatClientChatCompletionService(client, serviceProvider);
     }
+
 
     /// <summary>
     /// Get the model identifier for the specified <see cref="IChatClient"/>.

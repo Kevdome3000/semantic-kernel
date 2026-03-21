@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
-
 using System.Collections.Generic;
 using System.Net.Http;
 
+namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
 /// <summary>
 /// API manifest plugin parameters.
@@ -40,9 +39,9 @@ public sealed class ApiManifestPluginParameters
         Dictionary<string, OpenApiFunctionExecutionParameters>? functionExecutionParameters = default
     )
     {
-        this.HttpClient = httpClient;
-        this.UserAgent = userAgent;
-        this.FunctionExecutionParameters = functionExecutionParameters;
+        HttpClient = httpClient;
+        UserAgent = userAgent;
+        FunctionExecutionParameters = functionExecutionParameters;
     }
 
 }

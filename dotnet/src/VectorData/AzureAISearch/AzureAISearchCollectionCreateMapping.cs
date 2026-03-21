@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using Azure.Search.Documents.Indexes.Models;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
@@ -22,6 +16,7 @@ internal static class AzureAISearchCollectionCreateMapping
     {
         return new SearchableField(keyProperty.StorageName) { IsKey = true, IsFilterable = true };
     }
+
 
     /// <summary>
     /// Map from a <see cref="VectorStoreDataProperty"/> to an Azure AI Search <see cref="SimpleField"/>.
@@ -46,7 +41,7 @@ internal static class AzureAISearchCollectionCreateMapping
             };
         }
 
-        var fieldType = AzureAISearchCollectionCreateMapping.GetSDKFieldDataType(dataProperty.Type);
+        var fieldType = GetSDKFieldDataType(dataProperty.Type);
         return new SimpleField(dataProperty.StorageName, fieldType)
         {
             IsFilterable = dataProperty.IsIndexed,
@@ -54,6 +49,7 @@ internal static class AzureAISearchCollectionCreateMapping
             IsSortable = dataProperty.IsIndexed && !fieldType.IsCollection
         };
     }
+
 
     /// <summary>
     /// Map form a <see cref="VectorStoreVectorProperty"/> to an Azure AI Search <see cref="VectorSearchField"/> and generate the required index configuration.
@@ -69,8 +65,8 @@ internal static class AzureAISearchCollectionCreateMapping
         var algorithmConfigName = $"{vectorProperty.StorageName}AlgoConfig";
 
         // Read the vector index settings from the property definition and create the right index configuration.
-        var indexKind = AzureAISearchCollectionCreateMapping.GetSKIndexKind(vectorProperty);
-        var algorithmMetric = AzureAISearchCollectionCreateMapping.GetSDKDistanceAlgorithm(vectorProperty);
+        var indexKind = GetSKIndexKind(vectorProperty);
+        var algorithmMetric = GetSDKDistanceAlgorithm(vectorProperty);
 
         VectorSearchAlgorithmConfiguration algorithmConfiguration = indexKind switch
         {
@@ -85,6 +81,7 @@ internal static class AzureAISearchCollectionCreateMapping
         return (new VectorSearchField(vectorProperty.StorageName, vectorProperty.Dimensions, vectorSearchProfileName), algorithmConfiguration, vectorSearchProfile);
     }
 
+
     /// <summary>
     /// Get the configured <see cref="IndexKind"/> from the given <paramref name="vectorProperty"/>.
     /// If none is configured the default is <see cref="IndexKind.Hnsw"/>.
@@ -92,7 +89,10 @@ internal static class AzureAISearchCollectionCreateMapping
     /// <param name="vectorProperty">The vector property definition.</param>
     /// <returns>The configured or default <see cref="IndexKind"/>.</returns>
     public static string GetSKIndexKind(VectorPropertyModel vectorProperty)
-        => vectorProperty.IndexKind ?? IndexKind.Hnsw;
+    {
+        return vectorProperty.IndexKind ?? IndexKind.Hnsw;
+    }
+
 
     /// <summary>
     /// Get the configured <see cref="VectorSearchAlgorithmMetric"/> from the given <paramref name="vectorProperty"/>.
@@ -102,7 +102,8 @@ internal static class AzureAISearchCollectionCreateMapping
     /// <returns>The chosen <see cref="VectorSearchAlgorithmMetric"/>.</returns>
     /// <exception cref="InvalidOperationException">Thrown if a distance function is chosen that isn't supported by Azure AI Search.</exception>
     public static VectorSearchAlgorithmMetric GetSDKDistanceAlgorithm(VectorPropertyModel vectorProperty)
-        => vectorProperty.DistanceFunction switch
+    {
+        return vectorProperty.DistanceFunction switch
         {
             DistanceFunction.CosineSimilarity or null => VectorSearchAlgorithmMetric.Cosine,
             DistanceFunction.DotProductSimilarity => VectorSearchAlgorithmMetric.DotProduct,
@@ -110,6 +111,8 @@ internal static class AzureAISearchCollectionCreateMapping
 
             _ => throw new NotSupportedException($"Distance function '{vectorProperty.DistanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorProperty.ModelName}' is not supported by the Azure AI Search VectorStore.")
         };
+    }
+
 
     /// <summary>
     /// Maps the given property type to the corresponding <see cref="SearchFieldDataType"/>.
@@ -128,7 +131,11 @@ internal static class AzureAISearchCollectionCreateMapping
             // Half is also listed by the SDK, but currently not supported.
             Type t when t == typeof(float) => SearchFieldDataType.Double,
             Type t when t == typeof(double) => SearchFieldDataType.Double,
+            Type t when t == typeof(DateTime) => SearchFieldDataType.DateTimeOffset,
             Type t when t == typeof(DateTimeOffset) => SearchFieldDataType.DateTimeOffset,
+#if NET
+            Type t when t == typeof(DateOnly) => SearchFieldDataType.DateTimeOffset,
+#endif
 
             Type t when t == typeof(string[]) => SearchFieldDataType.Collection(SearchFieldDataType.String),
             Type t when t == typeof(List<string>) => SearchFieldDataType.Collection(SearchFieldDataType.String),
@@ -142,8 +149,14 @@ internal static class AzureAISearchCollectionCreateMapping
             Type t when t == typeof(List<float>) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
             Type t when t == typeof(double[]) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
             Type t when t == typeof(List<double>) => SearchFieldDataType.Collection(SearchFieldDataType.Double),
+            Type t when t == typeof(DateTime[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+            Type t when t == typeof(List<DateTime>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
             Type t when t == typeof(DateTimeOffset[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
             Type t when t == typeof(List<DateTimeOffset>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+#if NET
+            Type t when t == typeof(DateOnly[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+            Type t when t == typeof(List<DateOnly>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
+#endif
 
             _ => throw new NotSupportedException($"Data type '{propertyType}' for {nameof(VectorStoreDataProperty)} is not supported by the Azure AI Search VectorStore.")
         };

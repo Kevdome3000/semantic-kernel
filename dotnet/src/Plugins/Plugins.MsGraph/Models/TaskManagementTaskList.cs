@@ -17,6 +17,7 @@ public class TaskManagementTaskList
     /// </summary>
     public string? Name { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TaskManagementTaskList"/> class.
     /// </summary>
@@ -24,7 +25,7 @@ public class TaskManagementTaskList
     /// <param name="name">Name of the task list.</param>
     public TaskManagementTaskList(string? id, string? name)
     {
-        this.Id = id;
-        this.Name = name;
+        Id = id;
+        Name = name;
     }
 }

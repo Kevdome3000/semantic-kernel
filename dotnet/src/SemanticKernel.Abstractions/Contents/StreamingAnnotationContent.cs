@@ -21,10 +21,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     /// </remarks>
     [JsonIgnore]
     [Obsolete("Use `ReferenceId` property instead.")]
-    public string FileId
-    {
-        get => ReferenceId;
-    }
+    public string FileId => ReferenceId;
 
     /// <summary>
     /// The citation label in the associated response.
@@ -74,6 +71,7 @@ public class StreamingAnnotationContent : StreamingKernelContent
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? EndIndex { get; init; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingAnnotationContent"/> class.
     /// </summary>
@@ -90,13 +88,17 @@ public class StreamingAnnotationContent : StreamingKernelContent
         ReferenceId = referenceId;
     }
 
+
     /// <inheritdoc/>
     public override string ToString()
     {
         bool hasLabel = !string.IsNullOrEmpty(ReferenceId);
 
-        return hasLabel ? $"{Label}: {ReferenceId}" : ReferenceId;
+        return hasLabel
+            ? $"{Label}: {ReferenceId}"
+            : ReferenceId;
     }
+
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()

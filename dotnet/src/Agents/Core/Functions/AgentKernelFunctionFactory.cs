@@ -2,12 +2,10 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Agents.Extensions;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -37,7 +35,11 @@ public static class AgentKernelFunctionFactory
     {
         Verify.NotNull(agent);
 
-        async Task<FunctionResult> InvokeAgentAsync(Kernel kernel, KernelFunction function, KernelArguments arguments, CancellationToken cancellationToken)
+        async Task<FunctionResult> InvokeAgentAsync(
+            Kernel kernel,
+            KernelFunction function,
+            KernelArguments arguments,
+            CancellationToken cancellationToken)
         {
             arguments.TryGetValue("query", out var query);
             var queryString = query?.ToString() ?? string.Empty;
@@ -46,15 +48,19 @@ public static class AgentKernelFunctionFactory
 
             if (arguments.TryGetValue("instructions", out var instructions) && instructions is not null)
             {
-                options = new()
+                options = new AgentInvokeOptions
                 {
                     AdditionalInstructions = instructions?.ToString() ?? string.Empty
                 };
             }
 
-            var response = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, queryString), null, options, cancellationToken);
+            var response = agent.InvokeAsync(new ChatMessageContent(AuthorRole.User, queryString),
+                null,
+                options,
+                cancellationToken);
 
             List<ChatMessageContent> chatMessages = [];
+
             await foreach (var item in response.WithCancellation(cancellationToken).ConfigureAwait(false))
             {
                 chatMessages.Add(item.Message);
@@ -67,25 +73,32 @@ public static class AgentKernelFunctionFactory
             FunctionName = functionName ?? agent.GetName(),
             Description = description ?? agent.Description,
             Parameters = parameters ?? GetDefaultKernelParameterMetadata(),
-            ReturnParameter = new() { ParameterType = typeof(FunctionResult) },
+            ReturnParameter = new() { ParameterType = typeof(FunctionResult) }
         };
 
         return KernelFunctionFactory.CreateFromMethod(
-                InvokeAgentAsync,
-                options);
+            InvokeAgentAsync,
+            options);
     }
 
+
     #region private
+
     [RequiresUnreferencedCode("Uses reflection for generating JSON schema for method parameters and return type, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection for generating JSON schema for method parameters and return type, making it incompatible with AOT scenarios.")]
     private static IEnumerable<KernelParameterMetadata> GetDefaultKernelParameterMetadata()
     {
-        return s_kernelParameterMetadata ??= [
+        return s_kernelParameterMetadata ??=
+        [
             new KernelParameterMetadata("query") { Description = "Available information that will guide in performing this operation.", ParameterType = typeof(string), IsRequired = true },
-            new KernelParameterMetadata("instructions") { Description = "Additional instructions for the agent.", ParameterType = typeof(string), IsRequired = true },
+            new KernelParameterMetadata("instructions") { Description = "Additional instructions for the agent.", ParameterType = typeof(string), IsRequired = true }
         ];
     }
 
+
     private static IEnumerable<KernelParameterMetadata>? s_kernelParameterMetadata;
+
     #endregion
+
+
 }

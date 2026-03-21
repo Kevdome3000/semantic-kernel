@@ -22,7 +22,11 @@ internal static class OpenApiTypeConverter
     /// <param name="argument">The argument to be converted.</param>
     /// <param name="schema">The parameter schema.</param>
     /// <returns>A JsonNode representing the converted value.</returns>
-    public static JsonNode Convert(string name, string type, object argument, KernelJsonSchema? schema = null)
+    public static JsonNode Convert(
+        string name,
+        string type,
+        object argument,
+        KernelJsonSchema? schema = null)
     {
         Verify.NotNull(argument);
 
@@ -76,6 +80,7 @@ internal static class OpenApiTypeConverter
             throw new ArgumentOutOfRangeException(name, argument, ex.Message);
         }
     }
+
 
     /// <summary>
     /// Validates the argument against the parameter schema and converts it to a JsonNode if valid.

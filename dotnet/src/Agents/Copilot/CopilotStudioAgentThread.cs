@@ -17,6 +17,7 @@ public sealed class CopilotStudioAgentThread : AgentThread
 {
     private readonly CopilotClient _client;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CopilotStudioAgentThread"/> class.
     /// </summary>
@@ -25,18 +26,20 @@ public sealed class CopilotStudioAgentThread : AgentThread
     /// <exception cref="ArgumentNullException"></exception>
     public CopilotStudioAgentThread(CopilotClient client, string? conversationId = null)
     {
-        this._client = client ?? throw new ArgumentNullException(nameof(client));
-        this.Id = conversationId;
+        _client = client ?? throw new ArgumentNullException(nameof(client));
+        Id = conversationId;
     }
 
+
     internal ILogger Logger { get; init; } = NullLogger.Instance;
+
 
     /// <inheritdoc />
     protected override async Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
     {
         try
         {
-            await foreach (IActivity activity in this._client.StartConversationAsync(emitStartConversationEvent: true, cancellationToken).ConfigureAwait(false))
+            await foreach (IActivity activity in _client.StartConversationAsync(true, cancellationToken).ConfigureAwait(false))
             {
                 if (activity.Conversation is not null)
                 {
@@ -52,13 +55,15 @@ public sealed class CopilotStudioAgentThread : AgentThread
         }
     }
 
+
     /// <inheritdoc />
     protected override Task DeleteInternalAsync(CancellationToken cancellationToken)
     {
-        this.Logger.LogWarning($"{nameof(CopilotStudioAgent)} does not support thread deletion.");
+        Logger.LogWarning($"{nameof(CopilotStudioAgent)} does not support thread deletion.");
 
         return Task.CompletedTask;
     }
+
 
     /// <inheritdoc />
     protected override async Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)

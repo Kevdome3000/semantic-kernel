@@ -38,6 +38,7 @@ public class ChatHistoryTruncationReducer : IChatHistoryReducer
         _thresholdCount = thresholdCount ?? 0;
     }
 
+
     /// <inheritdoc/>
     public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> chatHistory, CancellationToken cancellationToken = default)
     {
@@ -57,19 +58,21 @@ public class ChatHistoryTruncationReducer : IChatHistoryReducer
         return Task.FromResult(truncatedHistory);
     }
 
+
     /// <inheritdoc/>
     public override bool Equals(object? obj)
     {
         ChatHistoryTruncationReducer? other = obj as ChatHistoryTruncationReducer;
 
-        return other != null &&
-               _thresholdCount == other._thresholdCount &&
-               _targetCount == other._targetCount;
+        return other != null && _thresholdCount == other._thresholdCount && _targetCount == other._targetCount;
     }
 
 
     /// <inheritdoc/>
-    public override int GetHashCode() => HashCode.Combine(nameof(ChatHistoryTruncationReducer), _thresholdCount, _targetCount);
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(nameof(ChatHistoryTruncationReducer), _thresholdCount, _targetCount);
+    }
 
 
     private readonly int _thresholdCount;

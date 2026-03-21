@@ -2,9 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Plugins.Grpc.Model;
 
-using System.Collections.Generic;
-
-
 /// <summary>
 /// The gRPC operation.
 /// </summary>
@@ -35,10 +32,10 @@ internal sealed class GrpcOperation
         GrpcOperationDataContractType request,
         GrpcOperationDataContractType response)
     {
-        this.ServiceName = serviceName;
-        this.Name = name;
-        this.Request = request;
-        this.Response = response;
+        ServiceName = serviceName;
+        Name = name;
+        Request = request;
+        Response = response;
     }
 
 
@@ -59,12 +56,12 @@ internal sealed class GrpcOperation
     {
         get
         {
-            if (string.IsNullOrEmpty(this.Package))
+            if (string.IsNullOrEmpty(Package))
             {
-                return this.ServiceName;
+                return ServiceName;
             }
 
-            return $"{this.Package}.{this.ServiceName}";
+            return $"{Package}.{ServiceName}";
         }
     }
 
@@ -93,19 +90,22 @@ internal sealed class GrpcOperation
     /// Returns list of gRPC operation parameters.
     /// </summary>
     /// <returns>The list of parameters.</returns>
-    internal static List<KernelParameterMetadata> CreateParameters() =>
-    [
-        // Register the "address" parameter so that it's possible to override it if needed.
-        new(GrpcOperation.AddressArgumentName)
-        {
-            Description = "Address for gRPC channel to use.",
-        },
+    internal static List<KernelParameterMetadata> CreateParameters()
+    {
+        return
+        [
+            // Register the "address" parameter so that it's possible to override it if needed.
+            new(AddressArgumentName)
+            {
+                Description = "Address for gRPC channel to use."
+            },
 
-        // Register the "payload" parameter to be used as gRPC operation request message.
-        new(GrpcOperation.PayloadArgumentName)
-        {
-            Description = "gRPC request message.",
-        },
-    ];
+            // Register the "payload" parameter to be used as gRPC operation request message.
+            new(PayloadArgumentName)
+            {
+                Description = "gRPC request message."
+            }
+        ];
+    }
 
 }

@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateOperationResult
@@ -16,5 +13,5 @@ internal sealed class WeaviateOperationResult
     public string? Status { get; set; }
 
     [JsonIgnore]
-    public bool? IsSuccess => this.Status?.Equals(Success, StringComparison.OrdinalIgnoreCase);
+    public bool? IsSuccess => Status?.Equals(Success, StringComparison.OrdinalIgnoreCase);
 }

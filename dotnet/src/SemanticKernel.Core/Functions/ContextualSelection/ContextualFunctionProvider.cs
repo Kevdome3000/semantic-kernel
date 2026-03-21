@@ -47,7 +47,8 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     private readonly FunctionStore _functionStore;
     private readonly ConcurrentQueue<ChatMessage> _recentMessages = [];
     private readonly ContextualFunctionProviderOptions _options;
-    private bool _areFunctionsVectorized = false;
+    private bool _areFunctionsVectorized;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ContextualFunctionProvider"/> class.
@@ -84,12 +85,13 @@ public sealed class ContextualFunctionProvider : AIContextProvider
             functions,
             maxNumberOfFunctions,
             loggerFactory,
-            options: new()
+            new FunctionStoreOptions
             {
-                EmbeddingValueProvider = _options.EmbeddingValueProvider,
+                EmbeddingValueProvider = _options.EmbeddingValueProvider
             }
-         );
+        );
     }
+
 
     /// <inheritdoc />
     public override async Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
@@ -107,11 +109,12 @@ public sealed class ContextualFunctionProvider : AIContextProvider
 
         // Get the function relevant to the context
         var functions = await _functionStore
-                .SearchAsync(context, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+            .SearchAsync(context, cancellationToken)
+            .ConfigureAwait(false);
 
         return new AIContext { AIFunctions = [.. functions] };
     }
+
 
     /// <inheritdoc/>
     public override Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
@@ -127,6 +130,7 @@ public sealed class ContextualFunctionProvider : AIContextProvider
 
         return Task.CompletedTask;
     }
+
 
     /// <summary>
     /// Builds the context from chat messages.

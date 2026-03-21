@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Microsoft.SemanticKernel.Arguments.Extensions;
 
 /// <summary>
@@ -11,6 +8,7 @@ namespace Microsoft.SemanticKernel.Arguments.Extensions;
 internal static class KernelArgumentsExtensions
 {
     private static readonly Dictionary<string, PromptExecutionSettings> s_emptySettings = [];
+
 
     /// <summary>
     /// Provides a merged instance of <see cref="KernelArguments"/> with precedence for override arguments.
@@ -41,9 +39,9 @@ internal static class KernelArgumentsExtensions
         // Merge execution settings with precedence for override arguments.
         Dictionary<string, PromptExecutionSettings>? settings =
             (overrideArguments.ExecutionSettings ?? s_emptySettings)
-                .Concat(primaryArguments.ExecutionSettings ?? s_emptySettings)
-                .GroupBy(entry => entry.Key)
-                .ToDictionary(entry => entry.Key, entry => entry.First().Value);
+            .Concat(primaryArguments.ExecutionSettings ?? s_emptySettings)
+            .GroupBy(entry => entry.Key)
+            .ToDictionary(entry => entry.Key, entry => entry.First().Value);
 
         // Merge parameters with precedence for override arguments.
         Dictionary<string, object?>? parameters =

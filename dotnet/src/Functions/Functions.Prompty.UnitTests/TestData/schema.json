@@ -12,6 +12,9 @@
       }
     }
   },
-  "required": [ "answer", "citations" ],
+  "required": [
+    "answer",
+    "citations"
+  ],
   "additionalProperties": false
 }  

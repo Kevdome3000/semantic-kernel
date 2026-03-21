@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Threading;
-using Microsoft.Azure.Cosmos;
-
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 
 internal sealed class ClientWrapper : IDisposable
@@ -11,31 +7,35 @@ internal sealed class ClientWrapper : IDisposable
     private readonly bool _ownsClient;
     private int _referenceCount = 1;
 
+
     internal ClientWrapper(CosmosClient cosmosClient, bool ownsClient)
     {
-        this.Client = cosmosClient;
-        this._ownsClient = ownsClient;
+        Client = cosmosClient;
+        _ownsClient = ownsClient;
     }
+
 
     internal CosmosClient Client { get; }
 
+
     internal ClientWrapper Share()
     {
-        if (this._ownsClient)
+        if (_ownsClient)
         {
-            Interlocked.Increment(ref this._referenceCount);
+            Interlocked.Increment(ref _referenceCount);
         }
 
         return this;
     }
 
+
     public void Dispose()
     {
-        if (this._ownsClient)
+        if (_ownsClient)
         {
-            if (Interlocked.Decrement(ref this._referenceCount) == 0)
+            if (Interlocked.Decrement(ref _referenceCount) == 0)
             {
-                this.Client.Dispose();
+                Client.Dispose();
             }
         }
     }

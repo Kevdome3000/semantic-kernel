@@ -47,6 +47,7 @@ public class ActivityProcessorTests
         Assert.Same(messageActivity, chatMessage.InnerContent);
     }
 
+
     /// <summary>
     /// Tests that a typing activity is processed and returns a ChatMessageContent with assistant role and ReasoningContent item.
     /// </summary>
@@ -74,6 +75,7 @@ public class ActivityProcessorTests
         Assert.Same(typingActivity, chatMessage.InnerContent);
     }
 
+
     /// <summary>
     /// Tests that an event activity is processed and returns no ChatMessageContent.
     /// </summary>
@@ -95,6 +97,7 @@ public class ActivityProcessorTests
         // Assert
         Assert.Empty(results);
     }
+
 
     /// <summary>
     /// Tests that an unknown activity type is processed and logs a warning.
@@ -125,6 +128,7 @@ public class ActivityProcessorTests
                 It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)),
             Times.Once);
     }
+
 
     /// <summary>
     /// Tests that a message activity with suggested actions returns a ChatMessageContent with action items.
@@ -166,6 +170,7 @@ public class ActivityProcessorTests
         Assert.Equal("Option 2", ((ActionContent)chatMessage.Items[2]).Text);
     }
 
+
     /// <summary>
     /// Tests that multiple activities are processed and all valid activities are returned as ChatMessageContent.
     /// </summary>
@@ -202,10 +207,14 @@ public class ActivityProcessorTests
         Assert.IsType<ReasoningContent>(results[1].Items[0]);
     }
 
+
     /// <summary>
     /// Helper method to create an IAsyncEnumerable from a collection of IActivity.
     /// </summary>
     /// <param name="activities">The activities to yield.</param>
     /// <returns>An async enumerable of IActivity.</returns>
-    private static IAsyncEnumerable<IActivity> CreateAsyncEnumerable(IEnumerable<IActivity> activities) => activities.ToAsyncEnumerable();
+    private static IAsyncEnumerable<IActivity> CreateAsyncEnumerable(IEnumerable<IActivity> activities)
+    {
+        return activities.ToAsyncEnumerable();
+    }
 }

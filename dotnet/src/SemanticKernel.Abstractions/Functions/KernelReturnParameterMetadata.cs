@@ -6,6 +6,7 @@ using System.Text.Json;
 using static Microsoft.SemanticKernel.KernelParameterMetadata;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides read-only metadata for a <see cref="KernelFunction"/>'s return parameter.
 /// </summary>
@@ -15,10 +16,7 @@ public sealed class KernelReturnParameterMetadata
     {
         [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT safe.")]
         [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
-        get
-        {
-            return s_empty ??= new KernelReturnParameterMetadata();
-        }
+        get => s_empty ??= new KernelReturnParameterMetadata();
     }
 
     /// <summary>The description of the return parameter.</summary>
@@ -29,10 +27,13 @@ public sealed class KernelReturnParameterMetadata
 
     /// <summary>The schema of the return parameter, potentially lazily-initialized.</summary>
     private InitializedSchema? _schema;
+
     /// <summary>The serializer options to generate JSON schema.</summary>
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
+
     /// <summary>The empty instance</summary>
     private static KernelReturnParameterMetadata? s_empty;
+
 
     /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/>.</summary>
     [RequiresUnreferencedCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
@@ -41,12 +42,14 @@ public sealed class KernelReturnParameterMetadata
     {
     }
 
+
     /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/>.</summary>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
     public KernelReturnParameterMetadata(JsonSerializerOptions jsonSerializerOptions)
     {
         _jsonSerializerOptions = jsonSerializerOptions;
     }
+
 
     /// <summary>Initializes a <see cref="KernelReturnParameterMetadata"/> as a copy of another <see cref="KernelReturnParameterMetadata"/>.</summary>
     [RequiresUnreferencedCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
@@ -59,6 +62,7 @@ public sealed class KernelReturnParameterMetadata
         _jsonSerializerOptions = metadata._jsonSerializerOptions;
     }
 
+
     /// <summary>Initializes a <see cref="KernelReturnParameterMetadata"/> as a copy of another <see cref="KernelReturnParameterMetadata"/>.</summary>
     /// <param name="metadata">The metadata to copy.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
@@ -69,6 +73,7 @@ public sealed class KernelReturnParameterMetadata
         _schema = metadata._schema;
         _jsonSerializerOptions = jsonSerializerOptions;
     }
+
 
     /// <summary>Gets a description of the return parameter, suitable for use in describing the purpose to a model.</summary>
     [AllowNull]

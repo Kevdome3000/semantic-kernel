@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.AI;
-
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 /// <summary>
@@ -11,6 +9,7 @@ public sealed class SqlServerVectorStoreOptions
 {
     internal static readonly SqlServerVectorStoreOptions Defaults = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStoreOptions"/> class.
     /// </summary>
@@ -18,11 +17,13 @@ public sealed class SqlServerVectorStoreOptions
     {
     }
 
+
     internal SqlServerVectorStoreOptions(SqlServerVectorStoreOptions? source)
     {
-        this.Schema = source?.Schema;
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+        Schema = source?.Schema;
+        EmbeddingGenerator = source?.EmbeddingGenerator;
     }
+
 
     /// <summary>
     /// Gets or sets the database schema.

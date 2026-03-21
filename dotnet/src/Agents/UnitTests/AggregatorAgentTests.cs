@@ -34,7 +34,7 @@ public class AggregatorAgentTests
             new(agent1, agent2, agent3)
             {
                 ExecutionSettings =
-                    new()
+                    new AgentGroupChatSettings
                     {
                         TerminationStrategy =
                         {
@@ -103,6 +103,7 @@ public class AggregatorAgentTests
         Assert.Equal(5, messages.Length); // Total messages on inner chat once synchronized (agent equivalent)
     }
 
+
     /// <summary>
     /// Ensure multiple <see cref="AggregatorAgent"/> instances do not share a channel.
     /// </summary>
@@ -121,13 +122,13 @@ public class AggregatorAgentTests
             new(agent1Exec, agent1Review)
             {
                 ExecutionSettings =
-                    new()
+                    new AgentGroupChatSettings
                     {
-                        TerminationStrategy = new ApprovalTerminationStrategy()
+                        TerminationStrategy = new ApprovalTerminationStrategy
                         {
                             Agents = [agent1Review],
                             MaximumIterations = 3,
-                            AutomaticReset = true,
+                            AutomaticReset = true
                         }
                     }
             };
@@ -135,13 +136,13 @@ public class AggregatorAgentTests
             new(agent2Exec, agent2Review)
             {
                 ExecutionSettings =
-                    new()
+                    new AgentGroupChatSettings
                     {
-                        TerminationStrategy = new ApprovalTerminationStrategy()
+                        TerminationStrategy = new ApprovalTerminationStrategy
                         {
                             Agents = [agent2Review],
                             MaximumIterations = 4,
-                            AutomaticReset = false,
+                            AutomaticReset = false
                         }
                     }
             };
@@ -151,7 +152,7 @@ public class AggregatorAgentTests
         AgentGroupChat userChat = new(agent1, agent2)
         {
             ExecutionSettings =
-                new()
+                new AgentGroupChatSettings
                 {
                     TerminationStrategy = new AgentTerminationStrategy(agent2)
                     {
@@ -174,13 +175,21 @@ public class AggregatorAgentTests
         Assert.Equal(agent2Review.Name, messages[3].AuthorName);
     }
 
-    private static MockAgent CreateMockAgent(string agentName) => new() { Name = agentName, Response = [new(AuthorRole.Assistant, $"{agentName} -> test") { AuthorName = agentName }] };
+
+    private static MockAgent CreateMockAgent(string agentName)
+    {
+        return new MockAgent { Name = agentName, Response = [new ChatMessageContent(AuthorRole.Assistant, $"{agentName} -> test") { AuthorName = agentName }] };
+    }
+
 
     private sealed class ApprovalTerminationStrategy : TerminationStrategy
     {
         protected override Task<bool> ShouldAgentTerminateAsync(Agent agent, IReadOnlyList<ChatMessageContent> history, CancellationToken cancellationToken)
-            => Task.FromResult(history[history.Count - 1].Content?.Contains("[OK]", StringComparison.OrdinalIgnoreCase) ?? false);
+        {
+            return Task.FromResult(history[history.Count - 1].Content?.Contains("[OK]", StringComparison.OrdinalIgnoreCase) ?? false);
+        }
     }
+
 
     private sealed class AgentTerminationStrategy(Agent lastAgent) : TerminationStrategy
     {

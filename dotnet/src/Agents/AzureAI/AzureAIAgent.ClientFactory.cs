@@ -31,6 +31,7 @@ public sealed partial class AzureAIAgent : Agent
         return new PersistentAgentsClient(endpoint, credential, clientOptions);
     }
 
+
     private static PersistentAgentsAdministrationClientOptions CreateAzureClientOptions(HttpClient? httpClient)
     {
         PersistentAgentsAdministrationClientOptions options = new();
@@ -41,11 +42,12 @@ public sealed partial class AzureAIAgent : Agent
         {
             options.Transport = new HttpClientTransport(httpClient);
             // Disable retry policy if and only if a custom HttpClient is provided.
-            options.RetryPolicy = new RetryPolicy(maxRetries: 0);
+            options.RetryPolicy = new RetryPolicy(0);
         }
 
         return options;
     }
+
 
     private class SemanticKernelHeadersPolicy : HttpPipelineSynchronousPolicy
     {

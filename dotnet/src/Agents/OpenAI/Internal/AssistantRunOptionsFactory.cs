@@ -11,11 +11,17 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI.Internal;
 /// </summary>
 internal static class AssistantRunOptionsFactory
 {
-    public static RunCreationOptions GenerateOptions(RunCreationOptions? defaultOptions, string? agentInstructions, RunCreationOptions? invocationOptions, string? threadExtensionsContext)
+    public static RunCreationOptions GenerateOptions(
+        RunCreationOptions? defaultOptions,
+        string? agentInstructions,
+        RunCreationOptions? invocationOptions,
+        string? threadExtensionsContext)
     {
         var additionalInstructions = string.Concat(
-            (invocationOptions?.AdditionalInstructions ?? defaultOptions?.AdditionalInstructions),
-            string.IsNullOrWhiteSpace(threadExtensionsContext) ? string.Empty : string.Concat(Environment.NewLine, Environment.NewLine, threadExtensionsContext));
+            invocationOptions?.AdditionalInstructions ?? defaultOptions?.AdditionalInstructions,
+            string.IsNullOrWhiteSpace(threadExtensionsContext)
+                ? string.Empty
+                : string.Concat(Environment.NewLine, Environment.NewLine, threadExtensionsContext));
 
         RunCreationOptions runOptions =
             new()
@@ -30,10 +36,11 @@ internal static class AssistantRunOptionsFactory
                 ResponseFormat = invocationOptions?.ResponseFormat ?? defaultOptions?.ResponseFormat,
                 Temperature = invocationOptions?.Temperature ?? defaultOptions?.Temperature,
                 ToolConstraint = invocationOptions?.ToolConstraint ?? defaultOptions?.ToolConstraint,
-                TruncationStrategy = invocationOptions?.TruncationStrategy ?? defaultOptions?.TruncationStrategy,
+                TruncationStrategy = invocationOptions?.TruncationStrategy ?? defaultOptions?.TruncationStrategy
             };
 
         IList<ThreadInitializationMessage>? additionalMessages = invocationOptions?.AdditionalMessages ?? defaultOptions?.AdditionalMessages;
+
         if (additionalMessages != null)
         {
             runOptions.AdditionalMessages.AddRange(additionalMessages);
@@ -44,6 +51,7 @@ internal static class AssistantRunOptionsFactory
 
         return runOptions;
     }
+
 
     private static void PopulateMetadata(RunCreationOptions? sourceOptions, RunCreationOptions targetOptions)
     {

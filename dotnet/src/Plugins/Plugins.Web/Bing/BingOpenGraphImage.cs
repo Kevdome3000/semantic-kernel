@@ -17,6 +17,7 @@ public sealed class BingOpenGraphImage
     {
     }
 
+
     /// <summary>
     /// The image's location.
     /// </summary>

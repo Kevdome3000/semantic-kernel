@@ -16,11 +16,13 @@ public interface IDocumentConnector
     /// <returns>String containing all text from the document.</returns>
     string ReadText(Stream stream);
 
+
     /// <summary>
     /// Initialize a document from the given stream.
     /// </summary>
     /// <param name="stream">IO stream</param>
     void Initialize(Stream stream);
+
 
     /// <summary>
     /// Append the specified text to the document.

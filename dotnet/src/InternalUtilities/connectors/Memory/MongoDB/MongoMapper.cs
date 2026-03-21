@@ -1,17 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Bson.Serialization.Conventions;
-using MongoDB.Bson.Serialization.Serializers;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
@@ -27,17 +16,18 @@ internal sealed class MongoMapper<TRecord> : IMongoMapper<TRecord>
     /// <summary>A key property name of the data model.</summary>
     private readonly string _keyPropertyModelName;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoMapper{TRecord}"/> class.
     /// </summary>
     /// <param name="model">The model.</param>
     public MongoMapper(CollectionModel model)
     {
-        this._model = model;
+        _model = model;
 
         var keyProperty = model.KeyProperty;
-        this._keyPropertyModelName = keyProperty.ModelName;
-        this._keyClrProperty = keyProperty.PropertyInfo;
+        _keyPropertyModelName = keyProperty.ModelName;
+        _keyClrProperty = keyProperty.PropertyInfo;
 
         var conventionPack = new ConventionPack
         {
@@ -51,6 +41,7 @@ internal sealed class MongoMapper<TRecord> : IMongoMapper<TRecord>
             type => type == typeof(TRecord));
     }
 
+
     public BsonDocument MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings)
     {
         var document = dataModel.ToBsonDocument();
@@ -58,20 +49,22 @@ internal sealed class MongoMapper<TRecord> : IMongoMapper<TRecord>
         // Handle key property mapping due to reserved key name in Mongo.
         if (!document.Contains(MongoConstants.MongoReservedKeyPropertyName))
         {
-            var value = document[this._keyPropertyModelName];
+            var value = document[_keyPropertyModelName];
 
-            document.Remove(this._keyPropertyModelName);
+            document.Remove(_keyPropertyModelName);
 
             document[MongoConstants.MongoReservedKeyPropertyName] = value;
         }
 
         // Go over the vector properties; those which have an embedding generator configured on them will have embedding generators, overwrite
         // the value in the JSON object with that.
-        for (var i = 0; i < this._model.VectorProperties.Count; i++)
+        for (var i = 0; i < _model.VectorProperties.Count; i++)
         {
-            var property = this._model.VectorProperties[i];
+            var property = _model.VectorProperties[i];
 
-            Embedding<float>? embedding = generatedEmbeddings?[i]?[recordIndex] is Embedding e ? (Embedding<float>)e : null;
+            Embedding<float>? embedding = generatedEmbeddings?[i]?[recordIndex] is Embedding e
+                ? (Embedding<float>)e
+                : null;
 
             if (embedding is null)
             {
@@ -100,22 +93,22 @@ internal sealed class MongoMapper<TRecord> : IMongoMapper<TRecord>
         return document;
     }
 
+
     public TRecord MapFromStorageToDataModel(BsonDocument storageModel, bool includeVectors)
     {
         // Handle key property mapping due to reserved key name in Mongo.
-        if (!this._keyPropertyModelName.Equals(MongoConstants.DataModelReservedKeyPropertyName, StringComparison.OrdinalIgnoreCase) &&
-            this._keyClrProperty?.GetCustomAttribute<BsonIdAttribute>() is null)
+        if (!_keyPropertyModelName.Equals(MongoConstants.DataModelReservedKeyPropertyName, StringComparison.OrdinalIgnoreCase) && _keyClrProperty?.GetCustomAttribute<BsonIdAttribute>() is null)
         {
             var value = storageModel[MongoConstants.MongoReservedKeyPropertyName];
 
             storageModel.Remove(MongoConstants.MongoReservedKeyPropertyName);
 
-            storageModel[this._keyPropertyModelName] = value;
+            storageModel[_keyPropertyModelName] = value;
         }
 
         if (includeVectors)
         {
-            foreach (var vectorProperty in this._model.VectorProperties)
+            foreach (var vectorProperty in _model.VectorProperties)
             {
                 // If the vector property .NET type is Embedding<float>, we need to create the BSON structure for it
                 // (BSON array embedded inside an object representing the embedding), so that the deserialization below
@@ -133,7 +126,7 @@ internal sealed class MongoMapper<TRecord> : IMongoMapper<TRecord>
         {
             // If includeVectors is false, remove the values; this allows us to not project them out of Mongo in the future
             // (more efficient) without introducing a breaking change.
-            foreach (var vectorProperty in this._model.VectorProperties)
+            foreach (var vectorProperty in _model.VectorProperties)
             {
                 storageModel.Remove(vectorProperty.StorageName);
             }
@@ -141,6 +134,7 @@ internal sealed class MongoMapper<TRecord> : IMongoMapper<TRecord>
 
         return BsonSerializer.Deserialize<TRecord>(storageModel);
     }
+
 
     private class GuidStandardRepresentationConvention : ConventionBase, IMemberMapConvention
     {

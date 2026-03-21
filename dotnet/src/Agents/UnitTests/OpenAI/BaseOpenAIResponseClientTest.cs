@@ -10,31 +10,33 @@ using OpenAI.Responses;
 namespace SemanticKernel.Agents.UnitTests.OpenAI;
 
 /// <summary>
-/// Base tests which use <see cref="OpenAIResponseClient"/>
+/// Base tests which use <see cref="ResponsesClient"/>
 /// </summary>
 public class BaseOpenAIResponseClientTest : IDisposable
 {
     internal MultipleHttpMessageHandlerStub MessageHandlerStub { get; }
     internal HttpClient HttpClient { get; }
-    internal OpenAIResponseClient Client { get; }
+    internal ResponsesClient Client { get; }
+
 
     internal BaseOpenAIResponseClientTest()
     {
-        this.MessageHandlerStub = new MultipleHttpMessageHandlerStub();
-        this.HttpClient = new HttpClient(this.MessageHandlerStub, disposeHandler: false);
+        MessageHandlerStub = new MultipleHttpMessageHandlerStub();
+        HttpClient = new HttpClient(MessageHandlerStub, false);
 
-        var clientOptions = new OpenAIClientOptions()
+        var clientOptions = new OpenAIClientOptions
         {
-            Transport = new HttpClientPipelineTransport(this.HttpClient)
+            Transport = new HttpClientPipelineTransport(HttpClient)
         };
-        this.Client = new OpenAIResponseClient("model", new ApiKeyCredential("apiKey"), clientOptions);
+        Client = new ResponsesClient(new ApiKeyCredential("apiKey"), clientOptions);
     }
+
 
     /// <inheritdoc />
     public void Dispose()
     {
-        this.MessageHandlerStub.Dispose();
-        this.HttpClient.Dispose();
+        MessageHandlerStub.Dispose();
+        HttpClient.Dispose();
 
         GC.SuppressFinalize(this);
     }

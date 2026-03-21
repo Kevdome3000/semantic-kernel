@@ -26,7 +26,13 @@ public interface IAgentRuntime : IHostedService, ISaveState
     /// <returns>A task representing the asynchronous operation, returning the response from the agent.</returns>
     /// <exception cref="CantHandleException">Thrown if the recipient cannot handle the message.</exception>
     /// <exception cref="UndeliverableException">Thrown if the message cannot be delivered.</exception>
-    ValueTask<object?> SendMessageAsync(object message, AgentId recipient, AgentId? sender = null, string? messageId = null, CancellationToken cancellationToken = default);
+    ValueTask<object?> SendMessageAsync(
+        object message,
+        AgentId recipient,
+        AgentId? sender = null,
+        string? messageId = null,
+        CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Publishes a message to all agents subscribed to the given topic.
@@ -39,7 +45,13 @@ public interface IAgentRuntime : IHostedService, ISaveState
     /// <param name="cancellationToken">A token to cancel the operation if needed.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     /// <exception cref="UndeliverableException">Thrown if the message cannot be delivered.</exception>
-    ValueTask PublishMessageAsync(object message, TopicId topic, AgentId? sender = null, string? messageId = null, CancellationToken cancellationToken = default);
+    ValueTask PublishMessageAsync(
+        object message,
+        TopicId topic,
+        AgentId? sender = null,
+        string? messageId = null,
+        CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Retrieves an agent by its unique identifier.
@@ -47,7 +59,8 @@ public interface IAgentRuntime : IHostedService, ISaveState
     /// <param name="agentId">The unique identifier of the agent.</param>
     /// <param name="lazy">If <c>true</c>, the agent is fetched lazily.</param>
     /// <returns>A task representing the asynchronous operation, returning the agent's ID.</returns>
-    ValueTask<AgentId> GetAgentAsync(AgentId agentId, bool lazy = true/*, CancellationToken? = default*/);
+    ValueTask<AgentId> GetAgentAsync(AgentId agentId, bool lazy = true /*, CancellationToken? = default*/);
+
 
     /// <summary>
     /// Retrieves an agent by its type.
@@ -56,7 +69,8 @@ public interface IAgentRuntime : IHostedService, ISaveState
     /// <param name="key">An optional key to specify variations of the agent. Defaults to "default".</param>
     /// <param name="lazy">If <c>true</c>, the agent is fetched lazily.</param>
     /// <returns>A task representing the asynchronous operation, returning the agent's ID.</returns>
-    ValueTask<AgentId> GetAgentAsync(AgentType agentType, string key = "default", bool lazy = true/*, CancellationToken? = default*/);
+    ValueTask<AgentId> GetAgentAsync(AgentType agentType, string key = "default", bool lazy = true /*, CancellationToken? = default*/);
+
 
     /// <summary>
     /// Retrieves an agent by its string representation.
@@ -65,7 +79,8 @@ public interface IAgentRuntime : IHostedService, ISaveState
     /// <param name="key">An optional key to specify variations of the agent. Defaults to "default".</param>
     /// <param name="lazy">If <c>true</c>, the agent is fetched lazily.</param>
     /// <returns>A task representing the asynchronous operation, returning the agent's ID.</returns>
-    ValueTask<AgentId> GetAgentAsync(string agent, string key = "default", bool lazy = true/*, CancellationToken? = default*/);
+    ValueTask<AgentId> GetAgentAsync(string agent, string key = "default", bool lazy = true /*, CancellationToken? = default*/);
+
 
     /// <summary>
     /// Saves the state of an agent.
@@ -73,7 +88,8 @@ public interface IAgentRuntime : IHostedService, ISaveState
     /// </summary>
     /// <param name="agentId">The ID of the agent whose state is being saved.</param>
     /// <returns>A task representing the asynchronous operation, returning a dictionary of the saved state.</returns>
-    ValueTask<JsonElement> SaveAgentStateAsync(AgentId agentId/*, CancellationToken? cancellationToken = default*/);
+    ValueTask<JsonElement> SaveAgentStateAsync(AgentId agentId /*, CancellationToken? cancellationToken = default*/);
+
 
     /// <summary>
     /// Loads the saved state into an agent.
@@ -81,21 +97,24 @@ public interface IAgentRuntime : IHostedService, ISaveState
     /// <param name="agentId">The ID of the agent whose state is being restored.</param>
     /// <param name="state">The state dictionary to restore.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    ValueTask LoadAgentStateAsync(AgentId agentId, JsonElement state/*, CancellationToken? cancellationToken = default*/);
+    ValueTask LoadAgentStateAsync(AgentId agentId, JsonElement state /*, CancellationToken? cancellationToken = default*/);
+
 
     /// <summary>
     /// Retrieves metadata for an agent.
     /// </summary>
     /// <param name="agentId">The ID of the agent.</param>
     /// <returns>A task representing the asynchronous operation, returning the agent's metadata.</returns>
-    ValueTask<AgentMetadata> GetAgentMetadataAsync(AgentId agentId/*, CancellationToken? cancellationToken = default*/);
+    ValueTask<AgentMetadata> GetAgentMetadataAsync(AgentId agentId /*, CancellationToken? cancellationToken = default*/);
+
 
     /// <summary>
     /// Adds a new subscription for the runtime to handle when processing published messages.
     /// </summary>
     /// <param name="subscription">The subscription to add.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    ValueTask AddSubscriptionAsync(ISubscriptionDefinition subscription/*, CancellationToken? cancellationToken = default*/);
+    ValueTask AddSubscriptionAsync(ISubscriptionDefinition subscription /*, CancellationToken? cancellationToken = default*/);
+
 
     /// <summary>
     /// Removes a subscription from the runtime.
@@ -103,7 +122,8 @@ public interface IAgentRuntime : IHostedService, ISaveState
     /// <param name="subscriptionId">The unique identifier of the subscription to remove.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     /// <exception cref="KeyNotFoundException">Thrown if the subscription does not exist.</exception>
-    ValueTask RemoveSubscriptionAsync(string subscriptionId/*, CancellationToken? cancellationToken = default*/);
+    ValueTask RemoveSubscriptionAsync(string subscriptionId /*, CancellationToken? cancellationToken = default*/);
+
 
     /// <summary>
     /// Registers an agent factory with the runtime, associating it with a specific agent type.
@@ -113,6 +133,7 @@ public interface IAgentRuntime : IHostedService, ISaveState
     /// <param name="factoryFunc">A function that asynchronously creates the agent instance.</param>
     /// <returns>A task representing the asynchronous operation, returning the registered <see cref="AgentType"/>.</returns>
     ValueTask<AgentType> RegisterAgentFactoryAsync(AgentType type, Func<AgentId, IAgentRuntime, ValueTask<IHostableAgent>> factoryFunc);
+
 
     /// <summary>
     /// Attempts to retrieve an <see cref="AgentProxy"/> for the specified agent.

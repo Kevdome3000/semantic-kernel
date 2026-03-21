@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using MongoDB.Bson;
-
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 
 /// <summary>
@@ -65,6 +59,7 @@ internal static class CosmosMongoCollectionCreateMapping
         return indexArray;
     }
 
+
     /// <summary>
     /// Returns an array of indexes to create for filterable data properties.
     /// </summary>
@@ -104,26 +99,32 @@ internal static class CosmosMongoCollectionCreateMapping
         return indexArray;
     }
 
+
     /// <summary>
     /// More information about Azure CosmosDB for MongoDB index kinds here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search" />.
     /// </summary>
     private static string GetIndexKind(string? indexKind, string vectorPropertyName)
-        => CosmosMongoCollectionSearchMapping.GetVectorPropertyIndexKind(indexKind) switch
+    {
+        return CosmosMongoCollectionSearchMapping.GetVectorPropertyIndexKind(indexKind) switch
         {
             IndexKind.Hnsw => "vector-hnsw",
             IndexKind.IvfFlat => "vector-ivf",
             _ => throw new NotSupportedException($"Index kind '{indexKind}' on {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
         };
+    }
+
 
     /// <summary>
     /// More information about Azure CosmosDB for MongoDB distance functions here: <see href="https://learn.microsoft.com/en-us/azure/cosmos-db/mongodb/vcore/vector-search" />.
     /// </summary>
     private static string GetDistanceFunction(string? distanceFunction, string vectorPropertyName)
-        => CosmosMongoCollectionSearchMapping.GetVectorPropertyDistanceFunction(distanceFunction) switch
+    {
+        return CosmosMongoCollectionSearchMapping.GetVectorPropertyDistanceFunction(distanceFunction) switch
         {
             DistanceFunction.CosineDistance => "COS",
             DistanceFunction.DotProductSimilarity => "IP",
             DistanceFunction.EuclideanDistance => "L2",
             _ => throw new NotSupportedException($"Distance function '{distanceFunction}' for {nameof(VectorStoreVectorProperty)} '{vectorPropertyName}' is not supported by the Azure CosmosDB for MongoDB VectorStore.")
         };
+    }
 }

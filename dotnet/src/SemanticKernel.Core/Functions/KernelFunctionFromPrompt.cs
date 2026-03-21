@@ -19,6 +19,7 @@ using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextGeneration;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// A Semantic Kernel "Semantic" prompt function.
 /// </summary>
@@ -64,13 +65,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             promptTemplateConfig.Template = promptTemplate;
         }
 
-        var promptConfig = promptTemplateConfig ?? new PromptTemplateConfig
-        {
-            TemplateFormat = templateFormat ?? PromptTemplateConfig.SemanticKernelTemplateFormat,
-            Name = functionName,
-            Description = description ?? "Generic function, unknown purpose",
-            Template = promptTemplate
-        };
+        var promptConfig = promptTemplateConfig
+            ?? new PromptTemplateConfig
+            {
+                TemplateFormat = templateFormat ?? PromptTemplateConfig.SemanticKernelTemplateFormat,
+                Name = functionName,
+                Description = description ?? "Generic function, unknown purpose",
+                Template = promptTemplate
+            };
 
         if (executionSettings is not null)
         {
@@ -80,10 +82,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
 
         return Create(
-            promptTemplate: factory.Create(promptConfig),
-            promptConfig: promptConfig,
-            loggerFactory: loggerFactory);
+            factory.Create(promptConfig),
+            promptConfig,
+            loggerFactory);
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
@@ -124,13 +127,14 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             promptTemplateConfig.Template = promptTemplate;
         }
 
-        var promptConfig = promptTemplateConfig ?? new PromptTemplateConfig
-        {
-            TemplateFormat = templateFormat ?? PromptTemplateConfig.SemanticKernelTemplateFormat,
-            Name = functionName,
-            Description = description ?? "Generic function, unknown purpose",
-            Template = promptTemplate
-        };
+        var promptConfig = promptTemplateConfig
+            ?? new PromptTemplateConfig
+            {
+                TemplateFormat = templateFormat ?? PromptTemplateConfig.SemanticKernelTemplateFormat,
+                Name = functionName,
+                Description = description ?? "Generic function, unknown purpose",
+                Template = promptTemplate
+            };
 
         if (executionSettings is not null)
         {
@@ -140,11 +144,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
 
         return Create(
-            promptTemplate: factory.Create(promptConfig),
-            promptConfig: promptConfig,
-            jsonSerializerOptions: jsonSerializerOptions,
-            loggerFactory: loggerFactory);
+            factory.Create(promptConfig),
+            promptConfig,
+            jsonSerializerOptions,
+            loggerFactory);
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
@@ -163,10 +168,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
 
         return Create(
-            promptTemplate: factory.Create(promptConfig),
-            promptConfig: promptConfig,
-            loggerFactory: loggerFactory);
+            factory.Create(promptConfig),
+            promptConfig,
+            loggerFactory);
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
@@ -185,11 +191,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         var factory = promptTemplateFactory ?? new KernelPromptTemplateFactory(loggerFactory);
 
         return Create(
-            promptTemplate: factory.Create(promptConfig),
-            promptConfig: promptConfig,
-            jsonSerializerOptions: jsonSerializerOptions,
-            loggerFactory: loggerFactory);
+            factory.Create(promptConfig),
+            promptConfig,
+            jsonSerializerOptions,
+            loggerFactory);
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template and a prompt template configuration.
@@ -209,10 +216,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         Verify.NotNull(promptConfig);
 
         return new KernelFunctionFromPrompt(
-            template: promptTemplate,
-            promptConfig: promptConfig,
-            logger: loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance);
+            promptTemplate,
+            promptConfig,
+            loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance);
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template and a prompt template configuration.
@@ -233,11 +241,12 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         Verify.NotNull(jsonSerializerOptions);
 
         return new KernelFunctionFromPrompt(
-            template: promptTemplate,
-            promptConfig: promptConfig,
-            jsonSerializerOptions: jsonSerializerOptions,
-            logger: loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance);
+            promptTemplate,
+            promptConfig,
+            jsonSerializerOptions,
+            loggerFactory?.CreateLogger(typeof(KernelFunctionFactory)) ?? NullLogger.Instance);
     }
+
 
     /// <inheritdoc/>
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
@@ -248,11 +257,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         AddDefaultValues(arguments);
 
         var promptRenderingResult = await RenderPromptAsync(
-            kernel,
-            arguments,
-            isStreaming: false,
-            cancellationToken).
-            ConfigureAwait(false);
+                kernel,
+                arguments,
+                false,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         // Return function result if it was set in prompt filter.
         if (promptRenderingResult.FunctionResult is not null)
@@ -264,15 +273,26 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         return promptRenderingResult.AIService switch
         {
-            IChatCompletionService chatCompletion => await GetChatCompletionResultAsync(chatCompletion, kernel, promptRenderingResult, cancellationToken).
-                ConfigureAwait(false),
-            ITextGenerationService textGeneration => await GetTextGenerationResultAsync(textGeneration, kernel, promptRenderingResult, cancellationToken).
-                ConfigureAwait(false),
-            IChatClient chatClient => await GetChatClientResultAsync(chatClient, kernel, promptRenderingResult, cancellationToken).ConfigureAwait(false),
+            IChatCompletionService chatCompletion => await GetChatCompletionResultAsync(chatCompletion,
+                    kernel,
+                    promptRenderingResult,
+                    cancellationToken)
+                .ConfigureAwait(false),
+            ITextGenerationService textGeneration => await GetTextGenerationResultAsync(textGeneration,
+                    kernel,
+                    promptRenderingResult,
+                    cancellationToken)
+                .ConfigureAwait(false),
+            IChatClient chatClient => await GetChatClientResultAsync(chatClient,
+                    kernel,
+                    promptRenderingResult,
+                    cancellationToken)
+                .ConfigureAwait(false),
             // The service selector didn't find an appropriate service. This should only happen with a poorly implemented selector.
             _ => throw new NotSupportedException($"The AI service {promptRenderingResult.AIService.GetType()} is not supported. Supported services are {typeof(IChatCompletionService)} and {typeof(ITextGenerationService)}")
         };
     }
+
 
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
@@ -283,25 +303,34 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         AddDefaultValues(arguments);
 
         var result = await RenderPromptAsync(
-            kernel,
-            arguments,
-            isStreaming: true,
-            cancellationToken).
-            ConfigureAwait(false);
+                kernel,
+                arguments,
+                true,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         IAsyncEnumerable<object>? asyncReference = null;
 
         if (result.AIService is IChatCompletionService chatCompletion)
         {
-            asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken);
+            asyncReference = chatCompletion.GetStreamingChatMessageContentsAsync(result.RenderedPrompt,
+                result.ExecutionSettings,
+                kernel,
+                cancellationToken);
         }
         else if (result.AIService is ITextGenerationService textGeneration)
         {
-            asyncReference = textGeneration.GetStreamingTextContentsWithDefaultParserAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken);
+            asyncReference = textGeneration.GetStreamingTextContentsWithDefaultParserAsync(result.RenderedPrompt,
+                result.ExecutionSettings,
+                kernel,
+                cancellationToken);
         }
         else if (result.AIService is IChatClient chatClient)
         {
-            asyncReference = chatClient.GetStreamingResponseAsync(result.RenderedPrompt, result.ExecutionSettings, kernel, cancellationToken);
+            asyncReference = chatClient.GetStreamingResponseAsync(result.RenderedPrompt,
+                result.ExecutionSettings,
+                kernel,
+                cancellationToken);
         }
         else
         {
@@ -318,18 +347,21 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 if (typeof(TResult) == typeof(string))
                 {
                     yield return (TResult)(object)kernelContent.ToString();
+
                     continue;
                 }
 
                 if (content is TResult contentAsT)
                 {
                     yield return contentAsT;
+
                     continue;
                 }
 
                 if (kernelContent.InnerContent is TResult innerContentAsT)
                 {
                     yield return innerContentAsT;
+
                     continue;
                 }
 
@@ -338,6 +370,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                     if (content is StreamingKernelContent byteKernelContent)
                     {
                         yield return (TResult)(object)byteKernelContent.ToByteArray();
+
                         continue;
                     }
                 }
@@ -347,6 +380,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                     && content is StreamingChatMessageContent streamingChatMessageContent)
                 {
                     yield return (TResult)(object)streamingChatMessageContent.ToChatResponseUpdate();
+
                     continue;
                 }
             }
@@ -355,24 +389,28 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 if (typeof(TResult) == typeof(string))
                 {
                     yield return (TResult)(object)chatUpdate.ToString();
+
                     continue;
                 }
 
                 if (chatUpdate is TResult contentAsT)
                 {
                     yield return contentAsT;
+
                     continue;
                 }
 
                 if (chatUpdate.Contents is TResult contentListsAsT)
                 {
                     yield return contentListsAsT;
+
                     continue;
                 }
 
                 if (chatUpdate.RawRepresentation is TResult rawRepresentationAsT)
                 {
                     yield return rawRepresentationAsT;
+
                     continue;
                 }
 
@@ -380,9 +418,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 {
                     // Return the first matching content type of an update if any
                     var updateContent = chatUpdate.Contents.FirstOrDefault(c => c is TResult);
+
                     if (updateContent is not null)
                     {
                         yield return (TResult)(object)updateContent;
+
                         continue;
                     }
                 }
@@ -390,9 +430,11 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 if (typeof(TResult) == typeof(byte[]))
                 {
                     DataContent? dataContent = (DataContent?)chatUpdate.Contents.FirstOrDefault(c => c is DataContent dataContent);
+
                     if (dataContent is not null)
                     {
                         yield return (TResult)(object)dataContent.Data.ToArray();
+
                         continue;
                     }
                 }
@@ -402,6 +444,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 if (typeof(StreamingKernelContent).IsAssignableFrom(typeof(TResult)))
                 {
                     yield return (TResult)(object)chatUpdate.ToStreamingChatMessageContent();
+
                     continue;
                 }
             }
@@ -411,6 +454,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         // There is no post cancellation check to override the result as the stream data was already sent.
     }
+
 
     /// <inheritdoc/>
     public override KernelFunction Clone(string? pluginName = null)
@@ -433,6 +477,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             _logger);
     }
 
+
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     private KernelFunctionFromPrompt(
@@ -451,23 +496,25 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     {
     }
 
+
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
         PromptTemplateConfig promptConfig,
         JsonSerializerOptions jsonSerializerOptions,
         ILogger logger) : this(
-            template,
-            promptConfig.Name ?? CreateRandomFunctionName(),
-            null,
-            promptConfig.Description ?? string.Empty,
-            promptConfig.GetKernelParametersMetadata(jsonSerializerOptions),
-            jsonSerializerOptions,
-            promptConfig.GetKernelReturnParameterMetadata(jsonSerializerOptions),
-            promptConfig.ExecutionSettings,
-            promptConfig.InputVariables,
-            logger)
+        template,
+        promptConfig.Name ?? CreateRandomFunctionName(),
+        null,
+        promptConfig.Description ?? string.Empty,
+        promptConfig.GetKernelParametersMetadata(jsonSerializerOptions),
+        jsonSerializerOptions,
+        promptConfig.GetKernelReturnParameterMetadata(jsonSerializerOptions),
+        promptConfig.ExecutionSettings,
+        promptConfig.InputVariables,
+        logger)
     {
     }
+
 
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
@@ -492,9 +539,9 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         _promptTemplate = template;
 
-        _inputVariables = inputVariables.Select(iv => new InputVariable(iv)).
-            ToList();
+        _inputVariables = inputVariables.Select(iv => new InputVariable(iv)).ToList();
     }
+
 
     private KernelFunctionFromPrompt(
         IPromptTemplate template,
@@ -507,19 +554,20 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         Dictionary<string, PromptExecutionSettings> executionSettings,
         List<InputVariable> inputVariables,
         ILogger logger) : base(
-            functionName ?? CreateRandomFunctionName(),
-            pluginName,
-            description ?? string.Empty,
-            parameters,
-            jsonSerializerOptions,
-            returnParameter,
-            executionSettings)
+        functionName ?? CreateRandomFunctionName(),
+        pluginName,
+        description ?? string.Empty,
+        parameters,
+        jsonSerializerOptions,
+        returnParameter,
+        executionSettings)
     {
         _logger = logger;
 
         _promptTemplate = template;
         _inputVariables = inputVariables.Select(iv => new InputVariable(iv)).ToList();
     }
+
 
     #region private
 
@@ -539,15 +587,16 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
     /// <summary><see cref="Counter{T}"/> to record function invocation prompt token usage.</summary>
     private static readonly Histogram<long> s_invocationTokenUsagePrompt = s_meter.CreateHistogram<long>(
-        name: "semantic_kernel.function.invocation.token_usage.prompt",
-        unit: "{token}",
-        description: "Measures the prompt token usage");
+        "semantic_kernel.function.invocation.token_usage.prompt",
+        "{token}",
+        "Measures the prompt token usage");
 
     /// <summary><see cref="Counter{T}"/> to record function invocation completion token usage.</summary>
     private static readonly Histogram<long> s_invocationTokenUsageCompletion = s_meter.CreateHistogram<long>(
-        name: "semantic_kernel.function.invocation.token_usage.completion",
-        unit: "{token}",
-        description: "Measures the completion token usage");
+        "semantic_kernel.function.invocation.token_usage.completion",
+        "{token}",
+        "Measures the completion token usage");
+
 
     /// <summary>Add default values to the arguments if an argument is not defined</summary>
     private void AddDefaultValues(KernelArguments arguments)
@@ -561,6 +610,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
+
     private async Task<PromptRenderingResult> RenderPromptAsync(
         Kernel kernel,
         KernelArguments arguments,
@@ -573,21 +623,31 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         string renderedPrompt = string.Empty;
 
         // Try to use IChatCompletionService.
-        if (serviceSelector.TrySelectAIService<IChatCompletionService>(
-                kernel, this, arguments,
-                out IChatCompletionService? chatService, out PromptExecutionSettings? executionSettings))
+        if (serviceSelector.TrySelectAIService(
+            kernel,
+            this,
+            arguments,
+            out IChatCompletionService? chatService,
+            out PromptExecutionSettings? executionSettings))
         {
             aiService = chatService;
         }
-        else if (serviceSelector.TrySelectAIService<ITextGenerationService>(
-            kernel, this, arguments,
-            out ITextGenerationService? textService, out executionSettings))
+        else if (serviceSelector.TrySelectAIService(
+            kernel,
+            this,
+            arguments,
+            out ITextGenerationService? textService,
+            out executionSettings))
         {
             aiService = textService;
         }
 #pragma warning disable CA2000 // Dispose objects before losing scope
         else if (serviceSelector is IChatClientSelector chatClientServiceSelector
-            && chatClientServiceSelector.TrySelectChatClient<IChatClient>(kernel, this, arguments, out var chatClient, out executionSettings))
+            && chatClientServiceSelector.TrySelectChatClient<IChatClient>(kernel,
+                this,
+                arguments,
+                out var chatClient,
+                out executionSettings))
         {
             // Resolves a ChatClient as AIService so it don't need to implement IChatCompletionService.
             aiService = new ChatClientAIService(chatClient);
@@ -596,15 +656,18 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         if (aiService is null)
         {
             var message = new StringBuilder().Append("No service was found for any of the supported types: ").Append(typeof(IChatCompletionService)).Append(", ").Append(typeof(ITextGenerationService)).Append(", ").Append(typeof(IChatClient)).Append('.');
+
             if (ExecutionSettings is not null)
             {
                 string serviceIds = string.Join("|", ExecutionSettings.Keys);
+
                 if (!string.IsNullOrEmpty(serviceIds))
                 {
                     message.Append(" Expected serviceIds: ").Append(serviceIds).Append('.');
                 }
 
                 string modelIds = string.Join("|", ExecutionSettings.Values.Select(model => model.ModelId));
+
                 if (!string.IsNullOrEmpty(modelIds))
                 {
                     message.Append(" Expected modelIds: ").Append(modelIds).Append('.');
@@ -617,22 +680,25 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         Verify.NotNull(aiService);
 
-        var renderingContext = await kernel.OnPromptRenderAsync(this, arguments, isStreaming, executionSettings, async (context) =>
-            {
-                renderedPrompt = await _promptTemplate.RenderAsync(kernel, context.Arguments, cancellationToken).
-                    ConfigureAwait(false);
-
-                if (_logger.IsEnabled(LogLevel.Trace))
+        var renderingContext = await kernel.OnPromptRenderAsync(this,
+                arguments,
+                isStreaming,
+                executionSettings,
+                async context =>
                 {
-                    _logger.LogTrace("Rendered prompt: {Prompt}", renderedPrompt);
-                }
+                    renderedPrompt = await _promptTemplate.RenderAsync(kernel, context.Arguments, cancellationToken).ConfigureAwait(false);
 
-                context.RenderedPrompt = renderedPrompt;
-            }, cancellationToken).
-            ConfigureAwait(false);
+                    if (_logger.IsEnabled(LogLevel.Trace))
+                    {
+                        _logger.LogTrace("Rendered prompt: {Prompt}", renderedPrompt);
+                    }
 
-        if (!string.IsNullOrWhiteSpace(renderingContext.RenderedPrompt) &&
-            !string.Equals(renderingContext.RenderedPrompt, renderedPrompt, StringComparison.OrdinalIgnoreCase))
+                    context.RenderedPrompt = renderedPrompt;
+                },
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        if (!string.IsNullOrWhiteSpace(renderingContext.RenderedPrompt) && !string.Equals(renderingContext.RenderedPrompt, renderedPrompt, StringComparison.OrdinalIgnoreCase))
         {
             renderedPrompt = renderingContext.RenderedPrompt!;
 
@@ -642,15 +708,20 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             }
         }
 
-        return new(aiService, renderedPrompt)
+        return new PromptRenderingResult(aiService, renderedPrompt)
         {
             ExecutionSettings = executionSettings,
             FunctionResult = renderingContext.Result
         };
     }
 
+
     /// <summary>Create a random, valid function name.</summary>
-    internal static string CreateRandomFunctionName(string? prefix = "Function") => $"{prefix}_{Guid.NewGuid():N}";
+    internal static string CreateRandomFunctionName(string? prefix = "Function")
+    {
+        return $"{prefix}_{Guid.NewGuid():N}";
+    }
+
 
     /// <summary>
     /// Captures usage details, including token information.
@@ -658,9 +729,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     [ExcludeFromCodeCoverage]
     private void CaptureUsageDetails(string? modelId, IReadOnlyDictionary<string, object?>? metadata, ILogger logger)
     {
-        if (!logger.IsEnabled(LogLevel.Information) &&
-            !s_invocationTokenUsageCompletion.Enabled &&
-            !s_invocationTokenUsagePrompt.Enabled)
+        if (!logger.IsEnabled(LogLevel.Information) && !s_invocationTokenUsageCompletion.Enabled && !s_invocationTokenUsagePrompt.Enabled)
         {
             // Bail early to avoid unnecessary work.
             return;
@@ -707,10 +776,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             return;
         }
 
-        if (jsonObject.TryGetProperty("PromptTokens", out var promptTokensJson) &&
-            promptTokensJson.TryGetInt32(out int promptTokens) &&
-            jsonObject.TryGetProperty("CompletionTokens", out var completionTokensJson) &&
-            completionTokensJson.TryGetInt32(out int completionTokens))
+        if (jsonObject.TryGetProperty("PromptTokens", out var promptTokensJson) && promptTokensJson.TryGetInt32(out int promptTokens) && jsonObject.TryGetProperty("CompletionTokens", out var completionTokensJson) && completionTokensJson.TryGetInt32(out int completionTokens))
         {
             TagList tags = new()
             {
@@ -721,12 +787,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             s_invocationTokenUsagePrompt.Record(promptTokens, in tags);
             s_invocationTokenUsageCompletion.Record(completionTokens, in tags);
         }
-        else if (jsonObject.TryGetProperty("InputTokenCount", out var pascalInputTokensJson) &&
-            pascalInputTokensJson.TryGetInt32(out int pascalInputTokens) &&
-            jsonObject.TryGetProperty("OutputTokenCount", out var pascalOutputTokensJson) &&
-            pascalOutputTokensJson.TryGetInt32(out int pascalOutputTokens))
+        else if (jsonObject.TryGetProperty("InputTokenCount", out var pascalInputTokensJson) && pascalInputTokensJson.TryGetInt32(out int pascalInputTokens) && jsonObject.TryGetProperty("OutputTokenCount", out var pascalOutputTokensJson) && pascalOutputTokensJson.TryGetInt32(out int pascalOutputTokens))
         {
-            TagList tags = new() {
+            TagList tags = new()
+            {
                 { MeasurementFunctionTagName, Name },
                 { MeasurementModelTagName, modelId }
             };
@@ -734,10 +798,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
             s_invocationTokenUsagePrompt.Record(pascalInputTokens, in tags);
             s_invocationTokenUsageCompletion.Record(pascalOutputTokens, in tags);
         }
-        else if (jsonObject.TryGetProperty("inputTokenCount", out var inputTokensJson) &&
-                 inputTokensJson.TryGetInt32(out int inputTokens) &&
-                 jsonObject.TryGetProperty("outputTokenCount", out var outputTokensJson) &&
-                 outputTokensJson.TryGetInt32(out int outputTokens))
+        else if (jsonObject.TryGetProperty("inputTokenCount", out var inputTokensJson) && inputTokensJson.TryGetInt32(out int inputTokens) && jsonObject.TryGetProperty("outputTokenCount", out var outputTokensJson) && outputTokensJson.TryGetInt32(out int outputTokens))
         {
             TagList tags = new()
             {
@@ -754,14 +815,13 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
+
     /// <summary>
     /// Captures usage details, including token information.
     /// </summary>
     private void CaptureUsageDetails(string? modelId, UsageDetails? usageDetails, ILogger logger)
     {
-        if (!logger.IsEnabled(LogLevel.Information) &&
-            !s_invocationTokenUsageCompletion.Enabled &&
-            !s_invocationTokenUsagePrompt.Enabled)
+        if (!logger.IsEnabled(LogLevel.Information) && !s_invocationTokenUsageCompletion.Enabled && !s_invocationTokenUsagePrompt.Enabled)
         {
             // Bail early to avoid unnecessary work.
             return;
@@ -781,7 +841,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
 
         if (usageDetails.InputTokenCount.HasValue && usageDetails.OutputTokenCount.HasValue)
         {
-            TagList tags = new() {
+            TagList tags = new()
+            {
                 { MeasurementFunctionTagName, Name },
                 { MeasurementModelTagName, modelId }
             };
@@ -794,6 +855,7 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         }
     }
 
+
     private async Task<FunctionResult> GetChatCompletionResultAsync(
         IChatCompletionService chatCompletion,
         Kernel kernel,
@@ -804,8 +866,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 promptRenderingResult.RenderedPrompt,
                 promptRenderingResult.ExecutionSettings,
                 kernel,
-                cancellationToken).
-            ConfigureAwait(false);
+                cancellationToken)
+            .ConfigureAwait(false);
 
         if (chatContents is { Count: 0 })
         {
@@ -819,24 +881,29 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         // If collection has one element, return single result
         if (chatContents.Count == 1)
         {
-            return new FunctionResult(this, chatContent, kernel.Culture, chatContent.Metadata) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
+            return new FunctionResult(this,
+                chatContent,
+                kernel.Culture,
+                chatContent.Metadata) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
         }
 
         // Otherwise, return multiple results
         return new FunctionResult(this, chatContents, kernel.Culture) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
     }
 
+
     private async Task<FunctionResult> GetChatClientResultAsync(
-       IChatClient chatClient,
-       Kernel kernel,
-       PromptRenderingResult promptRenderingResult,
-       CancellationToken cancellationToken)
+        IChatClient chatClient,
+        Kernel kernel,
+        PromptRenderingResult promptRenderingResult,
+        CancellationToken cancellationToken)
     {
         var chatResponse = await chatClient.GetResponseAsync(
-            promptRenderingResult.RenderedPrompt,
-            promptRenderingResult.ExecutionSettings,
-            kernel,
-            cancellationToken).ConfigureAwait(false);
+                promptRenderingResult.RenderedPrompt,
+                promptRenderingResult.ExecutionSettings,
+                kernel,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         if (chatResponse.Messages is { Count: 0 })
         {
@@ -856,9 +923,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         {
             Culture = kernel.Culture,
             RenderedPrompt = promptRenderingResult.RenderedPrompt,
-            Metadata = chatResponse.AdditionalProperties,
+            Metadata = chatResponse.AdditionalProperties
         };
     }
+
 
     private async Task<FunctionResult> GetTextGenerationResultAsync(
         ITextGenerationService textGeneration,
@@ -870,8 +938,8 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
                 promptRenderingResult.RenderedPrompt,
                 promptRenderingResult.ExecutionSettings,
                 kernel,
-                cancellationToken).
-            ConfigureAwait(false);
+                cancellationToken)
+            .ConfigureAwait(false);
 
         if (textContents is { Count: 0 })
         {
@@ -885,7 +953,10 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
         // If collection has one element, return single result
         if (textContents.Count == 1)
         {
-            return new FunctionResult(this, textContent, kernel.Culture, textContent.Metadata) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
+            return new FunctionResult(this,
+                textContent,
+                kernel.Culture,
+                textContent.Metadata) { RenderedPrompt = promptRenderingResult.RenderedPrompt };
         }
 
         // Otherwise, return multiple results
@@ -893,5 +964,6 @@ internal sealed class KernelFunctionFromPrompt : KernelFunction
     }
 
     #endregion
+
 
 }

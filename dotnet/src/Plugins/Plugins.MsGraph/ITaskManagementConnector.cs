@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
@@ -21,6 +18,7 @@ public interface ITaskManagementConnector
     /// <returns>Added task definition.</returns>
     Task<TaskManagementTask?> AddTaskAsync(string listId, TaskManagementTask task, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Delete a task from a task list.
     /// </summary>
@@ -29,11 +27,13 @@ public interface ITaskManagementConnector
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task DeleteTaskAsync(string listId, string taskId, CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Get the default task list.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     Task<TaskManagementTaskList?> GetDefaultTaskListAsync(CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Get all the task lists.
@@ -41,6 +41,7 @@ public interface ITaskManagementConnector
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>All of the user's task lists.</returns>
     Task<IEnumerable<TaskManagementTaskList>?> GetTaskListsAsync(CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Get the all tasks in a task list.

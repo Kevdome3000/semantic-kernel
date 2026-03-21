@@ -15,7 +15,9 @@ public class MessageContext(string messageId, CancellationToken cancellationToke
     /// Initializes a new instance of the <see cref="MessageContext"/> class.
     /// </summary>
     public MessageContext(CancellationToken cancellation) : this(Guid.NewGuid().ToString(), cancellation)
-    { }
+    {
+    }
+
 
     /// <summary>
     /// Gets or sets the unique identifier for this message.

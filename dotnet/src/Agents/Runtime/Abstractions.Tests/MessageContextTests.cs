@@ -24,6 +24,7 @@ public class MessageContextTests
         Assert.Equal(cancellationToken, messageContext.CancellationToken);
     }
 
+
     [Fact]
     public void ConstructWithCancellationTokenTest()
     {
@@ -37,6 +38,7 @@ public class MessageContextTests
         Assert.NotNull(messageContext.MessageId);
         Assert.Equal(cancellationToken, messageContext.CancellationToken);
     }
+
 
     [Fact]
     public void AssignSenderTest()
@@ -52,6 +54,7 @@ public class MessageContextTests
         Assert.Equal(sender, messageContext.Sender);
     }
 
+
     [Fact]
     public void AssignTopicTest()
     {
@@ -65,6 +68,7 @@ public class MessageContextTests
         // Assert
         Assert.Equal(topic, messageContext.Topic);
     }
+
 
     [Fact]
     public void AssignIsRpcPropertyTest()

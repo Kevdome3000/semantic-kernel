@@ -28,6 +28,7 @@ internal static partial class OrchestrationResultLogMessages
         string orchestration,
         TopicId topic);
 
+
     /// <summary>
     /// Logs <see cref="OrchestrationResult{TValue}"/> timeout while awaiting the orchestration.
     /// </summary>
@@ -40,6 +41,7 @@ internal static partial class OrchestrationResultLogMessages
         string orchestration,
         TopicId topic);
 
+
     /// <summary>
     /// Logs <see cref="OrchestrationResult{TValue}"/> cancelled the orchestration.
     /// </summary>
@@ -51,6 +53,7 @@ internal static partial class OrchestrationResultLogMessages
         this ILogger logger,
         string orchestration,
         TopicId topic);
+
 
     /// <summary>
     /// Logs <see cref="OrchestrationResult{TValue}"/> the awaited the orchestration has completed.

@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
-using Microsoft.Extensions.AI;
-
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 
 /// <summary>
@@ -17,11 +14,13 @@ public sealed class CosmosNoSqlVectorStoreOptions
     {
     }
 
+
     internal CosmosNoSqlVectorStoreOptions(CosmosNoSqlVectorStoreOptions? source)
     {
-        this.JsonSerializerOptions = source?.JsonSerializerOptions;
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+        JsonSerializerOptions = source?.JsonSerializerOptions;
+        EmbeddingGenerator = source?.EmbeddingGenerator;
     }
+
 
     /// <summary>
     /// Gets or sets the JSON serializer options to use when converting between the data model and the Azure CosmosDB NoSQL record.

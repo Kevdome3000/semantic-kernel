@@ -16,6 +16,7 @@ public static class AgentRuntimeExtensions
 {
     internal const string DirectMessageTopicSuffix = ":";
 
+
     /// <summary>
     /// Registers an agent type with the runtime, providing a factory function to create instances of the agent.
     /// </summary>
@@ -25,9 +26,19 @@ public static class AgentRuntimeExtensions
     /// <param name="serviceProvider">The service provider used for dependency injection.</param>
     /// <param name="additionalArguments">Additional arguments to pass to the agent's constructor.</param>
     /// <returns>A <see cref="ValueTask{AgentType}"/> representing the asynchronous operation of registering the agent.</returns>
-    public static ValueTask<AgentType> RegisterAgentTypeAsync<TAgent>(this IAgentRuntime runtime, AgentType type, IServiceProvider serviceProvider, params object[] additionalArguments)
+    public static ValueTask<AgentType> RegisterAgentTypeAsync<TAgent>(
+        this IAgentRuntime runtime,
+        AgentType type,
+        IServiceProvider serviceProvider,
+        params object[] additionalArguments)
         where TAgent : BaseAgent
-        => RegisterAgentTypeAsync(runtime, type, typeof(TAgent), serviceProvider, additionalArguments);
+    {
+        return runtime.RegisterAgentTypeAsync(type,
+            typeof(TAgent),
+            serviceProvider,
+            additionalArguments);
+    }
+
 
     /// <summary>
     /// Registers an agent type with the runtime using the specified runtime type and additional constructor arguments.
@@ -38,12 +49,21 @@ public static class AgentRuntimeExtensions
     /// <param name="serviceProvider">The service provider for dependency injection.</param>
     /// <param name="additionalArguments">Additional arguments to pass to the agent's constructor.</param>
     /// <returns>A <see cref="ValueTask{AgentType}"/> representing the asynchronous registration operation containing the registered agent type.</returns>
-    public static ValueTask<AgentType> RegisterAgentTypeAsync(this IAgentRuntime runtime, AgentType type, Type runtimeType, IServiceProvider serviceProvider, params object[] additionalArguments)
+    public static ValueTask<AgentType> RegisterAgentTypeAsync(
+        this IAgentRuntime runtime,
+        AgentType type,
+        Type runtimeType,
+        IServiceProvider serviceProvider,
+        params object[] additionalArguments)
     {
-        ValueTask<IHostableAgent> factory(AgentId id, IAgentRuntime runtime) => ActivateAgentAsync(serviceProvider, runtimeType, [id, runtime, .. additionalArguments]);
+        ValueTask<IHostableAgent> factory(AgentId id, IAgentRuntime runtime)
+        {
+            return ActivateAgentAsync(serviceProvider, runtimeType, [id, runtime, .. additionalArguments]);
+        }
 
         return runtime.RegisterAgentFactoryAsync(type, factory);
     }
+
 
     /// <summary>
     /// Registers implicit subscriptions for an agent type based on the type's custom attributes.
@@ -54,9 +74,19 @@ public static class AgentRuntimeExtensions
     /// <param name="skipClassSubscriptions">If true, class-level subscriptions are skipped.</param>
     /// <param name="skipDirectMessageSubscription">If true, the direct message subscription is skipped.</param>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous subscription registration operation.</returns>
-    public static ValueTask RegisterImplicitAgentSubscriptionsAsync<TAgent>(this IAgentRuntime runtime, AgentType type, bool skipClassSubscriptions = false, bool skipDirectMessageSubscription = false)
+    public static ValueTask RegisterImplicitAgentSubscriptionsAsync<TAgent>(
+        this IAgentRuntime runtime,
+        AgentType type,
+        bool skipClassSubscriptions = false,
+        bool skipDirectMessageSubscription = false)
         where TAgent : BaseAgent
-        => RegisterImplicitAgentSubscriptionsAsync(runtime, type, typeof(TAgent), skipClassSubscriptions, skipDirectMessageSubscription);
+    {
+        return runtime.RegisterImplicitAgentSubscriptionsAsync(type,
+            typeof(TAgent),
+            skipClassSubscriptions,
+            skipDirectMessageSubscription);
+    }
+
 
     /// <summary>
     /// Registers implicit subscriptions for the specified agent type using runtime type information.
@@ -67,14 +97,24 @@ public static class AgentRuntimeExtensions
     /// <param name="skipClassSubscriptions">If true, class-level subscriptions are not registered.</param>
     /// <param name="skipDirectMessageSubscription">If true, the direct message subscription is not registered.</param>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous subscription registration operation.</returns>
-    public static async ValueTask RegisterImplicitAgentSubscriptionsAsync(this IAgentRuntime runtime, AgentType type, Type runtimeType, bool skipClassSubscriptions = false, bool skipDirectMessageSubscription = false)
+    public static async ValueTask RegisterImplicitAgentSubscriptionsAsync(
+        this IAgentRuntime runtime,
+        AgentType type,
+        Type runtimeType,
+        bool skipClassSubscriptions = false,
+        bool skipDirectMessageSubscription = false)
     {
-        ISubscriptionDefinition[] subscriptions = BindSubscriptionsForAgentType(type, runtimeType, skipClassSubscriptions, skipDirectMessageSubscription);
+        ISubscriptionDefinition[] subscriptions = BindSubscriptionsForAgentType(type,
+            runtimeType,
+            skipClassSubscriptions,
+            skipDirectMessageSubscription);
+
         foreach (ISubscriptionDefinition subscription in subscriptions)
         {
             await runtime.AddSubscriptionAsync(subscription).ConfigureAwait(false);
         }
     }
+
 
     /// <summary>
     /// Binds subscription definitions for the given agent type based on the custom attributes applied to the runtime type.
@@ -84,7 +124,11 @@ public static class AgentRuntimeExtensions
     /// <param name="skipClassSubscriptions">If true, class-level subscriptions are skipped.</param>
     /// <param name="skipDirectMessageSubscription">If true, the direct message subscription is skipped.</param>
     /// <returns>An array of subscription definitions for the agent type.</returns>
-    private static ISubscriptionDefinition[] BindSubscriptionsForAgentType(AgentType agentType, Type runtimeType, bool skipClassSubscriptions = false, bool skipDirectMessageSubscription = false)
+    private static ISubscriptionDefinition[] BindSubscriptionsForAgentType(
+        AgentType agentType,
+        Type runtimeType,
+        bool skipClassSubscriptions = false,
+        bool skipDirectMessageSubscription = false)
     {
         List<ISubscriptionDefinition> subscriptions = [];
 
@@ -103,6 +147,7 @@ public static class AgentRuntimeExtensions
 
         return [.. subscriptions];
     }
+
 
     /// <summary>
     /// Instantiates and activates an agent asynchronously using dependency injection.

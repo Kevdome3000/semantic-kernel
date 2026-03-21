@@ -2,16 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;
 
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Extensions.Logging;
-
-
 /// <summary>
 /// An HTTPClient logging handler for ensuring diagnostic headers for Graph API calls are available.
 /// </summary>
@@ -43,7 +33,7 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
     /// <param name="logger">The <see cref="ILogger"/> to use for logging.</param>
     public MsGraphClientLoggingHandler(ILogger logger)
     {
-        this._logger = logger;
+        _logger = logger;
     }
 
 
@@ -55,15 +45,13 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
     /// <returns>The task object representing the asynchronous operation.</returns>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        request.Headers.Add(ClientRequestIdHeaderName, Guid.NewGuid().
-            ToString());
+        request.Headers.Add(ClientRequestIdHeaderName, Guid.NewGuid().ToString());
 
-        this.LogHttpMessage(request.Headers, request.RequestUri, "REQUEST");
+        LogHttpMessage(request.Headers, request.RequestUri, "REQUEST");
 
-        HttpResponseMessage response = await base.SendAsync(request, cancellationToken).
-            ConfigureAwait(false);
+        HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-        this.LogHttpMessage(response.Headers, response.RequestMessage?.RequestUri, "RESPONSE");
+        LogHttpMessage(response.Headers, response.RequestMessage?.RequestUri, "RESPONSE");
 
         return response;
     }
@@ -74,19 +62,15 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
     /// </summary>
     private void LogHttpMessage(HttpHeaders headers, Uri? uri, string prefix)
     {
-        if (this._logger.IsEnabled(LogLevel.Debug))
+        if (_logger.IsEnabled(LogLevel.Debug))
         {
-            var message = new StringBuilder().Append(prefix).
-                Append(' ').
-                Append(uri).
-                AppendLine();
+            var message = new StringBuilder().Append(prefix).Append(' ').Append(uri).AppendLine();
 
-            foreach (string headerName in this._headerNamesToLog)
+            foreach (string headerName in _headerNamesToLog)
             {
                 if (headers.TryGetValues(headerName, out IEnumerable<string>? values))
                 {
-                    message.Append(headerName).
-                        Append(": ");
+                    message.Append(headerName).Append(": ");
 
                     using (IEnumerator<string> e = values.GetEnumerator())
                     {
@@ -96,8 +80,7 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
 
                             while (e.MoveNext())
                             {
-                                message.Append(", ").
-                                    Append(e.Current);
+                                message.Append(", ").Append(e.Current);
                             }
                         }
                     }
@@ -106,7 +89,7 @@ public class MsGraphClientLoggingHandler : DelegatingHandler
                 }
             }
 
-            this._logger.LogDebug("{0}", message);
+            _logger.LogDebug("{0}", message);
         }
     }
 

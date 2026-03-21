@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Text.Json;
-using System.Text.Json.Nodes;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 /// <summary>
@@ -28,9 +25,9 @@ internal static class WeaviateCollectionSearchMapping
             _ => null
         };
 
-        var vectorPropertyName = hasNamedVectors ?
-            WeaviateConstants.ReservedVectorPropertyName :
-            WeaviateConstants.ReservedSingleVectorPropertyName;
+        var vectorPropertyName = hasNamedVectors
+            ? WeaviateConstants.ReservedVectorPropertyName
+            : WeaviateConstants.ReservedSingleVectorPropertyName;
 
         var id = additionalProperties?[WeaviateConstants.ReservedKeyPropertyName];
         var vectors = additionalProperties?[vectorPropertyName];
@@ -39,7 +36,7 @@ internal static class WeaviateCollectionSearchMapping
         {
             { WeaviateConstants.ReservedKeyPropertyName, id?.DeepClone() },
             { WeaviateConstants.ReservedDataPropertyName, result?.DeepClone() },
-            { vectorPropertyName, vectors?.DeepClone() },
+            { vectorPropertyName, vectors?.DeepClone() }
         };
 
         return (storageModel, score);

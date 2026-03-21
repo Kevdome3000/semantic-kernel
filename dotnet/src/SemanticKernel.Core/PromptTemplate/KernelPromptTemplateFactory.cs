@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides an implementation of <see cref="IPromptTemplateFactory"/> for the <see cref="PromptTemplateConfig.SemanticKernelTemplateFormat"/> template format.
 /// </summary>
@@ -28,6 +28,7 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
     /// </remarks>
     public bool AllowDangerouslySetContent { get; init; } = false;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelPromptTemplateFactory"/> class.
     /// </summary>
@@ -36,6 +37,7 @@ public sealed class KernelPromptTemplateFactory : IPromptTemplateFactory
     {
         _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
     }
+
 
     /// <inheritdoc/>
     public bool TryCreate(PromptTemplateConfig templateConfig, [NotNullWhen(true)] out IPromptTemplate? result)

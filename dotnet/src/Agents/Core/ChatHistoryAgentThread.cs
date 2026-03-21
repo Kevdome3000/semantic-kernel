@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents;
 
@@ -17,12 +16,14 @@ public sealed class ChatHistoryAgentThread : AgentThread
 {
     private readonly ChatHistory _chatHistory = [];
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryAgentThread"/> class.
     /// </summary>
     public ChatHistoryAgentThread()
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistoryAgentThread"/> class that resumes an existing thread.
@@ -32,14 +33,16 @@ public sealed class ChatHistoryAgentThread : AgentThread
     public ChatHistoryAgentThread(ChatHistory chatHistory, string? id = null)
     {
         Verify.NotNull(chatHistory);
-        this._chatHistory = chatHistory;
-        this.Id = id ?? Guid.NewGuid().ToString("N");
+        _chatHistory = chatHistory;
+        Id = id ?? Guid.NewGuid().ToString("N");
     }
+
 
     /// <summary>
     /// Gets the underlying <see cref="Microsoft.SemanticKernel.ChatCompletion.ChatHistory"/> object that stores the chat history for this thread.
     /// </summary>
-    public ChatHistory ChatHistory => this._chatHistory;
+    public ChatHistory ChatHistory => _chatHistory;
+
 
     /// <summary>
     /// Creates the thread and returns the thread id.
@@ -51,25 +54,29 @@ public sealed class ChatHistoryAgentThread : AgentThread
         return base.CreateAsync(cancellationToken);
     }
 
+
     /// <inheritdoc />
     protected override Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
     {
         return Task.FromResult<string?>(Guid.NewGuid().ToString("N"));
     }
 
+
     /// <inheritdoc />
     protected override Task DeleteInternalAsync(CancellationToken cancellationToken)
     {
-        this._chatHistory.Clear();
+        _chatHistory.Clear();
         return Task.CompletedTask;
     }
+
 
     /// <inheritdoc />
     protected override Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
     {
-        this._chatHistory.Add(newMessage);
+        _chatHistory.Add(newMessage);
         return Task.CompletedTask;
     }
+
 
     /// <summary>
     /// Asynchronously retrieves all messages in the thread.
@@ -83,17 +90,17 @@ public sealed class ChatHistoryAgentThread : AgentThread
     [Experimental("SKEXP0110")]
     public async IAsyncEnumerable<ChatMessageContent> GetMessagesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (this.IsDeleted)
+        if (IsDeleted)
         {
             throw new InvalidOperationException("This thread has been deleted and cannot be used anymore.");
         }
 
-        if (this.Id is null)
+        if (Id is null)
         {
-            await this.CreateAsync(cancellationToken).ConfigureAwait(false);
+            await CreateAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        foreach (var message in this._chatHistory)
+        foreach (var message in _chatHistory)
         {
             yield return message;
         }

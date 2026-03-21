@@ -1,15 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-
 namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 
 /// <summary>
@@ -31,6 +21,7 @@ public class CrewAIEnterprise
     /// </summary>
     public const string KickoffAndWaitFunctionName = "KickoffAndWait";
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CrewAIEnterprise"/> class.
     /// </summary>
@@ -39,15 +30,21 @@ public class CrewAIEnterprise
     /// <param name="httpClientFactory">The HTTP client factory. </param>
     /// <param name="loggerFactory">The logger factory. </param>
     /// <param name="pollingInterval">Defines the delay time between status calls when pollin for a kickoff to complete.</param>
-    public CrewAIEnterprise(Uri endpoint, Func<Task<string>> authTokenProvider, IHttpClientFactory? httpClientFactory = null, ILoggerFactory? loggerFactory = null, TimeSpan? pollingInterval = default)
+    public CrewAIEnterprise(
+        Uri endpoint,
+        Func<Task<string>> authTokenProvider,
+        IHttpClientFactory? httpClientFactory = null,
+        ILoggerFactory? loggerFactory = null,
+        TimeSpan? pollingInterval = default)
     {
         Verify.NotNull(endpoint, nameof(endpoint));
         Verify.NotNull(authTokenProvider, nameof(authTokenProvider));
 
-        this._crewClient = new CrewAIEnterpriseClient(endpoint, authTokenProvider, httpClientFactory);
-        this._logger = loggerFactory?.CreateLogger(typeof(CrewAIEnterprise)) ?? NullLogger.Instance;
-        this._pollingInterval = pollingInterval ?? TimeSpan.FromSeconds(1);
+        _crewClient = new CrewAIEnterpriseClient(endpoint, authTokenProvider, httpClientFactory);
+        _logger = loggerFactory?.CreateLogger(typeof(CrewAIEnterprise)) ?? NullLogger.Instance;
+        _pollingInterval = pollingInterval ?? TimeSpan.FromSeconds(1);
     }
+
 
     /// <summary>
     /// Internal constructor used for testing purposes.
@@ -55,9 +52,10 @@ public class CrewAIEnterprise
     internal CrewAIEnterprise(ICrewAIEnterpriseClient crewClient, ILoggerFactory? loggerFactory = null)
     {
         Verify.NotNull(crewClient, nameof(crewClient));
-        this._crewClient = crewClient;
-        this._logger = loggerFactory?.CreateLogger(typeof(CrewAIEnterprise)) ?? NullLogger.Instance;
+        _crewClient = crewClient;
+        _logger = loggerFactory?.CreateLogger(typeof(CrewAIEnterprise)) ?? NullLogger.Instance;
     }
+
 
     /// <summary>
     /// Kicks off (starts) a CrewAI Crew with the given inputs and callbacks.
@@ -76,14 +74,14 @@ public class CrewAIEnterprise
     {
         try
         {
-            CrewAIKickoffResponse kickoffTask = await this._crewClient.KickoffAsync(
-                inputs: inputs,
-                taskWebhookUrl: taskWebhookUrl?.AbsoluteUri,
-                stepWebhookUrl: stepWebhookUrl?.AbsoluteUri,
-                crewWebhookUrl: crewWebhookUrl?.AbsoluteUri)
+            CrewAIKickoffResponse kickoffTask = await _crewClient.KickoffAsync(
+                    inputs,
+                    taskWebhookUrl?.AbsoluteUri,
+                    stepWebhookUrl?.AbsoluteUri,
+                    crewWebhookUrl?.AbsoluteUri)
                 .ConfigureAwait(false);
 
-            this._logger.LogInformation("CrewAI Crew kicked off with Id: {KickoffId}", kickoffTask.KickoffId);
+            _logger.LogInformation("CrewAI Crew kicked off with Id: {KickoffId}", kickoffTask.KickoffId);
             return kickoffTask.KickoffId;
         }
         catch (Exception ex)
@@ -91,6 +89,7 @@ public class CrewAIEnterprise
             throw new KernelException(message: "Failed to kickoff CrewAI Crew.", innerException: ex);
         }
     }
+
 
     /// <summary>
     /// Gets the current status of the CrewAI Crew kickoff.
@@ -106,9 +105,9 @@ public class CrewAIEnterprise
 
         try
         {
-            CrewAIStatusResponse statusResponse = await this._crewClient.GetStatusAsync(kickoffId).ConfigureAwait(false);
+            CrewAIStatusResponse statusResponse = await _crewClient.GetStatusAsync(kickoffId).ConfigureAwait(false);
 
-            this._logger.LogInformation("CrewAI Crew status for kickoff Id: {KickoffId} is {Status}", kickoffId, statusResponse.State);
+            _logger.LogInformation("CrewAI Crew status for kickoff Id: {KickoffId} is {Status}", kickoffId, statusResponse.State);
             return statusResponse;
         }
         catch (Exception ex)
@@ -116,6 +115,7 @@ public class CrewAIEnterprise
             throw new KernelException(message: $"Failed to get status of CrewAI Crew with kickoff Id: {kickoffId}.", innerException: ex);
         }
     }
+
 
     /// <summary>
     /// Waits for the Crew kickoff to complete and returns the result.
@@ -133,22 +133,22 @@ public class CrewAIEnterprise
         {
             CrewAIStatusResponse? statusResponse = null;
             var status = CrewAIKickoffState.Pending;
+
             do
             {
-                this._logger.LogInformation("Waiting for CrewAI Crew with kickoff Id: {KickoffId} to complete. Current state: {Status}", kickoffId, status);
+                _logger.LogInformation("Waiting for CrewAI Crew with kickoff Id: {KickoffId} to complete. Current state: {Status}", kickoffId, status);
                 await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
-                statusResponse = await this._crewClient.GetStatusAsync(kickoffId).ConfigureAwait(false);
+                statusResponse = await _crewClient.GetStatusAsync(kickoffId).ConfigureAwait(false);
                 status = statusResponse.State;
-            }
-            while (!this.IsTerminalState(status));
+            } while (!IsTerminalState(status));
 
-            this._logger.LogInformation("CrewAI Crew with kickoff Id: {KickoffId} completed with status: {Status}", kickoffId, statusResponse.State);
+            _logger.LogInformation("CrewAI Crew with kickoff Id: {KickoffId} completed with status: {Status}", kickoffId, statusResponse.State);
 
             return status switch
             {
                 CrewAIKickoffState.Failed => throw new KernelException(message: $"CrewAI Crew failed with error: {statusResponse.Result}"),
                 CrewAIKickoffState.Success => statusResponse.Result ?? string.Empty,
-                _ => throw new KernelException(message: "Failed to parse unexpected response from CrewAI status response."),
+                _ => throw new KernelException(message: "Failed to parse unexpected response from CrewAI status response.")
             };
         }
         catch (Exception ex)
@@ -156,6 +156,7 @@ public class CrewAIEnterprise
             throw new KernelException(message: $"Failed to wait for completion of CrewAI Crew with kickoff Id: {kickoffId}.", innerException: ex);
         }
     }
+
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> that can be used to invoke the CrewAI Crew.
@@ -176,10 +177,10 @@ public class CrewAIEnterprise
         Uri? stepWebhookUrl = null,
         Uri? crewWebhookUrl = null)
     {
-        var options = new KernelFunctionFromMethodOptions()
+        var options = new KernelFunctionFromMethodOptions
         {
             Parameters = inputMetadata?.Select(i => new KernelParameterMetadata(i.Name) { Description = i.Description, IsRequired = true, ParameterType = i.Type }) ?? [],
-            ReturnParameter = new() { ParameterType = typeof(string) },
+            ReturnParameter = new() { ParameterType = typeof(string) }
         };
 
         // Define the kernel function implementation for kickoff
@@ -190,10 +191,10 @@ public class CrewAIEnterprise
             Dictionary<string, object?> args = BuildArguments(inputMetadata, arguments);
 
             return await this.KickoffAsync(
-                inputs: args,
-                taskWebhookUrl: taskWebhookUrl,
-                stepWebhookUrl: stepWebhookUrl,
-                crewWebhookUrl: crewWebhookUrl)
+                    inputs: args,
+                    taskWebhookUrl: taskWebhookUrl,
+                    stepWebhookUrl: stepWebhookUrl,
+                    crewWebhookUrl: crewWebhookUrl)
                 .ConfigureAwait(false);
         }
 
@@ -205,13 +206,13 @@ public class CrewAIEnterprise
             Dictionary<string, object?> args = BuildArguments(inputMetadata, arguments);
 
             var kickoffId = await this.KickoffAsync(
-                inputs: args,
-                taskWebhookUrl: taskWebhookUrl,
-                stepWebhookUrl: stepWebhookUrl,
-                crewWebhookUrl: crewWebhookUrl)
+                    inputs: args,
+                    taskWebhookUrl: taskWebhookUrl,
+                    stepWebhookUrl: stepWebhookUrl,
+                    crewWebhookUrl: crewWebhookUrl)
                 .ConfigureAwait(false);
 
-            return await this.WaitForCrewCompletionAsync(kickoffId).ConfigureAwait(false);
+            return await WaitForCrewCompletionAsync(kickoffId).ConfigureAwait(false);
         }
 
         return KernelPluginFactory.CreateFromFunctions(
@@ -220,10 +221,11 @@ public class CrewAIEnterprise
             [
                 KernelFunctionFactory.CreateFromMethod(KickoffAsync, new(), options),
                 KernelFunctionFactory.CreateFromMethod(KickoffAndWaitAsync, new(), options),
-                KernelFunctionFactory.CreateFromMethod(this.GetCrewKickoffStatusAsync),
-                KernelFunctionFactory.CreateFromMethod(this.WaitForCrewCompletionAsync)
+                KernelFunctionFactory.CreateFromMethod(GetCrewKickoffStatusAsync),
+                KernelFunctionFactory.CreateFromMethod(WaitForCrewCompletionAsync)
             ]);
     }
+
 
     #region Private Methods
 
@@ -237,10 +239,12 @@ public class CrewAIEnterprise
         return state is CrewAIKickoffState.Failed or CrewAIKickoffState.Failure or CrewAIKickoffState.Success or CrewAIKickoffState.NotFound;
     }
 
+
     private static Dictionary<string, object?> BuildArguments(IEnumerable<CrewAIInputMetadata>? inputMetadata, KernelArguments arguments)
     {
         // Extract the required arguments from the KernelArguments by name
         Dictionary<string, object?> args = [];
+
         if (inputMetadata is not null)
         {
             foreach (var input in inputMetadata)
@@ -261,6 +265,7 @@ public class CrewAIEnterprise
                 {
                     // Try to get a converter for the input type
                     var converter = TypeConverterFactory.GetTypeConverter(input.Type);
+
                     if (converter is not null)
                     {
                         args.Add(input.Name, converter.ConvertFrom(value));
@@ -279,4 +284,6 @@ public class CrewAIEnterprise
     }
 
     #endregion
+
+
 }

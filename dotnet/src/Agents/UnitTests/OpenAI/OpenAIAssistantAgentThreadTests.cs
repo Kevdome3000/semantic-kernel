@@ -24,14 +24,16 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
     private readonly HttpMessageHandlerStub _messageHandlerStub;
     private readonly HttpClient _httpClient;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgentThreadTests"/> class.
     /// </summary>
     public OpenAIAssistantAgentThreadTests()
     {
-        this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
+        _messageHandlerStub = new HttpMessageHandlerStub();
+        _httpClient = new HttpClient(_messageHandlerStub, false);
     }
+
 
     /// <summary>
     /// Tests that the constructor verifies parameters and throws <see cref="ArgumentNullException"/> when necessary.
@@ -51,6 +53,7 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
         Assert.NotNull(thread);
     }
 
+
     /// <summary>
     /// Tests that the constructor for resuming a thread uses the provided parameters.
     /// </summary>
@@ -68,6 +71,7 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
         Assert.Equal("threadId", threadWithId.Id);
     }
 
+
     /// <summary>
     /// Tests that the CreateAsync method invokes the client and sets the thread ID.
     /// </summary>
@@ -75,9 +79,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
     public async Task CreateShouldInvokeClientAsync()
     {
         // Arrange
-        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+        _messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
 
-        var client = this.CreateTestClient();
+        var client = CreateTestClient();
 
         var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient());
 
@@ -86,8 +90,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
 
         // Assert
         Assert.Equal("thread_abc123", thread.Id);
-        Assert.Empty(this._messageHandlerStub.ResponseQueue);
+        Assert.Empty(_messageHandlerStub.ResponseQueue);
     }
+
 
     /// <summary>
     /// Tests that the CreateAsync method invokes the client and sets the thread ID.
@@ -96,9 +101,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
     public async Task CreateWithOptionsShouldInvokeClientAsync()
     {
         // Arrange
-        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+        _messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
 
-        var client = this.CreateTestClient();
+        var client = CreateTestClient();
 
         var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient(), new ThreadCreationOptions());
 
@@ -107,8 +112,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
 
         // Assert
         Assert.Equal("thread_abc123", thread.Id);
-        Assert.Empty(this._messageHandlerStub.ResponseQueue);
+        Assert.Empty(_messageHandlerStub.ResponseQueue);
     }
+
 
     /// <summary>
     /// Tests that the CreateAsync method invokes the client and sets the thread ID.
@@ -117,9 +123,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
     public async Task CreateWithParamsShouldInvokeClientAsync()
     {
         // Arrange
-        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+        _messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
 
-        var client = this.CreateTestClient();
+        var client = CreateTestClient();
 
         var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient(), [new ChatMessageContent(AuthorRole.User, "Hello")]);
 
@@ -128,8 +134,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
 
         // Assert
         Assert.Equal("thread_abc123", thread.Id);
-        Assert.Empty(this._messageHandlerStub.ResponseQueue);
+        Assert.Empty(_messageHandlerStub.ResponseQueue);
     }
+
 
     /// <summary>
     /// Tests that the DeleteAsync method invokes the client.
@@ -138,10 +145,10 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
     public async Task DeleteShouldInvokeClientAsync()
     {
         // Arrange
-        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
-        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteThread);
+        _messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+        _messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteThread);
 
-        var client = this.CreateTestClient();
+        var client = CreateTestClient();
 
         var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient());
         await thread.CreateAsync();
@@ -150,8 +157,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
         await thread.DeleteAsync();
 
         // Assert
-        Assert.Empty(this._messageHandlerStub.ResponseQueue);
+        Assert.Empty(_messageHandlerStub.ResponseQueue);
     }
+
 
     /// <summary>
     /// Tests that the GetMessagesAsync method invokes the client.
@@ -160,8 +168,8 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
     public async Task GetMessagesShouldInvokeClientAsync()
     {
         // Arrange
-        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.ListMessagesPageFinal);
-        var client = this.CreateTestClient();
+        _messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.ListMessagesPageFinal);
+        var client = CreateTestClient();
         var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient(), "thread_abc123");
 
         // Act
@@ -171,8 +179,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
         Assert.NotNull(messages);
         Assert.Single(messages);
         Assert.Equal("How does AI work? Explain it in simple terms.", messages[0].Content);
-        Assert.Empty(this._messageHandlerStub.ResponseQueue);
+        Assert.Empty(_messageHandlerStub.ResponseQueue);
     }
+
 
     /// <summary>
     /// Tests that the GetMessagesAsync method creates a thread if it does not exist yet.
@@ -181,9 +190,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
     public async Task GetMessagesShouldCreateThreadAsync()
     {
         // Arrange
-        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
-        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.ListMessagesPageFinal);
-        var client = this.CreateTestClient();
+        _messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+        _messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.ListMessagesPageFinal);
+        var client = CreateTestClient();
         var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient());
 
         // Act
@@ -193,8 +202,9 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
         Assert.NotNull(messages);
         Assert.Single(messages);
         Assert.Equal("How does AI work? Explain it in simple terms.", messages[0].Content);
-        Assert.Empty(this._messageHandlerStub.ResponseQueue);
+        Assert.Empty(_messageHandlerStub.ResponseQueue);
     }
+
 
     /// <summary>
     /// Tests that the GetMessagesAsync method throws for a deleted thread.
@@ -203,10 +213,10 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
     public async Task GetMessagesShouldThrowForDeletedThreadAsync()
     {
         // Arrange
-        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
-        this._messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteThread);
+        _messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.CreateThread);
+        _messageHandlerStub.SetupResponses(HttpStatusCode.OK, OpenAIAssistantResponseContent.DeleteThread);
 
-        var client = this.CreateTestClient();
+        var client = CreateTestClient();
 
         var thread = new OpenAIAssistantAgentThread(client.GetAssistantClient());
         await thread.CreateAsync();
@@ -216,15 +226,19 @@ public class OpenAIAssistantAgentThreadTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await thread.GetMessagesAsync().ToListAsync());
     }
 
+
     /// <inheritdoc/>
     public void Dispose()
     {
-        this._messageHandlerStub.Dispose();
-        this._httpClient.Dispose();
+        _messageHandlerStub.Dispose();
+        _httpClient.Dispose();
 
         GC.SuppressFinalize(this);
     }
 
+
     private OpenAIClient CreateTestClient()
-        => OpenAIAssistantAgent.CreateOpenAIClient(apiKey: new ApiKeyCredential("fakekey"), endpoint: null, this._httpClient);
+    {
+        return OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential("fakekey"), null, _httpClient);
+    }
 }

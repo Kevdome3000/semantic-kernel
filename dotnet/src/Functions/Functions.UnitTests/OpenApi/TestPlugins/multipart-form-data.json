@@ -68,7 +68,9 @@
     "schemas": {
       "GenericResult": {
         "type": "object",
-        "required": [ "type" ],
+        "required": [
+          "type"
+        ],
         "properties": {
           "type": {
             "type": "string"

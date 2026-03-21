@@ -21,6 +21,7 @@ public readonly partial struct AgentType : IEquatable<AgentType>
     private static Regex TypeRegex() => new("^[a-zA-Z_][a-zA-Z0-9_]*$", RegexOptions.Compiled);
 #endif
 
+
     internal static void Validate(string type)
     {
         if (string.IsNullOrWhiteSpace(type) || !TypeRegex().IsMatch(type))
@@ -29,6 +30,7 @@ public readonly partial struct AgentType : IEquatable<AgentType>
         }
     }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentId"/> struct.
     /// </summary>
@@ -36,64 +38,86 @@ public readonly partial struct AgentType : IEquatable<AgentType>
     public AgentType(string type)
     {
         Validate(type);
-        this.Name = type;
+        Name = type;
     }
+
 
     /// <summary>
     /// The string representation of this agent type.
     /// </summary>
     public string Name { get; }
 
+
     /// <summary>
     /// Returns the string representation of the <see cref="AgentType"/>.
     /// </summary>
     /// <returns>A string in the format "type/source".</returns>
-    public override readonly string ToString() => this.Name;
+    public override readonly string ToString()
+    {
+        return Name;
+    }
+
 
     /// <summary>
     /// Explicitly converts a <see cref="Type"/> to an <see cref="AgentType"/>.
     /// </summary>
     /// <param name="type">The .NET <see cref="Type"/> to convert.</param>
     /// <returns>An <see cref="AgentType"/> instance with the name of the provided type.</returns>
-    public static explicit operator AgentType(Type type) => new(type.Name);
+    public static explicit operator AgentType(Type type)
+    {
+        return new AgentType(type.Name);
+    }
+
 
     /// <summary>
     /// Implicitly converts a <see cref="string"/> to an <see cref="AgentType"/>.
     /// </summary>
     /// <param name="type">The string representation of the agent type.</param>
     /// <returns>An <see cref="AgentType"/> instance with the given name.</returns>
-    public static implicit operator AgentType(string type) => new(type);
+    public static implicit operator AgentType(string type)
+    {
+        return new AgentType(type);
+    }
+
 
     /// <summary>
     /// Implicitly converts an <see cref="AgentType"/> to a <see cref="string"/>.
     /// </summary>
     /// <param name="type">The <see cref="AgentType"/> instance.</param>
     /// <returns>The string representation of the agent type.</returns>
-    public static implicit operator string(AgentType type) => type.ToString();
+    public static implicit operator string(AgentType type)
+    {
+        return type.ToString();
+    }
+
 
     /// <inheritdoc/>
     public override bool Equals(object? obj)
     {
-        return obj is AgentType other && this.Equals(other);
+        return obj is AgentType other && Equals(other);
     }
+
 
     /// <inheritdoc/>
     public bool Equals(AgentType other)
     {
-        return this.Name.Equals(other.Name, StringComparison.Ordinal);
+        return Name.Equals(other.Name, StringComparison.Ordinal);
     }
+
 
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        return this.Name.GetHashCode();
+        return Name.GetHashCode();
     }
+
 
     /// <inheritdoc/>
     public static bool operator ==(AgentType left, AgentType right)
     {
         return left.Equals(right);
     }
+
 
     /// <inheritdoc/>
     public static bool operator !=(AgentType left, AgentType right)

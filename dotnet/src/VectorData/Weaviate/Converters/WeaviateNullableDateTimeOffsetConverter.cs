@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Globalization;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 /// <summary>
@@ -13,6 +8,7 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 internal sealed class WeaviateNullableDateTimeOffsetConverter : JsonConverter<DateTimeOffset?>
 {
     private const string DateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss.fffK";
+
 
     public override DateTimeOffset? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -30,6 +26,7 @@ internal sealed class WeaviateNullableDateTimeOffsetConverter : JsonConverter<Da
 
         return DateTimeOffset.Parse(dateString, CultureInfo.InvariantCulture);
     }
+
 
     public override void Write(Utf8JsonWriter writer, DateTimeOffset? value, JsonSerializerOptions options)
     {

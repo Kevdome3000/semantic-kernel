@@ -13,9 +13,10 @@ namespace Microsoft.SemanticKernel;
 /// <summary>
 /// Class with data related to automatic function invocation.
 /// </summary>
-public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInvocationContext
+public class AutoFunctionInvocationContext : Extensions.AI.FunctionInvocationContext
 {
     private ChatHistory? _chatHistory;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="Microsoft.Extensions.AI.FunctionInvocationContext"/>.
@@ -24,6 +25,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     {
         Verify.NotNull(autoInvocationChatOptions);
         Verify.NotNull(aiFunction);
+
         if (aiFunction is not KernelFunction kernelFunction)
         {
             throw new InvalidOperationException($"The function must be of type {nameof(KernelFunction)}.");
@@ -36,6 +38,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         AIFunction = aiFunction;
         Result = new FunctionResult(kernelFunction) { Culture = autoInvocationChatOptions.Kernel.Culture };
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class.
@@ -60,7 +63,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
 
         Options = new KernelChatOptions(kernel)
         {
-            ChatMessageContent = chatMessageContent,
+            ChatMessageContent = chatMessageContent
         };
 
         _chatHistory = chatHistory;
@@ -69,6 +72,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         base.Function = function;
         Result = result;
     }
+
 
     /// <summary>
     /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.
@@ -122,13 +126,10 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     public string? ToolCallId
     {
         get => CallContent.CallId;
-        init
-        {
-            CallContent = new Microsoft.Extensions.AI.FunctionCallContent(
-                callId: value ?? string.Empty,
-                name: CallContent.Name,
-                arguments: CallContent.Arguments);
-        }
+        init => CallContent = new Extensions.AI.FunctionCallContent(
+            value ?? string.Empty,
+            CallContent.Name,
+            CallContent.Arguments);
     }
 
     /// <summary>
@@ -193,6 +194,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         set => base.Function = value;
     }
 
+
     private static bool IsSameSchema(KernelFunction kernelFunction, AIFunction aiFunction)
     {
         // Compares the schemas, should be similar.
@@ -205,6 +207,7 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
         // return kernelFunction.UnderlyingMethod == aiFunction.UnderlyingMethod;
     }
 
+
     /// <summary>
     /// Mutable IEnumerable of chat message as chat history.
     /// </summary>
@@ -212,10 +215,12 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
     {
         private readonly List<ChatMessage> _messages;
 
+
         internal ChatMessageHistory(IEnumerable<ChatMessage> messages) : base(messages.ToChatHistory())
         {
             _messages = new List<ChatMessage>(messages);
         }
+
 
         public override void Add(ChatMessageContent item)
         {
@@ -223,11 +228,13 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
             _messages.Add(item.ToChatMessage());
         }
 
+
         public override void Clear()
         {
             base.Clear();
             _messages.Clear();
         }
+
 
         public override bool Remove(ChatMessageContent item)
         {
@@ -244,17 +251,20 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
             return true;
         }
 
+
         public override void Insert(int index, ChatMessageContent item)
         {
             base.Insert(index, item);
             _messages.Insert(index, item.ToChatMessage());
         }
 
+
         public override void RemoveAt(int index)
         {
             _messages.RemoveAt(index);
             base.RemoveAt(index);
         }
+
 
         public override ChatMessageContent this[int index]
         {
@@ -266,11 +276,13 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
             }
         }
 
+
         public override void RemoveRange(int index, int count)
         {
             _messages.RemoveRange(index, count);
             base.RemoveRange(index, count);
         }
+
 
         public override void CopyTo(ChatMessageContent[] array, int arrayIndex)
         {
@@ -280,9 +292,18 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
             }
         }
 
-        public override bool Contains(ChatMessageContent item) => base.Contains(item);
 
-        public override int IndexOf(ChatMessageContent item) => base.IndexOf(item);
+        public override bool Contains(ChatMessageContent item)
+        {
+            return base.Contains(item);
+        }
+
+
+        public override int IndexOf(ChatMessageContent item)
+        {
+            return base.IndexOf(item);
+        }
+
 
         public override void AddRange(IEnumerable<ChatMessageContent> items)
         {
@@ -290,7 +311,9 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
             _messages.AddRange(items.Select(i => i.ToChatMessage()));
         }
 
+
         public override int Count => _messages.Count;
+
 
         // Explicit implementation of IEnumerable<ChatMessageContent>.GetEnumerator()
         IEnumerator<ChatMessageContent> IEnumerable<ChatMessageContent>.GetEnumerator()
@@ -301,10 +324,14 @@ public class AutoFunctionInvocationContext : Microsoft.Extensions.AI.FunctionInv
             }
         }
 
+
         // Explicit implementation of non-generic IEnumerable.GetEnumerator()
         IEnumerator IEnumerable.GetEnumerator()
-            => ((IEnumerable<ChatMessageContent>)this).GetEnumerator();
+        {
+            return ((IEnumerable<ChatMessageContent>)this).GetEnumerator();
+        }
     }
+
 
     /// <summary>Destructor to clear the chat history overrides.</summary>
     ~AutoFunctionInvocationContext()

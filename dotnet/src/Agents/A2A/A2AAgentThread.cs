@@ -21,9 +21,10 @@ public sealed class A2AAgentThread : AgentThread
     {
         Verify.NotNull(client);
 
-        this._client = client;
-        this.Id = id ?? Guid.NewGuid().ToString("N");
+        _client = client;
+        Id = id ?? Guid.NewGuid().ToString("N");
     }
+
 
     /// <inheritdoc />
     protected override Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
@@ -31,11 +32,13 @@ public sealed class A2AAgentThread : AgentThread
         return Task.FromResult<string?>(Guid.NewGuid().ToString("N"));
     }
 
+
     /// <inheritdoc />
     protected override Task DeleteInternalAsync(CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }
+
 
     /// <inheritdoc />
     protected override Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
@@ -43,7 +46,12 @@ public sealed class A2AAgentThread : AgentThread
         return Task.CompletedTask;
     }
 
+
     #region private
+
     private readonly A2AClient _client;
+
     #endregion
+
+
 }

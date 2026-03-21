@@ -21,7 +21,7 @@ public class AgentMessageFactoryTests
     public void VerifyAssistantMessageAdapterGetMessageContentsWithText()
     {
         // Arrange
-        ChatMessageContent message = new(AuthorRole.User, items: [new TextContent("test")]);
+        ChatMessageContent message = new(AuthorRole.User, [new TextContent("test")]);
 
         // Act
         ThreadMessageOptions[] contents = [.. AgentMessageFactory.GetThreadMessages([message])];
@@ -32,6 +32,7 @@ public class AgentMessageFactoryTests
         Assert.NotNull(contents[0].Content);
     }
 
+
     /// <summary>
     /// Verify options creation.
     /// </summary>
@@ -39,7 +40,7 @@ public class AgentMessageFactoryTests
     public void VerifyAssistantMessageAdapterGetMessageWithImageUrl()
     {
         // Arrange
-        ChatMessageContent message = new(AuthorRole.User, items: [new ImageContent(new Uri("https://localhost/myimage.png"))]);
+        ChatMessageContent message = new(AuthorRole.User, [new ImageContent(new Uri("https://localhost/myimage.png"))]);
 
         // Act
         ThreadMessageOptions[] contents = [.. AgentMessageFactory.GetThreadMessages([message])];
@@ -48,6 +49,7 @@ public class AgentMessageFactoryTests
         Assert.NotNull(contents);
         Assert.Empty(contents);
     }
+
 
     /// <summary>
     /// Verify options creation.
@@ -56,7 +58,7 @@ public class AgentMessageFactoryTests
     public void VerifyAssistantMessageAdapterGetMessageWithImageData()
     {
         // Arrange
-        ChatMessageContent message = new(AuthorRole.User, items: [new ImageContent(new byte[] { 1, 2, 3 }, "image/png") { DataUri = "data:image/png;base64,MTIz" }]);
+        ChatMessageContent message = new(AuthorRole.User, [new ImageContent(new byte[] { 1, 2, 3 }, "image/png") { DataUri = "data:image/png;base64,MTIz" }]);
 
         // Act
         ThreadMessageOptions[] contents = [.. AgentMessageFactory.GetThreadMessages([message])];
@@ -65,6 +67,7 @@ public class AgentMessageFactoryTests
         Assert.NotNull(contents);
         Assert.Empty(contents);
     }
+
 
     /// <summary>
     /// Verify options creation.
@@ -73,7 +76,7 @@ public class AgentMessageFactoryTests
     public void VerifyAssistantMessageAdapterGetMessageWithImageFile()
     {
         // Arrange
-        ChatMessageContent message = new(AuthorRole.User, items: [new FileReferenceContent("file-id")]);
+        ChatMessageContent message = new(AuthorRole.User, [new FileReferenceContent("file-id")]);
 
         // Act
         ThreadMessageOptions[] contents = [.. AgentMessageFactory.GetThreadMessages([message])];
@@ -82,6 +85,7 @@ public class AgentMessageFactoryTests
         Assert.NotNull(contents);
         Assert.Empty(contents);
     }
+
 
     /// <summary>
     /// Verify options creation.
@@ -93,7 +97,6 @@ public class AgentMessageFactoryTests
         ChatMessageContent message =
             new(
                 AuthorRole.User,
-                items:
                 [
                     new TextContent("test"),
                     new ImageContent(new Uri("https://localhost/myimage.png")),

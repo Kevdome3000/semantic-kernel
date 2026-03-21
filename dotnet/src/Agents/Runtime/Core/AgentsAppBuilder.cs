@@ -19,33 +19,37 @@ public class AgentsAppBuilder
     private readonly HostApplicationBuilder _builder;
     private readonly List<Func<AgentsApp, ValueTask<AgentType>>> _agentTypeRegistrations;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentsAppBuilder"/> class using the specified <see cref="HostApplicationBuilder"/>.
     /// </summary>
     /// <param name="baseBuilder">An optional host application builder to use; if null, a new instance is created.</param>
     public AgentsAppBuilder(HostApplicationBuilder? baseBuilder = null)
     {
-        this._builder = baseBuilder ?? new HostApplicationBuilder();
-        this._agentTypeRegistrations = [];
+        _builder = baseBuilder ?? new HostApplicationBuilder();
+        _agentTypeRegistrations = [];
     }
+
 
     /// <summary>
     /// Gets the dependency injection service collection.
     /// </summary>
-    public IServiceCollection Services => this._builder.Services;
+    public IServiceCollection Services => _builder.Services;
 
     /// <summary>
     /// Gets the application's configuration.
     /// </summary>
-    public IConfiguration Configuration => this._builder.Configuration;
+    public IConfiguration Configuration => _builder.Configuration;
+
 
     /// <summary>
     /// Scans all assemblies loaded in the current application domain to register available agents.
     /// </summary>
     public void AddAgentsFromAssemblies()
     {
-        this.AddAgentsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+        AddAgentsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
     }
+
 
     /// <summary>
     /// Configures the AgentsApp to use the specified agent runtime.
@@ -55,11 +59,12 @@ public class AgentsAppBuilder
     /// <returns>The modified instance of <see cref="AgentsAppBuilder"/>.</returns>
     public AgentsAppBuilder UseRuntime<TRuntime>(TRuntime runtime) where TRuntime : class, IAgentRuntime
     {
-        this.Services.AddSingleton<IAgentRuntime>(_ => runtime);
-        this.Services.AddHostedService(services => runtime);
+        Services.AddSingleton<IAgentRuntime>(_ => runtime);
+        Services.AddHostedService(services => runtime);
 
         return this;
     }
+
 
     /// <summary>
     /// Registers agents from the provided assemblies.
@@ -70,19 +75,18 @@ public class AgentsAppBuilder
     {
         IEnumerable<Type> agentTypes =
             assemblies.SelectMany(assembly => assembly.GetTypes())
-                .Where(
-                    type =>
-                        typeof(BaseAgent).IsAssignableFrom(type) &&
-                        !type.IsAbstract);
+                .Where(type =>
+                    typeof(BaseAgent).IsAssignableFrom(type) && !type.IsAbstract);
 
         foreach (Type agentType in agentTypes)
         {
             // TODO: Expose skipClassSubscriptions and skipDirectMessageSubscription as parameters?
-            this.AddAgent(agentType.Name, agentType);
+            AddAgent(agentType.Name, agentType);
         }
 
         return this;
     }
+
 
     /// <summary>
     /// Registers an agent of type <typeparamref name="TAgent"/> with the associated agent type and subscription options.
@@ -93,7 +97,13 @@ public class AgentsAppBuilder
     /// <param name="skipDirectMessageSubscription">Option to skip direct message subscriptions.</param>
     /// <returns>The modified instance of <see cref="AgentsAppBuilder"/>.</returns>
     public AgentsAppBuilder AddAgent<TAgent>(AgentType agentType, bool skipClassSubscriptions = false, bool skipDirectMessageSubscription = false) where TAgent : IHostableAgent
-        => this.AddAgent(agentType, typeof(TAgent), skipClassSubscriptions, skipDirectMessageSubscription);
+    {
+        return AddAgent(agentType,
+            typeof(TAgent),
+            skipClassSubscriptions,
+            skipDirectMessageSubscription);
+    }
+
 
     /// <summary>
     /// Builds the AgentsApp instance by constructing the host and registering all agent types.
@@ -101,17 +111,18 @@ public class AgentsAppBuilder
     /// <returns>A task representing the asynchronous operation, returning the built <see cref="AgentsApp"/>.</returns>
     public async ValueTask<AgentsApp> BuildAsync()
     {
-        IHost host = this._builder.Build();
+        IHost host = _builder.Build();
 
         AgentsApp app = new(host);
 
-        foreach (Func<AgentsApp, ValueTask<AgentType>> registration in this._agentTypeRegistrations)
+        foreach (Func<AgentsApp, ValueTask<AgentType>> registration in _agentTypeRegistrations)
         {
             await registration(app).ConfigureAwait(false);
         }
 
         return app;
     }
+
 
     /// <summary>
     /// Registers an agent with the runtime using the specified agent type and runtime type.
@@ -121,17 +132,24 @@ public class AgentsAppBuilder
     /// <param name="skipClassSubscriptions">Option to skip class subscriptions.</param>
     /// <param name="skipDirectMessageSubscription">Option to skip direct message subscriptions.</param>
     /// <returns>The modified instance of <see cref="AgentsAppBuilder"/>.</returns>
-    private AgentsAppBuilder AddAgent(AgentType agentType, Type runtimeType, bool skipClassSubscriptions = false, bool skipDirectMessageSubscription = false)
+    private AgentsAppBuilder AddAgent(
+        AgentType agentType,
+        Type runtimeType,
+        bool skipClassSubscriptions = false,
+        bool skipDirectMessageSubscription = false)
     {
-        this._agentTypeRegistrations.Add(
-            async app =>
-            {
-                await app.AgentRuntime.RegisterAgentTypeAsync(agentType, runtimeType, app.Services).ConfigureAwait(false);
+        _agentTypeRegistrations.Add(async app =>
+        {
+            await app.AgentRuntime.RegisterAgentTypeAsync(agentType, runtimeType, app.Services).ConfigureAwait(false);
 
-                await app.AgentRuntime.RegisterImplicitAgentSubscriptionsAsync(agentType, runtimeType, skipClassSubscriptions, skipDirectMessageSubscription).ConfigureAwait(false);
+            await app.AgentRuntime.RegisterImplicitAgentSubscriptionsAsync(agentType,
+                    runtimeType,
+                    skipClassSubscriptions,
+                    skipDirectMessageSubscription)
+                .ConfigureAwait(false);
 
-                return agentType;
-            });
+            return agentType;
+        });
 
         return this;
     }

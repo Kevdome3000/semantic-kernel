@@ -6,10 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
-using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
@@ -31,7 +29,7 @@ public sealed class PostgresVectorStore : VectorStore
     private readonly string _databaseName;
 
     /// <summary>The database schema.</summary>
-    private readonly string _schema;
+    private readonly string? _schema;
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
@@ -46,7 +44,7 @@ public sealed class PostgresVectorStore : VectorStore
     {
         Verify.NotNull(dataSource);
 
-        _schema = options?.Schema ?? PostgresVectorStoreOptions.Default.Schema;
+        _schema = options?.Schema;
         _embeddingGenerator = options?.EmbeddingGenerator;
         _dataSource = dataSource;
         _dataSourceArc = ownsDataSource
@@ -142,7 +140,7 @@ public sealed class PostgresVectorStore : VectorStore
 #else
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
-        => new PostgresDynamicCollection(
+        => new(
             _dataSource,
             _dataSourceArc,
             name,

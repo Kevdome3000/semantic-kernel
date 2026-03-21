@@ -62,12 +62,15 @@ public sealed class RunPollingOptions
     /// </summary>
     public TimeSpan MessageSynchronizationDelay { get; set; } = DefaultMessageSynchronizationDelay;
 
+
     /// <summary>
     /// Gets the polling interval for the specified iteration count.
     /// </summary>
     /// <param name="iterationCount">The number of polling iterations already attempted.</param>
     public TimeSpan GetPollingInterval(int iterationCount)
     {
-        return iterationCount > this.RunPollingBackoffThreshold ? this.RunPollingBackoff : this.RunPollingInterval;
+        return iterationCount > RunPollingBackoffThreshold
+            ? RunPollingBackoff
+            : RunPollingInterval;
     }
 }

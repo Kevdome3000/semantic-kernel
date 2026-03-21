@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Agents.UnitTests.Core.Chat;
-
 using Microsoft.SemanticKernel.Agents.Chat;
 using Moq;
 using Xunit;
 
+namespace SemanticKernel.Agents.UnitTests.Core.Chat;
 
 /// <summary>
 /// Unit testing of <see cref="AgentGroupChatSettings"/>.

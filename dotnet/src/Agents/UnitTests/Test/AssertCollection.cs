@@ -18,13 +18,14 @@ internal static class AssertCollection
         Assert.NotNull(target);
         Assert.Equal(source.Count, target.Count);
 
-        adapter ??= (x) => x;
+        adapter ??= x => x;
 
         for (int i = 0; i < source.Count; i++)
         {
             Assert.Equal(adapter(source[i]), adapter(target[i]));
         }
     }
+
 
     public static void Equal<TKey, TValue>(IReadOnlyDictionary<TKey, TValue>? source, IReadOnlyDictionary<TKey, TValue>? target)
     {

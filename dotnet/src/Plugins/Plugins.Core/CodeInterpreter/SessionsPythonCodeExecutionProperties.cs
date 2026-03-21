@@ -1,11 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json.Serialization;
 using static Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter.SessionsPythonSettings;
 
 namespace Microsoft.SemanticKernel.Plugins.Core.CodeInterpreter;
-
-using System.Text.Json.Serialization;
-
 
 internal sealed class SessionsPythonCodeExecutionProperties
 {

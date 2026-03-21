@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.Extensions.VectorData;
@@ -25,12 +24,15 @@ public class VectorStoreVectorProperty<TInput> : VectorStoreVectorProperty
     {
     }
 
+
     internal override VectorPropertyModel CreatePropertyModel()
-        => new VectorPropertyModel<TInput>(this.Name)
+    {
+        return new VectorPropertyModel<TInput>(Name)
         {
-            Dimensions = this.Dimensions,
-            IndexKind = this.IndexKind,
-            DistanceFunction = this.DistanceFunction,
-            EmbeddingGenerator = this.EmbeddingGenerator
+            Dimensions = Dimensions,
+            IndexKind = IndexKind,
+            DistanceFunction = DistanceFunction,
+            EmbeddingGenerator = EmbeddingGenerator
         };
+    }
 }

@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace SemanticKernel.Agents.UnitTests.OpenAI;
-
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using SemanticKernel.Agents.UnitTests.Test;
 using Xunit;
 
+namespace SemanticKernel.Agents.UnitTests.OpenAI;
 
 /// <summary>
 /// Unit testing of <see cref="OpenAIAssistantDefinition"/>.
@@ -60,21 +59,21 @@ public class OpenAIAssistantDefinitionTests
                 Description = "testdescription",
                 EnableFileSearch = true,
                 VectorStoreId = "#vs",
-                Metadata = new Dictionary<string, string>() { { "a", "1" } },
+                Metadata = new Dictionary<string, string> { { "a", "1" } },
                 Temperature = 2,
                 TopP = 0,
                 ExecutionOptions =
-                    new()
+                    new OpenAIAssistantExecutionOptions
                     {
                         AdditionalInstructions = "test instructions",
                         MaxCompletionTokens = 1000,
                         MaxPromptTokens = 1000,
                         ParallelToolCallsEnabled = false,
-                        TruncationMessageCount = 12,
+                        TruncationMessageCount = 12
                     },
                 CodeInterpreterFileIds = ["file1"],
                 EnableCodeInterpreter = true,
-                EnableJsonResponse = true,
+                EnableJsonResponse = true
             };
 
         // Assert
@@ -102,6 +101,7 @@ public class OpenAIAssistantDefinitionTests
         ValidateSerialization(definition);
     }
 
+
     /// <summary>
     /// Verify TemplateFactoryFormat.
     /// </summary>
@@ -115,14 +115,15 @@ public class OpenAIAssistantDefinitionTests
         Assert.Null(definition.TemplateFactoryFormat);
 
         // Act
-        definition = new("testmodel")
+        definition = new OpenAIAssistantDefinition("testmodel")
         {
-            Metadata = new Dictionary<string, string>() { { OpenAIAssistantAgent.TemplateMetadataKey, "testformat" } }
+            Metadata = new Dictionary<string, string> { { OpenAIAssistantAgent.TemplateMetadataKey, "testformat" } }
         };
 
         // Assert
         Assert.Equal("testformat", definition.TemplateFactoryFormat);
     }
+
 
     private static void ValidateSerialization(OpenAIAssistantDefinition source)
     {

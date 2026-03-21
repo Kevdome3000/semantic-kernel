@@ -1,5 +1,4 @@
-﻿
-/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
+﻿/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
 Before:
 // Copyright (c) Microsoft. All rights reserved.
 After:
@@ -28,6 +27,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
+
 internal sealed partial class FunctionIdBlock : Block, ITextRendering
 {
     internal override BlockTypes Type => BlockTypes.FunctionId;
@@ -35,6 +35,7 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
     internal string PluginName { get; } = string.Empty;
 
     internal string FunctionName { get; } = string.Empty;
+
 
     public FunctionIdBlock(string? text, ILoggerFactory? loggerFactory = null)
         : base(text?.Trim(), loggerFactory)
@@ -59,10 +60,10 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
         FunctionName = Content;
     }
 
+
     public override bool IsValid(out string errorMsg)
     {
-        if (!ValidContentRegex().
-                IsMatch(Content))
+        if (!ValidContentRegex().IsMatch(Content))
         {
             errorMsg = "The function identifier is empty";
 
@@ -81,11 +82,13 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
         return true;
     }
 
+
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
         return Content;
     }
+
 
     private static bool HasMoreThanOneDot(string? value)
     {
@@ -95,6 +98,7 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
 
         return value.Any(t => t == '.' && ++count > 1);
     }
+
 
 #if NET
     [GeneratedRegex("^[a-zA-Z0-9_.]*$")]

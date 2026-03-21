@@ -25,11 +25,11 @@ public class KernelFunctionSelectionStrategyTests
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(mockAgent.Id));
 
         KernelFunctionSelectionStrategy strategy =
-            new(plugin.Single(), new())
+            new(plugin.Single(), new Kernel())
             {
                 AgentsVariableName = "_a_",
                 HistoryVariableName = "_h_",
-                ResultParser = (result) => result.GetValue<string>() ?? string.Empty,
+                ResultParser = result => result.GetValue<string>() ?? string.Empty
             };
 
         // Assert
@@ -47,6 +47,7 @@ public class KernelFunctionSelectionStrategyTests
         Assert.Equal(mockAgent, nextAgent);
     }
 
+
     /// <summary>
     /// Verify strategy mismatch.
     /// </summary>
@@ -58,10 +59,10 @@ public class KernelFunctionSelectionStrategyTests
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(mockAgent.Id));
 
         KernelFunctionSelectionStrategy strategy =
-            new(plugin.Single(), new())
+            new(plugin.Single(), new Kernel())
             {
-                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } },
-                ResultParser = (result) => "larry",
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } },
+                ResultParser = result => "larry"
             };
 
         // Act and Assert
@@ -80,10 +81,10 @@ public class KernelFunctionSelectionStrategyTests
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(mockAgent2.Id));
 
         KernelFunctionSelectionStrategy strategy =
-            new(plugin.Single(), new())
+            new(plugin.Single(), new Kernel())
             {
                 InitialAgent = mockAgent1,
-                ResultParser = (result) => result.GetValue<string>() ?? string.Empty,
+                ResultParser = result => result.GetValue<string>() ?? string.Empty
             };
 
         Agent nextAgent = await strategy.NextAsync([mockAgent2], []);
@@ -103,17 +104,17 @@ public class KernelFunctionSelectionStrategyTests
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin(null));
 
         KernelFunctionSelectionStrategy strategy =
-            new(plugin.Single(), new())
+            new(plugin.Single(), new Kernel())
             {
-                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } },
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } }
             };
 
         await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent], []));
 
         strategy =
-            new(plugin.Single(), new())
+            new KernelFunctionSelectionStrategy(plugin.Single(), new Kernel())
             {
-                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } },
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } },
                 UseInitialAgentAsFallback = true
             };
 
@@ -132,17 +133,17 @@ public class KernelFunctionSelectionStrategyTests
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin("bad"));
 
         KernelFunctionSelectionStrategy strategy =
-            new(plugin.Single(), new())
+            new(plugin.Single(), new Kernel())
             {
-                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } },
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } }
             };
 
         await Assert.ThrowsAsync<KernelException>(() => strategy.NextAsync([mockAgent], []));
 
         strategy =
-            new(plugin.Single(), new())
+            new KernelFunctionSelectionStrategy(plugin.Single(), new Kernel())
             {
-                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } },
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } },
                 UseInitialAgentAsFallback = true
             };
 
@@ -161,9 +162,9 @@ public class KernelFunctionSelectionStrategyTests
         KernelPlugin plugin = KernelPluginFactory.CreateFromObject(new TestPlugin("bad"));
 
         KernelFunctionSelectionStrategy strategy =
-            new(plugin.Single(), new())
+            new(plugin.Single(), new Kernel())
             {
-                Arguments = new(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } },
+                Arguments = new KernelArguments(new OpenAIPromptExecutionSettings()) { { "key", mockAgent.Name } },
                 InitialAgent = mockAgent,
                 UseInitialAgentAsFallback = true
             };
@@ -178,6 +179,9 @@ public class KernelFunctionSelectionStrategyTests
     private sealed class TestPlugin(string? agentName)
     {
         [KernelFunction]
-        public string? GetValue() => agentName;
+        public string? GetValue()
+        {
+            return agentName;
+        }
     }
 }

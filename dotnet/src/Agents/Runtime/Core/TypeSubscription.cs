@@ -28,10 +28,11 @@ public class TypeSubscription : ISubscriptionDefinition
     /// <param name="id">Unique identifier for the subscription. If not provided, a new UUID will be generated.</param>
     public TypeSubscription(string topicType, AgentType agentType, string? id = null)
     {
-        this.TopicType = topicType;
-        this.AgentType = agentType;
-        this.Id = id ?? Guid.NewGuid().ToString();
+        TopicType = topicType;
+        AgentType = agentType;
+        Id = id ?? Guid.NewGuid().ToString();
     }
+
 
     /// <summary>
     /// Gets the unique identifier of the subscription.
@@ -48,6 +49,7 @@ public class TypeSubscription : ISubscriptionDefinition
     /// </summary>
     public AgentType AgentType { get; }
 
+
     /// <summary>
     /// Checks if a given <see cref="TopicId"/> matches the subscription based on an exact type match.
     /// </summary>
@@ -55,8 +57,9 @@ public class TypeSubscription : ISubscriptionDefinition
     /// <returns><c>true</c> if the topic's type matches exactly, <c>false</c> otherwise.</returns>
     public bool Matches(TopicId topic)
     {
-        return topic.Type == this.TopicType;
+        return topic.Type == TopicType;
     }
+
 
     /// <summary>
     /// Maps a <see cref="TopicId"/> to an <see cref="AgentId"/>. Should only be called if <see cref="Matches"/> returns true.
@@ -66,13 +69,14 @@ public class TypeSubscription : ISubscriptionDefinition
     /// <exception cref="InvalidOperationException">Thrown if the topic does not match the subscription.</exception>
     public AgentId MapToAgent(TopicId topic)
     {
-        if (!this.Matches(topic))
+        if (!Matches(topic))
         {
             throw new InvalidOperationException("TopicId does not match the subscription.");
         }
 
-        return new AgentId(this.AgentType, topic.Source);
+        return new AgentId(AgentType, topic.Source);
     }
+
 
     /// <summary>
     /// Determines whether the specified object is equal to the current subscription.
@@ -82,18 +86,20 @@ public class TypeSubscription : ISubscriptionDefinition
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
         return
-            obj is TypeSubscription other &&
-                (this.Id == other.Id ||
-                    (this.AgentType == other.AgentType &&
-                        this.TopicType == other.TopicType));
+            obj is TypeSubscription other && (Id == other.Id || AgentType == other.AgentType && TopicType == other.TopicType);
     }
+
 
     /// <summary>
     /// Determines whether the specified subscription is equal to the current subscription.
     /// </summary>
     /// <param name="other">The subscription to compare.</param>
     /// <returns><c>true</c> if the subscriptions are equal; otherwise, <c>false</c>.</returns>
-    public bool Equals(ISubscriptionDefinition? other) => this.Id == other?.Id;
+    public bool Equals(ISubscriptionDefinition? other)
+    {
+        return Id == other?.Id;
+    }
+
 
     /// <summary>
     /// Returns a hash code for this instance.
@@ -101,6 +107,6 @@ public class TypeSubscription : ISubscriptionDefinition
     /// <returns>A hash code for this instance, suitable for use in hashing algorithms and data structures.</returns>
     public override int GetHashCode()
     {
-        return HashCode.Combine(this.Id, this.AgentType, this.TopicType);
+        return HashCode.Combine(Id, AgentType, TopicType);
     }
 }

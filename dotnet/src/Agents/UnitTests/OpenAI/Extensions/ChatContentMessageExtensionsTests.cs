@@ -24,21 +24,21 @@ public class ChatContentMessageExtensionsTests
         // Arrange
         var role = new AuthorRole(roleLabel);
         var content = new ChatMessageContent(
-                role,
-                items: [
-                    new TextContent("What is in this image?"),
-                    new ImageContent(new Uri("https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg")),
-                    new BinaryContent(new ReadOnlyMemory<byte>([0x52, 0x49, 0x46, 0x46, 0x24, 0x08, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45]), "audio/wav"),
-                    new FileReferenceContent("file-abc123")
-                ]
-            );
+            role,
+            [
+                new TextContent("What is in this image?"),
+                new ImageContent(new Uri("https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg")),
+                new BinaryContent(new ReadOnlyMemory<byte>([0x52, 0x49, 0x46, 0x46, 0x24, 0x08, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45]), "audio/wav"),
+                new FileReferenceContent("file-abc123")
+            ]
+        );
 
         // Act
         var responseItem = content.ToResponseItem();
 
         // Assert
         Assert.NotNull(responseItem);
-        Assert.IsType<MessageResponseItem>(responseItem, exactMatch: false);
+        Assert.IsType<MessageResponseItem>(responseItem, false);
         var messageResponseItem = responseItem as MessageResponseItem;
         Assert.NotNull(messageResponseItem);
         Assert.Equal(role.Label.ToUpperInvariant(), messageResponseItem.Role.ToString().ToUpperInvariant());

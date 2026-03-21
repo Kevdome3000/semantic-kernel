@@ -1,13 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text.Json;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 /// <summary>
@@ -50,29 +42,30 @@ internal static class WeaviateQueryBuilder
             : string.Empty;
 
         return $$"""
-        {
-          Get {
-            {{collectionName}} (
-              limit: {{top}}
-              offset: {{searchOptions.Skip}}
-              {{(filter is null ? "" : "where: " + filter)}}
-              nearVector: {
-                {{GetTargetVectorsQuery(hasNamedVectors, vectorPropertyName)}}
-                vector: {{vectorArray}}
-                {{distanceFilter}}
-              }
-            ) {
-              {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
-              {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
-                {{WeaviateConstants.ReservedKeyPropertyName}}
-                {{WeaviateConstants.ScorePropertyName}}
-                {{vectorsQuery}}
-              }
-            }
-          }
-        }
-        """;
+                 {
+                   Get {
+                     {{collectionName}} (
+                       limit: {{top}}
+                       offset: {{searchOptions.Skip}}
+                       {{(filter is null ? "" : "where: " + filter)}}
+                       nearVector: {
+                         {{GetTargetVectorsQuery(hasNamedVectors, vectorPropertyName)}}
+                         vector: {{vectorArray}}
+                         {{distanceFilter}}
+                       }
+                     ) {
+                       {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
+                       {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
+                         {{WeaviateConstants.ReservedKeyPropertyName}}
+                         {{WeaviateConstants.ScorePropertyName}}
+                         {{vectorsQuery}}
+                       }
+                     }
+                   }
+                 }
+                 """;
     }
+
 
     /// <summary>
     /// Builds Weaviate search query.
@@ -89,35 +82,39 @@ internal static class WeaviateQueryBuilder
         var vectorsQuery = GetVectorsPropertyQuery(queryOptions.IncludeVectors, hasNamedVectors, model);
 
         var orderBy = queryOptions.OrderBy?.Invoke(new()).Values;
-        var sortPaths = orderBy is not { Count: > 0 } ? "" : string.Join(",", orderBy.Select(sortInfo =>
-        {
-            string sortPath = model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
+        var sortPaths = orderBy is not { Count: > 0 }
+            ? ""
+            : string.Join(",",
+                orderBy.Select(sortInfo =>
+                {
+                    string sortPath = model.GetDataOrKeyProperty(sortInfo.PropertySelector).StorageName;
 
-            return $$"""{ path: ["{{JsonEncodedText.Encode(sortPath)}}"], order: {{(sortInfo.Ascending ? "asc" : "desc")}} }""";
-        }));
+                    return $$"""{ path: ["{{JsonEncodedText.Encode(sortPath)}}"], order: {{(sortInfo.Ascending ? "asc" : "desc")}} }""";
+                }));
 
         var translatedFilter = new WeaviateFilterTranslator().Translate(filter, model);
 
         return $$"""
-        {
-          Get {
-            {{collectionName}} (
-              limit: {{top}}
-              offset: {{queryOptions.Skip}}
-              {{(translatedFilter is null ? "" : "where: " + translatedFilter)}}
-              sort: [ {{sortPaths}} ]
-            ) {
-              {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
-              {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
-                {{WeaviateConstants.ReservedKeyPropertyName}}
-                {{WeaviateConstants.ScorePropertyName}}
-                {{vectorsQuery}}
-              }
-            }
-          }
-        }
-        """;
+                 {
+                   Get {
+                     {{collectionName}} (
+                       limit: {{top}}
+                       offset: {{queryOptions.Skip}}
+                       {{(translatedFilter is null ? "" : "where: " + translatedFilter)}}
+                       sort: [ {{sortPaths}} ]
+                     ) {
+                       {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
+                       {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
+                         {{WeaviateConstants.ReservedKeyPropertyName}}
+                         {{WeaviateConstants.ScorePropertyName}}
+                         {{vectorsQuery}}
+                       }
+                     }
+                   }
+                 }
+                 """;
     }
+
 
     /// <summary>
     /// Builds Weaviate hybrid search query.
@@ -149,40 +146,45 @@ internal static class WeaviateQueryBuilder
 #pragma warning restore CS0618
 
         var vectorArray = JsonSerializer.Serialize(vector, jsonSerializerOptions);
+        var sanitizedKeywords = keywords.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
         return $$"""
-        {
-          Get {
-            {{collectionName}} (
-              limit: {{top}}
-              offset: {{searchOptions.Skip}}
-              {{(filter is null ? "" : "where: " + filter)}}
-              hybrid: {
-                query: "{{keywords}}"
-                properties: ["{{textProperty.StorageName}}"]
-                {{GetTargetVectorsQuery(hasNamedVectors, vectorProperty.StorageName)}}
-                vector: {{vectorArray}}
-                fusionType: rankedFusion
-              }
-            ) {
-              {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
-              {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
-                {{WeaviateConstants.ReservedKeyPropertyName}}
-                {{WeaviateConstants.HybridScorePropertyName}}
-                {{vectorsQuery}}
-              }
-            }
-          }
-        }
-        """;
+                 {
+                   Get {
+                     {{collectionName}} (
+                       limit: {{top}}
+                       offset: {{searchOptions.Skip}}
+                       {{(filter is null ? "" : "where: " + filter)}}
+                       hybrid: {
+                         query: "{{sanitizedKeywords}}"
+                         properties: ["{{textProperty.StorageName}}"]
+                         {{GetTargetVectorsQuery(hasNamedVectors, vectorProperty.StorageName)}}
+                         vector: {{vectorArray}}
+                         fusionType: rankedFusion
+                       }
+                     ) {
+                       {{string.Join(" ", model.DataProperties.Select(p => p.StorageName))}}
+                       {{WeaviateConstants.AdditionalPropertiesPropertyName}} {
+                         {{WeaviateConstants.ReservedKeyPropertyName}}
+                         {{WeaviateConstants.HybridScorePropertyName}}
+                         {{vectorsQuery}}
+                       }
+                     }
+                   }
+                 }
+                 """;
     }
+
 
     #region private
 
     private static string GetTargetVectorsQuery(bool hasNamedVectors, string vectorPropertyName)
     {
-        return hasNamedVectors ? $"targetVectors: [\"{vectorPropertyName}\"]" : string.Empty;
+        return hasNamedVectors
+            ? $"targetVectors: [\"{vectorPropertyName}\"]"
+            : string.Empty;
     }
+
 
     private static string GetVectorsPropertyQuery(
         bool includeVectors,
@@ -195,6 +197,7 @@ internal static class WeaviateQueryBuilder
                 : WeaviateConstants.ReservedSingleVectorPropertyName
             : string.Empty;
     }
+
 
 #pragma warning disable CS0618 // Type or member is obsolete
     /// <summary>
@@ -242,8 +245,8 @@ internal static class WeaviateQueryBuilder
             else
             {
                 throw new NotSupportedException(
-                    $"Unsupported filter clause type '{filterClause.GetType().Name}'. " +
-                    $"Supported filter clause types are: {string.Join(", ", [
+                    $"Unsupported filter clause type '{filterClause.GetType().Name}'. "
+                    + $"Supported filter clause types are: {string.Join(", ", [
                         nameof(EqualToFilterClause),
                         nameof(AnyTagEqualToFilterClause)])}");
             }
@@ -253,7 +256,9 @@ internal static class WeaviateQueryBuilder
                 throw new InvalidOperationException($"Property name '{propertyName}' provided as part of the filter clause is not a valid property name.");
             }
 
-            var storageName = property is KeyPropertyModel ? WeaviateConstants.ReservedKeyPropertyName : property.StorageName;
+            var storageName = property is KeyPropertyModel
+                ? WeaviateConstants.ReservedKeyPropertyName
+                : property.StorageName;
 
             var operand = $$"""{ path: ["{{JsonEncodedText.Encode(storageName)}}"], operator: {{filterOperator}}, {{filterValueType}}: {{propertyValue}} }""";
 
@@ -264,6 +269,7 @@ internal static class WeaviateQueryBuilder
     }
 #pragma warning restore CS0618 // Type or member is obsolete
 
+
     /// <summary>
     /// Gets filter value type.
     /// More information here: <see href="https://weaviate.io/developers/weaviate/api/graphql/filters#filter-structure"/>.
@@ -272,16 +278,16 @@ internal static class WeaviateQueryBuilder
     {
         return valueType switch
         {
-            Type t when t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte) ||
-                        t == typeof(int?) || t == typeof(long?) || t == typeof(short?) || t == typeof(byte?) => "valueInt",
+            Type t when t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte) || t == typeof(int?) || t == typeof(long?) || t == typeof(short?) || t == typeof(byte?) => "valueInt",
             Type t when t == typeof(bool) || t == typeof(bool?) => "valueBoolean",
             Type t when t == typeof(string) || t == typeof(Guid) || t == typeof(Guid?) => "valueText",
-            Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) ||
-                        t == typeof(float?) || t == typeof(double?) || t == typeof(decimal?) => "valueNumber",
+            Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) || t == typeof(float?) || t == typeof(double?) || t == typeof(decimal?) => "valueNumber",
             Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => "valueDate",
             _ => throw new NotSupportedException($"Unsupported value type {valueType.FullName} in filter.")
         };
     }
 
     #endregion
+
+
 }

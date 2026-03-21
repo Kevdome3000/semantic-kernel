@@ -28,16 +28,16 @@ public class AgentChatTests
 
         // Assert: Verify initial state
         Assert.False(chat.IsActive);
-        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync()); // Primary history
-        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
+        await VerifyHistoryAsync(0, chat.GetChatMessagesAsync()); // Primary history
+        await VerifyHistoryAsync(0, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
 
         // Act: Inject history
         chat.AddChatMessages([new ChatMessageContent(AuthorRole.User, "More")]);
         chat.AddChatMessages([new ChatMessageContent(AuthorRole.User, "And then some")]);
 
         // Assert: Verify updated history
-        await this.VerifyHistoryAsync(expectedCount: 2, chat.GetChatMessagesAsync()); // Primary history
-        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent hasn't joined
+        await VerifyHistoryAsync(2, chat.GetChatMessagesAsync()); // Primary history
+        await VerifyHistoryAsync(0, chat.GetChatMessagesAsync(chat.Agent)); // Agent hasn't joined
 
         // Act: Invoke with input & verify (agent joins chat)
         chat.AddChatMessage(new ChatMessageContent(AuthorRole.User, "hi"));
@@ -45,25 +45,26 @@ public class AgentChatTests
 
         // Assert: Verify updated history
         Assert.Equal(1, chat.Agent.InvokeCount);
-        await this.VerifyHistoryAsync(expectedCount: 4, chat.GetChatMessagesAsync()); // Primary history
-        await this.VerifyHistoryAsync(expectedCount: 4, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
+        await VerifyHistoryAsync(4, chat.GetChatMessagesAsync()); // Primary history
+        await VerifyHistoryAsync(4, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
 
         // Act: Invoke without input
         await chat.InvokeAsync().ToArrayAsync();
 
         // Assert: Verify final history
         Assert.Equal(2, chat.Agent.InvokeCount);
-        await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync()); // Primary history
-        await this.VerifyHistoryAsync(expectedCount: 5, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
+        await VerifyHistoryAsync(5, chat.GetChatMessagesAsync()); // Primary history
+        await VerifyHistoryAsync(5, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
 
         // Reset verify
         await chat.ResetAsync();
         Assert.Equal(2, chat.Agent.InvokeCount);
 
         // Verify final history
-        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync()); // Primary history
-        await this.VerifyHistoryAsync(expectedCount: 0, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
+        await VerifyHistoryAsync(0, chat.GetChatMessagesAsync()); // Primary history
+        await VerifyHistoryAsync(0, chat.GetChatMessagesAsync(chat.Agent)); // Agent history
     }
+
 
     /// <summary>
     /// Verify <see cref="AgentChat"/> throw exception for system message.
@@ -78,6 +79,7 @@ public class AgentChatTests
         Assert.Throws<KernelException>(() => chat.AddChatMessage(new ChatMessageContent(AuthorRole.System, "hi")));
     }
 
+
     /// <summary>
     /// Verify <see cref="AgentChat"/> throw exception for if invoked when active.
     /// </summary>
@@ -90,6 +92,7 @@ public class AgentChatTests
         // Assert and Act: Verify system message not accepted
         await Assert.ThrowsAsync<KernelException>(() => chat.InvalidInvokeAsync().ToArrayAsync().AsTask());
     }
+
 
     /// <summary>
     /// Verify the management of <see cref="Agent"/> instances as they join <see cref="AgentChat"/>.
@@ -106,19 +109,20 @@ public class AgentChatTests
 
         // Act: Queue concurrent tasks
         object syncObject = new();
+
         lock (syncObject)
         {
             tasks =
-                [
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                    Task.Run(() => SynchronizedInvokeAsync()),
-                ];
+            [
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync()),
+                Task.Run(() => SynchronizedInvokeAsync())
+            ];
         }
 
         // Signal tasks to execute
@@ -133,42 +137,49 @@ public class AgentChatTests
         {
             // Loop until signaled
             int isReady;
+
             do
             {
                 isReady = Interlocked.CompareExchange(ref isActive, 1, 1);
-            }
-            while (isReady == 0);
+            } while (isReady == 0);
 
             // Rush invocation
             await chat.InvokeAsync().ToArrayAsync().AsTask();
         }
     }
 
+
     private async Task VerifyHistoryAsync(int expectedCount, IAsyncEnumerable<ChatMessageContent> history)
     {
         Assert.Equal(expectedCount, await history.CountAsync());
     }
 
+
     private sealed class TestChat : AgentChat
     {
-        public MockAgent Agent { get; } = new() { Response = [new(AuthorRole.Assistant, "sup")] };
+        public MockAgent Agent { get; } = new() { Response = [new ChatMessageContent(AuthorRole.Assistant, "sup")] };
 
-        public override IReadOnlyList<Agent> Agents => [this.Agent];
+        public override IReadOnlyList<Agent> Agents => [Agent];
+
 
         public override IAsyncEnumerable<ChatMessageContent> InvokeAsync(
-            CancellationToken cancellationToken = default) =>
-                this.InvokeAgentAsync(this.Agent, cancellationToken);
+            CancellationToken cancellationToken = default)
+        {
+            return InvokeAgentAsync(Agent, cancellationToken);
+        }
+
 
         public IAsyncEnumerable<ChatMessageContent> InvalidInvokeAsync(
             CancellationToken cancellationToken = default)
         {
-            this.SetActivityOrThrow();
-            return this.InvokeAgentAsync(this.Agent, cancellationToken);
+            SetActivityOrThrow();
+            return InvokeAgentAsync(Agent, cancellationToken);
         }
+
 
         public override IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(CancellationToken cancellationToken = default)
         {
-            StreamingChatMessageContent[] messages = [new StreamingChatMessageContent(AuthorRole.Assistant, "sup")];
+            StreamingChatMessageContent[] messages = [new(AuthorRole.Assistant, "sup")];
             return messages.ToAsyncEnumerable();
         }
     }

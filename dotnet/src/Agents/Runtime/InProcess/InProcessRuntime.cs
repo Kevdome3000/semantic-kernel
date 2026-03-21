@@ -35,13 +35,15 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
     /// </summary>
     public bool DeliverToSelf { get; set; } //= false;
 
+
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
-        await this.RunUntilIdleAsync().ConfigureAwait(false);
-        this._shutdownSource?.Dispose();
-        this._finishSource?.Dispose();
+        await RunUntilIdleAsync().ConfigureAwait(false);
+        _shutdownSource?.Dispose();
+        _finishSource?.Dispose();
     }
+
 
     /// <summary>
     /// Starts the runtime service.
@@ -51,16 +53,17 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
     /// <exception cref="InvalidOperationException">Thrown if the runtime is already started.</exception>
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
-        if (this._shutdownSource != null)
+        if (_shutdownSource != null)
         {
             throw new InvalidOperationException("Runtime is already running.");
         }
 
-        this._shutdownSource = new CancellationTokenSource();
-        this._messageDeliveryTask = Task.Run(() => this.RunAsync(this._shutdownSource.Token), cancellationToken);
+        _shutdownSource = new CancellationTokenSource();
+        _messageDeliveryTask = Task.Run(() => RunAsync(_shutdownSource.Token), cancellationToken);
 
         return Task.CompletedTask;
     }
+
 
     /// <summary>
     /// Stops the runtime service.
@@ -70,47 +73,54 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
     /// <exception cref="InvalidOperationException">Thrown if the runtime is in the process of stopping.</exception>
     public Task StopAsync(CancellationToken cancellationToken = default)
     {
-        if (this._shutdownSource != null)
+        if (_shutdownSource != null)
         {
-            if (this._finishSource != null)
+            if (_finishSource != null)
             {
                 throw new InvalidOperationException("Runtime is already stopping.");
             }
 
-            this._finishSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _finishSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-            this._shutdownSource.Cancel();
+            _shutdownSource.Cancel();
         }
 
         return Task.CompletedTask;
     }
+
 
     /// <summary>
     /// This will run until the message queue is empty and then stop the runtime.
     /// </summary>
     public async Task RunUntilIdleAsync()
     {
-        Func<bool> oldShouldContinue = this._shouldContinue;
-        this._shouldContinue = () => !this._messageDeliveryQueue.IsEmpty;
+        Func<bool> oldShouldContinue = _shouldContinue;
+        _shouldContinue = () => !_messageDeliveryQueue.IsEmpty;
 
         // TODO: Do we want detach semantics?
-        await this._messageDeliveryTask.ConfigureAwait(false);
+        await _messageDeliveryTask.ConfigureAwait(false);
 
-        this._shouldContinue = oldShouldContinue;
+        _shouldContinue = oldShouldContinue;
     }
 
+
     /// <inheritdoc/>
-    public ValueTask PublishMessageAsync(object message, TopicId topic, AgentId? sender = null, string? messageId = null, CancellationToken cancellationToken = default)
+    public ValueTask PublishMessageAsync(
+        object message,
+        TopicId topic,
+        AgentId? sender = null,
+        string? messageId = null,
+        CancellationToken cancellationToken = default)
     {
-        return this.ExecuteTracedAsync(() =>
+        return ExecuteTracedAsync(() =>
         {
             MessageDelivery delivery =
                 new MessageEnvelope(message, messageId, cancellationToken)
                     .WithSender(sender)
-                    .ForPublish(topic, this.PublishMessageServicerAsync);
+                    .ForPublish(topic, PublishMessageServicerAsync);
 
-            this._messageDeliveryQueue.Enqueue(delivery);
-            Interlocked.Increment(ref this.messageQueueCount);
+            _messageDeliveryQueue.Enqueue(delivery);
+            Interlocked.Increment(ref messageQueueCount);
 
 #if !NETCOREAPP
             return Task.CompletedTask.AsValueTask();
@@ -120,60 +130,76 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         });
     }
 
+
     /// <inheritdoc/>
-    public async ValueTask<object?> SendMessageAsync(object message, AgentId recipient, AgentId? sender = null, string? messageId = null, CancellationToken cancellationToken = default)
+    public async ValueTask<object?> SendMessageAsync(
+        object message,
+        AgentId recipient,
+        AgentId? sender = null,
+        string? messageId = null,
+        CancellationToken cancellationToken = default)
     {
-        return await this.ExecuteTracedAsync(async () =>
-        {
-            MessageDelivery delivery =
-                new MessageEnvelope(message, messageId, cancellationToken)
-                    .WithSender(sender)
-                    .ForSend(recipient, this.SendMessageServicerAsync);
-
-            this._messageDeliveryQueue.Enqueue(delivery);
-            Interlocked.Increment(ref this.messageQueueCount);
-
-            try
+        return await ExecuteTracedAsync(async () =>
             {
-                return await delivery.ResultSink.Future.ConfigureAwait(false);
-            }
-            catch (TargetInvocationException ex) when (ex.InnerException is OperationCanceledException innerOCEx)
-            {
-                throw new OperationCanceledException($"Delivery of message {messageId} was cancelled.", innerOCEx);
-            }
-        }).ConfigureAwait(false);
+                MessageDelivery delivery =
+                    new MessageEnvelope(message, messageId, cancellationToken)
+                        .WithSender(sender)
+                        .ForSend(recipient, SendMessageServicerAsync);
+
+                _messageDeliveryQueue.Enqueue(delivery);
+                Interlocked.Increment(ref messageQueueCount);
+
+                try
+                {
+                    return await delivery.ResultSink.Future.ConfigureAwait(false);
+                }
+                catch (TargetInvocationException ex) when (ex.InnerException is OperationCanceledException innerOCEx)
+                {
+                    throw new OperationCanceledException($"Delivery of message {messageId} was cancelled.", innerOCEx);
+                }
+            })
+            .ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public async ValueTask<AgentId> GetAgentAsync(AgentId agentId, bool lazy = true)
     {
         if (!lazy)
         {
-            await this.EnsureAgentAsync(agentId).ConfigureAwait(false);
+            await EnsureAgentAsync(agentId).ConfigureAwait(false);
         }
 
         return agentId;
     }
 
+
     /// <inheritdoc/>
     public ValueTask<AgentId> GetAgentAsync(AgentType agentType, string key = AgentId.DefaultKey, bool lazy = true)
-        => this.GetAgentAsync(new AgentId(agentType, key), lazy);
+    {
+        return GetAgentAsync(new AgentId(agentType, key), lazy);
+    }
+
 
     /// <inheritdoc/>
     public ValueTask<AgentId> GetAgentAsync(string agent, string key = AgentId.DefaultKey, bool lazy = true)
-        => this.GetAgentAsync(new AgentId(agent, key), lazy);
+    {
+        return GetAgentAsync(new AgentId(agent, key), lazy);
+    }
+
 
     /// <inheritdoc/>
     public async ValueTask<AgentMetadata> GetAgentMetadataAsync(AgentId agentId)
     {
-        IHostableAgent agent = await this.EnsureAgentAsync(agentId).ConfigureAwait(false);
+        IHostableAgent agent = await EnsureAgentAsync(agentId).ConfigureAwait(false);
         return agent.Metadata;
     }
+
 
     /// <inheritdoc/>
     public async ValueTask<TAgent> TryGetUnderlyingAgentInstanceAsync<TAgent>(AgentId agentId) where TAgent : IHostableAgent
     {
-        IHostableAgent agent = await this.EnsureAgentAsync(agentId).ConfigureAwait(false);
+        IHostableAgent agent = await EnsureAgentAsync(agentId).ConfigureAwait(false);
 
         if (agent is not TAgent concreteAgent)
         {
@@ -183,29 +209,32 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         return concreteAgent;
     }
 
+
     /// <inheritdoc/>
     public async ValueTask LoadAgentStateAsync(AgentId agentId, JsonElement state)
     {
-        IHostableAgent agent = await this.EnsureAgentAsync(agentId).ConfigureAwait(false);
+        IHostableAgent agent = await EnsureAgentAsync(agentId).ConfigureAwait(false);
         await agent.LoadStateAsync(state).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public async ValueTask<JsonElement> SaveAgentStateAsync(AgentId agentId)
     {
-        IHostableAgent agent = await this.EnsureAgentAsync(agentId).ConfigureAwait(false);
+        IHostableAgent agent = await EnsureAgentAsync(agentId).ConfigureAwait(false);
         return await agent.SaveStateAsync().ConfigureAwait(false);
     }
+
 
     /// <inheritdoc/>
     public ValueTask AddSubscriptionAsync(ISubscriptionDefinition subscription)
     {
-        if (this._subscriptions.ContainsKey(subscription.Id))
+        if (_subscriptions.ContainsKey(subscription.Id))
         {
             throw new InvalidOperationException($"Subscription with id {subscription.Id} already exists.");
         }
 
-        this._subscriptions.Add(subscription.Id, subscription);
+        _subscriptions.Add(subscription.Id, subscription);
 
 #if !NETCOREAPP
         return Task.CompletedTask.AsValueTask();
@@ -213,16 +242,17 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         return ValueTask.CompletedTask;
 #endif
     }
+
 
     /// <inheritdoc/>
     public ValueTask RemoveSubscriptionAsync(string subscriptionId)
     {
-        if (!this._subscriptions.ContainsKey(subscriptionId))
+        if (!_subscriptions.ContainsKey(subscriptionId))
         {
             throw new InvalidOperationException($"Subscription with id {subscriptionId} does not exist.");
         }
 
-        this._subscriptions.Remove(subscriptionId);
+        _subscriptions.Remove(subscriptionId);
 
 #if !NETCOREAPP
         return Task.CompletedTask.AsValueTask();
@@ -230,6 +260,7 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         return ValueTask.CompletedTask;
 #endif
     }
+
 
     /// <inheritdoc/>
     public async ValueTask LoadStateAsync(JsonElement state)
@@ -238,25 +269,28 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         {
             AgentId agentId = AgentId.FromStr(agentIdStr.Name);
 
-            if (this._agentFactories.ContainsKey(agentId.Type))
+            if (_agentFactories.ContainsKey(agentId.Type))
             {
-                IHostableAgent agent = await this.EnsureAgentAsync(agentId).ConfigureAwait(false);
+                IHostableAgent agent = await EnsureAgentAsync(agentId).ConfigureAwait(false);
                 await agent.LoadStateAsync(agentIdStr.Value).ConfigureAwait(false);
             }
         }
     }
 
+
     /// <inheritdoc/>
     public async ValueTask<JsonElement> SaveStateAsync()
     {
         Dictionary<string, JsonElement> state = [];
-        foreach (AgentId agentId in this.agentInstances.Keys)
+
+        foreach (AgentId agentId in agentInstances.Keys)
         {
-            JsonElement agentState = await this.agentInstances[agentId].SaveStateAsync().ConfigureAwait(false);
+            JsonElement agentState = await agentInstances[agentId].SaveStateAsync().ConfigureAwait(false);
             state[agentId.ToString()] = agentState;
         }
         return JsonSerializer.SerializeToElement(state);
     }
+
 
     /// <summary>
     /// Registers an agent factory with the runtime, associating it with a specific agent type.
@@ -265,20 +299,22 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
     /// <param name="type">The agent type to associate with the factory.</param>
     /// <param name="factoryFunc">A function that asynchronously creates the agent instance.</param>
     /// <returns>A task representing the asynchronous operation, returning the registered agent type.</returns>
-    public ValueTask<AgentType> RegisterAgentFactoryAsync<TAgent>(AgentType type, Func<AgentId, IAgentRuntime, ValueTask<TAgent>> factoryFunc) where TAgent : IHostableAgent
-        // Declare the lambda return type explicitly, as otherwise the compiler will infer 'ValueTask<TAgent>'
-        // and recurse into the same call, causing a stack overflow.
-        => this.RegisterAgentFactoryAsync(type, async ValueTask<IHostableAgent> (agentId, runtime) => await factoryFunc(agentId, runtime).ConfigureAwait(false));
+    public ValueTask<AgentType> RegisterAgentFactoryAsync<TAgent>(AgentType type, Func<AgentId, IAgentRuntime, ValueTask<TAgent>> factoryFunc) where TAgent : IHostableAgent // Declare the lambda return type explicitly, as otherwise the compiler will infer 'ValueTask<TAgent>'
+    // and recurse into the same call, causing a stack overflow.
+    {
+    return RegisterAgentFactoryAsync(type, async ValueTask<IHostableAgent> (agentId, runtime) => await factoryFunc(agentId, runtime).ConfigureAwait(false));
+    }
+
 
     /// <inheritdoc/>
     public ValueTask<AgentType> RegisterAgentFactoryAsync(AgentType type, Func<AgentId, IAgentRuntime, ValueTask<IHostableAgent>> factoryFunc)
     {
-        if (this._agentFactories.ContainsKey(type))
+        if (_agentFactories.ContainsKey(type))
         {
             throw new InvalidOperationException($"Agent with type {type} already exists.");
         }
 
-        this._agentFactories.Add(type, factoryFunc);
+        _agentFactories.Add(type, factoryFunc);
 
 #if !NETCOREAPP
         return type.AsValueTask();
@@ -286,6 +322,7 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         return ValueTask.FromResult(type);
 #endif
     }
+
 
     /// <inheritdoc/>
     public ValueTask<AgentProxy> TryGetAgentProxyAsync(AgentId agentId)
@@ -299,11 +336,12 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
 #endif
     }
 
+
     private ValueTask ProcessNextMessageAsync(CancellationToken cancellation = default)
     {
-        if (this._messageDeliveryQueue.TryDequeue(out MessageDelivery? delivery))
+        if (_messageDeliveryQueue.TryDequeue(out MessageDelivery? delivery))
         {
-            Interlocked.Decrement(ref this.messageQueueCount);
+            Interlocked.Decrement(ref messageQueueCount);
             Debug.WriteLine($"Processing message {delivery.Message.MessageId}...");
             return delivery.InvokeAsync(cancellation);
         }
@@ -315,13 +353,16 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
 #endif
     }
 
+
     private async Task RunAsync(CancellationToken cancellation)
     {
         Dictionary<Guid, Task> pendingTasks = [];
-        while (!cancellation.IsCancellationRequested && this._shouldContinue())
+
+        while (!cancellation.IsCancellationRequested && _shouldContinue())
         {
             // Get a unique task id
             Guid taskId;
+
             do
             {
                 taskId = Guid.NewGuid();
@@ -329,7 +370,7 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
 
             // There is potentially a race condition here, but even if we leak a Task, we will
             // still catch it on the Finish() pass.
-            ValueTask processTask = this.ProcessNextMessageAsync(cancellation);
+            ValueTask processTask = ProcessNextMessageAsync(cancellation);
             await Task.Yield();
 
             // Check if the task is already completed
@@ -346,8 +387,9 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         // the prior "ContinueWith" call.  This could be solved with a ConcurrentDictionary, but locking
         // is entirely undesirable in this context.
         await Task.WhenAll([.. pendingTasks.Values.Where(task => task is not null)]).ConfigureAwait(false);
-        await this.FinishAsync(this._finishSource?.Token ?? CancellationToken.None).ConfigureAwait(false);
+        await FinishAsync(_finishSource?.Token ?? CancellationToken.None).ConfigureAwait(false);
     }
+
 
     private async ValueTask PublishMessageServicerAsync(MessageEnvelope envelope, CancellationToken deliveryToken)
     {
@@ -358,9 +400,13 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
 
         List<Task>? tasks = null;
         TopicId topic = envelope.Topic.Value;
-        foreach (ISubscriptionDefinition subscription in this._subscriptions.Values.Where(subscription => subscription.Matches(topic)))
+
+        foreach (ISubscriptionDefinition subscription in _subscriptions.Values.Where(subscription => subscription.Matches(topic)))
         {
-            (tasks ??= []).Add(ProcessSubscriptionAsync(envelope, topic, subscription, deliveryToken));
+            (tasks ??= []).Add(ProcessSubscriptionAsync(envelope,
+                topic,
+                subscription,
+                deliveryToken));
         }
 
         if (tasks is not null)
@@ -368,7 +414,11 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
-        async Task ProcessSubscriptionAsync(MessageEnvelope envelope, TopicId topic, ISubscriptionDefinition subscription, CancellationToken deliveryToken)
+        async Task ProcessSubscriptionAsync(
+            MessageEnvelope envelope,
+            TopicId topic,
+            ISubscriptionDefinition subscription,
+            CancellationToken deliveryToken)
         {
             deliveryToken.ThrowIfCancellationRequested();
 
@@ -383,16 +433,18 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
             };
 
             AgentId agentId = subscription.MapToAgent(topic);
-            if (!this.DeliverToSelf && sender.HasValue && sender == agentId)
+
+            if (!DeliverToSelf && sender.HasValue && sender == agentId)
             {
                 return;
             }
 
-            IHostableAgent agent = await this.EnsureAgentAsync(agentId).ConfigureAwait(false);
+            IHostableAgent agent = await EnsureAgentAsync(agentId).ConfigureAwait(false);
 
             await agent.OnMessageAsync(envelope.Message, messageContext).ConfigureAwait(false);
         }
     }
+
 
     private async ValueTask<object?> SendMessageServicerAsync(MessageEnvelope envelope, CancellationToken deliveryToken)
     {
@@ -409,30 +461,32 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         };
 
         AgentId receiver = envelope.Receiver.Value;
-        IHostableAgent agent = await this.EnsureAgentAsync(receiver).ConfigureAwait(false);
+        IHostableAgent agent = await EnsureAgentAsync(receiver).ConfigureAwait(false);
 
         return await agent.OnMessageAsync(envelope.Message, messageContext).ConfigureAwait(false);
     }
 
+
     private async ValueTask<IHostableAgent> EnsureAgentAsync(AgentId agentId)
     {
-        if (!this.agentInstances.TryGetValue(agentId, out IHostableAgent? agent))
+        if (!agentInstances.TryGetValue(agentId, out IHostableAgent? agent))
         {
-            if (!this._agentFactories.TryGetValue(agentId.Type, out Func<AgentId, IAgentRuntime, ValueTask<IHostableAgent>>? factoryFunc))
+            if (!_agentFactories.TryGetValue(agentId.Type, out Func<AgentId, IAgentRuntime, ValueTask<IHostableAgent>>? factoryFunc))
             {
                 throw new InvalidOperationException($"Agent with name {agentId.Type} not found.");
             }
 
             agent = await factoryFunc(agentId, this).ConfigureAwait(false);
-            this.agentInstances.Add(agentId, agent);
+            agentInstances.Add(agentId, agent);
         }
 
-        return this.agentInstances[agentId];
+        return agentInstances[agentId];
     }
+
 
     private async Task FinishAsync(CancellationToken token)
     {
-        foreach (IHostableAgent agent in this.agentInstances.Values)
+        foreach (IHostableAgent agent in agentInstances.Values)
         {
             if (!token.IsCancellationRequested)
             {
@@ -440,11 +494,12 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
             }
         }
 
-        this._shutdownSource?.Dispose();
-        this._finishSource?.Dispose();
-        this._finishSource = null;
-        this._shutdownSource = null;
+        _shutdownSource?.Dispose();
+        _finishSource?.Dispose();
+        _finishSource = null;
+        _shutdownSource = null;
     }
+
 
 #pragma warning disable CA1822 // Mark members as static
     private ValueTask<T> ExecuteTracedAsync<T>(Func<ValueTask<T>> func)
@@ -453,6 +508,7 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         // TODO: Bind tracing
         return func();
     }
+
 
 #pragma warning disable CA1822 // Mark members as static
     private ValueTask ExecuteTracedAsync(Func<ValueTask> func)

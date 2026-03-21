@@ -1,16 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -44,6 +34,7 @@ public sealed class WeaviateVectorStore : VectorStore
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateVectorStore"/> class.
     /// </summary>
@@ -59,19 +50,20 @@ public sealed class WeaviateVectorStore : VectorStore
     {
         Verify.NotNull(httpClient);
 
-        this._httpClient = httpClient;
+        _httpClient = httpClient;
 
         options ??= WeaviateVectorStoreOptions.Default;
-        this._endpoint = options.Endpoint;
-        this._apiKey = options.ApiKey;
-        this._hasNamedVectors = options.HasNamedVectors;
-        this._embeddingGenerator = options.EmbeddingGenerator;
+        _endpoint = options.Endpoint;
+        _apiKey = options.ApiKey;
+        _hasNamedVectors = options.HasNamedVectors;
+        _embeddingGenerator = options.EmbeddingGenerator;
 
-        this._metadata = new()
+        _metadata = new()
         {
             VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName
         };
     }
+
 
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
@@ -86,16 +78,17 @@ public sealed class WeaviateVectorStore : VectorStore
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new WeaviateCollection<TKey, TRecord>(
-                this._httpClient,
+                _httpClient,
                 name,
-                new()
+                new WeaviateCollectionOptions
                 {
                     Definition = definition,
-                    Endpoint = this._endpoint,
-                    ApiKey = this._apiKey,
-                    HasNamedVectors = this._hasNamedVectors,
-                    EmbeddingGenerator = this._embeddingGenerator
+                    Endpoint = _endpoint,
+                    ApiKey = _apiKey,
+                    HasNamedVectors = _hasNamedVectors,
+                    EmbeddingGenerator = _embeddingGenerator
                 });
+
 
     /// <inheritdoc />
     // TODO: The provider uses unsafe JSON serialization in many places, #11963
@@ -107,17 +100,18 @@ public sealed class WeaviateVectorStore : VectorStore
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
         => new WeaviateDynamicCollection(
-            this._httpClient,
+            _httpClient,
             name,
-            new()
+            new WeaviateCollectionOptions
             {
                 Definition = definition,
-                Endpoint = this._endpoint,
-                ApiKey = this._apiKey,
-                HasNamedVectors = this._hasNamedVectors,
-                EmbeddingGenerator = this._embeddingGenerator
+                Endpoint = _endpoint,
+                ApiKey = _apiKey,
+                HasNamedVectors = _hasNamedVectors,
+                EmbeddingGenerator = _embeddingGenerator
             });
 #pragma warning restore IDE0090
+
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -127,19 +121,20 @@ public sealed class WeaviateVectorStore : VectorStore
         using var request = new WeaviateGetCollectionsRequest().Build();
 
         var httpResponseContent = await VectorStoreErrorHandler.RunOperationAsync<string, HttpRequestException>(
-            this._metadata,
-            OperationName,
-            async () =>
-            {
-                var httpResponse = await this._httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
+                _metadata,
+                OperationName,
+                async () =>
+                {
+                    var httpResponse = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken).ConfigureAwait(false);
 
-                httpResponse.EnsureSuccessStatusCode();
+                    httpResponse.EnsureSuccessStatusCode();
 
-                return await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            }).ConfigureAwait(false);
+                    return await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                })
+            .ConfigureAwait(false);
 
         var collectionsResponse = VectorStoreErrorHandler.RunOperation<WeaviateGetCollectionsResponse?, JsonException>(
-            this._metadata,
+            _metadata,
             OperationName,
             () => JsonSerializer.Deserialize<WeaviateGetCollectionsResponse>(httpResponseContent));
 
@@ -152,19 +147,22 @@ public sealed class WeaviateVectorStore : VectorStore
         }
     }
 
+
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.CollectionExistsAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
-        var collection = this.GetDynamicCollection(name, s_generalPurposeDefinition);
+        var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
+
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
@@ -172,10 +170,14 @@ public sealed class WeaviateVectorStore : VectorStore
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreMetadata) ? this._metadata :
-            serviceType == typeof(HttpClient) ? this._httpClient :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreMetadata)
+                    ? _metadata
+                    : serviceType == typeof(HttpClient)
+                        ? _httpClient
+                        : serviceType.IsInstanceOfType(this)
+                            ? this
+                            : null;
     }
 }

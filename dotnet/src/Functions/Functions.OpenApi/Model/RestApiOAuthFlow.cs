@@ -37,6 +37,7 @@ public sealed class RestApiOAuthFlow
         init => _scopes = value;
     }
 
+
     /// <summary>
     /// Creates an instance of a <see cref="RestApiOAuthFlow"/> class.
     /// </summary>
@@ -46,10 +47,12 @@ public sealed class RestApiOAuthFlow
     {
     }
 
+
     internal void Freeze()
     {
         _scopes = new ReadOnlyDictionary<string, string>(_scopes);
     }
+
 
     private IDictionary<string, string> _scopes;
 }

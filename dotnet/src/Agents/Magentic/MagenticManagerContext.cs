@@ -34,6 +34,7 @@ public sealed class MagenticManagerContext
         ResetCount = resetCount;
     }
 
+
     /// <summary>
     /// Gets the chat message history for the current context.
     /// </summary>

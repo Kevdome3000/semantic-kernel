@@ -1,11 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Plugins.Document.OpenXml;
-
 using System.IO;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 
+namespace Microsoft.SemanticKernel.Plugins.Document.OpenXml;
 
 /// <summary>
 /// Connector for Microsoft Word (.docx) files

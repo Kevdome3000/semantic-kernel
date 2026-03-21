@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.TextToAudio;
+
 /// <summary>
 /// Interface for text-to-audio services.
 /// </summary>

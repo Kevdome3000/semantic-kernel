@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using Microsoft.SemanticKernel.ChatCompletion;
-
 using AudioContent = Microsoft.SemanticKernel.AudioContent;
 using BinaryContent = Microsoft.SemanticKernel.BinaryContent;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;
@@ -25,7 +20,7 @@ internal static class ChatMessageExtensions
             AuthorName = message.AuthorName,
             InnerContent = response?.RawRepresentation ?? message.RawRepresentation,
             Metadata = new AdditionalPropertiesDictionary(message.AdditionalProperties ?? []) { ["Usage"] = response?.Usage },
-            Role = new AuthorRole(message.Role.Value),
+            Role = new AuthorRole(message.Role.Value)
         };
 
         foreach (AIContent content in message.Contents)
@@ -41,11 +36,13 @@ internal static class ChatMessageExtensions
                 DataContent dc => new BinaryContent(dc.Uri),
                 UriContent uc => new BinaryContent(uc.Uri),
                 FunctionCallContent fcc => new SemanticKernel.FunctionCallContent(
-                    functionName: fcc.Name,
+                    fcc.Name,
                     id: fcc.CallId,
-                    arguments: fcc.Arguments is not null ? new(fcc.Arguments) : null),
+                    arguments: fcc.Arguments is not null
+                        ? new KernelArguments(fcc.Arguments)
+                        : null),
                 FunctionResultContent frc => new SemanticKernel.FunctionResultContent(
-                    functionName: GetFunctionCallContent(frc.CallId)?.Name,
+                    GetFunctionCallContent(frc.CallId)?.Name,
                     callId: frc.CallId,
                     result: frc.Result),
                 _ => null
@@ -64,16 +61,20 @@ internal static class ChatMessageExtensions
         return result;
 
         FunctionCallContent? GetFunctionCallContent(string callId)
-            => response?.Messages
+        {
+            return response?.Messages
                 .Select(m => m.Contents
-                .FirstOrDefault(c => c is FunctionCallContent fcc && fcc.CallId == callId) as FunctionCallContent)
-                    .FirstOrDefault(fcc => fcc is not null);
+                    .FirstOrDefault(c => c is FunctionCallContent fcc && fcc.CallId == callId) as FunctionCallContent)
+                .FirstOrDefault(fcc => fcc is not null);
+        }
     }
+
 
     /// <summary>Converts a list of <see cref="ChatMessage"/> to a <see cref="ChatHistory"/>.</summary>
     internal static ChatHistory ToChatHistory(this IEnumerable<ChatMessage> chatMessages)
     {
         ChatHistory chatHistory = [];
+
         foreach (var message in chatMessages)
         {
             chatHistory.Add(message.ToChatMessageContent());

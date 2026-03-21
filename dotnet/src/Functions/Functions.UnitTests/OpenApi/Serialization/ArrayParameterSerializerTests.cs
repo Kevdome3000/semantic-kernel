@@ -1,12 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi.Serialization;
-
 using System;
 using System.Text.Json.Nodes;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi.Serialization;
 
 public class ArrayParameterSerializerTests
 {
@@ -17,7 +16,7 @@ public class ArrayParameterSerializerTests
         var array = new JsonArray(1, 2, 3);
 
         // Act
-        var result = ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters("id", array, delimiter: "&");
+        var result = ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters("id", array, "&");
 
         // Assert
         Assert.NotNull(result);
@@ -30,10 +29,13 @@ public class ArrayParameterSerializerTests
     public void ItShouldAllowDuplicatesWhenCreatingParameterPerArrayItem()
     {
         // Arrange
-        var array = new JsonArray(1, 2, 2, 3);
+        var array = new JsonArray(1,
+            2,
+            2,
+            3);
 
         // Act
-        var result = ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters("id", array, delimiter: "&");
+        var result = ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters("id", array, "&");
 
         // Assert
         Assert.NotNull(result);
@@ -49,7 +51,7 @@ public class ArrayParameterSerializerTests
         var array = new JsonArray("a", "b&", "c");
 
         // Act
-        var result = ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters("id", array, delimiter: "&");
+        var result = ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters("id", array, "&");
 
         // Assert
         Assert.NotNull(result);
@@ -65,7 +67,7 @@ public class ArrayParameterSerializerTests
         var array = new JsonArray(1, 2, 3);
 
         // Act
-        var result = ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: "%20");
+        var result = ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, "%20");
 
         // Assert
         Assert.NotNull(result);
@@ -78,10 +80,13 @@ public class ArrayParameterSerializerTests
     public void ItShouldAllowDuplicatesWhenCreatingParameterWithDelimitedValuePerArrayItem()
     {
         // Arrange
-        var array = new JsonArray(1, 2, 2, 3);
+        var array = new JsonArray(1,
+            2,
+            2,
+            3);
 
         // Act
-        var result = ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: "%20");
+        var result = ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, "%20");
 
         // Assert
         Assert.NotNull(result);
@@ -101,7 +106,7 @@ public class ArrayParameterSerializerTests
         var array = new JsonArray(specialSymbol);
 
         // Act
-        var result = ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters("id", array, delimiter: "&");
+        var result = ArrayParameterValueSerializer.SerializeArrayAsSeparateParameters("id", array, "&");
 
         // Assert
         Assert.NotNull(result);
@@ -121,7 +126,7 @@ public class ArrayParameterSerializerTests
         var array = new JsonArray(specialSymbol);
 
         // Act
-        var result = ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: "%20");
+        var result = ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, "%20");
 
         // Assert
         Assert.NotNull(result);
@@ -141,7 +146,7 @@ public class ArrayParameterSerializerTests
         var array = new JsonArray(specialSymbol);
 
         // Act
-        var result = ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, delimiter: ",", encode: false);
+        var result = ArrayParameterValueSerializer.SerializeArrayAsDelimitedValues(array, ",", false);
 
         // Assert
         Assert.NotNull(result);

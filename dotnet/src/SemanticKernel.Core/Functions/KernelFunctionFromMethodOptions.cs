@@ -8,6 +8,7 @@ using System.Reflection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Optional options that can be provided when creating a <see cref="KernelFunction"/> from a method.
 /// </summary>

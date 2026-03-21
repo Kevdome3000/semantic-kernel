@@ -9,6 +9,7 @@ namespace Microsoft.SemanticKernel.Agents.OpenAI;
 
 #pragma warning disable SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
 
+
 /// <summary>
 /// Extensions for logging <see cref="AssistantThreadActions"/>.
 /// </summary>
@@ -31,6 +32,7 @@ internal static partial class AssistantThreadActionsLogMessages
         string methodName,
         string threadId);
 
+
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> created run (complete).
     /// </summary>
@@ -43,6 +45,7 @@ internal static partial class AssistantThreadActionsLogMessages
         string methodName,
         string runId,
         string threadId);
+
 
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> completed run (complete).
@@ -57,6 +60,7 @@ internal static partial class AssistantThreadActionsLogMessages
         string runId,
         string threadId);
 
+
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> processing run steps (started).
     /// </summary>
@@ -69,6 +73,7 @@ internal static partial class AssistantThreadActionsLogMessages
         string methodName,
         string runId,
         string threadId);
+
 
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> processed run steps (complete).
@@ -84,6 +89,7 @@ internal static partial class AssistantThreadActionsLogMessages
         string runId,
         string threadId);
 
+
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> processing run messages (started).
     /// </summary>
@@ -96,6 +102,7 @@ internal static partial class AssistantThreadActionsLogMessages
         string methodName,
         string runId,
         string threadId);
+
 
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> processed run messages (complete).
@@ -111,6 +118,7 @@ internal static partial class AssistantThreadActionsLogMessages
         string runId,
         string threadId);
 
+
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> polling run status (started).
     /// </summary>
@@ -123,6 +131,7 @@ internal static partial class AssistantThreadActionsLogMessages
         string methodName,
         string runId,
         string threadId);
+
 
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> polled run status (complete).
@@ -137,6 +146,7 @@ internal static partial class AssistantThreadActionsLogMessages
         RunStatus runStatus,
         string runId,
         string threadId);
+
 
     /// <summary>
     /// Logs <see cref="AssistantThreadActions"/> polled run status (complete).

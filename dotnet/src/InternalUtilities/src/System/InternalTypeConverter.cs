@@ -1,12 +1,7 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Concurrent;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Provides internal utility methods for converting types to strings with consideration for CultureInfo.
 /// </summary>
@@ -32,31 +27,36 @@ internal static class InternalTypeConverter
             : converterDelegate(value, culture ?? CultureInfo.InvariantCulture);
     }
 
+
     /// <summary>
     /// Retrieves a type-to-string converter delegate for the specified source type.
     /// </summary>
     /// <param name="sourceType">The source Type for which to retrieve the type-to-string converter delegate.</param>
     /// <returns>A Func delegate for converting the source type to a string, considering CultureInfo, or null if no suitable converter is found.</returns>
-    private static Func<object?, CultureInfo, string?>? GetTypeToStringConverterDelegate(Type sourceType) =>
-        s_converters.GetOrAdd(sourceType, static sourceType =>
-        {
-            // Strings just render as themselves.
-            if (sourceType == typeof(string))
+    private static Func<object?, CultureInfo, string?>? GetTypeToStringConverterDelegate(Type sourceType)
+    {
+        return s_converters.GetOrAdd(sourceType,
+            static sourceType =>
             {
-                return (input, cultureInfo) => (string)input!;
-            }
-
-            // Look up and use a type converter.
-            if (TypeConverterFactory.GetTypeConverter(sourceType) is TypeConverter converter && converter.CanConvertTo(typeof(string)))
-            {
-                return (input, cultureInfo) =>
+                // Strings just render as themselves.
+                if (sourceType == typeof(string))
                 {
-                    return converter.ConvertToString(context: null, cultureInfo, input);
-                };
-            }
+                    return (input, cultureInfo) => (string)input!;
+                }
 
-            return null;
-        });
+                // Look up and use a type converter.
+                if (TypeConverterFactory.GetTypeConverter(sourceType) is TypeConverter converter && converter.CanConvertTo(typeof(string)))
+                {
+                    return (input, cultureInfo) =>
+                    {
+                        return converter.ConvertToString(null, cultureInfo, input);
+                    };
+                }
+
+                return null;
+            });
+    }
+
 
     /// <summary>Converter functions for converting types to strings.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, string?>?> s_converters = new();

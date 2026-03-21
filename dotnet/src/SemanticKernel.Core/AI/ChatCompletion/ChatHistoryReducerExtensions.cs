@@ -30,6 +30,7 @@ internal static class ChatHistoryReducerExtensions
         Func<ChatMessageContent, bool>? filter = null)
     {
         int maxIndex = chatHistory.Count - 1;
+
         if (startIndex > maxIndex)
         {
             yield break;
@@ -55,6 +56,7 @@ internal static class ChatHistoryReducerExtensions
         }
     }
 
+
     /// <summary>
     /// Identify the index of the first message that is not a summary message, as indicated by
     /// the presence of the specified metadata key.
@@ -75,6 +77,7 @@ internal static class ChatHistoryReducerExtensions
 
         return chatHistory.Count;
     }
+
 
     /// <summary>
     /// Identify the index of the first message at or beyond the specified targetCount that
@@ -104,7 +107,9 @@ internal static class ChatHistoryReducerExtensions
         int offsetCount = 0,
         bool hasSystemMessage = false)
     {
-        targetCount -= hasSystemMessage ? 1 : 0;
+        targetCount -= hasSystemMessage
+            ? 1
+            : 0;
 
         // Compute the index of the truncation threshold
         int thresholdIndex = chatHistory.Count - (thresholdCount ?? 0) - targetCount;

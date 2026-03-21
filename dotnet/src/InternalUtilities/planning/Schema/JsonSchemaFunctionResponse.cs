@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel;
-
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel;
 
 /// <summary>
 /// A class for describing the reponse/return type of an KernelFunctionFactory in a JSON Schema friendly way.
@@ -20,5 +19,5 @@ internal sealed class JsonSchemaFunctionResponse
     /// The response content.
     /// </summary>
     [JsonPropertyName("content")]
-    public JsonSchemaFunctionContent Content { get; set; } = new JsonSchemaFunctionContent();
+    public JsonSchemaFunctionContent Content { get; set; } = new();
 }

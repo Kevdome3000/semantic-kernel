@@ -16,7 +16,7 @@ public class OpenApiKernelPluginFactoryFeatureTests
     {
         await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_testsV3_0.json");
 
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
 
         var postFoobarFunction = plugin["AnyOfPost"];
         Assert.NotNull(postFoobarFunction);
@@ -34,7 +34,7 @@ public class OpenApiKernelPluginFactoryFeatureTests
     public async Task ItShouldCreatePluginWithOperationPayloadForAllOfSchemaAsync()
     {
         await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_testsV3_0.json");
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
 
         var postFoobarFunction = plugin["AllOfPost"];
         Assert.NotNull(postFoobarFunction);
@@ -53,7 +53,7 @@ public class OpenApiKernelPluginFactoryFeatureTests
     {
         await using var openApiDocument = ResourcePluginsProvider.LoadFromResource("openapi_feature_testsV3_0.json");
 
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, executionParameters: new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false });
 
         var postFoobarFunction = plugin["OneOfPost"];
         Assert.NotNull(postFoobarFunction);

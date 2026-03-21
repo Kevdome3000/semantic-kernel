@@ -1,17 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.Extensions.VectorData;
 
 #pragma warning disable MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 
 /// <summary>
 /// Contains helpers for reading vector store model properties and their attributes.
@@ -27,15 +19,16 @@ internal static class VectorStoreErrorHandler
         where TException : Exception
     {
         return RunOperationAsync<TResult, TException>(
-            new VectorStoreCollectionMetadata()
+            new VectorStoreCollectionMetadata
             {
                 CollectionName = null,
                 VectorStoreName = metadata.VectorStoreName,
-                VectorStoreSystemName = metadata.VectorStoreSystemName,
+                VectorStoreSystemName = metadata.VectorStoreSystemName
             },
             operationName,
             operation);
     }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static async Task<TResult> RunOperationAsync<TResult, TException>(
@@ -70,6 +63,7 @@ internal static class VectorStoreErrorHandler
         }
     }
 
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult RunOperation<TResult, TException>(
         VectorStoreMetadata metadata,
@@ -78,15 +72,16 @@ internal static class VectorStoreErrorHandler
         where TException : Exception
     {
         return RunOperation<TResult, TException>(
-            new VectorStoreCollectionMetadata()
+            new VectorStoreCollectionMetadata
             {
                 CollectionName = null,
                 VectorStoreName = metadata.VectorStoreName,
-                VectorStoreSystemName = metadata.VectorStoreSystemName,
+                VectorStoreSystemName = metadata.VectorStoreSystemName
             },
             operationName,
             operation);
     }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult RunOperation<TResult, TException>(
@@ -120,6 +115,7 @@ internal static class VectorStoreErrorHandler
             };
         }
     }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static async Task<TResult> RunOperationWithRetryAsync<TResult, TException>(
@@ -188,6 +184,7 @@ internal static class VectorStoreErrorHandler
         };
     }
 
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static async Task RunOperationAsync<TException>(
         VectorStoreCollectionMetadata metadata,
@@ -220,6 +217,7 @@ internal static class VectorStoreErrorHandler
             };
         }
     }
+
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static async Task RunOperationWithRetryAsync<TException>(
@@ -289,12 +287,14 @@ internal static class VectorStoreErrorHandler
         };
     }
 
+
     public struct ConfiguredCancelableErrorHandlingAsyncEnumerable<TResult, TException>
         where TException : Exception
     {
         private readonly ConfiguredCancelableAsyncEnumerable<TResult> _enumerable;
         private readonly VectorStoreCollectionMetadata _metadata;
         private readonly string _operationName;
+
 
         public ConfiguredCancelableErrorHandlingAsyncEnumerable(
             ConfiguredCancelableAsyncEnumerable<TResult> enumerable,
@@ -306,30 +306,34 @@ internal static class VectorStoreErrorHandler
             _operationName = operationName;
         }
 
+
         public ConfiguredCancelableErrorHandlingAsyncEnumerable(
             ConfiguredCancelableAsyncEnumerable<TResult> enumerable,
             VectorStoreMetadata metadata,
             string operationName)
         {
             _enumerable = enumerable;
-            _metadata = new()
+            _metadata = new VectorStoreCollectionMetadata
             {
                 CollectionName = null,
                 VectorStoreName = metadata.VectorStoreName,
-                VectorStoreSystemName = metadata.VectorStoreSystemName,
-       };
+                VectorStoreSystemName = metadata.VectorStoreSystemName
+            };
             _operationName = operationName;
         }
+
 
         public Enumerator GetAsyncEnumerator(CancellationToken cancellationToken = default)
         {
             return new Enumerator(_enumerable.WithCancellation(cancellationToken).GetAsyncEnumerator(), _metadata, _operationName);
         }
 
+
         public ConfiguredCancelableErrorHandlingAsyncEnumerable<TResult, TException> ConfigureAwait(bool continueOnCapturedContext)
         {
-            return new ConfiguredCancelableErrorHandlingAsyncEnumerable<TResult, TException>(this._enumerable.ConfigureAwait(continueOnCapturedContext), _metadata, _operationName);
+            return new ConfiguredCancelableErrorHandlingAsyncEnumerable<TResult, TException>(_enumerable.ConfigureAwait(continueOnCapturedContext), _metadata, _operationName);
         }
+
 
         public struct Enumerator(
             ConfiguredCancelableAsyncEnumerable<TResult>.Enumerator enumerator,
@@ -363,29 +367,38 @@ internal static class VectorStoreErrorHandler
                     };
                 }
             }
+
+
             public TResult Current => enumerator.Current;
         }
     }
+
 
     internal static Task<bool> ReadWithErrorHandlingAsync(
         this DbDataReader reader,
         VectorStoreCollectionMetadata metadata,
         string operationName,
         CancellationToken cancellationToken)
-        => VectorStoreErrorHandler.RunOperationAsync<bool, DbException>(
+    {
+        return VectorStoreErrorHandler.RunOperationAsync<bool, DbException>(
             metadata,
             operationName,
             () => reader.ReadAsync(cancellationToken));
+    }
+
 
     internal static Task<bool> ReadWithErrorHandlingAsync(
         this DbDataReader reader,
         VectorStoreMetadata metadata,
         string operationName,
         CancellationToken cancellationToken)
-        => VectorStoreErrorHandler.RunOperationAsync<bool, DbException>(
+    {
+        return VectorStoreErrorHandler.RunOperationAsync<bool, DbException>(
             metadata,
             operationName,
             () => reader.ReadAsync(cancellationToken));
+    }
+
 
     internal static async Task<TResult> ExecuteWithErrorHandlingAsync<TResult>(
         this DbConnection connection,
@@ -395,17 +408,19 @@ internal static class VectorStoreErrorHandler
         CancellationToken cancellationToken)
     {
         return await ExecuteWithErrorHandlingAsync(
-            connection,
-            new VectorStoreCollectionMetadata
-            {
-                VectorStoreSystemName = metadata.VectorStoreSystemName,
-                VectorStoreName = metadata.VectorStoreName,
-                CollectionName = null
-            },
-            operationName,
-            operation,
-            cancellationToken).ConfigureAwait(false);
+                connection,
+                new VectorStoreCollectionMetadata
+                {
+                    VectorStoreSystemName = metadata.VectorStoreSystemName,
+                    VectorStoreName = metadata.VectorStoreName,
+                    CollectionName = null
+                },
+                operationName,
+                operation,
+                cancellationToken)
+            .ConfigureAwait(false);
     }
+
 
     internal static async Task<TResult> ExecuteWithErrorHandlingAsync<TResult>(
         this DbConnection connection,
@@ -414,7 +429,7 @@ internal static class VectorStoreErrorHandler
         Func<Task<TResult>> operation,
         CancellationToken cancellationToken)
     {
-        if (connection.State != System.Data.ConnectionState.Open)
+        if (connection.State != ConnectionState.Open)
         {
             await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
         }

@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Linq;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>
@@ -23,28 +18,30 @@ internal static class AzureAISearchCollectionSearchMapping
     public static string BuildLegacyFilterString(VectorSearchFilter basicVectorSearchFilter, CollectionModel model)
     {
         var filterString = string.Empty;
+
         if (basicVectorSearchFilter.FilterClauses is not null)
         {
             // Map Equality clauses.
-            var filterStrings = basicVectorSearchFilter?.FilterClauses.OfType<EqualToFilterClause>().Select(x =>
-            {
-                string storageFieldName = GetStoragePropertyName(model, x.FieldName);
-
-                return x.Value switch
+            var filterStrings = basicVectorSearchFilter?.FilterClauses.OfType<EqualToFilterClause>()
+                .Select(x =>
                 {
-                    string stringValue => $"{storageFieldName} eq '{stringValue}'",
+                    string storageFieldName = GetStoragePropertyName(model, x.FieldName);
+
+                    return x.Value switch
+                    {
+                        string stringValue => $"{storageFieldName} eq '{stringValue}'",
 #pragma warning disable CA1308 // Normalize strings to uppercase - OData filter strings use lowercase boolean literals. See https://docs.oasis-open.org/odata/odata/v4.01/cs01/part2-url-conventions/odata-v4.01-cs01-part2-url-conventions.html#sec_PrimitiveLiterals
-                    bool boolValue => $"{storageFieldName} eq {boolValue.ToString().ToLowerInvariant()}",
+                        bool boolValue => $"{storageFieldName} eq {boolValue.ToString().ToLowerInvariant()}",
 #pragma warning restore CA1308 // Normalize strings to uppercase
-                    int intValue => $"{storageFieldName} eq {intValue}",
-                    long longValue => $"{storageFieldName} eq {longValue}",
-                    float floatValue => $"{storageFieldName} eq {floatValue}",
-                    double doubleValue => $"{storageFieldName} eq {doubleValue}",
-                    DateTimeOffset dateTimeOffsetValue => $"{storageFieldName} eq {dateTimeOffsetValue.UtcDateTime:O}",
-                    null => $"{storageFieldName} eq null",
-                    _ => throw new InvalidOperationException($"Unsupported filter value type '{x.Value.GetType().Name}'.")
-                };
-            });
+                        int intValue => $"{storageFieldName} eq {intValue}",
+                        long longValue => $"{storageFieldName} eq {longValue}",
+                        float floatValue => $"{storageFieldName} eq {floatValue}",
+                        double doubleValue => $"{storageFieldName} eq {doubleValue}",
+                        DateTimeOffset dateTimeOffsetValue => $"{storageFieldName} eq {dateTimeOffsetValue.UtcDateTime:O}",
+                        null => $"{storageFieldName} eq null",
+                        _ => throw new InvalidOperationException($"Unsupported filter value type '{x.Value.GetType().Name}'.")
+                    };
+                });
 
             // Map tag contains clauses.
             var tagListContainsStrings = basicVectorSearchFilter?.FilterClauses
@@ -58,6 +55,7 @@ internal static class AzureAISearchCollectionSearchMapping
         return filterString;
     }
 #pragma warning restore CS0618 // VectorSearchFilter is obsolete
+
 
     /// <summary>
     /// Gets the name of the name under which the property with the given name is stored.

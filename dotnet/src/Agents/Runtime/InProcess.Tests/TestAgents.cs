@@ -12,11 +12,13 @@ public abstract class TestAgent : BaseAgent
 {
     internal List<object> ReceivedMessages = [];
 
+
     protected TestAgent(AgentId id, IAgentRuntime runtime, string description)
         : base(id, runtime, description)
     {
     }
 }
+
 
 /// <summary>
 /// A test agent that captures the messages it receives and
@@ -25,23 +27,28 @@ public abstract class TestAgent : BaseAgent
 public sealed class MockAgent : TestAgent, IHandle<string>
 {
     public MockAgent(AgentId id, IAgentRuntime runtime, string description)
-        : base(id, runtime, description) { }
+        : base(id, runtime, description)
+    {
+    }
+
 
     public ValueTask HandleAsync(string item, MessageContext messageContext)
     {
-        this.ReceivedMessages.Add(item);
+        ReceivedMessages.Add(item);
         return ValueTask.CompletedTask;
     }
 
+
     public override ValueTask<JsonElement> SaveStateAsync()
     {
-        JsonElement json = JsonSerializer.SerializeToElement(this.ReceivedMessages);
+        JsonElement json = JsonSerializer.SerializeToElement(ReceivedMessages);
         return ValueTask.FromResult(json);
     }
 
+
     public override ValueTask LoadStateAsync(JsonElement state)
     {
-        this.ReceivedMessages = JsonSerializer.Deserialize<List<object>>(state) ?? throw new InvalidOperationException("Failed to deserialize state");
+        ReceivedMessages = state.Deserialize<List<object>>() ?? throw new InvalidOperationException("Failed to deserialize state");
         return ValueTask.CompletedTask;
     }
 }

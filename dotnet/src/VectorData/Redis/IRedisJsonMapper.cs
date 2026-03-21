@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Text.Json.Nodes;
-using Microsoft.Extensions.AI;
-
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 internal interface IRedisJsonMapper<TRecord>
@@ -12,6 +8,7 @@ internal interface IRedisJsonMapper<TRecord>
     /// Maps from the consumer record data model to the storage model.
     /// </summary>
     (string Key, JsonNode Node) MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<Embedding>?[]? generatedEmbeddings);
+
 
     /// <summary>
     /// Maps from the storage model to the consumer record data model.

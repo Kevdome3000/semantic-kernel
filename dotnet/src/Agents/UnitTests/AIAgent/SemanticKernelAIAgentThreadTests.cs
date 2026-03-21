@@ -18,7 +18,11 @@ public sealed class SemanticKernelAIAgentThreadTests
     {
         // Arrange
         var threadMock = new Mock<AgentThread>();
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
+
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
 
         // Act
         var adapter = new SemanticKernelAIAgentThread(threadMock.Object, ThreadSerializer);
@@ -26,6 +30,7 @@ public sealed class SemanticKernelAIAgentThreadTests
         // Assert
         Assert.Equal(threadMock.Object, adapter.InnerThread);
     }
+
 
     [Fact]
     public void Serialize_CallsThreadSerializer()
@@ -52,6 +57,7 @@ public sealed class SemanticKernelAIAgentThreadTests
         Assert.Equal(expectedJsonElement.ToString(), result.ToString());
     }
 
+
     [Fact]
     public void Serialize_WithJsonSerializerOptions_PassesOptionsToSerializer()
     {
@@ -75,6 +81,7 @@ public sealed class SemanticKernelAIAgentThreadTests
         Assert.Same(expectedOptions, capturedOptions);
     }
 
+
     [Fact]
     public void GetService_WithAgentThreadType_ReturnsInnerThread()
     {
@@ -88,6 +95,7 @@ public sealed class SemanticKernelAIAgentThreadTests
         // Assert
         Assert.Same(threadMock.Object, result);
     }
+
 
     [Fact]
     public void GetService_WithAgentThreadTypeAndServiceKey_ReturnsNull()
@@ -104,6 +112,7 @@ public sealed class SemanticKernelAIAgentThreadTests
         Assert.Null(result);
     }
 
+
     [Fact]
     public void GetService_WithNonAgentThreadType_ReturnsNull()
     {
@@ -118,6 +127,7 @@ public sealed class SemanticKernelAIAgentThreadTests
         Assert.Null(result);
     }
 
+
     [Fact]
     public void GetService_WithNullType_ThrowsArgumentNullException()
     {
@@ -128,6 +138,7 @@ public sealed class SemanticKernelAIAgentThreadTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => adapter.GetService(null!));
     }
+
 
     [Fact]
     public void Serialize_WithNullOptions_CallsSerializerWithNull()
@@ -145,19 +156,25 @@ public sealed class SemanticKernelAIAgentThreadTests
         var adapter = new SemanticKernelAIAgentThread(threadMock.Object, ThreadSerializer);
 
         // Act
-        adapter.Serialize(null);
+        adapter.Serialize();
 
         // Assert
         Assert.Null(capturedOptions);
     }
 
+
     [Fact]
     public void Constructor_WithNullThread_ThrowsArgumentNullException()
     {
         // Arrange & Act
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
+
         Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgentThread(null!, ThreadSerializer));
     }
+
 
     [Fact]
     public void Constructor_WithNullSerializer_ThrowsArgumentNullException()
@@ -166,6 +183,7 @@ public sealed class SemanticKernelAIAgentThreadTests
         var threadMock = new Mock<AgentThread>();
         Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgentThread(threadMock.Object, null!));
     }
+
 
     [Fact]
     public void GetService_WithBaseClassType_ReturnsInnerThread()
@@ -181,6 +199,7 @@ public sealed class SemanticKernelAIAgentThreadTests
         Assert.Same(concreteThread, result);
     }
 
+
     [Fact]
     public void GetService_WithDerivedType_ReturnsInnerThreadWhenMatches()
     {
@@ -194,6 +213,7 @@ public sealed class SemanticKernelAIAgentThreadTests
         // Assert
         Assert.Same(concreteThread, result);
     }
+
 
     [Fact]
     public void GetService_WithIncompatibleDerivedType_ReturnsNull()
@@ -209,6 +229,7 @@ public sealed class SemanticKernelAIAgentThreadTests
         Assert.Null(result);
     }
 
+
     [Fact]
     public void GetService_WithInterfaceType_ReturnsNull()
     {
@@ -223,6 +244,7 @@ public sealed class SemanticKernelAIAgentThreadTests
         Assert.Null(result);
     }
 
+
     private sealed class TestAgentThread : AgentThread
     {
         protected override Task<string?> CreateInternalAsync(CancellationToken cancellationToken)
@@ -230,10 +252,12 @@ public sealed class SemanticKernelAIAgentThreadTests
             return Task.FromResult<string?>("test-thread-id");
         }
 
+
         protected override Task DeleteInternalAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
+
 
         protected override Task OnNewMessageInternalAsync(ChatMessageContent newMessage, CancellationToken cancellationToken = default)
         {

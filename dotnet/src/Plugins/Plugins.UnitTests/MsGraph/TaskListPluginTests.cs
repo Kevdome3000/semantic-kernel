@@ -14,15 +14,16 @@ namespace SemanticKernel.Plugins.UnitTests.MsGraph;
 public class TaskListPluginTests
 {
     private readonly TaskManagementTaskList _anyTaskList = new(
-        id: Guid.NewGuid().ToString(),
-        name: Guid.NewGuid().ToString());
+        Guid.NewGuid().ToString(),
+        Guid.NewGuid().ToString());
 
     private readonly TaskManagementTask _anyTask = new(
-        id: Guid.NewGuid().ToString(),
-        title: Guid.NewGuid().ToString(),
-        reminder: (DateTimeOffset.Now + TimeSpan.FromDays(1)).ToString("o"),
-        due: DateTimeOffset.Now.ToString("o"),
-        isCompleted: false);
+        Guid.NewGuid().ToString(),
+        Guid.NewGuid().ToString(),
+        (DateTimeOffset.Now + TimeSpan.FromDays(1)).ToString("o"),
+        DateTimeOffset.Now.ToString("o"),
+        false);
+
 
     [Fact]
     public async Task AddTaskAsyncNoReminderSucceedsAsync()
@@ -32,10 +33,10 @@ public class TaskListPluginTests
 
         Mock<ITaskManagementConnector> connectorMock = new();
         connectorMock.Setup(c => c.GetDefaultTaskListAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(this._anyTaskList);
+            .ReturnsAsync(_anyTaskList);
 
         connectorMock.Setup(c => c.AddTaskAsync(It.IsAny<string>(), It.IsAny<TaskManagementTask>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(this._anyTask);
+            .ReturnsAsync(_anyTask);
 
         TaskListPlugin target = new(connectorMock.Object);
 
@@ -46,6 +47,7 @@ public class TaskListPluginTests
         connectorMock.VerifyAll();
     }
 
+
     [Fact]
     public async Task AddTaskAsyncWithReminderSucceedsAsync()
     {
@@ -54,10 +56,10 @@ public class TaskListPluginTests
 
         Mock<ITaskManagementConnector> connectorMock = new();
         connectorMock.Setup(c => c.GetDefaultTaskListAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(this._anyTaskList);
+            .ReturnsAsync(_anyTaskList);
 
         connectorMock.Setup(c => c.AddTaskAsync(It.IsAny<string>(), It.IsAny<TaskManagementTask>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(this._anyTask);
+            .ReturnsAsync(_anyTask);
 
         string anyReminder = (DateTimeOffset.Now + TimeSpan.FromHours(1)).ToString("o");
 
@@ -69,6 +71,7 @@ public class TaskListPluginTests
         // Assert
         connectorMock.VerifyAll();
     }
+
 
     [Fact]
     public async Task AddTaskAsyncNoDefaultTaskListFailsAsync()
@@ -88,11 +91,12 @@ public class TaskListPluginTests
 
         // Act/Assert
         await Assert.ThrowsAnyAsync<InvalidOperationException>(() =>
-           target.AddTaskAsync(anyTitle, anyReminder));
+            target.AddTaskAsync(anyTitle, anyReminder));
 
         // Assert
         connectorMock.VerifyAll();
     }
+
 
     [Theory]
     [InlineData(DayOfWeek.Sunday)]

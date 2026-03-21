@@ -16,7 +16,10 @@ public class EmailPluginTests
     {
         // Arrange
         Mock<IEmailConnector> connectorMock = new();
-        connectorMock.Setup(c => c.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
+        connectorMock.Setup(c => c.SendEmailAsync(It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<string[]>(),
+                It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         EmailPlugin target = new(connectorMock.Object);
@@ -31,6 +34,7 @@ public class EmailPluginTests
         // Assert
         connectorMock.VerifyAll();
     }
+
 
     [Fact]
     public async Task SendEmailAsyncNoRecipientFailsAsync()
@@ -50,6 +54,7 @@ public class EmailPluginTests
         connectorMock.VerifyAll();
     }
 
+
     [Fact]
     public async Task SendEmailAsyncNoSubjectFailsAsync()
     {
@@ -67,6 +72,7 @@ public class EmailPluginTests
         // Assert
         connectorMock.VerifyAll();
     }
+
 
     [Fact]
     public async Task GetMyEmailAddressAsyncSucceedsAsync()

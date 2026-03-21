@@ -1,12 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Pinecone;
-using Pinecone;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -17,6 +12,7 @@ public static class PineconeServiceCollectionExtensions
 {
     private const string DynamicCodeMessage = "This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
     private const string UnreferencedCodeMessage = "This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
+
 
     /// <summary>
     /// Registers a <see cref="PineconeVectorStore"/> as <see cref="VectorStore"/>
@@ -31,7 +27,14 @@ public static class PineconeServiceCollectionExtensions
         Func<IServiceProvider, PineconeClient>? clientProvider = default,
         Func<IServiceProvider, PineconeVectorStoreOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedPineconeVectorStore(services, serviceKey: null, clientProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedPineconeVectorStore(services,
+            null,
+            clientProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="PineconeVectorStore"/> as <see cref="VectorStore"/>
@@ -55,19 +58,27 @@ public static class PineconeServiceCollectionExtensions
     {
         Verify.NotNull(services);
 
-        services.Add(new ServiceDescriptor(typeof(PineconeVectorStore), serviceKey, (sp, _) =>
-        {
-            var database = clientProvider is not null ? clientProvider(sp) : sp.GetRequiredService<PineconeClient>();
-            var options = GetStoreOptions(sp, optionsProvider);
+        services.Add(new ServiceDescriptor(typeof(PineconeVectorStore),
+            serviceKey,
+            (sp, _) =>
+            {
+                var database = clientProvider is not null
+                    ? clientProvider(sp)
+                    : sp.GetRequiredService<PineconeClient>();
+                var options = GetStoreOptions(sp, optionsProvider);
 
-            return new PineconeVectorStore(database, options);
-        }, lifetime));
+                return new PineconeVectorStore(database, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<PineconeVectorStore>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStore),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<PineconeVectorStore>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="PineconeVectorStore"/> as <see cref="VectorStore"/>
@@ -82,7 +93,15 @@ public static class PineconeServiceCollectionExtensions
         ClientOptions? clientOptions = default,
         PineconeVectorStoreOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedPineconeVectorStore(services, serviceKey: null, apiKey, clientOptions, options, lifetime);
+    {
+        return AddKeyedPineconeVectorStore(services,
+            null,
+            apiKey,
+            clientOptions,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="PineconeVectorStore"/> as <see cref="VectorStore"/>
@@ -108,8 +127,13 @@ public static class PineconeServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return AddKeyedPineconeVectorStore(services, serviceKey, _ => new PineconeClient(apiKey, clientOptions), _ => options!, lifetime);
+        return AddKeyedPineconeVectorStore(services,
+            serviceKey,
+            _ => new PineconeClient(apiKey, clientOptions),
+            _ => options!,
+            lifetime);
     }
+
 
     /// <summary>
     /// Registers a <see cref="PineconeCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -125,7 +149,15 @@ public static class PineconeServiceCollectionExtensions
         Func<IServiceProvider, PineconeCollectionOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedPineconeCollection<TRecord>(services, serviceKey: null, name, clientProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedPineconeCollection<TRecord>(services,
+            null,
+            name,
+            clientProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="PineconeCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>
@@ -154,18 +186,24 @@ public static class PineconeServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(name);
 
-        services.Add(new ServiceDescriptor(typeof(PineconeCollection<string, TRecord>), serviceKey, (sp, _) =>
-        {
-            var client = clientProvider is not null ? clientProvider(sp) : sp.GetRequiredService<PineconeClient>();
-            var options = GetCollectionOptions(sp, optionsProvider);
+        services.Add(new ServiceDescriptor(typeof(PineconeCollection<string, TRecord>),
+            serviceKey,
+            (sp, _) =>
+            {
+                var client = clientProvider is not null
+                    ? clientProvider(sp)
+                    : sp.GetRequiredService<PineconeClient>();
+                var options = GetCollectionOptions(sp, optionsProvider);
 
-            return new PineconeCollection<string, TRecord>(client, name, options);
-        }, lifetime));
+                return new PineconeCollection<string, TRecord>(client, name, options);
+            },
+            lifetime));
 
         AddAbstractions<string, TRecord>(services, serviceKey, lifetime);
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="PineconeCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
@@ -182,7 +220,16 @@ public static class PineconeServiceCollectionExtensions
         PineconeCollectionOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
-        => AddKeyedPineconeCollection<TRecord>(services, serviceKey: null, name, apiKey, clientOptions, options, lifetime);
+    {
+        return AddKeyedPineconeCollection<TRecord>(services,
+            null,
+            name,
+            apiKey,
+            clientOptions,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="PineconeCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey,TRecord}"/>
@@ -211,23 +258,35 @@ public static class PineconeServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return AddKeyedPineconeCollection<TRecord>(services, serviceKey, name, _ => new PineconeClient(apiKey, clientOptions), _ => options!, lifetime);
+        return AddKeyedPineconeCollection<TRecord>(services,
+            serviceKey,
+            name,
+            _ => new PineconeClient(apiKey, clientOptions),
+            _ => options!,
+            lifetime);
     }
+
 
     private static void AddAbstractions<TKey, TRecord>(IServiceCollection services, object? serviceKey, ServiceLifetime lifetime)
         where TKey : notnull
         where TRecord : class
     {
-        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<PineconeCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<PineconeCollection<TKey, TRecord>>(key),
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<PineconeCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<PineconeCollection<TKey, TRecord>>(key),
+            lifetime));
     }
+
 
     private static PineconeVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, PineconeVectorStoreOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.
@@ -239,9 +298,11 @@ public static class PineconeServiceCollectionExtensions
             : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
 
+
     private static PineconeCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, PineconeCollectionOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.

@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// The REST API operation response.
 /// </summary>
@@ -54,6 +55,7 @@ public sealed class RestApiOperationResponse
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<string, object?>? Data { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
     /// </summary>
@@ -66,6 +68,7 @@ public sealed class RestApiOperationResponse
         ContentType = contentType;
         ExpectedSchema = expectedSchema;
     }
+
 
     /// <inheritdoc/>
     public override string ToString()

@@ -38,9 +38,16 @@ internal static class KernelFunctionHelpers
     {
         foreach (var function in kernel.Plugins.GetFunctionsMetadata())
         {
-            RegisterFunctionAsHelper(kernel, executionContext, handlebarsInstance, function, allowDangerouslySetContent || promptConfig.AllowDangerouslySetContent, nameDelimiter, cancellationToken);
+            RegisterFunctionAsHelper(kernel,
+                executionContext,
+                handlebarsInstance,
+                function,
+                allowDangerouslySetContent || promptConfig.AllowDangerouslySetContent,
+                nameDelimiter,
+                cancellationToken);
         }
     }
+
 
     #region private
 
@@ -58,14 +65,17 @@ internal static class KernelFunctionHelpers
         KernelHelpersUtils.RegisterHelperSafe(
             handlebarsInstance,
             fullyResolvedFunctionName,
-            (Context context, Arguments handlebarsArguments) =>
+            (context, handlebarsArguments) =>
             {
                 // Get the parameters from the template arguments
                 if (handlebarsArguments.Length is not 0)
                 {
                     if (handlebarsArguments[0].GetType() == typeof(HashParameterDictionary))
                     {
-                        ProcessHashArguments(functionMetadata, executionContext, (IDictionary<string, object>)handlebarsArguments[0], nameDelimiter);
+                        ProcessHashArguments(functionMetadata,
+                            executionContext,
+                            (IDictionary<string, object>)handlebarsArguments[0],
+                            nameDelimiter);
                     }
                     else
                     {
@@ -80,7 +90,10 @@ internal static class KernelFunctionHelpers
                 KernelFunction function = kernel.Plugins.GetFunction(functionMetadata.PluginName, functionMetadata.Name);
 
                 // Invoke the function and write the result to the template
-                var result = InvokeKernelFunction(kernel, function, executionContext, cancellationToken);
+                var result = InvokeKernelFunction(kernel,
+                    function,
+                    executionContext,
+                    cancellationToken);
 
                 if (!allowDangerouslySetContent && result is string resultAsString)
                 {
@@ -90,6 +103,7 @@ internal static class KernelFunctionHelpers
                 return result;
             });
     }
+
 
     /// <summary>
     /// Checks if handlebars argument is a valid type for the function parameter.
@@ -113,16 +127,17 @@ internal static class KernelFunctionHelpers
             : parameterMetadata.ParameterType;
 
         bool parameterIsNumeric = KernelHelpersUtils.IsNumericType(actualParameterType)
-            || (parameterMetadata.Schema?.RootElement.TryGetProperty("type", out JsonElement typeProperty) == true && typeProperty.GetString() == "number");
+            || parameterMetadata.Schema?.RootElement.TryGetProperty("type", out JsonElement typeProperty) == true && typeProperty.GetString() == "number";
 
         bool argIsNumeric = KernelHelpersUtils.IsNumericType(argument.GetType())
             || KernelHelpersUtils.TryParseAnyNumber(argument.ToString());
 
         return actualParameterType is null
             || actualParameterType == argument.GetType()
-            || (argIsNumeric && parameterIsNumeric)
+            || argIsNumeric && parameterIsNumeric
             || actualParameterType == typeof(string); // The kernel should handle this conversion
     }
+
 
     /// <summary>
     /// Processes the hash arguments passed to a Handlebars helper function.
@@ -142,9 +157,11 @@ internal static class KernelFunctionHelpers
         foreach (var param in functionMetadata.Parameters)
         {
             var fullyQualifiedParamName = functionMetadata.Name + nameDelimiter + param.Name;
+
             if (handlebarsArguments is not null && (handlebarsArguments.TryGetValue(fullyQualifiedParamName, out var value) || handlebarsArguments.TryGetValue(param.Name, out value)))
             {
                 value = KernelHelpersUtils.GetArgumentValue(value, executionContext);
+
                 if (IsExpectedParameterType(param, value))
                 {
                     executionContext[param.Name] = value;
@@ -161,6 +178,7 @@ internal static class KernelFunctionHelpers
         }
     }
 
+
     /// <summary>
     /// Processes the positional arguments passed to a Handlebars helper function.
     /// </summary>
@@ -176,9 +194,11 @@ internal static class KernelFunctionHelpers
         {
             var argIndex = 0;
             var arguments = KernelHelpersUtils.ProcessArguments(handlebarsArguments, executionContext);
+
             foreach (var arg in arguments)
             {
                 var param = functionMetadata.Parameters[argIndex++];
+
                 if (IsExpectedParameterType(param, arg))
                 {
                     executionContext[param.Name] = arg;
@@ -195,6 +215,7 @@ internal static class KernelFunctionHelpers
         }
     }
 
+
     /// <summary>
     /// Invokes an SK function and returns a typed result, if specified.
     /// </summary>
@@ -205,11 +226,12 @@ internal static class KernelFunctionHelpers
         CancellationToken cancellationToken)
     {
 #pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
-        FunctionResult result = function.InvokeAsync(kernel, executionContext, cancellationToken: cancellationToken).GetAwaiter().GetResult();
+        FunctionResult result = function.InvokeAsync(kernel, executionContext, cancellationToken).GetAwaiter().GetResult();
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
 
         return ParseResult(result);
     }
+
 
     /// <summary>
     /// Parse the <see cref="FunctionResult"/> into an object, extracting wrapped content as necessary.
@@ -247,5 +269,8 @@ internal static class KernelFunctionHelpers
 
         return resultAsObject;
     }
+
     #endregion
+
+
 }

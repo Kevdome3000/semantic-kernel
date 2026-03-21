@@ -1,22 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
@@ -61,6 +46,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     /// <summary>Whether the vectors in the store are named and multiple vectors are supported, or whether there is just a single unnamed vector in Weaviate collection.</summary>
     private readonly bool _hasNamedVectors;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateCollection{TKey, TRecord}"/> class.
     /// </summary>
@@ -84,12 +70,21 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(WeaviateDynamicCollection)))
                 : new WeaviateModelBuilder(options.HasNamedVectors)
-                    .Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator, WeaviateConstants.s_jsonSerializerOptions),
+                    .Build(typeof(TRecord),
+                        typeof(TKey),
+                        options.Definition,
+                        options.EmbeddingGenerator,
+                        WeaviateConstants.s_jsonSerializerOptions),
             options)
     {
     }
 
-    internal WeaviateCollection(HttpClient httpClient, string name, Func<WeaviateCollectionOptions, CollectionModel> modelFactory, WeaviateCollectionOptions? options)
+
+    internal WeaviateCollection(
+        HttpClient httpClient,
+        string name,
+        Func<WeaviateCollectionOptions, CollectionModel> modelFactory,
+        WeaviateCollectionOptions? options)
     {
         // Verify.
         Verify.NotNull(httpClient);
@@ -105,54 +100,58 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         options ??= WeaviateCollectionOptions.Default;
 
         // Assign.
-        this._httpClient = httpClient;
-        this._endpoint = endpoint;
-        this.Name = name;
-        this._model = modelFactory(options);
-        this._apiKey = options.ApiKey;
-        this._hasNamedVectors = options.HasNamedVectors;
+        _httpClient = httpClient;
+        _endpoint = endpoint;
+        Name = name;
+        _model = modelFactory(options);
+        _apiKey = options.ApiKey;
+        _hasNamedVectors = options.HasNamedVectors;
 
         // Assign mapper.
-        this._mapper = new WeaviateMapper<TRecord>(this.Name, options.HasNamedVectors, this._model, WeaviateConstants.s_jsonSerializerOptions);
+        _mapper = new WeaviateMapper<TRecord>(Name,
+            options.HasNamedVectors,
+            _model,
+            WeaviateConstants.s_jsonSerializerOptions);
 
-        this._collectionMetadata = new()
+        _collectionMetadata = new()
         {
             VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName,
             CollectionName = name
         };
     }
 
+
     /// <inheritdoc />
     public override async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        using var request = new WeaviateGetCollectionSchemaRequest(this.Name).Build();
+        using var request = new WeaviateGetCollectionSchemaRequest(Name).Build();
 
-        var response = await this
-            .ExecuteRequestWithNotFoundHandlingAsync<WeaviateGetCollectionSchemaResponse>(request, cancellationToken)
+        var response = await ExecuteRequestWithNotFoundHandlingAsync<WeaviateGetCollectionSchemaResponse>(request, cancellationToken)
             .ConfigureAwait(false);
 
         return response != null;
     }
 
+
     /// <inheritdoc />
     public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         // Don't even try to create if the collection already exists.
-        if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+        if (await CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
         {
             return;
         }
 
         var schema = WeaviateCollectionCreateMapping.MapToSchema(
-            this.Name,
-            this._hasNamedVectors,
-            this._model);
+            Name,
+            _hasNamedVectors,
+            _model);
 
         using var request = new WeaviateCreateCollectionSchemaRequest(schema).Build();
 
         try
         {
-            await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (VectorStoreException)
         {
@@ -161,7 +160,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 #pragma warning disable CA1031 // Do not catch general exception types
             try
             {
-                if (await this.CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
+                if (await CollectionExistsAsync(cancellationToken).ConfigureAwait(false))
                 {
                     return;
                 }
@@ -175,13 +174,15 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         }
     }
 
+
     /// <inheritdoc />
     public override async Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
-        using var request = new WeaviateDeleteCollectionSchemaRequest(this.Name).Build();
+        using var request = new WeaviateDeleteCollectionSchemaRequest(Name).Build();
 
-        await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public override async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
@@ -193,10 +194,11 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             _ => throw new UnreachableException("Guid key should have been validated during model building")
         };
 
-        using var request = new WeaviateDeleteObjectRequest(this.Name, guid).Build();
+        using var request = new WeaviateDeleteObjectRequest(Name, guid).Build();
 
-        await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public override async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
@@ -214,7 +216,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         var match = new WeaviateQueryMatch
         {
-            CollectionName = this.Name,
+            CollectionName = Name,
             WhereClause = new WeaviateQueryMatchWhereClause
             {
                 Operator = ContainsAnyOperator,
@@ -224,34 +226,40 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         };
 
         using var request = new WeaviateDeleteObjectBatchRequest(match).Build();
-        await this.ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await ExecuteRequestAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
         var guid = key as Guid? ?? throw new InvalidCastException("Only Guid keys are supported");
         var includeVectors = options?.IncludeVectors is true;
-        if (includeVectors && this._model.EmbeddingGenerationRequired)
+
+        if (includeVectors && _model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        using var request = new WeaviateGetCollectionObjectRequest(this.Name, guid, includeVectors).Build();
+        using var request = new WeaviateGetCollectionObjectRequest(Name, guid, includeVectors).Build();
 
-        var jsonObject = await this.ExecuteRequestWithNotFoundHandlingAsync<JsonObject>(request, cancellationToken).ConfigureAwait(false);
+        var jsonObject = await ExecuteRequestWithNotFoundHandlingAsync<JsonObject>(request, cancellationToken).ConfigureAwait(false);
 
         if (jsonObject is null)
         {
             return default;
         }
 
-        return this._mapper.MapFromStorageToDataModel(jsonObject!, includeVectors);
+        return _mapper.MapFromStorageToDataModel(jsonObject!, includeVectors);
     }
+
 
     /// <inheritdoc />
     public override Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
-        => this.UpsertAsync([record], cancellationToken);
+    {
+        return this.UpsertAsync([record], cancellationToken);
+    }
+
 
     /// <inheritdoc />
     public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
@@ -263,10 +271,11 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         // If an embedding generator is defined, invoke it once per property for all records.
         IReadOnlyList<Embedding>?[]? generatedEmbeddings = null;
 
-        var vectorPropertyCount = this._model.VectorProperties.Count;
+        var vectorPropertyCount = _model.VectorProperties.Count;
+
         for (var i = 0; i < vectorPropertyCount; i++)
         {
-            var vectorProperty = this._model.VectorProperties[i];
+            var vectorProperty = _model.VectorProperties[i];
 
             if (WeaviateModelBuilder.IsVectorPropertyTypeValidCore(vectorProperty.Type, out _))
             {
@@ -280,7 +289,9 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             // prevent multiple enumeration.
             if (recordsList is null)
             {
-                recordsList = records is IReadOnlyList<TRecord> r ? r : records.ToList();
+                recordsList = records is IReadOnlyList<TRecord> r
+                    ? r
+                    : records.ToList();
 
                 if (recordsList.Count == 0)
                 {
@@ -292,21 +303,14 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
-                generatedEmbeddings[i] = (IReadOnlyList<Embedding<float>>)await floatTask.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbeddings ??= new IReadOnlyList<Embedding>?[vectorPropertyCount];
+            generatedEmbeddings[i] = await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 
-        var keyProperty = this._model.KeyProperty;
+        var keyProperty = _model.KeyProperty;
         var jsonObjects = new List<JsonObject>();
         var recordIndex = 0;
+
         foreach (var record in records)
         {
             if (keyProperty.IsAutoGenerated && keyProperty.GetValue<Guid>(record) == Guid.Empty)
@@ -314,7 +318,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
                 keyProperty.SetValue(record, Guid.NewGuid());
             }
 
-            jsonObjects.Add(this._mapper.MapFromDataToStorageModel(record, recordIndex++, generatedEmbeddings));
+            jsonObjects.Add(_mapper.MapFromDataToStorageModel(record, recordIndex++, generatedEmbeddings));
         }
 
         if (jsonObjects.Count == 0)
@@ -324,8 +328,9 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         using var request = new WeaviateUpsertCollectionObjectBatchRequest(jsonObjects).Build();
 
-        await this.ExecuteRequestAsync<List<WeaviateUpsertCollectionObjectBatchResponse>>(request, cancellationToken).ConfigureAwait(false);
+        await ExecuteRequestAsync<List<WeaviateUpsertCollectionObjectBatchResponse>>(request, cancellationToken).ConfigureAwait(false);
     }
+
 
     #region Search
 
@@ -340,50 +345,63 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultVectorSearchOptions;
-        if (options.IncludeVectors && this._model.EmbeddingGenerationRequired)
+
+        if (options.IncludeVectors && _model.EmbeddingGenerationRequired)
         {
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-        var vectorProperty = this._model.GetVectorPropertyOrSingle(options);
+        var vectorProperty = _model.GetVectorPropertyOrSingle(options);
         var vector = await GetSearchVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
         var query = WeaviateQueryBuilder.BuildSearchQuery(
             vector,
-            this.Name,
+            Name,
             vectorProperty.StorageName,
             WeaviateConstants.s_jsonSerializerOptions,
             top,
             options,
-            this._model,
-            this._hasNamedVectors);
+            _model,
+            _hasNamedVectors);
 
-        await foreach (var record in this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, operationName: "VectorSearch", cancellationToken).ConfigureAwait(false))
+        await foreach (var record in ExecuteQueryAsync(query,
+                options.IncludeVectors,
+                WeaviateConstants.ScorePropertyName,
+                "VectorSearch",
+                cancellationToken)
+            .ConfigureAwait(false))
         {
             yield return record;
         }
     }
 
+
     private static async ValueTask<ReadOnlyMemory<float>> GetSearchVectorAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
         where TInput : notnull
-        => searchValue switch
+    {
+        return searchValue switch
         {
             ReadOnlyMemory<float> r => r,
             float[] f => new ReadOnlyMemory<float>(f),
             Embedding<float> e => e.Vector,
-            _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => ((Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false)).Vector,
 
             _ => vectorProperty.EmbeddingGenerator is null
                 ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), WeaviateModelBuilder.SupportedVectorTypes))
                 : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
         };
+    }
 
     #endregion Search
 
+
     /// <inheritdoc />
-    public override IAsyncEnumerable<TRecord> GetAsync(Expression<Func<TRecord, bool>> filter, int top,
-        FilteredRecordRetrievalOptions<TRecord>? options = null, CancellationToken cancellationToken = default)
+    public override IAsyncEnumerable<TRecord> GetAsync(
+        Expression<Func<TRecord, bool>> filter,
+        int top,
+        FilteredRecordRetrievalOptions<TRecord>? options = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
@@ -394,13 +412,18 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             filter,
             top,
             options,
-            this.Name,
-            this._model,
-            this._hasNamedVectors);
+            Name,
+            _model,
+            _hasNamedVectors);
 
-        return this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.ScorePropertyName, "GetAsync", cancellationToken)
+        return ExecuteQueryAsync(query,
+                options.IncludeVectors,
+                WeaviateConstants.ScorePropertyName,
+                "GetAsync",
+                cancellationToken)
             .Select(result => result.Record);
     }
+
 
     /// <inheritdoc />
     public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(
@@ -416,23 +439,28 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         Verify.NotLessThan(top, 1);
 
         options ??= s_defaultKeywordVectorizedHybridSearchOptions;
-        var vectorProperty = this._model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
+        var vectorProperty = _model.GetVectorPropertyOrSingle<TRecord>(new() { VectorProperty = options.VectorProperty });
         var vector = await GetSearchVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
-        var textDataProperty = this._model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
+        var textDataProperty = _model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
         var query = WeaviateQueryBuilder.BuildHybridSearchQuery(
             vector,
             top,
             string.Join(" ", keywords),
-            this.Name,
-            this._model,
+            Name,
+            _model,
             vectorProperty,
             textDataProperty,
             WeaviateConstants.s_jsonSerializerOptions,
             options,
-            this._hasNamedVectors);
+            _hasNamedVectors);
 
-        await foreach (var record in this.ExecuteQueryAsync(query, options.IncludeVectors, WeaviateConstants.HybridScorePropertyName, OperationName, cancellationToken).ConfigureAwait(false))
+        await foreach (var record in ExecuteQueryAsync(query,
+                options.IncludeVectors,
+                WeaviateConstants.HybridScorePropertyName,
+                OperationName,
+                cancellationToken)
+            .ConfigureAwait(false))
         {
             // Note that unlike regular vector search, Weaviate hybrid search does not support 'certainty' (filtering via score threshold).
             // So we filter client-side here instead.
@@ -445,36 +473,47 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         }
     }
 
+
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType == typeof(VectorStoreCollectionMetadata) ? this._collectionMetadata :
-            serviceType == typeof(HttpClient) ? this._httpClient :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType == typeof(VectorStoreCollectionMetadata)
+                    ? _collectionMetadata
+                    : serviceType == typeof(HttpClient)
+                        ? _httpClient
+                        : serviceType.IsInstanceOfType(this)
+                            ? this
+                            : null;
     }
+
 
     #region private
 
-    private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteQueryAsync(string query, bool includeVectors, string scorePropertyName, string operationName, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<VectorSearchResult<TRecord>> ExecuteQueryAsync(
+        string query,
+        bool includeVectors,
+        string scorePropertyName,
+        string operationName,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
         using var request = new WeaviateVectorSearchRequest(query).Build();
 
-        var (responseModel, content) = await this.ExecuteRequestWithResponseContentAsync<WeaviateVectorSearchResponse>(request, cancellationToken).ConfigureAwait(false);
+        var (responseModel, content) = await ExecuteRequestWithResponseContentAsync<WeaviateVectorSearchResponse>(request, cancellationToken).ConfigureAwait(false);
 
-        var collectionResults = responseModel?.Data?.GetOperation?[this.Name];
+        var collectionResults = responseModel?.Data?.GetOperation?[Name];
 
         if (collectionResults is null)
         {
             throw new VectorStoreException($"Error occurred during vector search. Response: {content}")
             {
                 VectorStoreSystemName = WeaviateConstants.VectorStoreSystemName,
-                VectorStoreName = this._collectionMetadata.VectorStoreName,
-                CollectionName = this.Name,
+                VectorStoreName = _collectionMetadata.VectorStoreName,
+                CollectionName = Name,
                 OperationName = operationName
             };
         }
@@ -483,33 +522,34 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         {
             if (result is not null)
             {
-                var (storageModel, score) = WeaviateCollectionSearchMapping.MapSearchResult(result, scorePropertyName, this._hasNamedVectors);
+                var (storageModel, score) = WeaviateCollectionSearchMapping.MapSearchResult(result, scorePropertyName, _hasNamedVectors);
 
-                var record = this._mapper.MapFromStorageToDataModel(storageModel, includeVectors);
+                var record = _mapper.MapFromStorageToDataModel(storageModel, includeVectors);
 
                 yield return new VectorSearchResult<TRecord>(record, score);
             }
         }
     }
 
+
     private Task<HttpResponseMessage> ExecuteRequestAsync(
         HttpRequestMessage request,
         bool ensureSuccessStatusCode = true,
         CancellationToken cancellationToken = default)
     {
-        request.RequestUri = new Uri(this._endpoint, request.RequestUri!);
+        request.RequestUri = new Uri(_endpoint, request.RequestUri!);
 
-        if (!string.IsNullOrWhiteSpace(this._apiKey))
+        if (!string.IsNullOrWhiteSpace(_apiKey))
         {
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this._apiKey);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
         }
 
         return VectorStoreErrorHandler.RunOperationAsync<HttpResponseMessage, HttpRequestException>(
-            this._collectionMetadata,
+            _collectionMetadata,
             $"{request.Method} {request.RequestUri}",
             async () =>
             {
-                var response = await this._httpClient
+                var response = await _httpClient
                     .SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken)
                     .ConfigureAwait(false);
 
@@ -522,30 +562,33 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             });
     }
 
+
     private async Task<(TResponse?, string)> ExecuteRequestWithResponseContentAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var response = await this.ExecuteRequestAsync(request, ensureSuccessStatusCode: true, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var response = await ExecuteRequestAsync(request, true, cancellationToken).ConfigureAwait(false);
 
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         var responseModel = VectorStoreErrorHandler.RunOperation<TResponse?, JsonException>(
-            this._collectionMetadata,
+            _collectionMetadata,
             $"{request.Method} {request.RequestUri}",
             () => JsonSerializer.Deserialize<TResponse>(responseContent, WeaviateConstants.s_jsonSerializerOptions));
 
         return (responseModel, responseContent);
     }
 
+
     private async Task<TResponse?> ExecuteRequestAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var (model, _) = await this.ExecuteRequestWithResponseContentAsync<TResponse>(request, cancellationToken).ConfigureAwait(false);
+        var (model, _) = await ExecuteRequestWithResponseContentAsync<TResponse>(request, cancellationToken).ConfigureAwait(false);
 
         return model;
     }
 
+
     private async Task<TResponse?> ExecuteRequestWithNotFoundHandlingAsync<TResponse>(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var response = await this.ExecuteRequestAsync(request, ensureSuccessStatusCode: false, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var response = await ExecuteRequestAsync(request, false, cancellationToken).ConfigureAwait(false);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -557,12 +600,13 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
         var responseModel = VectorStoreErrorHandler.RunOperation<TResponse?, JsonException>(
-            this._collectionMetadata,
+            _collectionMetadata,
             $"{request.Method} {request.RequestUri}",
             () => JsonSerializer.Deserialize<TResponse>(responseContent, WeaviateConstants.s_jsonSerializerOptions));
 
         return responseModel;
     }
+
 
     private static void VerifyCollectionName(string collectionName)
     {
@@ -570,6 +614,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         // Based on https://weaviate.io/developers/weaviate/starter-guides/managing-collections#collection--property-names
         char first = collectionName[0];
+
         if (first is not (>= 'A' and <= 'Z'))
         {
             throw new ArgumentException("Collection name must start with an uppercase ASCII letter.", nameof(collectionName));
@@ -583,5 +628,8 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             }
         }
     }
+
     #endregion
+
+
 }

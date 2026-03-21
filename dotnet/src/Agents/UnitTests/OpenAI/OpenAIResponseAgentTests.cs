@@ -3,13 +3,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.OpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Moq;
@@ -32,6 +33,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         Assert.Throws<ArgumentNullException>(() => new OpenAIResponseAgent(null!));
     }
 
+
     /// <summary>
     /// Tests that the OpenAIResponseAgent.InvokeAsync verifies parameters and throws <see cref="ArgumentNullException"/> when necessary.
     /// </summary>
@@ -39,7 +41,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public void InvokeShouldVerifyParams()
     {
         // Arrange
-        var agent = new OpenAIResponseAgent(this.Client);
+        var agent = new OpenAIResponseAgent(Client);
         string nullString = null!;
         ChatMessageContent nullMessage = null!;
 
@@ -47,6 +49,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         Assert.Throws<ArgumentNullException>(() => agent.InvokeAsync(nullString));
         Assert.Throws<ArgumentNullException>(() => agent.InvokeAsync(nullMessage));
     }
+
 
     /// <summary>
     /// Tests that the OpenAIResponseAgent.InvokeAsync.
@@ -57,10 +60,10 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public async Task VerifyInvokeAsync(bool storeEnabled)
     {
         // Arrange
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeResponse) }
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(InvokeResponse) }
         );
-        var agent = new OpenAIResponseAgent(this.Client)
+        var agent = new OpenAIResponseAgent(Client)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in English and French.",
@@ -72,10 +75,11 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
 
         // Assert
         Assert.NotNull(responseItems);
-        var items = await responseItems!.ToListAsync<AgentResponseItem<ChatMessageContent>>();
+        var items = await responseItems!.ToListAsync();
         Assert.Single(items);
         Assert.Equal("The capital of France is Paris.\n\nLa capitale de la France est Paris.", items[0].Message.Content);
     }
+
 
     /// <summary>
     /// Tests that the OpenAIResponseAgent.InvokeStreamingAsync.
@@ -86,10 +90,10 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public async Task VerifyInvokeStreamingAsync(bool storeEnabled)
     {
         // Arrange
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeStreamingResponse) }
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(InvokeStreamingResponse) }
         );
-        var agent = new OpenAIResponseAgent(this.Client)
+        var agent = new OpenAIResponseAgent(Client)
         {
             Name = "ResponseAgent",
             Instructions = "Answer all queries in English and French.",
@@ -99,11 +103,12 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         // Act
         var message = new ChatMessageContent(AuthorRole.User, "What is the capital of France?");
         var responseMessages = await agent.InvokeStreamingAsync(
-            message,
-            options: new OpenAIResponseAgentInvokeOptions()
-            {
-                AdditionalInstructions = "Respond to all user questions with 'Computer says no'.",
-            }).ToArrayAsync();
+                message,
+                options: new OpenAIResponseAgentInvokeOptions
+                {
+                    AdditionalInstructions = "Respond to all user questions with 'Computer says no'."
+                })
+            .ToArrayAsync();
 
         var responseText = string.Join(string.Empty, responseMessages.Select(ri => ri.Message.Content));
 
@@ -111,6 +116,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         Assert.NotNull(responseText);
         Assert.Contains("Computer says no", responseText);
     }
+
 
     /// <summary>
     /// Tests that the OpenAIResponseAgent.InvokeAsync.
@@ -121,13 +127,13 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public async Task VerifyInvokeWithFunctionCallingAsync(bool storeEnabled)
     {
         // Arrange
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(this.InvokeWithFunctionCallingResponses[0]) }
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(InvokeWithFunctionCallingResponses[0]) }
         );
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(this.InvokeWithFunctionCallingResponses[1]) }
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(InvokeWithFunctionCallingResponses[1]) }
         );
-        var agent = new OpenAIResponseAgent(this.Client)
+        var agent = new OpenAIResponseAgent(Client)
         {
             Name = "ResponseAgent",
             Instructions = "Answer questions about the menu.",
@@ -140,10 +146,11 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
 
         // Assert
         Assert.NotNull(responseItems);
-        var items = await responseItems!.ToListAsync<AgentResponseItem<ChatMessageContent>>();
+        var items = await responseItems!.ToListAsync();
         Assert.Equal(3, items.Count);
         Assert.Equal("The special soup is Clam Chowder, and it costs $9.99.", items[2].Message.Content);
     }
+
 
     /// <summary>
     /// Verify that InvalidOperationException is thrown when UseImmutableKernel is false and AIFunctions exist.
@@ -152,10 +159,10 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public async Task VerifyOpenAIResponseAgentThrowsWhenUseImmutableKernelFalseWithAIFunctionsAsync()
     {
         // Arrange
-        var agent = new OpenAIResponseAgent(this.Client)
+        var agent = new OpenAIResponseAgent(Client)
         {
             UseImmutableKernel = false, // Explicitly set to false
-            StoreEnabled = true,
+            StoreEnabled = true
         };
 
         var mockAIContextProvider = new Mock<AIContextProvider>();
@@ -164,17 +171,17 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
             AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
-        var thread = new OpenAIResponseAgentThread(this.Client);
+        var thread = new OpenAIResponseAgentThread(Client);
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await agent.InvokeAsync("Hi", thread: thread).ToArrayAsync());
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await agent.InvokeAsync("Hi", thread).ToArrayAsync());
 
         Assert.NotNull(exception);
     }
+
 
     /// <summary>
     /// Verify that InvalidOperationException is thrown when UseImmutableKernel is default (false) and AIFunctions exist.
@@ -183,9 +190,9 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public async Task VerifyOpenAIResponseAgentThrowsWhenUseImmutableKernelDefaultWithAIFunctionsAsync()
     {
         // Arrange
-        var agent = new OpenAIResponseAgent(this.Client)
+        var agent = new OpenAIResponseAgent(Client)
         {
-            StoreEnabled = true,
+            StoreEnabled = true
         };
         // UseImmutableKernel not set, should default to false
 
@@ -195,17 +202,17 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
             AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
-        var thread = new OpenAIResponseAgentThread(this.Client);
+        var thread = new OpenAIResponseAgentThread(Client);
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await agent.InvokeAsync("Hi", thread: thread).ToArrayAsync());
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await agent.InvokeAsync("Hi", thread).ToArrayAsync());
 
         Assert.NotNull(exception);
     }
+
 
     /// <summary>
     /// Verify that kernel remains immutable when UseImmutableKernel is true.
@@ -214,14 +221,14 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public async Task VerifyOpenAIResponseAgentKernelImmutabilityWhenUseImmutableKernelTrueAsync()
     {
         // Arrange
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeResponse) }
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(InvokeResponse) }
         );
 
-        var agent = new OpenAIResponseAgent(this.Client)
+        var agent = new OpenAIResponseAgent(Client)
         {
             UseImmutableKernel = true,
-            StoreEnabled = true,
+            StoreEnabled = true
         };
 
         var originalKernel = agent.Kernel;
@@ -233,13 +240,13 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
             AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
-        var thread = new OpenAIResponseAgentThread(this.Client);
+        var thread = new OpenAIResponseAgentThread(Client);
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act
-        var result = await agent.InvokeAsync("Hi", thread: thread).ToArrayAsync();
+        var result = await agent.InvokeAsync("Hi", thread).ToArrayAsync();
 
         // Assert
         Assert.Single(result);
@@ -251,6 +258,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         Assert.Same(originalKernel, agent.Kernel);
     }
 
+
     /// <summary>
     /// Verify that mutable kernel behavior works when UseImmutableKernel is false and no AIFunctions exist.
     /// </summary>
@@ -258,14 +266,14 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public async Task VerifyOpenAIResponseAgentMutableKernelWhenUseImmutableKernelFalseNoAIFunctionsAsync()
     {
         // Arrange
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeResponse) }
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(InvokeResponse) }
         );
 
-        var agent = new OpenAIResponseAgent(this.Client)
+        var agent = new OpenAIResponseAgent(Client)
         {
             UseImmutableKernel = false,
-            StoreEnabled = true,
+            StoreEnabled = true
         };
 
         var originalKernel = agent.Kernel;
@@ -277,13 +285,13 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
             AIFunctions = [] // Empty AIFunctions list
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
-        var thread = new OpenAIResponseAgentThread(this.Client);
+        var thread = new OpenAIResponseAgentThread(Client);
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act
-        var result = await agent.InvokeAsync("Hi", thread: thread).ToArrayAsync();
+        var result = await agent.InvokeAsync("Hi", thread).ToArrayAsync();
 
         // Assert
         Assert.Single(result);
@@ -292,6 +300,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         Assert.Same(originalKernel, agent.Kernel);
     }
 
+
     /// <summary>
     /// Verify that InvalidOperationException is thrown when UseImmutableKernel is false and AIFunctions exist (streaming).
     /// </summary>
@@ -299,10 +308,10 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public async Task VerifyOpenAIResponseAgentStreamingThrowsWhenUseImmutableKernelFalseWithAIFunctionsAsync()
     {
         // Arrange
-        var agent = new OpenAIResponseAgent(this.Client)
+        var agent = new OpenAIResponseAgent(Client)
         {
             UseImmutableKernel = false, // Explicitly set to false
-            StoreEnabled = true,
+            StoreEnabled = true
         };
 
         var mockAIContextProvider = new Mock<AIContextProvider>();
@@ -311,17 +320,17 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
             AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
-        var thread = new OpenAIResponseAgentThread(this.Client);
+        var thread = new OpenAIResponseAgentThread(Client);
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await agent.InvokeStreamingAsync("Hi", thread: thread).ToArrayAsync());
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await agent.InvokeStreamingAsync("Hi", thread).ToArrayAsync());
 
         Assert.NotNull(exception);
     }
+
 
     /// <summary>
     /// Verify that InvalidOperationException is thrown when UseImmutableKernel is default (false) and AIFunctions exist (streaming).
@@ -330,9 +339,9 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public async Task VerifyOpenAIResponseAgentStreamingThrowsWhenUseImmutableKernelDefaultWithAIFunctionsAsync()
     {
         // Arrange
-        var agent = new OpenAIResponseAgent(this.Client)
+        var agent = new OpenAIResponseAgent(Client)
         {
-            StoreEnabled = true,
+            StoreEnabled = true
         };
         // UseImmutableKernel not set, should default to false
 
@@ -342,17 +351,17 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
             AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
-        var thread = new OpenAIResponseAgentThread(this.Client);
+        var thread = new OpenAIResponseAgentThread(Client);
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await agent.InvokeStreamingAsync("Hi", thread: thread).ToArrayAsync());
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await agent.InvokeStreamingAsync("Hi", thread).ToArrayAsync());
 
         Assert.NotNull(exception);
     }
+
 
     /// <summary>
     /// Verify that kernel remains immutable when UseImmutableKernel is true (streaming).
@@ -361,14 +370,14 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public async Task VerifyOpenAIResponseAgentStreamingKernelImmutabilityWhenUseImmutableKernelTrueAsync()
     {
         // Arrange
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeStreamingResponse) }
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(InvokeStreamingResponse) }
         );
 
-        var agent = new OpenAIResponseAgent(this.Client)
+        var agent = new OpenAIResponseAgent(Client)
         {
             UseImmutableKernel = true,
-            StoreEnabled = true,
+            StoreEnabled = true
         };
 
         var originalKernel = agent.Kernel;
@@ -380,13 +389,13 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
             AIFunctions = [new TestAIFunction("TestFunction", "Test function description")]
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
-        var thread = new OpenAIResponseAgentThread(this.Client);
+        var thread = new OpenAIResponseAgentThread(Client);
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act
-        var result = await agent.InvokeStreamingAsync("Hi", thread: thread).ToArrayAsync();
+        var result = await agent.InvokeStreamingAsync("Hi", thread).ToArrayAsync();
 
         // Assert
         Assert.True(result.Length > 0);
@@ -398,6 +407,7 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         Assert.Same(originalKernel, agent.Kernel);
     }
 
+
     /// <summary>
     /// Verify that mutable kernel behavior works when UseImmutableKernel is false and no AIFunctions exist (streaming).
     /// </summary>
@@ -405,14 +415,14 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     public async Task VerifyOpenAIResponseAgentStreamingMutableKernelWhenUseImmutableKernelFalseNoAIFunctionsAsync()
     {
         // Arrange
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeStreamingResponse) }
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(InvokeStreamingResponse) }
         );
 
-        var agent = new OpenAIResponseAgent(this.Client)
+        var agent = new OpenAIResponseAgent(Client)
         {
             UseImmutableKernel = false,
-            StoreEnabled = true,
+            StoreEnabled = true
         };
 
         var originalKernel = agent.Kernel;
@@ -424,13 +434,13 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
             AIFunctions = [] // Empty AIFunctions list
         };
         mockAIContextProvider.Setup(p => p.ModelInvokingAsync(It.IsAny<ICollection<ChatMessage>>(), It.IsAny<CancellationToken>()))
-                           .ReturnsAsync(aiContext);
+            .ReturnsAsync(aiContext);
 
-        var thread = new OpenAIResponseAgentThread(this.Client);
+        var thread = new OpenAIResponseAgentThread(Client);
         thread.AIContextProviders.Add(mockAIContextProvider.Object);
 
         // Act
-        var result = await agent.InvokeStreamingAsync("Hi", thread: thread).ToArrayAsync();
+        var result = await agent.InvokeStreamingAsync("Hi", thread).ToArrayAsync();
 
         // Assert
         Assert.True(result.Length > 0);
@@ -439,7 +449,9 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         Assert.Same(originalKernel, agent.Kernel);
     }
 
+
     #region private
+
     private const string InvokeResponse =
         """
         {
@@ -506,27 +518,27 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         data: {"type":"response.created","sequence_number":0,"response":{"id":"resp_68383e45be4081919b7bad84c27e436b0f0f17949d11ddcf","object":"response","created_at":1748516421,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":"Answer all queries in English and French.\nRespond to all user questions with 'Computer says no'.","max_output_tokens":null,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"summary":null},"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"truncation":"disabled","usage":null,"user":"UnnamedAgent","metadata":{}}}
 
         event: response.in_progress
-        
+
         data: {"type":"response.in_progress","sequence_number":1,"response":{"id":"resp_68383e45be4081919b7bad84c27e436b0f0f17949d11ddcf","object":"response","created_at":1748516421,"status":"in_progress","background":false,"error":null,"incomplete_details":null,"instructions":"Answer all queries in English and French.\nRespond to all user questions with 'Computer says no'.","max_output_tokens":null,"model":"gpt-4o-mini-2024-07-18","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"summary":null},"service_tier":"auto","store":true,"temperature":1.0,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"truncation":"disabled","usage":null,"user":"UnnamedAgent","metadata":{}}}
 
         content block 2: event: response.output_item.added
         data: {"type":"response.output_item.added","sequence_number":2,"output_index":0,"item":{"id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","type":"message","status":"in_progress","content":[],"role":"assistant"}}
-        
+
         content block 3: event: response.content_part.added
         data: {"type":"response.content_part.added","sequence_number":3,"item_id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","output_index":0,"content_index":0,"part":{"type":"output_text","annotations":[],"text":""}}
-        
+
         event: response.output_text.delta
         data: {"type":"response.output_text.delta","sequence_number":4,"item_id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","output_index":0,"content_index":0,"delta":"Computer"}
 
         content block 4: event: response.output_text.delta
         data: {"type":"response.output_text.delta","sequence_number":5,"item_id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","output_index":0,"content_index":0,"delta":" says"}
-        
+
         event: response.output_text.delta
         data: {"type":"response.output_text.delta","sequence_number":6,"item_id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","output_index":0,"content_index":0,"delta":" no"}
 
         content block 5: event: response.output_text.delta
         data: {"type":"response.output_text.delta","sequence_number":7,"item_id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","output_index":0,"content_index":0,"delta":"."}
-        
+
         content block 6: event: response.output_text.delta
         data: {"type":"response.output_text.delta","sequence_number":8,"item_id":"msg_68383e4655b48191beb9f496d37dca950f0f17949d11ddcf","output_index":0,"content_index":0,"delta":"  \n"}
         """;
@@ -716,20 +728,27 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         """
     ];
 
+
     private sealed class MyPlugin
     {
         [KernelFunction]
         public void MyFunction1()
-        { }
+        {
+        }
+
 
         [KernelFunction]
         public void MyFunction2(int index)
-        { }
+        {
+        }
+
 
         [KernelFunction]
         public void MyFunction3(string value, int[] indices)
-        { }
+        {
+        }
     }
+
 
     /// <summary>
     /// Helper class for testing AIFunction behavior.
@@ -738,13 +757,15 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
     {
         public TestAIFunction(string name, string description = "")
         {
-            this.Name = name;
-            this.Description = description;
+            Name = name;
+            Description = description;
         }
+
 
         public override string Name { get; }
 
         public override string Description { get; }
+
 
         protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments? arguments = null, CancellationToken cancellationToken = default)
         {
@@ -752,10 +773,11 @@ public sealed class OpenAIResponseAgentTests : BaseOpenAIResponseClientTest
         }
     }
 
+
     private sealed class MenuPlugin
     {
-        [KernelFunction, Description("Provides a list of specials from the menu.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
+        [KernelFunction] [Description("Provides a list of specials from the menu.")]
+        [SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Too smart")]
         public string GetSpecials()
         {
             return @"
@@ -765,7 +787,8 @@ Special Drink: Chai Tea
 ";
         }
 
-        [KernelFunction, Description("Provides the price of the requested menu item.")]
+
+        [KernelFunction] [Description("Provides the price of the requested menu item.")]
         public string GetItemPrice(
             [Description("The name of the menu item.")]
             string menuItem)
@@ -773,5 +796,8 @@ Special Drink: Chai Tea
             return "$9.99";
         }
     }
+
     #endregion
+
+
 }

@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.AI;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -18,6 +17,7 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
 {
     private JsonSerializerOptions? _jsonSerializerOptions;
 
+
     /// <summary>
     /// Constructs a new <see cref="CollectionJsonModelBuilder"/>.
     /// </summary>
@@ -26,21 +26,27 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
     {
     }
 
+
     /// <summary>
-    /// Builds and returns a <see cref="CollectionModel"/> from the given <paramref name="type"/> and <paramref name="definition"/>.
+    /// Builds and returns a <see cref="CollectionModel"/> from the given <paramref name="recordType"/> and <paramref name="definition"/>.
     /// </summary>
     [RequiresDynamicCode("This model building variant is not compatible with NativeAOT. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     [RequiresUnreferencedCode("This model building variant is not compatible with trimming. See BuildDynamic() for dynamic mapping, and a third variant accepting source-generated delegates will be introduced in the future.")]
     public virtual CollectionModel Build(
-        Type type,
+        Type recordType,
+        Type keyType,
         VectorStoreCollectionDefinition? definition,
         IEmbeddingGenerator? defaultEmbeddingGenerator,
         JsonSerializerOptions jsonSerializerOptions)
     {
-        this._jsonSerializerOptions = jsonSerializerOptions;
+        _jsonSerializerOptions = jsonSerializerOptions;
 
-        return this.Build(type, definition, defaultEmbeddingGenerator);
+        return Build(recordType,
+            keyType,
+            definition,
+            defaultEmbeddingGenerator);
     }
+
 
     /// <summary>
     /// Builds and returns a <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="definition"/>.
@@ -50,10 +56,11 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
         IEmbeddingGenerator? defaultEmbeddingGenerator,
         JsonSerializerOptions jsonSerializerOptions)
     {
-        this._jsonSerializerOptions = jsonSerializerOptions;
+        _jsonSerializerOptions = jsonSerializerOptions;
 
-        return this.BuildDynamic(definition, defaultEmbeddingGenerator);
+        return BuildDynamic(definition, defaultEmbeddingGenerator);
     }
+
 
     /// <inheritdoc/>
     protected override void Customize()
@@ -61,18 +68,18 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
         // This mimics the naming behavior of the System.Text.Json serializer, which we use for serialization/deserialization.
         // The property storage names in the model must in sync with the serializer configuration, since the model is used e.g. for filtering
         // even if serialization/deserialization doesn't use the model.
-        var namingPolicy = this._jsonSerializerOptions?.PropertyNamingPolicy;
+        var namingPolicy = _jsonSerializerOptions?.PropertyNamingPolicy;
 
-        foreach (var property in this.Properties)
+        foreach (var property in Properties)
         {
-            var keyPropertyWithReservedName = this.Options.ReservedKeyStorageName is not null && property is KeyPropertyModel;
+            var keyPropertyWithReservedName = Options.ReservedKeyStorageName is not null && property is KeyPropertyModel;
             string storageName;
 
             if (property.PropertyInfo?.GetCustomAttribute<JsonPropertyNameAttribute>() is { } jsonPropertyNameAttribute)
             {
-                if (keyPropertyWithReservedName && jsonPropertyNameAttribute.Name != this.Options.ReservedKeyStorageName)
+                if (keyPropertyWithReservedName && jsonPropertyNameAttribute.Name != Options.ReservedKeyStorageName)
                 {
-                    throw new InvalidOperationException($"The key property for your connector must always have the reserved name '{this.Options.ReservedKeyStorageName}' and cannot be changed.");
+                    throw new InvalidOperationException($"The key property for your connector must always have the reserved name '{Options.ReservedKeyStorageName}' and cannot be changed.");
                 }
 
                 storageName = jsonPropertyNameAttribute.Name;

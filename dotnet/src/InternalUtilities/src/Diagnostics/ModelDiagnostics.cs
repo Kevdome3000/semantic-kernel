@@ -1,13 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text.Json;
-using Microsoft.SemanticKernel.ChatCompletion;
-
 namespace Microsoft.SemanticKernel.Diagnostics;
 
 /// <summary>
@@ -216,6 +208,7 @@ internal static class ModelDiagnostics
         }
     }
 
+
     /// <summary>
     /// End the agent streaming response for a given activity.
     /// </summary>
@@ -231,6 +224,7 @@ internal static class ModelDiagnostics
         }
 
         Dictionary<int, List<StreamingKernelContent>> choices = [];
+
         foreach (var content in contents)
         {
             if (!choices.TryGetValue(content.ChoiceIndex, out var choiceContents))
@@ -247,12 +241,14 @@ internal static class ModelDiagnostics
                 var lastContent = (StreamingChatMessageContent)choiceContents.Value.Last();
                 var chatMessage = choiceContents.Value.Select(c => c.ToString()).Aggregate((a, b) => a + b);
                 return new ChatMessageContent(lastContent.Role ?? AuthorRole.Assistant, chatMessage, metadata: lastContent.Metadata);
-            }).ToList();
+            })
+            .ToList();
 
         activity?.SetTag(
             ModelDiagnosticsTags.AgentInvocationOutput,
             JsonSerializer.Serialize(chatCompletions.Select(r => ToGenAIConventionsFormat(r))));
     }
+
 
     /// <summary>
     /// Set the text completion response for a given activity.
@@ -273,6 +269,7 @@ internal static class ModelDiagnostics
             ToGenAIConventionsChoiceFormat);
     }
 
+
     /// <summary>
     /// Set the chat completion response for a given activity.
     /// The activity will be enriched with the response attributes specified by the semantic conventions.
@@ -291,6 +288,7 @@ internal static class ModelDiagnostics
             completionTokens,
             ToGenAIConventionsChoiceFormat);
     }
+
 
     /// <summary>
     /// Notify the end of streaming for a given activity.
@@ -379,6 +377,7 @@ internal static class ModelDiagnostics
 
 
     #region Private
+
     [RequiresUnreferencedCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     [RequiresDynamicCode("Calls System.Text.Json.JsonSerializer.Serialize<TValue>(TValue, JsonSerializerOptions)")]
     private static void AddOptionalTags<TPromptExecutionSettings>(Activity? activity, TPromptExecutionSettings? executionSettings)
@@ -421,25 +420,28 @@ internal static class ModelDiagnostics
             role = chatMessage.Role.ToString(),
             name = chatMessage.AuthorName,
             content = chatMessage.Content,
-            tool_calls = ToGenAIConventionsFormat(chatMessage.Items),
+            tool_calls = ToGenAIConventionsFormat(chatMessage.Items)
         };
     }
+
 
     /// <summary>
     /// Helper method to convert tool calls to a list of JSON object based on the OTel GenAI Semantic Conventions format
     /// </summary>
     private static List<object> ToGenAIConventionsFormat(ChatMessageContentItemCollection chatMessageContentItems)
     {
-        return chatMessageContentItems.OfType<FunctionCallContent>().Select(functionCall => (object)new
-        {
-            id = functionCall.Id,
-            function = new
+        return chatMessageContentItems.OfType<FunctionCallContent>()
+            .Select(functionCall => (object)new
             {
-                name = functionCall.FunctionName,
-                arguments = functionCall.Arguments
-            },
-            type = "function"
-        }).ToList();
+                id = functionCall.Id,
+                function = new
+                {
+                    name = functionCall.FunctionName,
+                    arguments = functionCall.Arguments
+                },
+                type = "function"
+            })
+            .ToList();
     }
 
 
@@ -457,6 +459,7 @@ internal static class ModelDiagnostics
             {
                 properties[param.Name] = param.Schema;
             }
+
             if (param.IsRequired)
             {
                 required.Add(param.Name);
@@ -472,10 +475,11 @@ internal static class ModelDiagnostics
             {
                 type = "object",
                 properties,
-                required,
+                required
             }
         };
     }
+
 
     /// <summary>
     /// Convert a chat model response to a JSON string based on the OTel GenAI Semantic Conventions format
@@ -489,7 +493,9 @@ internal static class ModelDiagnostics
             index,
             message = ToGenAIConventionsFormat(chatMessage),
             tool_calls = ToGenAIConventionsFormat(chatMessage.Items),
-            finish_reason = chatMessage.Metadata?.TryGetValue("FinishReason", out var finishReason) == true ? finishReason : null
+            finish_reason = chatMessage.Metadata?.TryGetValue("FinishReason", out var finishReason) == true
+                ? finishReason
+                : null
         };
 
         return JsonSerializer.Serialize(jsonObject);
@@ -507,7 +513,9 @@ internal static class ModelDiagnostics
         {
             index,
             message = textContent.Text,
-            finish_reason = textContent.Metadata?.TryGetValue("FinishReason", out var finishReason) == true ? finishReason : null
+            finish_reason = textContent.Metadata?.TryGetValue("FinishReason", out var finishReason) == true
+                ? finishReason
+                : null
         };
 
         return JsonSerializer.Serialize(jsonObject);
@@ -730,8 +738,8 @@ internal static class ModelDiagnostics
             { AuthorRole.System, SystemMessage },
             { AuthorRole.User, UserMessage },
             { AuthorRole.Assistant, AssistantMessage },
-                { AuthorRole.Tool, ToolMessage },
-                { AuthorRole.Developer, DeveloperMessage }
+            { AuthorRole.Tool, ToolMessage },
+            { AuthorRole.Developer, DeveloperMessage }
         };
     }
 

@@ -1,24 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ProviderServices;
-
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 internal class RedisJsonDynamicModelBuilder(CollectionModelBuildingOptions options) : CollectionModelBuilder(options)
 {
     /// <inheritdoc />
-    protected override Type? ResolveEmbeddingType(
-        VectorPropertyModel vectorProperty,
-        IEmbeddingGenerator embeddingGenerator,
-        Type? userRequestedEmbeddingType)
-        => vectorProperty.ResolveEmbeddingType<Embedding<float>>(embeddingGenerator, userRequestedEmbeddingType)
-            ?? vectorProperty.ResolveEmbeddingType<Embedding<double>>(embeddingGenerator, userRequestedEmbeddingType);
+    protected override IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; } =
+    [
+        EmbeddingGenerationDispatcher.Create<Embedding<float>>(),
+        EmbeddingGenerationDispatcher.Create<Embedding<double>>()
+    ];
+
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(string) && type != typeof(Guid))
@@ -27,6 +24,7 @@ internal class RedisJsonDynamicModelBuilder(CollectionModelBuildingOptions optio
                 $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: string, Guid.");
         }
     }
+
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
@@ -37,8 +35,12 @@ internal class RedisJsonDynamicModelBuilder(CollectionModelBuildingOptions optio
         return true;
     }
 
+
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-        => IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    {
+        return IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    }
+
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {

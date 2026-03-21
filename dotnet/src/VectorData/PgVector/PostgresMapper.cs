@@ -5,10 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
-using Npgsql;
-using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
@@ -64,17 +61,18 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
 #if NET
                     case Pgvector.HalfVector { Memory: ReadOnlyMemory<Half> memory }:
                     {
-                        vectorProperty.SetValueAsObject(record, (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch
-                        {
-                            var t when t == typeof(ReadOnlyMemory<Half>) => memory,
-                            var t when t == typeof(Embedding<Half>) => new Embedding<Half>(memory),
-                            var t when t == typeof(Half[])
-                                => MemoryMarshal.TryGetArray(memory, out ArraySegment<Half> segment) && segment.Count == segment.Array!.Length
-                                    ? segment.Array
-                                    : memory.ToArray(),
+                        vectorProperty.SetValueAsObject(record,
+                            (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch
+                            {
+                                var t when t == typeof(ReadOnlyMemory<Half>) => memory,
+                                var t when t == typeof(Embedding<Half>) => new Embedding<Half>(memory),
+                                var t when t == typeof(Half[])
+                                    => MemoryMarshal.TryGetArray(memory, out ArraySegment<Half> segment) && segment.Count == segment.Array!.Length
+                                        ? segment.Array
+                                        : memory.ToArray(),
 
-                            _ => throw new UnreachableException()
-                        });
+                                _ => throw new UnreachableException()
+                            });
                         continue;
                     }
 #endif
@@ -159,6 +157,14 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                     case var t when t == typeof(DateTimeOffset):
                         property.SetValue(record, reader.GetFieldValue<DateTimeOffset>(ordinal));
                         return;
+#if NET
+                    case var t when t == typeof(DateOnly):
+                        property.SetValue(record, reader.GetFieldValue<DateOnly>(ordinal));
+                        return;
+                    case var t when t == typeof(TimeOnly):
+                        property.SetValue(record, reader.GetFieldValue<TimeOnly>(ordinal));
+                        return;
+#endif
                     case var t when t == typeof(byte[]):
                         property.SetValue(record, reader.GetFieldValue<byte[]>(ordinal));
                         return;
@@ -206,6 +212,14 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                             case Type t when t == typeof(List<DateTimeOffset>):
                                 property.SetValueAsObject(record, reader.GetFieldValue<List<DateTimeOffset>>(ordinal));
                                 return;
+#if NET
+                            case Type t when t == typeof(List<DateOnly>):
+                                property.SetValueAsObject(record, reader.GetFieldValue<List<DateOnly>>(ordinal));
+                                return;
+                            case Type t when t == typeof(List<TimeOnly>):
+                                property.SetValueAsObject(record, reader.GetFieldValue<List<TimeOnly>>(ordinal));
+                                return;
+#endif
                             case Type t when t == typeof(List<byte[]>):
                                 property.SetValueAsObject(record, reader.GetFieldValue<List<byte[]>>(ordinal));
                                 return;

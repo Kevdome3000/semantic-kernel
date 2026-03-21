@@ -22,6 +22,7 @@ public sealed class VectorStoreDataProperty : VectorStoreProperty
     {
     }
 
+
     /// <summary>
     /// Gets or sets a value indicating whether this data property is indexed.
     /// </summary>

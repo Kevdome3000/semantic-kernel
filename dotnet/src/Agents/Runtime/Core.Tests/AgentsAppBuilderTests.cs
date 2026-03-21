@@ -26,6 +26,7 @@ public class AgentsAppBuilderTests
         builder.Configuration.Should().NotBeNull();
     }
 
+
     [Fact]
     public void Constructor_WithBaseBuilder_ShouldUseProvidedBuilder()
     {
@@ -43,6 +44,7 @@ public class AgentsAppBuilderTests
         builder.Services.BuildServiceProvider().GetService<ITestService>().Should().NotBeNull();
     }
 
+
     [Fact]
     public void Services_ShouldReturnBuilderServices()
     {
@@ -56,6 +58,7 @@ public class AgentsAppBuilderTests
         services.Should().NotBeNull();
     }
 
+
     [Fact]
     public void Configuration_ShouldReturnBuilderConfiguration()
     {
@@ -68,6 +71,7 @@ public class AgentsAppBuilderTests
         // Assert
         configuration.Should().NotBeNull();
     }
+
 
     [Fact]
     public async Task UseRuntime_ShouldRegisterRuntimeInServices()
@@ -89,6 +93,7 @@ public class AgentsAppBuilderTests
         hostedService.Should().BeSameAs(runtime);
     }
 
+
     [Fact]
     public void AddAgentsFromAssemblies_WithoutParameters_ShouldScanCurrentDomain()
     {
@@ -101,6 +106,7 @@ public class AgentsAppBuilderTests
         // Assert
         // We just verify it doesn't throw, as the actual agents registered depend on the loaded assemblies
     }
+
 
     [Fact]
     public void AddAgentsFromAssemblies_WithAssemblies_ShouldRegisterAgentsFromProvidedAssemblies()
@@ -117,6 +123,7 @@ public class AgentsAppBuilderTests
         // The assertion on actual agent registration is done in BuildAsync test
     }
 
+
     [Fact]
     public void AddAgent_ShouldRegisterAgentType()
     {
@@ -131,6 +138,7 @@ public class AgentsAppBuilderTests
         result.Should().BeSameAs(builder);
         // Actual agent registration is tested in BuildAsync
     }
+
 
     [Fact]
     public async Task BuildAsync_ShouldReturnAgentsAppWithRegisteredAgents()
@@ -154,14 +162,30 @@ public class AgentsAppBuilderTests
         agentId.Type.Should().BeSameAs(testAgentType.Name);
     }
 
-    // Private test interfaces and classes to support the tests
-    private interface ITestService { }
 
-    private sealed class TestService : ITestService { }
+    // Private test interfaces and classes to support the tests
+    private interface ITestService
+    {
+    }
+
+
+    private sealed class TestService : ITestService
+    {
+    }
+
 
     private sealed class TestAgent : BaseAgent
     {
-        public TestAgent(AgentId id, IAgentRuntime runtime, string description, ILogger<BaseAgent>? logger = null)
-            : base(id, runtime, description, logger) { }
+        public TestAgent(
+            AgentId id,
+            IAgentRuntime runtime,
+            string description,
+            ILogger<BaseAgent>? logger = null)
+            : base(id,
+                runtime,
+                description,
+                logger)
+        {
+        }
     }
 }

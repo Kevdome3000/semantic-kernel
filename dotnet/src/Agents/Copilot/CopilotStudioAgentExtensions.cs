@@ -18,12 +18,16 @@ public static class CopilotStudioAgentExtensions
     /// <returns>The Semantic Kernel Agent Framework <see cref="Agent"/> exposed as a Microsoft Agent Framework <see cref="MAAI.AIAgent"/></returns>
     [Experimental("SKEXP0110")]
     public static MAAI.AIAgent AsAIAgent(this CopilotStudioAgent copilotStudioAgent)
-        => copilotStudioAgent.AsAIAgent(
+    {
+        return copilotStudioAgent.AsAIAgent(
             () => new CopilotStudioAgentThread(copilotStudioAgent.Client),
             (json, options) =>
             {
                 var agentId = JsonSerializer.Deserialize<string>(json);
-                return agentId is null ? new CopilotStudioAgentThread(copilotStudioAgent.Client) : new CopilotStudioAgentThread(copilotStudioAgent.Client, agentId);
+                return agentId is null
+                    ? new CopilotStudioAgentThread(copilotStudioAgent.Client)
+                    : new CopilotStudioAgentThread(copilotStudioAgent.Client, agentId);
             },
             (thread, options) => JsonSerializer.SerializeToElement((thread as CopilotStudioAgentThread)?.Id));
+    }
 }

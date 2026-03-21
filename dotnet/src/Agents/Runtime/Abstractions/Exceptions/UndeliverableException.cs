@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Agents.Runtime;
 
 /// <summary>
@@ -15,11 +16,13 @@ public class UndeliverableException : Exception
     /// </summary>
     public UndeliverableException() : base("The message cannot be delivered.") { }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="UndeliverableException"/> class with a custom error message.
     /// </summary>
     /// <param name="message">The custom error message.</param>
     public UndeliverableException(string message) : base(message) { }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UndeliverableException"/> class with a custom error message and an inner exception.

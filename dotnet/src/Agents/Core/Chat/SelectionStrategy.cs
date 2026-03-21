@@ -48,7 +48,9 @@ public abstract class SelectionStrategy
         }
 
         Agent agent =
-            (!HasSelected && InitialAgent != null) ? InitialAgent : await SelectAgentAsync(agents, history, cancellationToken).ConfigureAwait(false);
+            !HasSelected && InitialAgent != null
+                ? InitialAgent
+                : await SelectAgentAsync(agents, history, cancellationToken).ConfigureAwait(false);
 
         HasSelected = true;
 

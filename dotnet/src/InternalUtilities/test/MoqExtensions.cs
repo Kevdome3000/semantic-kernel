@@ -6,9 +6,14 @@ using Moq;
 
 #pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 
+
 internal static class MoqExtensions
 {
-    public static void VerifyLog<T>(this Mock<ILogger<T>> logger, LogLevel logLevel, string containsMessage, Times times)
+    public static void VerifyLog<T>(
+        this Mock<ILogger<T>> logger,
+        LogLevel logLevel,
+        string containsMessage,
+        Times times)
     {
         logger.Verify(
             x => x.Log(
@@ -20,7 +25,12 @@ internal static class MoqExtensions
             times);
     }
 
-    public static void VerifyLog(this Mock<ILogger> logger, LogLevel logLevel, string containsMessage, Times times)
+
+    public static void VerifyLog(
+        this Mock<ILogger> logger,
+        LogLevel logLevel,
+        string containsMessage,
+        Times times)
     {
         logger.Verify(
             x => x.Log(

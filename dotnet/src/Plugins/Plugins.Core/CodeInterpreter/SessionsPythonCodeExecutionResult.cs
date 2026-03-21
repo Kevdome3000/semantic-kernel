@@ -22,6 +22,7 @@ public sealed class SessionsPythonCodeExecutionResult
     [JsonPropertyName("result")]
     public ExecutionDetails? Result { get; set; }
 
+
     /// <summary>
     /// Returns a string representation of the execution result.
     /// </summary>
@@ -35,6 +36,7 @@ public sealed class SessionsPythonCodeExecutionResult
             stdErr = Result?.StdErr
         });
     }
+
 
     /// <summary>
     /// Represents the detailed result of a Python code execution.

@@ -34,6 +34,7 @@ public sealed class BraveSearchResponse<T>
     /// </summary>
     [JsonPropertyName("news")]
     public BraveNews<T>? News { get; set; }
+
     /// <summary>
     /// Videos relevant to the query return by Brave API.
     /// </summary>
@@ -46,6 +47,7 @@ public sealed class BraveSearchResponse<T>
     [JsonPropertyName("web")]
     public BraveWeb<T>? Web { get; set; }
 }
+
 
 /// <summary>
 /// A model representing information gathered around the requested query.
@@ -166,6 +168,7 @@ public sealed class BraveQuery
     public string? RedditCluster { get; set; }
 }
 
+
 /// <summary>
 /// A model representing a video result.
 /// </summary>
@@ -191,6 +194,7 @@ public sealed class BraveVideos<T>
     [JsonPropertyName("mutated_by_goggles")]
     public bool? MutatedByGoggles { get; set; }
 }
+
 
 /// <summary>
 /// A model representing video results.
@@ -247,6 +251,7 @@ public sealed class BraveVideo
     public bool? RequireSubscription { get; set; }
 }
 
+
 /// <summary>
 /// A model representing a collection of web search results.
 /// </summary>
@@ -271,6 +276,7 @@ public sealed class BraveWeb<T>
     public bool? FamilyFriendly { get; set; }
 }
 
+
 /// <summary>
 /// A model representing news results.
 /// </summary>
@@ -294,6 +300,7 @@ public sealed class BraveNews<T>
     [JsonPropertyName("mutated_by_googles")]
     public bool? MutatedByGoogles { get; set; }
 }
+
 
 /// <summary>
 /// A result which can be used as a button.
@@ -321,6 +328,7 @@ public sealed class Button
 #pragma warning restore CA1056
 }
 
+
 /// <summary>
 /// Aggregated deep results from news, social, videos and images.
 /// </summary>
@@ -332,6 +340,7 @@ public sealed class DeepResults
     [JsonPropertyName("buttons")]
     public List<Button>? Buttons { get; set; }
 }
+
 
 /// <summary>
 /// The ranking order of results on a search result page.
@@ -356,6 +365,7 @@ public sealed class ResultReference
     [JsonPropertyName("all")]
     public bool? All { get; set; }
 }
+
 
 /// <summary>
 /// Aggregated information about a url.
@@ -393,6 +403,7 @@ public sealed class MetaUrl
     public string? Path { get; set; }
 }
 
+
 /// <summary>
 /// The ranking order of results on a search result page.
 /// </summary>
@@ -422,6 +433,7 @@ public sealed class MixedResponse
     [JsonPropertyName("side")]
     public List<ResultReference>? Side { get; set; }
 }
+
 
 /// <summary>
 /// A profile of an entity.
@@ -454,6 +466,7 @@ public sealed class BraveProfile
     [JsonPropertyName("img")]
     public string? Img { get; set; }
 }
+
 
 /// <summary>
 /// Aggregated details representing a picture thumbnail.

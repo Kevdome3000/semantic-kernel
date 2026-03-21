@@ -25,6 +25,7 @@ public class CopilotStudioAgentTests
         Assert.IsType<CopilotClient>(client);
     }
 
+
     [Fact]
     public void CreateClient_WithNullLogger_UsesNullLogger()
     {

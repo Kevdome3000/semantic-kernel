@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.VectorData;
 /// </summary>
 public class VectorSearchOptions<TRecord>
 {
-    private int _skip = 0;
+    private int _skip;
 
     /// <summary>
     /// Gets or sets a search filter to use before doing the vector search.
@@ -40,7 +40,7 @@ public class VectorSearchOptions<TRecord>
     /// <exception cref="ArgumentOutOfRangeException">The value is less than 0.</exception>
     public int Skip
     {
-        get => this._skip;
+        get => _skip;
         set
         {
             if (value < 0)
@@ -48,7 +48,7 @@ public class VectorSearchOptions<TRecord>
                 throw new ArgumentOutOfRangeException(nameof(value), "Skip must be greater than or equal to 0.");
             }
 
-            this._skip = value;
+            _skip = value;
         }
     }
 

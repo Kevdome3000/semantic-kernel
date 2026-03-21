@@ -17,6 +17,7 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
     /// <summary>The wrapped <see cref="IChatCompletionService"/>.</summary>
     private readonly IChatCompletionService _chatCompletionService;
 
+
     /// <summary>Initializes the <see cref="ChatCompletionServiceChatClient"/> for <paramref name="chatCompletionService"/>.</summary>
     internal ChatCompletionServiceChatClient(IChatCompletionService chatCompletionService)
     {
@@ -26,12 +27,16 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
 
         Metadata = new ChatClientMetadata(
             chatCompletionService.GetType().Name,
-            chatCompletionService.GetEndpoint() is string endpoint ? new Uri(endpoint) : null,
+            chatCompletionService.GetEndpoint() is string endpoint
+                ? new Uri(endpoint)
+                : null,
             chatCompletionService.GetModelId());
     }
 
+
     /// <inheritdoc />
     public ChatClientMetadata Metadata { get; }
+
 
     /// <inheritdoc />
     public async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -42,15 +47,16 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         int preCount = chatHistory.Count;
 
         var response = await _chatCompletionService.GetChatMessageContentAsync(
-            chatHistory,
-            options.ToPromptExecutionSettings(),
-            kernel: null,
-            cancellationToken).ConfigureAwait(false);
+                chatHistory,
+                options.ToPromptExecutionSettings(),
+                null,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         ChatResponse chatResponse = new()
         {
             ModelId = response.ModelId,
-            RawRepresentation = response.InnerContent,
+            RawRepresentation = response.InnerContent
         };
 
         // Add all messages that were added to the history.
@@ -65,20 +71,23 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         return chatResponse;
     }
 
+
     /// <inheritdoc />
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(messages);
 
         await foreach (var update in _chatCompletionService.GetStreamingChatMessageContentsAsync(
-            new ChatHistory(messages.Select(m => m.ToChatMessageContent())),
-            options.ToPromptExecutionSettings(),
-            kernel: null,
-            cancellationToken).ConfigureAwait(false))
+                new ChatHistory(messages.Select(m => m.ToChatMessageContent())),
+                options.ToPromptExecutionSettings(),
+                null,
+                cancellationToken)
+            .ConfigureAwait(false))
         {
             yield return update.ToChatResponseUpdate();
         }
     }
+
 
     /// <inheritdoc />
     public void Dispose()
@@ -86,16 +95,21 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         (_chatCompletionService as IDisposable)?.Dispose();
     }
 
+
     /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)
     {
         Verify.NotNull(serviceType);
 
         return
-            serviceKey is not null ? null :
-            serviceType.IsInstanceOfType(this) ? this :
-            serviceType.IsInstanceOfType(_chatCompletionService) ? _chatCompletionService :
-            serviceType.IsInstanceOfType(Metadata) ? Metadata :
-            null;
+            serviceKey is not null
+                ? null
+                : serviceType.IsInstanceOfType(this)
+                    ? this
+                    : serviceType.IsInstanceOfType(_chatCompletionService)
+                        ? _chatCompletionService
+                        : serviceType.IsInstanceOfType(Metadata)
+                            ? Metadata
+                            : null;
     }
 }

@@ -19,20 +19,28 @@ public static class OpenAIResponseAgentExtensions
     /// <returns>The Semantic Kernel Agent Framework <see cref="Agent"/> exposed as a Microsoft Agent Framework <see cref="MAAI.AIAgent"/></returns>
     [Experimental("SKEXP0110")]
     public static MAAI.AIAgent AsAIAgent(this OpenAIResponseAgent responseAgent)
-        => responseAgent.AsAIAgent(
-            () => responseAgent.StoreEnabled ? new OpenAIResponseAgentThread(responseAgent.Client) : new ChatHistoryAgentThread(),
+    {
+        return responseAgent.AsAIAgent(
+            () => responseAgent.StoreEnabled
+                ? new OpenAIResponseAgentThread(responseAgent.Client)
+                : new ChatHistoryAgentThread(),
             (json, options) =>
             {
                 if (responseAgent.StoreEnabled)
                 {
-                    var agentId = JsonSerializer.Deserialize<string>(json);
-                    return agentId is null ? new OpenAIResponseAgentThread(responseAgent.Client) : new OpenAIResponseAgentThread(responseAgent.Client, agentId);
+                    var agentId = json.Deserialize<string>();
+                    return agentId is null
+                        ? new OpenAIResponseAgentThread(responseAgent.Client)
+                        : new OpenAIResponseAgentThread(responseAgent.Client, agentId);
                 }
 
-                var chatHistory = JsonSerializer.Deserialize<ChatHistory>(json);
-                return chatHistory is null ? new ChatHistoryAgentThread() : new ChatHistoryAgentThread(chatHistory);
+                var chatHistory = json.Deserialize<ChatHistory>();
+                return chatHistory is null
+                    ? new ChatHistoryAgentThread()
+                    : new ChatHistoryAgentThread(chatHistory);
             },
             (thread, options) => responseAgent.StoreEnabled
                 ? JsonSerializer.SerializeToElement((thread as OpenAIResponseAgentThread)?.Id)
                 : JsonSerializer.SerializeToElement((thread as ChatHistoryAgentThread)?.ChatHistory));
+    }
 }

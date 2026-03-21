@@ -1,6 +1,8 @@
 # Connectors.Memory.SqlServer
 
-This connector uses the SQL Server database engine to implement [Vector Store](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors/?pivots=programming-language-csharp) capability in Semantic Kernel. 
+This connector uses the SQL Server database engine to
+implement [Vector Store](https://learn.microsoft.com/semantic-kernel/concepts/vector-store-connectors/?pivots=programming-language-csharp)
+capability in Semantic Kernel.
 
 Here's an example of how to use the SQL Server Vector Store connector in your Semantic Kernel application:
 

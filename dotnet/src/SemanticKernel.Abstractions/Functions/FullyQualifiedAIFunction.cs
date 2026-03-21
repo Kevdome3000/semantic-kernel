@@ -18,6 +18,7 @@ public abstract class FullyQualifiedAIFunction : AIFunction
         Metadata = metadata;
     }
 
+
     /// <summary>
     /// Gets the metadata describing the function.
     /// </summary>

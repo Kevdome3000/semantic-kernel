@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-namespace Microsoft.SemanticKernel.Agents.Chat;
-
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+
+namespace Microsoft.SemanticKernel.Agents.Chat;
 
 #pragma warning disable SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
 

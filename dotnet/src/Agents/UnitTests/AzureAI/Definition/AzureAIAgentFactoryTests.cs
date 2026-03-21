@@ -24,13 +24,14 @@ public class AzureAIAgentFactoryTests : IDisposable
     private readonly HttpClient _httpClient;
     private readonly Kernel _kernel;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AzureAIAgentFactoryTests"/> class.
     /// </summary>
     public AzureAIAgentFactoryTests()
     {
-        this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
+        _messageHandlerStub = new HttpMessageHandlerStub();
+        _httpClient = new HttpClient(_messageHandlerStub, false);
 
         var builder = Kernel.CreateBuilder();
         var client = new PersistentAgentsClient(
@@ -38,23 +39,25 @@ public class AzureAIAgentFactoryTests : IDisposable
             new FakeTokenCredential(),
             new PersistentAgentsAdministrationClientOptions
             {
-                Transport = new HttpClientTransport(this._httpClient)
+                Transport = new HttpClientTransport(_httpClient)
             });
         builder.Services.AddSingleton(client);
         var projectClient = new AIProjectClient(
             new Uri("https://test"),
             new FakeTokenCredential());
         builder.Services.AddSingleton(projectClient);
-        this._kernel = builder.Build();
+        _kernel = builder.Build();
     }
+
 
     /// <inheritdoc/>
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        this._messageHandlerStub.Dispose();
-        this._httpClient.Dispose();
+        _messageHandlerStub.Dispose();
+        _httpClient.Dispose();
     }
+
 
     /// <summary>
     /// Verify can create an instance of <see cref="Microsoft.SemanticKernel.Agents.Agent"/> using <see cref="AzureAIAgentFactory"/>
@@ -69,23 +72,24 @@ public class AzureAIAgentFactoryTests : IDisposable
             Name = "AzureAIAgent",
             Description = "AzureAIAgent Description",
             Instructions = "AzureAIAgent Instructions",
-            Model = new()
+            Model = new ModelDefinition
             {
                 Id = "gpt-4o-mini"
             },
-            Tools = [
-                new Microsoft.SemanticKernel.Agents.AgentToolDefinition()
+            Tools =
+            [
+                new AgentToolDefinition
                 {
                     Id = "tool1",
-                    Type = "code_interpreter",
-                },
+                    Type = "code_interpreter"
+                }
             ]
         };
         AzureAIAgentFactory factory = new();
-        using var responseMessage = this.SetupResponse(HttpStatusCode.OK, AzureAIAgentCreateResponse);
+        using var responseMessage = SetupResponse(HttpStatusCode.OK, AzureAIAgentCreateResponse);
 
         // Act
-        var agent = await factory.CreateAsync(this._kernel, agentDefinition);
+        var agent = await factory.CreateAsync(_kernel, agentDefinition);
 
         // Assert
         Assert.NotNull(agent);
@@ -93,8 +97,9 @@ public class AzureAIAgentFactoryTests : IDisposable
         Assert.Equal(agentDefinition.Name, agent.Name);
         Assert.Equal(agentDefinition.Description, agent.Description);
         Assert.Equal(agentDefinition.Instructions, agent.Instructions);
-        Assert.Equal(this._kernel, agent.Kernel);
+        Assert.Equal(_kernel, agent.Kernel);
     }
+
 
     /// <summary>
     /// Verify can create an instance of <see cref="Microsoft.SemanticKernel.Agents.Agent"/> using <see cref="AzureAIAgentFactory"/>
@@ -106,13 +111,13 @@ public class AzureAIAgentFactoryTests : IDisposable
         AgentDefinition agentDefinition = new()
         {
             Id = "asst_oKtAcmYQCtTj95BxpvL1RQBP",
-            Type = AzureAIAgentFactory.AzureAIAgentType,
+            Type = AzureAIAgentFactory.AzureAIAgentType
         };
         AzureAIAgentFactory factory = new();
-        using var responseMessage = this.SetupResponse(HttpStatusCode.OK, AzureAIAgentGetResponse);
+        using var responseMessage = SetupResponse(HttpStatusCode.OK, AzureAIAgentGetResponse);
 
         // Act
-        var agent = await factory.CreateAsync(this._kernel, agentDefinition);
+        var agent = await factory.CreateAsync(_kernel, agentDefinition);
 
         // Assert
         Assert.NotNull(agent);
@@ -120,8 +125,9 @@ public class AzureAIAgentFactoryTests : IDisposable
         Assert.Equal("HelpfulAssistant", agent.Name);
         Assert.Equal("Helpful Assistant", agent.Description);
         Assert.Equal("You are a helpful assistant.", agent.Instructions);
-        Assert.Equal(this._kernel, agent.Kernel);
+        Assert.Equal(_kernel, agent.Kernel);
     }
+
 
     /// <summary>
     /// Azure AI Agent create response.
@@ -189,7 +195,9 @@ public class AzureAIAgentFactoryTests : IDisposable
         }
         """;
 
+
     #region private
+
     private HttpResponseMessage SetupResponse(HttpStatusCode statusCode, string response)
     {
         var responseMessage = new HttpResponseMessage(statusCode)
@@ -197,9 +205,12 @@ public class AzureAIAgentFactoryTests : IDisposable
             Content = new StringContent(response)
         };
 
-        this._messageHandlerStub.ResponseQueue.Enqueue(responseMessage);
+        _messageHandlerStub.ResponseQueue.Enqueue(responseMessage);
 
         return responseMessage;
     }
+
     #endregion
+
+
 }

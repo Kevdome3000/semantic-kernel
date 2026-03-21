@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel;
+
 /// <summary>
 /// Abstraction of chat message content chunks when using streaming from <see cref="IChatCompletionService"/> interface.
 /// </summary>
@@ -23,16 +24,14 @@ public class StreamingChatMessageContent : StreamingKernelContent
         get
         {
             var textContent = Items.OfType<StreamingTextContent>()
-                .
-                FirstOrDefault();
+                .FirstOrDefault();
 
             return textContent?.Text;
         }
         set
         {
             var textContent = Items.OfType<StreamingTextContent>()
-                .
-                FirstOrDefault();
+                .FirstOrDefault();
 
             if (textContent is not null)
             {
@@ -41,7 +40,7 @@ public class StreamingChatMessageContent : StreamingKernelContent
             else if (value is not null)
             {
                 Items.Add(new StreamingTextContent(
-                    text: value,
+                    value,
                     ChoiceIndex,
                     ModelId,
                     InnerContent,
@@ -88,8 +87,7 @@ public class StreamingChatMessageContent : StreamingKernelContent
         get
         {
             var textContent = Items.OfType<StreamingTextContent>()
-                .
-                FirstOrDefault();
+                .FirstOrDefault();
 
             if (textContent is not null)
             {
@@ -103,8 +101,7 @@ public class StreamingChatMessageContent : StreamingKernelContent
             _encoding = value;
 
             var textContent = Items.OfType<StreamingTextContent>()
-                .
-                FirstOrDefault();
+                .FirstOrDefault();
 
             if (textContent is not null)
             {
@@ -112,6 +109,7 @@ public class StreamingChatMessageContent : StreamingKernelContent
             }
         }
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingChatMessageContent"/> class.
@@ -132,12 +130,16 @@ public class StreamingChatMessageContent : StreamingKernelContent
         string? modelId = null,
         Encoding? encoding = null,
         IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(innerContent, choiceIndex, modelId, metadata)
+        : base(innerContent,
+            choiceIndex,
+            modelId,
+            metadata)
     {
         Role = role;
         Content = content;
         _encoding = encoding ?? Encoding.UTF8;
     }
+
 
     /// <inheritdoc/>
     public override string ToString()

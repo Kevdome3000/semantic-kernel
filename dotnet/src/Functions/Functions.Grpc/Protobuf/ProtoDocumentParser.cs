@@ -1,15 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Plugins.Grpc.Model;
+
 namespace Microsoft.SemanticKernel.Plugins.Grpc.Protobuf;
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Google.Protobuf.Reflection;
-using Model;
-using ProtoBuf;
-
 
 /// <summary>
 /// Parser for .proto definition documents.
@@ -41,7 +34,7 @@ internal sealed class ProtoDocumentParser
             throw new KernelException($"Parsing of '{protoFileName}' .proto document has failed. Details: {string.Join(";", errors.AsEnumerable())}");
         }
 
-        return this.GetGrpcOperations(descriptor.Files.Single());
+        return GetGrpcOperations(descriptor.Files.Single());
     }
 
 
@@ -58,11 +51,20 @@ internal sealed class ProtoDocumentParser
         {
             foreach (var method in service.Methods)
             {
-                var requestContract = this.CreateDataContract(model.MessageTypes, method.InputType, model.Package, method.Name);
+                var requestContract = CreateDataContract(model.MessageTypes,
+                    method.InputType,
+                    model.Package,
+                    method.Name);
 
-                var responseContract = this.CreateDataContract(model.MessageTypes, method.OutputType, model.Package, method.Name);
+                var responseContract = CreateDataContract(model.MessageTypes,
+                    method.OutputType,
+                    model.Package,
+                    method.Name);
 
-                operations.Add(new GrpcOperation(service.Name, method.Name, requestContract, responseContract)
+                operations.Add(new GrpcOperation(service.Name,
+                    method.Name,
+                    requestContract,
+                    responseContract)
                 {
                     Package = model.Package
                 });
@@ -96,10 +98,9 @@ internal sealed class ProtoDocumentParser
             typeName = fullTypeName.Replace($"{package}.", "");
         }
 
-        var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName) ??
-                          throw new KernelException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
+        var messageType = allMessageTypes.SingleOrDefault(mt => mt.Name == fullTypeName || mt.Name == typeName) ?? throw new KernelException($"No '{fullTypeName}' message type is found while resolving data contracts for the '{methodName}' method.");
 
-        var fields = this.GetDataContractFields(messageType.Fields);
+        var fields = GetDataContractFields(messageType.Fields);
 
         return new GrpcOperationDataContractType(fullTypeName, fields);
     }

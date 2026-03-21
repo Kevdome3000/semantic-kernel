@@ -20,7 +20,7 @@ public class OpenApiSchemaExtensionsTests
             Type = "object",
             Properties = new Dictionary<string, OpenApiSchema>
             {
-                ["property1"] = new OpenApiSchema
+                ["property1"] = new()
                 {
                     Type = "number",
                     Format = "double",

@@ -1,12 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelBuildingOptions)
@@ -16,13 +9,15 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
     internal static readonly CollectionModelBuildingOptions s_modelBuildingOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
         UsesExternalSerializer = true
     };
 
+
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(string) && type != typeof(Guid))
@@ -32,15 +27,26 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
         }
     }
 
+
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-        => IsDataPropertyTypeValidCore(type, out supportedTypes);
+    {
+        return IsDataPropertyTypeValidCore(type, out supportedTypes);
+    }
+
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-        => IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    {
+        return IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    }
+
 
     internal static bool IsDataPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, int, long, double, float, bool, DateTimeOffset, or arrays/lists of these types";
+        supportedTypes = "string, int, long, double, float, bool, DateTime, DateTimeOffset,"
+#if NET
+            + " DateOnly,"
+#endif
+            + " or arrays/lists of these types";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -48,18 +54,24 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
         }
 
         return IsValid(type)
-            || (type.IsArray && IsValid(type.GetElementType()!))
-            || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && IsValid(type.GenericTypeArguments[0]));
+            || type.IsArray && IsValid(type.GetElementType()!)
+            || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && IsValid(type.GenericTypeArguments[0]);
 
         static bool IsValid(Type type)
-            => type == typeof(string) ||
-               type == typeof(int) ||
-               type == typeof(long) ||
-               type == typeof(double) ||
-               type == typeof(float) ||
-               type == typeof(bool) ||
-               type == typeof(DateTimeOffset);
+            => type == typeof(string)
+                || type == typeof(int)
+                || type == typeof(long)
+                || type == typeof(double)
+                || type == typeof(float)
+                || type == typeof(bool)
+                || type == typeof(DateTime)
+                ||
+#if NET
+               type == typeof(DateOnly) ||
+#endif
+                type == typeof(DateTimeOffset);
     }
+
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
@@ -74,6 +86,7 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
             || type == typeof(float[]);
     }
 
+
     /// <inheritdoc />
     protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
     {
@@ -84,10 +97,10 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
         if (!IsValidIdentifier(propertyModel.StorageName))
         {
             throw new InvalidOperationException(
-                $"Property '{propertyModel.ModelName}' has storage name '{propertyModel.StorageName}' which is not a valid OData identifier. " +
-                "OData identifiers must start with a letter or underscore, and contain only letters, digits, and underscores.");
+                $"Property '{propertyModel.ModelName}' has storage name '{propertyModel.StorageName}' which is not a valid OData identifier. " + "OData identifiers must start with a letter or underscore, and contain only letters, digits, and underscores.");
         }
     }
+
 
     private static bool IsValidIdentifier(string name)
     {
@@ -97,6 +110,7 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
         }
 
         var first = name[0];
+
         if (!char.IsLetter(first) && first != '_')
         {
             return false;
@@ -105,6 +119,7 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
         for (var i = 1; i < name.Length; i++)
         {
             var c = name[i];
+
             if (!char.IsLetterOrDigit(c) && c != '_')
             {
                 return false;

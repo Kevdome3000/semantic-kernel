@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Chroma;
-
 using System.Net.Http;
-using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Chroma;
 
 internal sealed class CreateCollectionRequest
 {
@@ -31,7 +29,7 @@ internal sealed class CreateCollectionRequest
 
     private CreateCollectionRequest(string collectionName)
     {
-        this.CollectionName = collectionName;
+        CollectionName = collectionName;
     }
 
     #endregion

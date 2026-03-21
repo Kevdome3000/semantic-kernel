@@ -535,7 +535,9 @@
                     "default": 12.01
                   }
                 },
-                "required": [ "float?parameter" ]
+                "required": [
+                  "float?parameter"
+                ]
               }
             }
           },

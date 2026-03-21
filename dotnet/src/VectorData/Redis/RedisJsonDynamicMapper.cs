@@ -1,12 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
@@ -26,9 +20,10 @@ internal class RedisJsonDynamicMapper(CollectionModel model, JsonSerializerOptio
         {
             if (dataModel.TryGetValue(dataProperty.ModelName, out var sourceValue))
             {
-                jsonObject.Add(dataProperty.StorageName, sourceValue is null
-                    ? null
-                    : JsonSerializer.SerializeToNode(sourceValue, dataProperty.Type, jsonSerializerOptions));
+                jsonObject.Add(dataProperty.StorageName,
+                    sourceValue is null
+                        ? null
+                        : JsonSerializer.SerializeToNode(sourceValue, dataProperty.Type, jsonSerializerOptions));
             }
         }
 
@@ -52,12 +47,12 @@ internal class RedisJsonDynamicMapper(CollectionModel model, JsonSerializerOptio
                 var jsonArray = new JsonArray();
 
                 if (vector switch
-                {
-                    ReadOnlyMemory<float> m => m,
-                    Embedding<float> e => e.Vector,
-                    float[] a => new ReadOnlyMemory<float>(a),
-                    _ => (ReadOnlyMemory<float>?)null
-                } is ReadOnlyMemory<float> floatMemory)
+                    {
+                        ReadOnlyMemory<float> m => m,
+                        Embedding<float> e => e.Vector,
+                        float[] a => new ReadOnlyMemory<float>(a),
+                        _ => (ReadOnlyMemory<float>?)null
+                    } is ReadOnlyMemory<float> floatMemory)
                 {
                     foreach (var item in floatMemory.Span)
                     {
@@ -65,12 +60,12 @@ internal class RedisJsonDynamicMapper(CollectionModel model, JsonSerializerOptio
                     }
                 }
                 else if (vector switch
-                {
-                    ReadOnlyMemory<double> m => m,
-                    Embedding<double> e => e.Vector,
-                    double[] a => new ReadOnlyMemory<double>(a),
-                    _ => null
-                } is ReadOnlyMemory<double> doubleMemory)
+                    {
+                        ReadOnlyMemory<double> m => m,
+                        Embedding<double> e => e.Vector,
+                        double[] a => new ReadOnlyMemory<double>(a),
+                        _ => null
+                    } is ReadOnlyMemory<double> doubleMemory)
                 {
                     foreach (var item in doubleMemory.Span)
                     {
@@ -97,6 +92,7 @@ internal class RedisJsonDynamicMapper(CollectionModel model, JsonSerializerOptio
         return (storageKey, jsonObject);
     }
 
+
     /// <inheritdoc />
     public Dictionary<string, object?> MapFromStorageToDataModel((string Key, JsonNode Node) storageModel, bool includeVectors)
     {
@@ -108,7 +104,7 @@ internal class RedisJsonDynamicMapper(CollectionModel model, JsonSerializerOptio
                 Type t when t == typeof(Guid) => Guid.Parse(storageModel.Key),
 
                 _ => throw new UnreachableException()
-            },
+            }
         };
 
         // The redis result can be either a single object or an array with a single object in the case where we are doing an MGET.
@@ -119,7 +115,7 @@ internal class RedisJsonDynamicMapper(CollectionModel model, JsonSerializerOptio
             JsonObject o => o,
             JsonArray a and [JsonObject arrayEntryJsonObject] => arrayEntryJsonObject,
 
-            _ => throw new InvalidOperationException($"Invalid data format for document with key '{storageModel.Key}'"),
+            _ => throw new InvalidOperationException($"Invalid data format for document with key '{storageModel.Key}'")
         };
 
         // The key was handled above
@@ -129,9 +125,10 @@ internal class RedisJsonDynamicMapper(CollectionModel model, JsonSerializerOptio
             // Replicate null if the property exists but is null.
             if (jsonObject.TryGetPropertyValue(dataProperty.StorageName, out var sourceValue))
             {
-                dataModel.Add(dataProperty.ModelName, sourceValue is null
-                   ? null
-                   : JsonSerializer.Deserialize(sourceValue, dataProperty.Type, jsonSerializerOptions));
+                dataModel.Add(dataProperty.ModelName,
+                    sourceValue is null
+                        ? null
+                        : JsonSerializer.Deserialize(sourceValue, dataProperty.Type, jsonSerializerOptions));
             }
         }
 

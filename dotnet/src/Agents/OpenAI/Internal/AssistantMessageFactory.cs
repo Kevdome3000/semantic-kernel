@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
@@ -34,6 +35,7 @@ internal static class AssistantMessageFactory
         return options;
     }
 
+
     /// <summary>
     /// Translates <see cref="ChatMessageContent.Items"/> into enumeration of <see cref="MessageContent"/>.
     /// </summary>
@@ -41,11 +43,13 @@ internal static class AssistantMessageFactory
     public static IEnumerable<MessageContent> GetMessageContents(ChatMessageContent message)
     {
         bool hasTextContent = message.Items.OfType<TextContent>().Any();
+
         foreach (KernelContent content in message.Items)
         {
             if (content is TextContent textContent)
             {
                 var text = content.ToString();
+
                 if (string.IsNullOrWhiteSpace(text))
                 {
                     // Message content must be non-empty.
@@ -61,7 +65,7 @@ internal static class AssistantMessageFactory
                 }
                 else if (!string.IsNullOrWhiteSpace(imageContent.DataUri))
                 {
-                    yield return MessageContent.FromImageUri(new(imageContent.DataUri!));
+                    yield return MessageContent.FromImageUri(new Uri(imageContent.DataUri!));
                 }
             }
             else if (content is FileReferenceContent fileContent)

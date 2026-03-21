@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 namespace Microsoft.SemanticKernel.Agents;
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Logging;
-
 #pragma warning disable SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
 
 
@@ -47,6 +43,7 @@ internal static partial class AggregatorAgentLogMessages
         AggregatorMode channelMode,
         Type agentChatType);
 
+
     /// <summary>
     /// Logs <see cref="AggregatorAgent"/> restoring serialized channel (started).
     /// </summary>
@@ -58,6 +55,7 @@ internal static partial class AggregatorAgentLogMessages
         this ILogger logger,
         string methodName,
         string channelType);
+
 
     /// <summary>
     /// Logs <see cref="AggregatorAgent"/> restored serialized channel (complete).

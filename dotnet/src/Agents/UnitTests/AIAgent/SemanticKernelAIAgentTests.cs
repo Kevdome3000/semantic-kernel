@@ -24,64 +24,131 @@ public sealed class SemanticKernelAIAgentTests
     {
         // Arrange
         var agentMock = new Mock<Agent>();
-        AgentThread ThreadFactory() => Mock.Of<AgentThread>();
-        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => Mock.Of<AgentThread>();
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
+
+        AgentThread ThreadFactory()
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o)
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
 
         // Act
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, ThreadFactory, ThreadDeserializationFactory, ThreadSerializer);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            ThreadFactory,
+            ThreadDeserializationFactory,
+            ThreadSerializer);
 
         // Assert
         Assert.IsType<SemanticKernelAIAgent>(adapter);
     }
 
+
     [Fact]
     public void Constructor_WithNullSemanticKernelAgent_ThrowsArgumentNullException()
     {
         // Arrange
-        AgentThread ThreadFactory() => Mock.Of<AgentThread>();
-        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => Mock.Of<AgentThread>();
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
+        AgentThread ThreadFactory()
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o)
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgent(null!, ThreadFactory, ThreadDeserializationFactory, ThreadSerializer));
+        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgent(null!,
+            ThreadFactory,
+            ThreadDeserializationFactory,
+            ThreadSerializer));
     }
+
 
     [Fact]
     public void Constructor_WithNullThreadFactory_ThrowsArgumentNullException()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
-        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => Mock.Of<AgentThread>();
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
+
+        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o)
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgent(agentMock.Object, null!, ThreadDeserializationFactory, ThreadSerializer));
+        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgent(agentMock.Object,
+            null!,
+            ThreadDeserializationFactory,
+            ThreadSerializer));
     }
+
 
     [Fact]
     public void Constructor_WithNullThreadDeserializationFactory_ThrowsArgumentNullException()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
-        AgentThread ThreadFactory() => Mock.Of<AgentThread>();
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
+
+        AgentThread ThreadFactory()
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgent(agentMock.Object, ThreadFactory, null!, ThreadSerializer));
+        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgent(agentMock.Object,
+            ThreadFactory,
+            null!,
+            ThreadSerializer));
     }
+
 
     [Fact]
     public void Constructor_WithNullThreadSerializer_ThrowsArgumentNullException()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
-        AgentThread ThreadFactory() => Mock.Of<AgentThread>();
-        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => Mock.Of<AgentThread>();
+
+        AgentThread ThreadFactory()
+        {
+            return Mock.Of<AgentThread>();
+        }
+
+        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o)
+        {
+            return Mock.Of<AgentThread>();
+        }
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgent(agentMock.Object, ThreadFactory, ThreadDeserializationFactory, null!));
+        Assert.Throws<ArgumentNullException>(() => new SemanticKernelAIAgent(agentMock.Object,
+            ThreadFactory,
+            ThreadDeserializationFactory,
+            null!));
     }
+
 
     [Fact]
     public void DeserializeThread_ReturnsSemanticKernelAIAgentThread()
@@ -89,9 +156,21 @@ public sealed class SemanticKernelAIAgentTests
         // Arrange
         var agentMock = new Mock<Agent>();
         var expectedThread = Mock.Of<AgentThread>();
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
-        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o) => expectedThread;
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => expectedThread, ThreadDeserializationFactory, ThreadSerializer);
+
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
+
+        AgentThread ThreadDeserializationFactory(JsonElement e, JsonSerializerOptions? o)
+        {
+            return expectedThread;
+        }
+
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            () => expectedThread,
+            ThreadDeserializationFactory,
+            ThreadSerializer);
         var json = JsonElement.Parse("{}");
 
         // Act
@@ -101,14 +180,23 @@ public sealed class SemanticKernelAIAgentTests
         Assert.IsType<SemanticKernelAIAgentThread>(result);
     }
 
+
     [Fact]
     public void GetNewThread_ReturnsSemanticKernelAIAgentThread()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
         var expectedThread = Mock.Of<AgentThread>();
-        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o) => default;
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => expectedThread, (e, o) => expectedThread, ThreadSerializer);
+
+        JsonElement ThreadSerializer(AgentThread t, JsonSerializerOptions? o)
+        {
+            return default;
+        }
+
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            () => expectedThread,
+            (e, o) => expectedThread,
+            ThreadSerializer);
 
         // Act
         var result = adapter.GetNewThread();
@@ -117,6 +205,7 @@ public sealed class SemanticKernelAIAgentTests
         Assert.IsType<SemanticKernelAIAgentThread>(result);
         Assert.Equal(expectedThread, ((SemanticKernelAIAgentThread)result).InnerThread);
     }
+
 
     [Fact]
     public void DeserializeThread_CallsDeserializationFactory()
@@ -132,7 +221,10 @@ public sealed class SemanticKernelAIAgentTests
             return expectedThread;
         }
 
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => expectedThread, DeserializationFactory, (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            () => expectedThread,
+            DeserializationFactory,
+            (t, o) => default);
         var json = JsonElement.Parse("{}");
 
         // Act
@@ -142,6 +234,7 @@ public sealed class SemanticKernelAIAgentTests
         Assert.Equal(1, factoryCallCount);
         Assert.IsType<SemanticKernelAIAgentThread>(result);
     }
+
 
     [Fact]
     public void GetNewThread_CallsThreadFactory()
@@ -157,7 +250,10 @@ public sealed class SemanticKernelAIAgentTests
             return expectedThread;
         }
 
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, ThreadFactory, (e, o) => expectedThread, (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            ThreadFactory,
+            (e, o) => expectedThread,
+            (t, o) => default);
 
         // Act
         var result = adapter.GetNewThread();
@@ -166,6 +262,7 @@ public sealed class SemanticKernelAIAgentTests
         Assert.Equal(1, factoryCallCount);
         Assert.IsType<SemanticKernelAIAgentThread>(result);
     }
+
 
     [Fact]
     public void Properties_ReflectInnerAgentProperties()
@@ -178,13 +275,17 @@ public sealed class SemanticKernelAIAgentTests
             Description = "Test Agent Description"
         };
 
-        var adapter = new SemanticKernelAIAgent(concreteAgent, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(concreteAgent,
+            () => Mock.Of<AgentThread>(),
+            (e, o) => Mock.Of<AgentThread>(),
+            (t, o) => default);
 
         // Act & Assert
         Assert.Equal("test-agent-id", adapter.Id);
         Assert.Equal("Test Agent Name", adapter.Name);
         Assert.Equal("Test Agent Description", adapter.Description);
     }
+
 
     [Fact]
     public async Task Run_CallsInnerAgentAsync()
@@ -194,14 +295,18 @@ public sealed class SemanticKernelAIAgentTests
         var innerThread = threadMock.Object;
         var agentMock = new Mock<Agent>();
         agentMock.Setup(a => a.InvokeAsync(
-            It.IsAny<List<ChatMessageContent>>(),
-            It.IsAny<AgentThread>(),
-            It.IsAny<AgentInvokeOptions>(),
-            It.IsAny<CancellationToken>()))
+                It.IsAny<List<ChatMessageContent>>(),
+                It.IsAny<AgentThread>(),
+                It.IsAny<AgentInvokeOptions>(),
+                It.IsAny<CancellationToken>()))
             .Returns(MockInvokeAsync);
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            () => Mock.Of<AgentThread>(),
+            (e, o) => Mock.Of<AgentThread>(),
+            (t, o) => default);
 
-        async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> MockInvokeAsync(ICollection<ChatMessageContent> messages,
+        async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> MockInvokeAsync(
+            ICollection<ChatMessageContent> messages,
             AgentThread? thread = null,
             AgentInvokeOptions? options = null,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -220,11 +325,13 @@ public sealed class SemanticKernelAIAgentTests
         Assert.IsType<MAAI.AgentRunResponse>(result);
         Assert.Equal("Final response", result.Text);
         agentMock.Verify(a => a.InvokeAsync(
-            It.Is<List<ChatMessageContent>>(x => x.First().Content == "Input text"),
-            innerThread,
-            It.IsAny<AgentInvokeOptions>(),
-            It.IsAny<CancellationToken>()), Times.Once);
+                It.Is<List<ChatMessageContent>>(x => x.First().Content == "Input text"),
+                innerThread,
+                It.IsAny<AgentInvokeOptions>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
+
 
     [Fact]
     public async Task RunStreaming_CallsInnerAgentAsync()
@@ -234,12 +341,15 @@ public sealed class SemanticKernelAIAgentTests
         var innerThread = threadMock.Object;
         var agentMock = new Mock<Agent>();
         agentMock.Setup(a => a.InvokeStreamingAsync(
-            It.IsAny<List<ChatMessageContent>>(),
-            It.IsAny<AgentThread>(),
-            It.IsAny<AgentInvokeOptions>(),
-            It.IsAny<CancellationToken>()))
+                It.IsAny<List<ChatMessageContent>>(),
+                It.IsAny<AgentThread>(),
+                It.IsAny<AgentInvokeOptions>(),
+                It.IsAny<CancellationToken>()))
             .Returns(GetAsyncEnumerable());
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            () => Mock.Of<AgentThread>(),
+            (e, o) => Mock.Of<AgentThread>(),
+            (t, o) => default);
 
         async IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> GetAsyncEnumerable()
         {
@@ -255,11 +365,13 @@ public sealed class SemanticKernelAIAgentTests
         Assert.IsType<MAAI.AgentRunResponseUpdate>(results.First());
         Assert.Equal("Final response", results.First().Text);
         agentMock.Verify(a => a.InvokeStreamingAsync(
-            It.Is<List<ChatMessageContent>>(x => x.First().Content == "Input text"),
-            innerThread,
-            It.IsAny<AgentInvokeOptions>(),
-            It.IsAny<CancellationToken>()), Times.Once);
+                It.Is<List<ChatMessageContent>>(x => x.First().Content == "Input text"),
+                innerThread,
+                It.IsAny<AgentInvokeOptions>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
     }
+
 
     [Fact]
     public async Task RunAsync_RemovesDuplicateTextContentInToolMessage()
@@ -267,20 +379,27 @@ public sealed class SemanticKernelAIAgentTests
         // Arrange
         var innerThread = Mock.Of<AgentThread>();
         var agentMock = new Mock<Agent>();
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => innerThread, (e, o) => innerThread, (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            () => innerThread,
+            (e, o) => innerThread,
+            (t, o) => default);
 
         agentMock.Setup(a => a.InvokeAsync(
-            It.IsAny<List<ChatMessageContent>>(),
-            It.IsAny<AgentThread>(),
-            It.IsAny<AgentInvokeOptions>(),
-            It.IsAny<CancellationToken>()))
-            .Returns((List<ChatMessageContent> msgs, AgentThread thread, AgentInvokeOptions opts, CancellationToken ct) => GetEnumerableWithDuplicateToolMessage(thread, opts));
+                It.IsAny<List<ChatMessageContent>>(),
+                It.IsAny<AgentThread>(),
+                It.IsAny<AgentInvokeOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Returns((
+                List<ChatMessageContent> msgs,
+                AgentThread thread,
+                AgentInvokeOptions opts,
+                CancellationToken ct) => GetEnumerableWithDuplicateToolMessage(thread, opts));
 
         async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> GetEnumerableWithDuplicateToolMessage(AgentThread thread, AgentInvokeOptions opts)
         {
             // Tool message with duplicate text + function result
             var toolMessage = new ChatMessageContent(AuthorRole.Tool, "RESULT");
-            toolMessage.Items.Add(new FunctionResultContent(functionName: "Fn", result: "RESULT"));
+            toolMessage.Items.Add(new FunctionResultContent("Fn", result: "RESULT"));
             await opts.OnIntermediateMessage!.Invoke(toolMessage);
 
             // Final assistant message
@@ -301,26 +420,34 @@ public sealed class SemanticKernelAIAgentTests
         Assert.IsType<MEAI.FunctionResultContent>(contents.First());
     }
 
+
     [Fact]
     public async Task RunAsync_DoesNotRemoveTextContentWhenDifferent()
     {
         // Arrange
         var innerThread = Mock.Of<AgentThread>();
         var agentMock = new Mock<Agent>();
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => innerThread, (e, o) => innerThread, (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            () => innerThread,
+            (e, o) => innerThread,
+            (t, o) => default);
 
         agentMock.Setup(a => a.InvokeAsync(
-            It.IsAny<List<ChatMessageContent>>(),
-            It.IsAny<AgentThread>(),
-            It.IsAny<AgentInvokeOptions>(),
-            It.IsAny<CancellationToken>()))
-            .Returns((List<ChatMessageContent> msgs, AgentThread thread, AgentInvokeOptions opts, CancellationToken ct) => GetEnumerableWithNonDuplicateToolMessage(thread, opts));
+                It.IsAny<List<ChatMessageContent>>(),
+                It.IsAny<AgentThread>(),
+                It.IsAny<AgentInvokeOptions>(),
+                It.IsAny<CancellationToken>()))
+            .Returns((
+                List<ChatMessageContent> msgs,
+                AgentThread thread,
+                AgentInvokeOptions opts,
+                CancellationToken ct) => GetEnumerableWithNonDuplicateToolMessage(thread, opts));
 
         async IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> GetEnumerableWithNonDuplicateToolMessage(AgentThread thread, AgentInvokeOptions opts)
         {
             // Tool message with text + function result differing
             var toolMessage = new ChatMessageContent(AuthorRole.Tool, "TEXT");
-            toolMessage.Items.Add(new FunctionResultContent(functionName: "Fn", result: "DIFFERENT"));
+            toolMessage.Items.Add(new FunctionResultContent("Fn", result: "DIFFERENT"));
             await opts.OnIntermediateMessage!.Invoke(toolMessage);
 
             var final = new ChatMessageContent(AuthorRole.Assistant, "done");
@@ -340,14 +467,18 @@ public sealed class SemanticKernelAIAgentTests
         Assert.IsType<MEAI.FunctionResultContent>(contents.Last());
     }
 
+
     [Fact]
     public void GetService_WithKernelType_ReturnsKernel()
     {
         // Arrange
         var kernel = new Kernel();
-        var fakeAgent = new TestAgent() { Kernel = kernel };
+        var fakeAgent = new TestAgent { Kernel = kernel };
 
-        var adapter = new SemanticKernelAIAgent(fakeAgent, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(fakeAgent,
+            () => Mock.Of<AgentThread>(),
+            (e, o) => Mock.Of<AgentThread>(),
+            (t, o) => default);
 
         // Act
         var result = adapter.GetService(typeof(Kernel));
@@ -356,13 +487,17 @@ public sealed class SemanticKernelAIAgentTests
         Assert.Same(kernel, result);
     }
 
+
     [Fact]
     public void GetService_WithKernelTypeAndServiceKey_ReturnsNull()
     {
         // Arrange
         var kernel = new Kernel();
-        var fakeAgent = new TestAgent() { Kernel = kernel };
-        var adapter = new SemanticKernelAIAgent(fakeAgent, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var fakeAgent = new TestAgent { Kernel = kernel };
+        var adapter = new SemanticKernelAIAgent(fakeAgent,
+            () => Mock.Of<AgentThread>(),
+            (e, o) => Mock.Of<AgentThread>(),
+            (t, o) => default);
         var serviceKey = new object();
 
         // Act
@@ -372,12 +507,16 @@ public sealed class SemanticKernelAIAgentTests
         Assert.Null(result);
     }
 
+
     [Fact]
     public void GetService_WithAgentType_ReturnsInnerAgent()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            () => Mock.Of<AgentThread>(),
+            (e, o) => Mock.Of<AgentThread>(),
+            (t, o) => default);
 
         // Act
         var result = adapter.GetService(typeof(Agent));
@@ -386,12 +525,16 @@ public sealed class SemanticKernelAIAgentTests
         Assert.Same(agentMock.Object, result);
     }
 
+
     [Fact]
     public void GetService_WithAgentTypeAndServiceKey_ReturnsNull()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            () => Mock.Of<AgentThread>(),
+            (e, o) => Mock.Of<AgentThread>(),
+            (t, o) => default);
         var serviceKey = new object();
 
         // Act
@@ -401,12 +544,16 @@ public sealed class SemanticKernelAIAgentTests
         Assert.Null(result);
     }
 
+
     [Fact]
     public void GetService_WithNonAgentType_ReturnsNull()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            () => Mock.Of<AgentThread>(),
+            (e, o) => Mock.Of<AgentThread>(),
+            (t, o) => default);
 
         // Act
         var result = adapter.GetService(typeof(string));
@@ -415,23 +562,31 @@ public sealed class SemanticKernelAIAgentTests
         Assert.Null(result);
     }
 
+
     [Fact]
     public void GetService_WithNullType_ThrowsArgumentNullException()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            () => Mock.Of<AgentThread>(),
+            (e, o) => Mock.Of<AgentThread>(),
+            (t, o) => default);
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => adapter.GetService(null!));
     }
+
 
     [Fact]
     public void GetService_WithBaseClassType_ReturnsInnerAgent()
     {
         // Arrange
         var concreteAgent = new TestAgent();
-        var adapter = new SemanticKernelAIAgent(concreteAgent, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(concreteAgent,
+            () => Mock.Of<AgentThread>(),
+            (e, o) => Mock.Of<AgentThread>(),
+            (t, o) => default);
 
         // Act
         var result = adapter.GetService(typeof(Agent));
@@ -440,12 +595,16 @@ public sealed class SemanticKernelAIAgentTests
         Assert.Same(concreteAgent, result);
     }
 
+
     [Fact]
     public void GetService_WithDerivedType_ReturnsInnerAgentWhenMatches()
     {
         // Arrange
         var concreteAgent = new TestAgent();
-        var adapter = new SemanticKernelAIAgent(concreteAgent, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(concreteAgent,
+            () => Mock.Of<AgentThread>(),
+            (e, o) => Mock.Of<AgentThread>(),
+            (t, o) => default);
 
         // Act
         var result = adapter.GetService(typeof(TestAgent));
@@ -454,12 +613,16 @@ public sealed class SemanticKernelAIAgentTests
         Assert.Same(concreteAgent, result);
     }
 
+
     [Fact]
     public void GetService_WithIncompatibleDerivedType_ReturnsNull()
     {
         // Arrange
         var agentMock = new Mock<Agent>();
-        var adapter = new SemanticKernelAIAgent(agentMock.Object, () => Mock.Of<AgentThread>(), (e, o) => Mock.Of<AgentThread>(), (t, o) => default);
+        var adapter = new SemanticKernelAIAgent(agentMock.Object,
+            () => Mock.Of<AgentThread>(),
+            (e, o) => Mock.Of<AgentThread>(),
+            (t, o) => default);
 
         // Act
         var result = adapter.GetService(typeof(TestAgent));
@@ -468,27 +631,40 @@ public sealed class SemanticKernelAIAgentTests
         Assert.Null(result);
     }
 
+
     private sealed class TestAgent : Agent
     {
-        public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+        public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(
+            ICollection<ChatMessageContent> messages,
+            AgentThread? thread = null,
+            AgentInvokeOptions? options = null,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
 
-        public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+
+        public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(
+            ICollection<ChatMessageContent> messages,
+            AgentThread? thread = null,
+            AgentInvokeOptions? options = null,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
+
 
         protected internal override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
+
         protected internal override IEnumerable<string> GetChannelKeys()
         {
             throw new NotImplementedException();
         }
+
 
         protected internal override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
         {

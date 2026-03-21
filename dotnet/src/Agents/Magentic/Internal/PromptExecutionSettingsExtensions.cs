@@ -12,6 +12,7 @@ public static class PromptExecutionSettingsExtensions
 {
     private const string ResponseFormatPropertyName = "ResponseFormat";
 
+
     /// <summary>
     /// Determines whether the <paramref name="settings"/> object supports a "ResponseFormat" property of type <see cref="object"/>.
     /// </summary>
@@ -23,6 +24,7 @@ public static class PromptExecutionSettingsExtensions
         PropertyInfo? property = settingsType.GetProperty(ResponseFormatPropertyName);
         return property != null && property.PropertyType == typeof(object);
     }
+
 
     /// <summary>
     /// Sets the "ResponseFormat" property of the <paramref name="settings"/> object to the specified response type.

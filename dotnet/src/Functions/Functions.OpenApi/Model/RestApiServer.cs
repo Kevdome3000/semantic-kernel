@@ -40,10 +40,13 @@ public sealed class RestApiServer
     internal RestApiServer(string? url = null, IDictionary<string, RestApiServerVariable>? variables = null, string? description = null)
 #pragma warning restore CA1054 // URI-like parameters should not be strings
     {
-        Url = string.IsNullOrEmpty(url) ? null : url;
+        Url = string.IsNullOrEmpty(url)
+            ? null
+            : url;
         Variables = variables ?? new Dictionary<string, RestApiServerVariable>();
         Description = description;
     }
+
 
     /// <summary>
     /// Makes the current instance unmodifiable.
@@ -51,6 +54,7 @@ public sealed class RestApiServer
     internal void Freeze()
     {
         Variables = new ReadOnlyDictionary<string, RestApiServerVariable>(Variables);
+
         foreach (var variable in Variables.Values)
         {
             variable.Freeze();

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.Orchestration.Transforms;
 
@@ -19,24 +18,25 @@ internal static class DefaultTransforms
         return ValueTask.FromResult(TransformInput());
 #endif
 
-        IEnumerable<ChatMessageContent> TransformInput() =>
-            input switch
+        IEnumerable<ChatMessageContent> TransformInput()
+        {
+            return input switch
             {
                 IEnumerable<ChatMessageContent> messages => messages,
                 ChatMessageContent message => [message],
                 string text => [new ChatMessageContent(AuthorRole.User, text)],
                 _ => [new ChatMessageContent(AuthorRole.User, JsonSerializer.Serialize(input))]
             };
+        }
     }
+
 
     public static ValueTask<TOutput> ToOutput<TOutput>(IList<ChatMessageContent> result, CancellationToken cancellationToken = default)
     {
         bool isSingleResult = result.Count == 1;
 
         TOutput output =
-            GetDefaultOutput() ??
-            GetObjectOutput() ??
-            throw new InvalidOperationException($"Unable to transform output to {typeof(TOutput)}.");
+            GetDefaultOutput() ?? GetObjectOutput() ?? throw new InvalidOperationException($"Unable to transform output to {typeof(TOutput)}.");
 
         return new ValueTask<TOutput>(output);
 
@@ -60,6 +60,7 @@ internal static class DefaultTransforms
         TOutput? GetDefaultOutput()
         {
             object? output = null;
+
             if (typeof(TOutput).IsAssignableFrom(result.GetType()))
             {
                 output = (object)result;

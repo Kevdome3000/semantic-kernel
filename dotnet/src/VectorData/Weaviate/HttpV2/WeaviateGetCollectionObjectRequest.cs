@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Net.Http;
-using System.Text.Json.Serialization;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 internal sealed class WeaviateGetCollectionObjectRequest(string collectionName, Guid id, bool includeVectors)
@@ -21,11 +17,12 @@ internal sealed class WeaviateGetCollectionObjectRequest(string collectionName, 
     [JsonIgnore]
     public bool IncludeVectors { get; set; } = includeVectors;
 
+
     public HttpRequestMessage Build()
     {
-        var uri = $"{ApiRoute}/{this.CollectionName}/{this.Id}";
+        var uri = $"{ApiRoute}/{CollectionName}/{Id}";
 
-        if (this.IncludeVectors)
+        if (IncludeVectors)
         {
             uri += $"?{IncludeQueryParameterName}={IncludeVectorQueryParameterValue}";
         }

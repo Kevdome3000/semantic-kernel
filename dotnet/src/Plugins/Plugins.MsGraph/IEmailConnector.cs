@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;
@@ -19,6 +16,7 @@ public interface IEmailConnector
     /// <returns>The user's email address.</returns>
     Task<string?> GetMyEmailAddressAsync(CancellationToken cancellationToken = default);
 
+
     /// <summary>
     /// Send an email to the specified recipients.
     /// </summary>
@@ -26,7 +24,12 @@ public interface IEmailConnector
     /// <param name="content">Email content.</param>
     /// <param name="recipients">Email recipients.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    Task SendEmailAsync(string subject, string content, string[] recipients, CancellationToken cancellationToken = default);
+    Task SendEmailAsync(
+        string subject,
+        string content,
+        string[] recipients,
+        CancellationToken cancellationToken = default);
+
 
     /// <summary>
     /// Get the user's email messages.
@@ -37,6 +40,10 @@ public interface IEmailConnector
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The user's email messages.</returns>
 #pragma warning disable CA1716 // Identifiers should not match keywords
-    Task<IEnumerable<EmailMessage>?> GetMessagesAsync(int? top, int? skip, string? @select, CancellationToken cancellationToken = default);
+    Task<IEnumerable<EmailMessage>?> GetMessagesAsync(
+        int? top,
+        int? skip,
+        string? select,
+        CancellationToken cancellationToken = default);
 #pragma warning restore CA1716 // Identifiers should not match keywords
 }

@@ -1,14 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text.Json;
-using Microsoft.Data.SqlClient;
-using Microsoft.Data.SqlTypes;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -37,19 +29,20 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
                     {
                         var vector = reader.GetFieldValue<SqlVector<float>>(ordinal);
 
-                        property.SetValueAsObject(record, property.Type switch
-                        {
-                            var t when t == typeof(SqlVector<float>) => vector,
-                            var t when t == typeof(ReadOnlyMemory<float>) => vector.Memory,
-                            var t when t == typeof(Embedding<float>) => new Embedding<float>(vector.Memory),
-                            var t when t == typeof(float[])
-                                => MemoryMarshal.TryGetArray(vector.Memory, out ArraySegment<float> segment)
+                        property.SetValueAsObject(record,
+                            property.Type switch
+                            {
+                                var t when t == typeof(SqlVector<float>) => vector,
+                                var t when t == typeof(ReadOnlyMemory<float>) => vector.Memory,
+                                var t when t == typeof(Embedding<float>) => new Embedding<float>(vector.Memory),
+                                var t when t == typeof(float[])
+                                    => MemoryMarshal.TryGetArray(vector.Memory, out ArraySegment<float> segment)
                                     && segment.Count == segment.Array!.Length
-                                    ? segment.Array
-                                    : vector.Memory.ToArray(),
+                                        ? segment.Array
+                                        : vector.Memory.ToArray(),
 
-                            _ => throw new UnreachableException()
-                        });
+                                _ => throw new UnreachableException()
+                            });
                     }
                 }
                 catch (Exception e)
@@ -128,14 +121,16 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
 
                     // We map string[] and List<string> properties to SQL Server JSON columns, so deserialize from JSON here.
                     case var t when t == typeof(string[]):
-                        property.SetValue(record, JsonSerializer.Deserialize<string[]>(
-                            reader.GetString(ordinal),
-                            SqlServerJsonSerializerContext.Default.StringArray));
+                        property.SetValue(record,
+                            JsonSerializer.Deserialize<string[]>(
+                                reader.GetString(ordinal),
+                                SqlServerJsonSerializerContext.Default.StringArray));
                         break;
                     case var t when t == typeof(List<string>):
-                        property.SetValue(record, JsonSerializer.Deserialize<List<string>>(
-                            reader.GetString(ordinal),
-                            SqlServerJsonSerializerContext.Default.ListString));
+                        property.SetValue(record,
+                            JsonSerializer.Deserialize<List<string>>(
+                                reader.GetString(ordinal),
+                                SqlServerJsonSerializerContext.Default.ListString));
                         break;
 
                     default:

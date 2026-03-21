@@ -1,15 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
@@ -23,10 +13,10 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
     private static readonly CollectionModelBuildingOptions s_validationOptions = new()
     {
         RequiresAtLeastOneVector = false,
-        SupportsMultipleKeys = false,
         SupportsMultipleVectors = true,
-        UsesExternalSerializer = true,
+        UsesExternalSerializer = true
     };
+
 
     [RequiresUnreferencedCode("Traverses the CLR type's properties with reflection, so not compatible with trimming")]
     protected override void ProcessTypeProperties(Type type, VectorStoreCollectionDefinition? definition)
@@ -42,11 +32,17 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
         }
     }
 
+
     protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
-        => keyPropertyType == typeof(Guid) || keyPropertyType == typeof(ObjectId);
+    {
+        return keyPropertyType == typeof(Guid) || keyPropertyType == typeof(ObjectId);
+    }
+
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
+        base.ValidateKeyProperty(keyProperty);
+
         var type = keyProperty.Type;
 
         if (type != typeof(string) && type != typeof(int) && type != typeof(long) && type != typeof(Guid) && type != typeof(ObjectId))
@@ -56,9 +52,14 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
         }
     }
 
+
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
-        supportedTypes = "string, int, long, double, float, bool, DateTimeOffset, or arrays/lists of these types";
+        supportedTypes = "string, int, long, double, float, bool, decimal, DateTime, DateTimeOffset,"
+#if NET
+            + " DateOnly,"
+#endif
+            + " or arrays/lists of these types";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
         {
@@ -66,22 +67,32 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
         }
 
         return IsValid(type)
-            || (type.IsArray && IsValid(type.GetElementType()!))
-            || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && IsValid(type.GenericTypeArguments[0]));
+            || type.IsArray && IsValid(type.GetElementType()!)
+            || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && IsValid(type.GenericTypeArguments[0]);
 
         static bool IsValid(Type type)
-            => type == typeof(bool) ||
-                type == typeof(string) ||
-                type == typeof(int) ||
-                type == typeof(long) ||
-                type == typeof(float) ||
-                type == typeof(double) ||
-                type == typeof(decimal) ||
-                type == typeof(DateTime);
+            => type == typeof(bool)
+                || type == typeof(string)
+                || type == typeof(int)
+                || type == typeof(long)
+                || type == typeof(float)
+                || type == typeof(double)
+                || type == typeof(decimal)
+                || type == typeof(DateTime)
+                || type == typeof(DateTimeOffset)
+                ||
+#if NET
+                type == typeof(DateOnly) ||
+#endif
+                false;
     }
 
+
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
-        => IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    {
+        return IsVectorPropertyTypeValidCore(type, out supportedTypes);
+    }
+
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {

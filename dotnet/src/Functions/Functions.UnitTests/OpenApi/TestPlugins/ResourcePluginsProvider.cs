@@ -1,10 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
-
 using System.IO;
 using System.Resources;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
 
 internal static class ResourcePluginsProvider
 {
@@ -18,8 +17,7 @@ internal static class ResourcePluginsProvider
     {
         var type = typeof(ResourcePluginsProvider);
 
-        return type.Assembly.GetManifestResourceStream(type, resourceName) ??
-               throw new MissingManifestResourceException($"Unable to load OpenAPI plugin from assembly resource '{resourceName}'.");
+        return type.Assembly.GetManifestResourceStream(type, resourceName) ?? throw new MissingManifestResourceException($"Unable to load OpenAPI plugin from assembly resource '{resourceName}'.");
     }
 
 }

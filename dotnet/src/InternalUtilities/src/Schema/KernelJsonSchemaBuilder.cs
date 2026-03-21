@@ -1,13 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #pragma warning disable IDE0005 // Using directive is unnecessary.
-using System;
 #pragma warning restore IDE0005 // Using directive is unnecessary.
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
-using Microsoft.Extensions.AI;
 
 #pragma warning disable IDE0010 // Add missing cases
 
@@ -29,12 +23,17 @@ internal static class KernelJsonSchemaBuilder
     private static readonly JsonElement s_trueSchemaAsObject = JsonElement.Parse("{}");
     private static readonly JsonElement s_falseSchemaAsObject = JsonElement.Parse("""{"not":true}""");
 
+
     [RequiresUnreferencedCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate JSON schema, making it incompatible with AOT scenarios.")]
     public static KernelJsonSchema Build(Type type, string? description = null, AIJsonSchemaCreateOptions? configuration = null)
     {
-        return Build(type, GetDefaultOptions(), description, configuration);
+        return Build(type,
+            GetDefaultOptions(),
+            description,
+            configuration);
     }
+
 
     public static KernelJsonSchema Build(
         Type type,
@@ -44,8 +43,14 @@ internal static class KernelJsonSchemaBuilder
     {
         configuration ??= s_schemaOptions;
         // To be compatible with the previous behavior of MEAI 9.3.0 (when description is empty, should not be included in the schema)
-        string? schemaDescription = string.IsNullOrEmpty(description) ? null : description;
-        JsonElement schemaDocument = AIJsonUtilities.CreateJsonSchema(type, schemaDescription, serializerOptions: options, inferenceOptions: configuration);
+        string? schemaDescription = string.IsNullOrEmpty(description)
+            ? null
+            : description;
+        JsonElement schemaDocument = AIJsonUtilities.CreateJsonSchema(type,
+            schemaDescription,
+            serializerOptions: options,
+            inferenceOptions: configuration);
+
         switch (schemaDocument.ValueKind)
         {
             case JsonValueKind.False:
@@ -59,6 +64,7 @@ internal static class KernelJsonSchemaBuilder
         return KernelJsonSchema.Parse(schemaDocument.GetRawText());
     }
 
+
     [RequiresUnreferencedCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses JsonStringEnumConverter and DefaultJsonTypeInfoResolver classes, making it incompatible with AOT scenarios.")]
     private static JsonSerializerOptions GetDefaultOptions()
@@ -68,7 +74,7 @@ internal static class KernelJsonSchemaBuilder
             JsonSerializerOptions options = new()
             {
                 TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-                Converters = { new JsonStringEnumConverter() },
+                Converters = { new JsonStringEnumConverter() }
             };
             options.MakeReadOnly();
             s_options = options;

@@ -2,11 +2,9 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.PgVector;
-using Npgsql;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -355,8 +353,10 @@ public static class PostgresServiceCollectionExtensions
             static (sp, key) => sp.GetRequiredKeyedService<PostgresCollection<TKey, TRecord>>(key),
             lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IKeywordHybridSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<PostgresCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IKeywordHybridSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<PostgresCollection<TKey, TRecord>>(key),
+            lifetime));
     }
 
 

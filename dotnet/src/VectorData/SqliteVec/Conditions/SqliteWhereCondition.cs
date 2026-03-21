@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 internal abstract class SqliteWhereCondition(string operand, List<object> values)
@@ -14,7 +12,11 @@ internal abstract class SqliteWhereCondition(string operand, List<object> values
 
     public abstract string BuildQuery(List<string> parameterNames);
 
-    protected string GetOperand() => !string.IsNullOrWhiteSpace(this.TableName) ?
-        $"\"{this.TableName}\".\"{this.Operand}\"" :
-        $"\"{this.Operand}\"";
+
+    protected string GetOperand()
+    {
+        return !string.IsNullOrWhiteSpace(TableName)
+            ? $"\"{TableName}\".\"{Operand}\""
+            : $"\"{Operand}\"";
+    }
 }

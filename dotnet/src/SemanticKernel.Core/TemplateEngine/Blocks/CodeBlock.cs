@@ -10,10 +10,12 @@ namespace Microsoft.SemanticKernel.TemplateEngine;
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
 #pragma warning disable CA1031 // IsCriticalException is an internal utility and should not be used by extensions
 
+
 // ReSharper disable TemplateIsNotCompileTimeConstantProblem
 internal sealed class CodeBlock : Block, ICodeRendering
 {
     internal override BlockTypes Type => BlockTypes.Code;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CodeBlock"/> class.
@@ -24,6 +26,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         : this(new CodeTokenizer(loggerFactory).Tokenize(content), content?.Trim(), loggerFactory)
     {
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CodeBlock"/> class.
@@ -37,10 +40,12 @@ internal sealed class CodeBlock : Block, ICodeRendering
         Blocks = tokens;
     }
 
+
     /// <summary>
     /// Gets the list of blocks.
     /// </summary>
     public List<Block> Blocks { get; }
+
 
     /// <inheritdoc/>
     public override bool IsValid(out string errorMsg)
@@ -75,6 +80,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return true;
     }
 
+
     /// <inheritdoc/>
     public ValueTask<object?> RenderCodeAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
@@ -91,14 +97,19 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return Blocks[0].Type switch
         {
             BlockTypes.Value or BlockTypes.Variable => new ValueTask<object?>(((ITextRendering)Blocks[0]).Render(arguments)),
-            BlockTypes.FunctionId => RenderFunctionCallAsync((FunctionIdBlock)Blocks[0], kernel, arguments, cancellationToken),
-            _ => throw new KernelException($"Unexpected first token type: {Blocks[0].Type:G}"),
+            BlockTypes.FunctionId => RenderFunctionCallAsync((FunctionIdBlock)Blocks[0],
+                kernel,
+                arguments,
+                cancellationToken),
+            _ => throw new KernelException($"Unexpected first token type: {Blocks[0].Type:G}")
         };
     }
+
 
     #region private ================================================================================
 
     private bool _validated;
+
 
     private async ValueTask<object?> RenderFunctionCallAsync(
         FunctionIdBlock fBlock,
@@ -111,26 +122,35 @@ internal sealed class CodeBlock : Block, ICodeRendering
         if (Blocks.Count > 1)
         {
             //Cloning the original arguments to avoid side effects - arguments added to the original arguments collection as a result of rendering template variables.
-            arguments = EnrichFunctionArguments(kernel, fBlock, arguments is null
-                ? []
-                : new KernelArguments(arguments));
+            arguments = EnrichFunctionArguments(kernel,
+                fBlock,
+                arguments is null
+                    ? []
+                    : new KernelArguments(arguments));
         }
 
         try
         {
-            var result = await kernel.InvokeAsync(fBlock.PluginName, fBlock.FunctionName, arguments, cancellationToken).
-                ConfigureAwait(false);
+            var result = await kernel.InvokeAsync(fBlock.PluginName,
+                    fBlock.FunctionName,
+                    arguments,
+                    cancellationToken)
+                .ConfigureAwait(false);
 
             return result.Value;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Function {Plugin}.{Function} execution failed with error {Error}", fBlock.PluginName, fBlock.FunctionName,
+            Logger.LogError(ex,
+                "Function {Plugin}.{Function} execution failed with error {Error}",
+                fBlock.PluginName,
+                fBlock.FunctionName,
                 ex.Message);
 
             throw;
         }
     }
+
 
     private bool IsValidFunctionCall(out string errorMsg)
     {
@@ -166,6 +186,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         return true;
     }
 
+
     /// <summary>
     /// Adds function arguments. If the first argument is not a named argument, it is added to the arguments collection as the 'input' argument.
     /// Additionally, for the prompt expression - {{MyPlugin.MyFunction p1=$v1}}, the value of the v1 variable will be resolved from the original arguments collection.
@@ -187,8 +208,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
         }
 
         // Get the function metadata
-        var functionMetadata = kernel.Plugins.GetFunction(fBlock.PluginName, fBlock.FunctionName).
-            Metadata;
+        var functionMetadata = kernel.Plugins.GetFunction(fBlock.PluginName, fBlock.FunctionName).Metadata;
 
         // Check if the function has parameters to be set
         if (functionMetadata.Parameters.Count == 0)
@@ -243,6 +263,7 @@ internal sealed class CodeBlock : Block, ICodeRendering
     }
 
     #endregion
+
 
 }
 // ReSharper restore TemplateIsNotCompileTimeConstantProblem

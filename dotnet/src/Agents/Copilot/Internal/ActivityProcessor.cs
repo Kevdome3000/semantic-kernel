@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Agents.Core.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Agents.CopilotStudio.Internal;
 
@@ -22,6 +21,7 @@ internal static class ActivityProcessor
                         {
                             InnerContent = activity
                         };
+
                     break;
                 case "typing":
                     yield return
@@ -29,6 +29,7 @@ internal static class ActivityProcessor
                         {
                             InnerContent = activity
                         };
+
                     break;
                 case "event":
                     break;
@@ -41,6 +42,7 @@ internal static class ActivityProcessor
         static IEnumerable<KernelContent> GetMessageItems(IActivity activity)
         {
             yield return new TextContent(activity.Text);
+
             foreach (CardAction action in activity.SuggestedActions?.Actions ?? [])
             {
                 yield return new ActionContent(action.Title);

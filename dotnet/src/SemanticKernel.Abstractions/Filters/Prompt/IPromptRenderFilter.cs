@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 namespace Microsoft.SemanticKernel;
 #pragma warning disable CA1716 // Identifiers should not match keywords (Func<PromptRenderContext, Task> next)
 
+
 /// <summary>
 /// Interface for filtering actions during prompt rendering.
 /// </summary>

@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using Microsoft.Extensions.AI;
-
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 /// <summary>
@@ -12,6 +9,7 @@ public sealed class WeaviateVectorStoreOptions
 {
     internal static readonly WeaviateVectorStoreOptions Default = new();
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateVectorStoreOptions"/> class.
     /// </summary>
@@ -19,13 +17,15 @@ public sealed class WeaviateVectorStoreOptions
     {
     }
 
+
     internal WeaviateVectorStoreOptions(WeaviateVectorStoreOptions? source)
     {
-        this.Endpoint = source?.Endpoint;
-        this.ApiKey = source?.ApiKey;
-        this.HasNamedVectors = source?.HasNamedVectors ?? Default.HasNamedVectors;
-        this.EmbeddingGenerator = source?.EmbeddingGenerator;
+        Endpoint = source?.Endpoint;
+        ApiKey = source?.ApiKey;
+        HasNamedVectors = source?.HasNamedVectors ?? Default.HasNamedVectors;
+        EmbeddingGenerator = source?.EmbeddingGenerator;
     }
+
 
     /// <summary>
     /// Weaviate endpoint for remote or local cluster.

@@ -23,6 +23,7 @@ public class AgentTypeTests
         Assert.Contains("Invalid AgentId type", exception.Message);
     }
 
+
     [Fact]
     public void ImplicitConversionFromStringTest()
     {
@@ -36,6 +37,7 @@ public class AgentTypeTests
         Assert.Equal(agentTypeName, agentType.Name);
     }
 
+
     [Fact]
     public void ImplicitConversionToStringTest()
     {
@@ -48,6 +50,7 @@ public class AgentTypeTests
         // Assert
         Assert.Equal("TestAgent", agentTypeName);
     }
+
 
     [Fact]
     public void ExplicitConversionFromTypeTest()

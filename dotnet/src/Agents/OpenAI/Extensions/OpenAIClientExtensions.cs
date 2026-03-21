@@ -39,7 +39,7 @@ public static class OpenAIClientExtensions
         {
             Name = storeName,
             ChunkingStrategy = chunkingStrategy,
-            ExpirationPolicy = expirationPolicy,
+            ExpirationPolicy = expirationPolicy
         };
 
         options.FileIds.AddRange(fileIds);
@@ -58,6 +58,7 @@ public static class OpenAIClientExtensions
         return result.Value.Id;
     }
 
+
     /// <summary>
     /// Deletes a vector store asynchronously.
     /// </summary>
@@ -72,6 +73,7 @@ public static class OpenAIClientExtensions
         return result.Deleted;
     }
 
+
     /// <summary>
     /// Uploads a file to use with the assistant.
     /// </summary>
@@ -83,14 +85,23 @@ public static class OpenAIClientExtensions
     /// <remarks>
     /// Use the <see cref="OpenAIFileClient"/> directly for more advanced file operations.
     /// </remarks>
-    public static async Task<string> UploadAssistantFileAsync(this OpenAIClient client, Stream stream, string name, CancellationToken cancellationToken = default)
+    public static async Task<string> UploadAssistantFileAsync(
+        this OpenAIClient client,
+        Stream stream,
+        string name,
+        CancellationToken cancellationToken = default)
     {
         OpenAIFileClient fileClient = client.GetOpenAIFileClient();
 
-        OpenAIFile fileInfo = await fileClient.UploadFileAsync(stream, name, FileUploadPurpose.Assistants, cancellationToken).ConfigureAwait(false);
+        OpenAIFile fileInfo = await fileClient.UploadFileAsync(stream,
+                name,
+                FileUploadPurpose.Assistants,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         return fileInfo.Id;
     }
+
 
     /// <summary>
     /// Deletes a file asynchronously.

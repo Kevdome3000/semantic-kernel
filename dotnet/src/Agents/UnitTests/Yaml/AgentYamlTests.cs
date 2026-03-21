@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System;
+using System.ClientModel;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -29,18 +30,19 @@ public class AgentYamlTests : IDisposable
     private readonly HttpClient _httpClient;
     private readonly Kernel _kernel;
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAssistantAgentTests"/> class.
     /// </summary>
     public AgentYamlTests()
     {
-        this._messageHandlerStub = new HttpMessageHandlerStub();
-        this._httpClient = new HttpClient(this._messageHandlerStub, disposeHandler: false);
+        _messageHandlerStub = new HttpMessageHandlerStub();
+        _httpClient = new HttpClient(_messageHandlerStub, false);
 
         var builder = Kernel.CreateBuilder();
 
         // Add OpenAI client
-        OpenAIClient openAIClient = OpenAIAssistantAgent.CreateOpenAIClient(new System.ClientModel.ApiKeyCredential("fakekey"), httpClient: this._httpClient);
+        OpenAIClient openAIClient = OpenAIAssistantAgent.CreateOpenAIClient(new ApiKeyCredential("fakekey"), httpClient: _httpClient);
         builder.Services.AddSingleton(openAIClient);
 
         // Add Azure AI agents client
@@ -49,7 +51,7 @@ public class AgentYamlTests : IDisposable
             new FakeTokenCredential(),
             new PersistentAgentsAdministrationClientOptions
             {
-                Transport = new HttpClientTransport(this._httpClient)
+                Transport = new HttpClientTransport(_httpClient)
             });
         builder.Services.AddSingleton(client);
         var projectClient = new AIProjectClient(
@@ -57,16 +59,18 @@ public class AgentYamlTests : IDisposable
             new FakeTokenCredential());
         builder.Services.AddSingleton(projectClient);
 
-        this._kernel = builder.Build();
+        _kernel = builder.Build();
     }
+
 
     /// <inheritdoc/>
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        this._messageHandlerStub.Dispose();
-        this._httpClient.Dispose();
+        _messageHandlerStub.Dispose();
+        _httpClient.Dispose();
     }
+
 
     /// <summary>
     /// Verify can create an instance of <see cref="AgentDefinition"/> from YAML text.
@@ -124,6 +128,7 @@ public class AgentYamlTests : IDisposable
         Assert.NotNull(agentDefinition);
     }
 
+
     /// <summary>
     /// Verify can create an instance of <see cref="Microsoft.SemanticKernel.Agents.Agent"/> using <see cref="ChatCompletionAgentFactory"/>
     /// </summary>
@@ -147,7 +152,7 @@ public class AgentYamlTests : IDisposable
         ChatCompletionAgentFactory factory = new();
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new AgentCreationOptions { Kernel = _kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -155,8 +160,9 @@ public class AgentYamlTests : IDisposable
         Assert.Equal("ChatCompletionAgent", agent.Name);
         Assert.Equal("ChatCompletionAgent Description", agent.Description);
         Assert.Equal("ChatCompletionAgent Instructions", agent.Instructions);
-        Assert.Equal(this._kernel, agent.Kernel);
+        Assert.Equal(_kernel, agent.Kernel);
     }
+
 
     /// <summary>
     /// Verify can create an instance of <see cref="Microsoft.SemanticKernel.Agents.Agent"/> using <see cref="OpenAIAssistantAgentFactory"/>
@@ -178,10 +184,10 @@ public class AgentYamlTests : IDisposable
                   type: code_interpreter
             """;
         OpenAIAssistantAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, OpenAIAssistantAgentFactoryTests.OpenAIAssistantCreateResponse);
+        SetupResponse(HttpStatusCode.OK, OpenAIAssistantAgentFactoryTests.OpenAIAssistantCreateResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new AgentCreationOptions { Kernel = _kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -189,8 +195,9 @@ public class AgentYamlTests : IDisposable
         Assert.Equal("OpenAIAssistantAgent", agent.Name);
         Assert.Equal("OpenAIAssistantAgent Description", agent.Description);
         Assert.Equal("OpenAIAssistantAgent Instructions", agent.Instructions);
-        Assert.Equal(this._kernel, agent.Kernel);
+        Assert.Equal(_kernel, agent.Kernel);
     }
+
 
     /// <summary>
     /// Verify can create an instance of <see cref="Microsoft.SemanticKernel.Agents.Agent"/> using <see cref="AzureAIAgentFactory"/>
@@ -212,10 +219,10 @@ public class AgentYamlTests : IDisposable
                   type: code_interpreter
             """;
         AzureAIAgentFactory factory = new();
-        this.SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
+        SetupResponse(HttpStatusCode.OK, AzureAIAgentFactoryTests.AzureAIAgentCreateResponse);
 
         // Act
-        var agent = await factory.CreateAgentFromYamlAsync(text, new() { Kernel = this._kernel });
+        var agent = await factory.CreateAgentFromYamlAsync(text, new AgentCreationOptions { Kernel = _kernel });
 
         // Assert
         Assert.NotNull(agent);
@@ -223,15 +230,20 @@ public class AgentYamlTests : IDisposable
         Assert.Equal("AzureAIAgent", agent.Name);
         Assert.Equal("AzureAIAgent Description", agent.Description);
         Assert.Equal("AzureAIAgent Instructions", agent.Instructions);
-        Assert.Equal(this._kernel, agent.Kernel);
+        Assert.Equal(_kernel, agent.Kernel);
     }
 
+
     #region private
+
     private void SetupResponse(HttpStatusCode statusCode, string response) =>
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        this._messageHandlerStub.ResponseQueue.Enqueue(new(statusCode)
+        _messageHandlerStub.ResponseQueue.Enqueue(new HttpResponseMessage(statusCode)
         {
             Content = new StringContent(response)
         });
+
     #endregion
+
+
 }

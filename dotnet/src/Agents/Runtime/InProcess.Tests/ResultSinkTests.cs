@@ -26,6 +26,7 @@ public class ResultSinkTests
         Assert.Equal(ValueTaskSourceStatus.Succeeded, sink.GetStatus(0));
     }
 
+
     [Fact]
     public async Task FutureResultTest()
     {
@@ -41,6 +42,7 @@ public class ResultSinkTests
         Assert.Equal(expectedResult, result);
         Assert.Equal(ValueTaskSourceStatus.Succeeded, sink.GetStatus(0));
     }
+
 
     [Fact]
     public async Task SetExceptionTest()
@@ -60,6 +62,7 @@ public class ResultSinkTests
         Assert.Equal(ValueTaskSourceStatus.Faulted, sink.GetStatus(0));
     }
 
+
     [Fact]
     public async Task SetCancelledTest()
     {
@@ -76,6 +79,7 @@ public class ResultSinkTests
         Assert.Equal(ValueTaskSourceStatus.Canceled, sink.GetStatus(0));
     }
 
+
     [Fact]
     public void OnCompletedTest()
     {
@@ -87,8 +91,8 @@ public class ResultSinkTests
         // Register the continuation
         sink.OnCompleted(
             state => continuationCalled = true,
-            state: null,
-            token: 0,
+            null,
+            0,
             ValueTaskSourceOnCompletedFlags.None);
 
         // Assert

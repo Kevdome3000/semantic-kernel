@@ -22,10 +22,10 @@ public static class VectorSearchExtensions
     public static object GetRequiredService<TRecord>(this IVectorSearchable<TRecord> vectorSearch, Type serviceType, object? serviceKey = null)
     {
         if (vectorSearch is null) { throw new ArgumentNullException(nameof(vectorSearch)); }
+
         if (serviceType is null) { throw new ArgumentNullException(nameof(serviceType)); }
 
         return
-            vectorSearch.GetService(serviceType, serviceKey) ??
-            throw Throw.CreateMissingServiceException(serviceType, serviceKey);
+            vectorSearch.GetService(serviceType, serviceKey) ?? throw Throw.CreateMissingServiceException(serviceType, serviceKey);
     }
 }

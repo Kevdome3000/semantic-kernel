@@ -16,16 +16,16 @@ namespace SemanticKernel.Agents.UnitTests.OpenAI.Extensions;
 public class OpenAIResponseExtensionsTests
 {
     /// <summary>
-    /// Verify conversion from <see cref="OpenAIResponse"/> to <see cref="ChatMessageContent"/>.
+    /// Verify conversion from <see cref="ResponseResult"/> to <see cref="ChatMessageContent"/>.
     /// </summary>
     [Fact]
     public void VerifyToChatMessageContentWithOpenAIResponse()
     {
         // Arrange
-        OpenAIResponse mockResponse = this.CreateMockOpenAIResponse("gpt-4o-mini",
-            [
-                ResponseItem.CreateUserMessageItem("This is a user message."),
-            ]);
+        ResponseResult mockResponse = CreateMockOpenAIResponse("gpt-4o-mini",
+        [
+            ResponseItem.CreateUserMessageItem("This is a user message.")
+        ]);
 
         // Act
         ChatMessageContent chatMessageContent = mockResponse.ToChatMessageContent();
@@ -37,6 +37,7 @@ public class OpenAIResponseExtensionsTests
         Assert.Single(chatMessageContent.Items);
         Assert.Equal("This is a user message.", chatMessageContent.Items[0].ToString());
     }
+
 
     /// <summary>
     /// Verify conversion from <see cref="ResponseItem"/> to <see cref="ChatMessageContent"/>.
@@ -63,6 +64,7 @@ public class OpenAIResponseExtensionsTests
         Assert.IsType<FunctionCallContent>(functionCallContent.Items[0]);
     }
 
+
     /// <summary>
     /// Verify conversion from <see cref="MessageResponseItem"/> to <see cref="ChatMessageContent"/>.
     /// </summary>
@@ -83,6 +85,7 @@ public class OpenAIResponseExtensionsTests
         Assert.Equal("This is a user message.", collection[0].ToString());
     }
 
+
     /// <summary>
     /// Verify conversion from <see cref="FunctionCallResponseItem"/> to <see cref="ChatMessageContent"/>.
     /// </summary>
@@ -101,6 +104,7 @@ public class OpenAIResponseExtensionsTests
         Assert.NotNull(collection[0]);
         Assert.IsType<FunctionCallContent>(collection[0]);
     }
+
 
     /// <summary>
     /// Verify conversion from <see cref="FunctionCallResponseItem"/> to <see cref="StreamingFunctionCallUpdateContent"/>.
@@ -121,6 +125,7 @@ public class OpenAIResponseExtensionsTests
         Assert.NotNull(content.Arguments);
     }
 
+
     /// <summary>
     /// Verify conversion from <see cref="MessageRole"/> to <see cref="AuthorRole"/>.
     /// </summary>
@@ -133,6 +138,7 @@ public class OpenAIResponseExtensionsTests
         Assert.Equal(AuthorRole.Developer, MessageRole.Developer.ToAuthorRole());
         Assert.Equal(AuthorRole.System, MessageRole.System.ToAuthorRole());
     }
+
 
     /// <summary>
     /// Verify conversion from <see cref="FunctionCallResponseItem"/> to <see cref="FunctionCallContent"/>.
@@ -153,6 +159,7 @@ public class OpenAIResponseExtensionsTests
         Assert.NotNull(content.Arguments);
     }
 
+
     /// <summary>
     /// Verify that ReasoningResponseItem with SummaryParts generates ReasoningContent correctly.
     /// </summary>
@@ -160,7 +167,7 @@ public class OpenAIResponseExtensionsTests
     public void VerifyToChatMessageContentWithReasoningResponseItem()
     {
         // Arrange
-        var reasoningResponseItem = this.CreateReasoningResponseItem("Let me think about this step by step...");
+        var reasoningResponseItem = CreateReasoningResponseItem("Let me think about this step by step...");
 
         // Act
         ChatMessageContent? chatMessageContent = reasoningResponseItem.ToChatMessageContent();
@@ -175,6 +182,7 @@ public class OpenAIResponseExtensionsTests
         Assert.Equal("Let me think about this step by step...", reasoningContent.Text);
     }
 
+
     /// <summary>
     /// Verify that ReasoningResponseItem converts to correct ChatMessageContentItemCollection with ReasoningContent.
     /// </summary>
@@ -182,7 +190,7 @@ public class OpenAIResponseExtensionsTests
     public void VerifyToChatMessageContentItemCollectionWithReasoningResponseItem()
     {
         // Arrange
-        var reasoningResponseItem = this.CreateReasoningResponseItem("Analyzing the problem...");
+        var reasoningResponseItem = CreateReasoningResponseItem("Analyzing the problem...");
 
         // Act
         ChatMessageContentItemCollection collection = reasoningResponseItem.ToChatMessageContentItemCollection();
@@ -196,21 +204,22 @@ public class OpenAIResponseExtensionsTests
         Assert.Equal("Analyzing the problem...", reasoningContent?.Text);
     }
 
+
     /// <summary>
-    /// Verify that OpenAIResponse with both ReasoningResponseItem and MessageResponseItem generates correct content types.
+    /// Verify that ResponseResult with both ReasoningResponseItem and MessageResponseItem generates correct content types.
     /// </summary>
     [Fact]
     public void VerifyToChatMessageContentWithMixedResponseItems()
     {
         // Arrange
-        var reasoningResponseItem = this.CreateReasoningResponseItem("Thinking about the answer...");
+        var reasoningResponseItem = CreateReasoningResponseItem("Thinking about the answer...");
         var messageResponseItem = ResponseItem.CreateAssistantMessageItem("Here is my response.");
 
-        OpenAIResponse mockResponse = this.CreateMockOpenAIResponse("gpt-4o-mini",
-            [
-                reasoningResponseItem,
-                messageResponseItem
-            ]);
+        ResponseResult mockResponse = CreateMockOpenAIResponse("gpt-4o-mini",
+        [
+            reasoningResponseItem,
+            messageResponseItem
+        ]);
 
         // Act
         ChatMessageContent chatMessageContent = mockResponse.ToChatMessageContent();
@@ -230,31 +239,62 @@ public class OpenAIResponseExtensionsTests
         Assert.Equal("Here is my response.", textContent?.Text);
     }
 
+
     #region private
-    private OpenAIResponse CreateMockOpenAIResponse(string model, IEnumerable<ResponseItem> outputItems) =>
-        OpenAIResponsesModelFactory.OpenAIResponse(
-            model: model,
-            outputItems: outputItems);
 
-    private OpenAIResponse CreateMockOpenAIResponse(string id, DateTimeOffset createdAt, ResponseError error, string instructions, string model, string previousResponseId, float temperature, IEnumerable<ResponseTool> tools, float topP, IDictionary<string, string> metadata, ResponseIncompleteStatusDetails incompleteStatusDetails, IEnumerable<ResponseItem> outputItems, bool parallelToolCallsEnabled, ResponseToolChoice toolChoice) =>
-        OpenAIResponsesModelFactory.OpenAIResponse(
-            id: id,
-            createdAt: createdAt,
-            error: error,
-            instructions: instructions,
-            model: model,
-            previousResponseId: previousResponseId,
-            temperature: temperature,
-            tools: tools,
-            topP: topP,
-            metadata: metadata,
-            incompleteStatusDetails: incompleteStatusDetails,
-            outputItems: outputItems,
-            parallelToolCallsEnabled: parallelToolCallsEnabled,
-            toolChoice: toolChoice);
+    private ResponseResult CreateMockOpenAIResponse(string model, IEnumerable<ResponseItem> outputItems)
+    {
+        var result = new ResponseResult { Model = model };
 
-    private ReasoningResponseItem CreateReasoningResponseItem(string? reasoningText = null) =>
-        OpenAIResponsesModelFactory.ReasoningResponseItem(summaryText: reasoningText);
+        foreach (var item in outputItems) { result.OutputItems.Add(item); }
+        return result;
+    }
+
+
+    private ResponseResult CreateMockOpenAIResponse(
+        string id,
+        DateTimeOffset createdAt,
+        ResponseError error,
+        string model,
+        string previousResponseId,
+        float temperature,
+        IEnumerable<ResponseTool> tools,
+        float topP,
+        IDictionary<string, string> metadata,
+        ResponseIncompleteStatusDetails incompleteStatusDetails,
+        IEnumerable<ResponseItem> outputItems,
+        bool parallelToolCallsEnabled,
+        ResponseToolChoice toolChoice)
+    {
+        var result = new ResponseResult
+        {
+            Id = id,
+            CreatedAt = createdAt,
+            Error = error,
+            Model = model,
+            PreviousResponseId = previousResponseId,
+            Temperature = temperature,
+            TopP = topP,
+            IncompleteStatusDetails = incompleteStatusDetails,
+            ParallelToolCallsEnabled = parallelToolCallsEnabled,
+            ToolChoice = toolChoice
+        };
+
+        foreach (var tool in tools) { result.Tools.Add(tool); }
+
+        foreach (var kvp in metadata) { result.Metadata[kvp.Key] = kvp.Value; }
+
+        foreach (var item in outputItems) { result.OutputItems.Add(item); }
+        return result;
+    }
+
+
+    private ReasoningResponseItem CreateReasoningResponseItem(string? reasoningText = null)
+    {
+        return new ReasoningResponseItem(reasoningText);
+    }
 
     #endregion
+
+
 }

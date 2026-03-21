@@ -18,6 +18,7 @@ public sealed class BingWebPage
     {
     }
 
+
     /// <summary>
     /// The last time that Bing crawled the webpage.
     /// </summary>

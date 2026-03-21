@@ -43,11 +43,15 @@ public static class TextSearchServiceCollectionExtensions
 
                 return vectorSearch is null
                     ? throw new InvalidOperationException("No IVectorSearch<TRecord> registered.")
-                    : new VectorStoreTextSearch<TRecord>(vectorSearch, stringMapper, resultMapper, options);
+                    : new VectorStoreTextSearch<TRecord>(vectorSearch,
+                        stringMapper,
+                        resultMapper,
+                        options);
             });
 
         return services;
     }
+
 
     /// <summary>
     /// Register a <see cref="VectorStoreTextSearch{TRecord}"/> instance with the specified service ID.
@@ -78,6 +82,7 @@ public static class TextSearchServiceCollectionExtensions
                 options ??= sp.GetService<VectorStoreTextSearchOptions>();
 
                 var vectorSearch = sp.GetKeyedService<IVectorSearchable<TRecord>>(vectorSearchableServiceId);
+
                 if (vectorSearch is not null)
                 {
                     return new VectorStoreTextSearch<TRecord>(
@@ -92,6 +97,7 @@ public static class TextSearchServiceCollectionExtensions
 
         return services;
     }
+
 
     /// <summary>
     /// Register a <see cref="VectorStoreTextSearch{TRecord}"/> instance with the specified service ID.
@@ -125,12 +131,14 @@ public static class TextSearchServiceCollectionExtensions
                 options ??= sp.GetService<VectorStoreTextSearchOptions>();
 
                 var vectorizedSearch = sp.GetKeyedService<IVectorSearchable<TRecord>>(vectorSearchServiceId);
+
                 if (vectorizedSearch is null)
                 {
                     throw new InvalidOperationException($"No IVectorizedSearch<TRecord> for service id {vectorSearchServiceId} registered.");
                 }
 
                 var generationService = sp.GetKeyedService<ITextEmbeddingGenerationService>(textEmbeddingGenerationServiceId);
+
                 if (vectorizedSearch is not null && generationService is not null)
                 {
                     return new VectorStoreTextSearch<TRecord>(

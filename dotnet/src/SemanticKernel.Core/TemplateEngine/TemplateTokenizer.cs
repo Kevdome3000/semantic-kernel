@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.SemanticKernel.TemplateEngine;
+
 /// <summary>
 /// Simple tokenizer used for default SK template language.
 ///
@@ -124,15 +124,17 @@ internal sealed class TemplateTokenizer(ILoggerFactory? loggerFactory = null)
                         // If there is plain text between the current var/val/code block and the previous one, capture that as a TextBlock
                         if (blockStartPos > endOfLastBlock)
                         {
-                            blocks.Add(new TextBlock(text, endOfLastBlock, blockStartPos, _loggerFactory));
+                            blocks.Add(new TextBlock(text,
+                                endOfLastBlock,
+                                blockStartPos,
+                                _loggerFactory));
                         }
 
                         // Extract raw block
                         var contentWithDelimiters = SubStr(text, blockStartPos, cursor + 1);
 
                         // Remove "{{" and "}}" delimiters and trim empty chars
-                        var contentWithoutDelimiters = contentWithDelimiters.Substring(2, contentWithDelimiters.Length - EmptyCodeBlockLength).
-                            Trim();
+                        var contentWithoutDelimiters = contentWithDelimiters.Substring(2, contentWithDelimiters.Length - EmptyCodeBlockLength).Trim();
 
                         if (contentWithoutDelimiters.Length == 0)
                         {
@@ -189,11 +191,15 @@ internal sealed class TemplateTokenizer(ILoggerFactory? loggerFactory = null)
         // If there is something left after the last block, capture it as a TextBlock
         if (endOfLastBlock < text.Length)
         {
-            blocks.Add(new TextBlock(text, endOfLastBlock, text.Length, _loggerFactory));
+            blocks.Add(new TextBlock(text,
+                endOfLastBlock,
+                text.Length,
+                _loggerFactory));
         }
 
         return blocks;
     }
+
 
     #region private ================================================================================
 
@@ -201,15 +207,18 @@ internal sealed class TemplateTokenizer(ILoggerFactory? loggerFactory = null)
 
     private readonly CodeTokenizer _codeTokenizer = new(loggerFactory);
 
+
     private static string SubStr(string text, int startIndex, int stopIndex)
     {
         return text.Substring(startIndex, stopIndex - startIndex);
     }
 
+
     private static bool IsQuote(char c)
     {
         return c is Symbols.DblQuote or Symbols.SglQuote;
     }
+
 
     private static bool CanBeEscaped(char c)
     {
@@ -217,5 +226,6 @@ internal sealed class TemplateTokenizer(ILoggerFactory? loggerFactory = null)
     }
 
     #endregion
+
 
 }

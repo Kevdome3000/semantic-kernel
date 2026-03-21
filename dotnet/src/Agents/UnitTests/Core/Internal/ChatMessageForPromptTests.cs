@@ -32,6 +32,7 @@ public class ChatMessageForPromptTests
         Assert.Equal("test", messages[3].Name);
     }
 
+
     /// <summary>
     /// Verify <see cref="ChatMessageForPrompt"/> formats history using name only.
     /// </summary>
@@ -39,18 +40,19 @@ public class ChatMessageForPromptTests
     public void VerifyFormatNamesAsync()
     {
         // Arrange & Act
-        string history = ChatMessageForPrompt.Format([], useNameOnly: true);
+        string history = ChatMessageForPrompt.Format([], true);
         // Assert
         VerifyMessageCount<string>(history, 0);
 
         // Arrange & Act
-        history = ChatMessageForPrompt.Format(CreatHistory(), useNameOnly: true);
+        history = ChatMessageForPrompt.Format(CreatHistory(), true);
         // Assert
         string[] names = VerifyMessageCount<string>(history, 4);
         Assert.Equal("test", names[1]);
         Assert.Equal(AuthorRole.Assistant.Label, names[2]);
         Assert.Equal("test", names[3]);
     }
+
 
     private static TResult[] VerifyMessageCount<TResult>(string history, int expectedLength)
     {
@@ -60,16 +62,18 @@ public class ChatMessageForPromptTests
         return messages;
     }
 
+
     private static ChatHistory CreatHistory()
     {
         return
-            [
-                new ChatMessageContent(AuthorRole.User, "content1"),
-                new ChatMessageContent(AuthorRole.Assistant, "content1") { AuthorName = "test" },
-                new ChatMessageContent(AuthorRole.Assistant, "content1"),
-                new ChatMessageContent(AuthorRole.Assistant, "content1") { AuthorName = "test" },
-            ];
+        [
+            new ChatMessageContent(AuthorRole.User, "content1"),
+            new ChatMessageContent(AuthorRole.Assistant, "content1") { AuthorName = "test" },
+            new ChatMessageContent(AuthorRole.Assistant, "content1"),
+            new ChatMessageContent(AuthorRole.Assistant, "content1") { AuthorName = "test" }
+        ];
     }
+
 
     private sealed class ChatMessageForTest
     {

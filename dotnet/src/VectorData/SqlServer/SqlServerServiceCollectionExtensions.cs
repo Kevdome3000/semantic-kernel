@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -25,7 +21,14 @@ public static class SqlServerServiceCollectionExtensions
         Func<IServiceProvider, string> connectionStringProvider,
         Func<IServiceProvider, SqlServerVectorStoreOptions>? optionsProvider = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
-        => AddKeyedSqlServerVectorStore(services, serviceKey: null, connectionStringProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedSqlServerVectorStore(services,
+            null,
+            connectionStringProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="SqlServerVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
@@ -48,18 +51,24 @@ public static class SqlServerServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNull(connectionStringProvider);
 
-        services.Add(new ServiceDescriptor(typeof(SqlServerVectorStore), serviceKey, (sp, _) =>
-        {
-            var connectionString = connectionStringProvider(sp);
-            var options = GetStoreOptions(sp, optionsProvider);
-            return new SqlServerVectorStore(connectionString, options);
-        }, lifetime));
+        services.Add(new ServiceDescriptor(typeof(SqlServerVectorStore),
+            serviceKey,
+            (sp, _) =>
+            {
+                var connectionString = connectionStringProvider(sp);
+                var options = GetStoreOptions(sp, optionsProvider);
+                return new SqlServerVectorStore(connectionString, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStore), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<SqlServerVectorStore>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStore),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<SqlServerVectorStore>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="SqlServerCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -75,7 +84,15 @@ public static class SqlServerServiceCollectionExtensions
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
-        => AddKeyedSqlServerCollection<TKey, TRecord>(services, serviceKey: null, name, connectionStringProvider, optionsProvider, lifetime);
+    {
+        return AddKeyedSqlServerCollection<TKey, TRecord>(services,
+            null,
+            name,
+            connectionStringProvider,
+            optionsProvider,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="SqlServerCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -103,24 +120,34 @@ public static class SqlServerServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(name);
         Verify.NotNull(connectionStringProvider);
 
-        services.Add(new ServiceDescriptor(typeof(SqlServerCollection<TKey, TRecord>), serviceKey, (sp, _) =>
-        {
-            var connectionString = connectionStringProvider(sp);
-            var options = GetCollectionOptions(sp, optionsProvider);
-            return new SqlServerCollection<TKey, TRecord>(connectionString, name, options);
-        }, lifetime));
+        services.Add(new ServiceDescriptor(typeof(SqlServerCollection<TKey, TRecord>),
+            serviceKey,
+            (sp, _) =>
+            {
+                var connectionString = connectionStringProvider(sp);
+                var options = GetCollectionOptions(sp, optionsProvider);
+                return new SqlServerCollection<TKey, TRecord>(connectionString, name, options);
+            },
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<SqlServerCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(VectorStoreCollection<TKey, TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<SqlServerCollection<TKey, TRecord>>(key),
+            lifetime));
 
-        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>), serviceKey,
-            static (sp, key) => sp.GetRequiredKeyedService<SqlServerCollection<TKey, TRecord>>(key), lifetime));
+        services.Add(new ServiceDescriptor(typeof(IVectorSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<SqlServerCollection<TKey, TRecord>>(key),
+            lifetime));
 
-        // Once HybridSearch supports get implemented (https://github.com/microsoft/semantic-kernel/issues/11080)
-        // we need to add IKeywordHybridSearchable abstraction here as well.
+        services.Add(new ServiceDescriptor(typeof(IKeywordHybridSearchable<TRecord>),
+            serviceKey,
+            static (sp, key) => sp.GetRequiredKeyedService<SqlServerCollection<TKey, TRecord>>(key),
+            lifetime));
 
         return services;
     }
+
 
     /// <summary>
     /// Registers a <see cref="SqlServerCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -136,7 +163,15 @@ public static class SqlServerServiceCollectionExtensions
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TKey : notnull
         where TRecord : class
-        => AddKeyedSqlServerCollection<TKey, TRecord>(services, serviceKey: null, name, connectionString, options, lifetime);
+    {
+        return AddKeyedSqlServerCollection<TKey, TRecord>(services,
+            null,
+            name,
+            connectionString,
+            options,
+            lifetime);
+    }
+
 
     /// <summary>
     /// Registers a keyed <see cref="SqlServerCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -162,12 +197,19 @@ public static class SqlServerServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(connectionString);
 
-        return AddKeyedSqlServerCollection<TKey, TRecord>(services, serviceKey, name, _ => connectionString, _ => options!, lifetime);
+        return AddKeyedSqlServerCollection<TKey, TRecord>(services,
+            serviceKey,
+            name,
+            _ => connectionString,
+            _ => options!,
+            lifetime);
     }
+
 
     private static SqlServerVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, SqlServerVectorStoreOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.
@@ -179,9 +221,11 @@ public static class SqlServerServiceCollectionExtensions
             : new(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
 
+
     private static SqlServerCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, SqlServerCollectionOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
+
         if (options?.EmbeddingGenerator is not null)
         {
             return options; // The user has provided everything, there is nothing to change.

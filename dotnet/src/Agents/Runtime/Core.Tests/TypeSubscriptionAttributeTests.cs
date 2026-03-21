@@ -18,6 +18,7 @@ public class TypeSubscriptionAttributeTests
         Assert.Equal("test-topic", attribute.Topic);
     }
 
+
     [Fact]
     public void Bind_CreatesTypeSubscription()
     {
@@ -34,6 +35,7 @@ public class TypeSubscriptionAttributeTests
         Assert.Equal("test-topic", typeSubscription.TopicType);
         Assert.Equal(agentType, typeSubscription.AgentType);
     }
+
 
     [Fact]
     public void AttributeUsage_AllowsOnlyClasses()

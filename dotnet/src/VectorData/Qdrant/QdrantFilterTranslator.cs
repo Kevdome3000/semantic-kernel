@@ -1,22 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Linq.Expressions;
-using Google.Protobuf.Collections;
-using Google.Protobuf.WellKnownTypes;
-using Microsoft.Extensions.VectorData.ProviderServices;
-using Microsoft.Extensions.VectorData.ProviderServices.Filter;
-using Qdrant.Client.Grpc;
 using Expression = System.Linq.Expressions.Expression;
 using Range = Qdrant.Client.Grpc.Range;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 #pragma warning disable MEVD9001 // Experimental: filter translation base types
+
 
 // https://qdrant.tech/documentation/concepts/filtering
 internal class QdrantFilterTranslator : FilterTranslatorBase
@@ -25,28 +15,30 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
     {
         var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
-        return this.Translate(preprocessedExpression);
+        return Translate(preprocessedExpression);
     }
 
+
     private Filter Translate(Expression? node)
-        => node switch
+    {
+        return node switch
         {
-            BinaryExpression { NodeType: ExpressionType.Equal } equal => this.TranslateEqual(equal.Left, equal.Right),
-            BinaryExpression { NodeType: ExpressionType.NotEqual } notEqual => this.TranslateEqual(notEqual.Left, notEqual.Right, negated: true),
+            BinaryExpression { NodeType: ExpressionType.Equal } equal => TranslateEqual(equal.Left, equal.Right),
+            BinaryExpression { NodeType: ExpressionType.NotEqual } notEqual => TranslateEqual(notEqual.Left, notEqual.Right, true),
 
             BinaryExpression
-            {
-                NodeType: ExpressionType.GreaterThan or ExpressionType.GreaterThanOrEqual or ExpressionType.LessThan or ExpressionType.LessThanOrEqual
-            } comparison
-                => this.TranslateComparison(comparison),
+                {
+                    NodeType: ExpressionType.GreaterThan or ExpressionType.GreaterThanOrEqual or ExpressionType.LessThan or ExpressionType.LessThanOrEqual
+                } comparison
+                => TranslateComparison(comparison),
 
-            BinaryExpression { NodeType: ExpressionType.AndAlso } andAlso => this.TranslateAndAlso(andAlso.Left, andAlso.Right),
-            BinaryExpression { NodeType: ExpressionType.OrElse } orElse => this.TranslateOrElse(orElse.Left, orElse.Right),
+            BinaryExpression { NodeType: ExpressionType.AndAlso } andAlso => TranslateAndAlso(andAlso.Left, andAlso.Right),
+            BinaryExpression { NodeType: ExpressionType.OrElse } orElse => TranslateOrElse(orElse.Left, orElse.Right),
 
-            UnaryExpression { NodeType: ExpressionType.Not } not => this.TranslateNot(not.Operand),
+            UnaryExpression { NodeType: ExpressionType.Not } not => TranslateNot(not.Operand),
             // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
             UnaryExpression { NodeType: ExpressionType.Convert } convert when Nullable.GetUnderlyingType(convert.Type) == convert.Operand.Type
-                => this.Translate(convert.Operand),
+                => Translate(convert.Operand),
 
             // Special handling for bool constant as the filter expression (r => r.Bool)
             Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)
@@ -54,17 +46,22 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
             // Handle true literal (r => true), which is useful for fetching all records
             ConstantExpression { Value: true } => new Filter(),
 
-            MethodCallExpression methodCall => this.TranslateMethodCall(methodCall),
+            MethodCallExpression methodCall => TranslateMethodCall(methodCall),
 
             _ => throw new NotSupportedException("Qdrant does not support the following NodeType in filters: " + node?.NodeType)
         };
+    }
+
 
     private Filter TranslateEqual(Expression left, Expression right, bool negated = false)
-        => this.TryBindProperty(left, out var property) && right is ConstantExpression { Value: var rightConstant }
-            ? this.GenerateEqual(property.StorageName, rightConstant, negated)
+    {
+        return this.TryBindProperty(left, out var property) && right is ConstantExpression { Value: var rightConstant }
+            ? GenerateEqual(property.StorageName, rightConstant, negated)
             : this.TryBindProperty(right, out property) && left is ConstantExpression { Value: var leftConstant }
-                ? this.GenerateEqual(property.StorageName, leftConstant, negated)
+                ? GenerateEqual(property.StorageName, leftConstant, negated)
                 : throw new NotSupportedException("Invalid equality/comparison");
+    }
+
 
     private Filter GenerateEqual(string propertyStorageName, object? value, bool negated = false)
     {
@@ -81,7 +78,11 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
                         int v => new Match { Integer = v },
                         long v => new Match { Integer = v },
                         bool v => new Match { Boolean = v },
+                        DateTime v => new Match { Keyword = v.ToString("o") },
                         DateTimeOffset v => new Match { Keyword = v.ToString("o") },
+#if NET
+                        DateOnly v => new Match { Keyword = v.ToString("O") },
+#endif
 
                         _ => throw new NotSupportedException($"Unsupported filter value type '{value.GetType().Name}'.")
                     }
@@ -101,6 +102,7 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
 
         return result;
     }
+
 
     private Filter TranslateComparison(BinaryExpression comparison)
     {
@@ -128,12 +130,54 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
                             Key = property.StorageName,
                             DatetimeRange = new DatetimeRange
                             {
-                                Gt = comparison.NodeType == ExpressionType.GreaterThan ? Timestamp.FromDateTimeOffset(v) : null,
-                                Gte = comparison.NodeType == ExpressionType.GreaterThanOrEqual ? Timestamp.FromDateTimeOffset(v) : null,
-                                Lt = comparison.NodeType == ExpressionType.LessThan ? Timestamp.FromDateTimeOffset(v) : null,
-                                Lte = comparison.NodeType == ExpressionType.LessThanOrEqual ? Timestamp.FromDateTimeOffset(v) : null
+                                Gt = comparison.NodeType == ExpressionType.GreaterThan
+                                    ? Timestamp.FromDateTimeOffset(v)
+                                    : null,
+                                Gte = comparison.NodeType == ExpressionType.GreaterThanOrEqual
+                                    ? Timestamp.FromDateTimeOffset(v)
+                                    : null,
+                                Lt = comparison.NodeType == ExpressionType.LessThan
+                                    ? Timestamp.FromDateTimeOffset(v)
+                                    : null,
+                                Lte = comparison.NodeType == ExpressionType.LessThanOrEqual
+                                    ? Timestamp.FromDateTimeOffset(v)
+                                    : null
                             }
                         },
+
+                        DateTime v => new FieldCondition
+                        {
+                            Key = property.StorageName,
+                            DatetimeRange = new DatetimeRange
+                            {
+                                Gt = comparison.NodeType == ExpressionType.GreaterThan
+                                    ? Timestamp.FromDateTime(DateTime.SpecifyKind(v, DateTimeKind.Utc))
+                                    : null,
+                                Gte = comparison.NodeType == ExpressionType.GreaterThanOrEqual
+                                    ? Timestamp.FromDateTime(DateTime.SpecifyKind(v, DateTimeKind.Utc))
+                                    : null,
+                                Lt = comparison.NodeType == ExpressionType.LessThan
+                                    ? Timestamp.FromDateTime(DateTime.SpecifyKind(v, DateTimeKind.Utc))
+                                    : null,
+                                Lte = comparison.NodeType == ExpressionType.LessThanOrEqual
+                                    ? Timestamp.FromDateTime(DateTime.SpecifyKind(v, DateTimeKind.Utc))
+                                    : null
+                            }
+                        },
+
+#if NET
+                        DateOnly v => new FieldCondition
+                        {
+                            Key = property.StorageName,
+                            DatetimeRange = new DatetimeRange
+                            {
+                                Gt = comparison.NodeType == ExpressionType.GreaterThan ? Timestamp.FromDateTimeOffset(new DateTimeOffset(v.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)) : null,
+                                Gte = comparison.NodeType == ExpressionType.GreaterThanOrEqual ? Timestamp.FromDateTimeOffset(new DateTimeOffset(v.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)) : null,
+                                Lt = comparison.NodeType == ExpressionType.LessThan ? Timestamp.FromDateTimeOffset(new DateTimeOffset(v.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)) : null,
+                                Lte = comparison.NodeType == ExpressionType.LessThanOrEqual ? Timestamp.FromDateTimeOffset(new DateTimeOffset(v.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)) : null
+                            }
+                        },
+#endif
 
                         _ => throw new NotSupportedException($"Can't perform comparison on type '{constantValue?.GetType().Name}'")
                     }
@@ -142,7 +186,8 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
                 return true;
 
                 FieldCondition DoubleFieldCondition(double d)
-                    => new()
+                {
+                    return new()
                     {
                         Key = property.StorageName,
                         Range = comparison.NodeType switch
@@ -155,6 +200,7 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
                             _ => throw new InvalidOperationException("Unreachable")
                         }
                     };
+                }
             }
 
             result = null;
@@ -162,12 +208,13 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
         }
     }
 
+
     #region Logical operators
 
     private Filter TranslateAndAlso(Expression left, Expression right)
     {
-        var leftFilter = this.Translate(left);
-        var rightFilter = this.Translate(right);
+        var leftFilter = Translate(left);
+        var rightFilter = Translate(right);
 
         // As long as there are only AND conditions (Must or MustNot), we can simply combine both filters into a single flat one.
         // The moment there's a Should, things become a bit more complicated:
@@ -202,10 +249,11 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
         return leftFilter;
     }
 
+
     private Filter TranslateOrElse(Expression left, Expression right)
     {
-        var leftFilter = this.Translate(left);
-        var rightFilter = this.Translate(right);
+        var leftFilter = Translate(left);
+        var rightFilter = Translate(right);
 
         var result = new Filter();
         result.Should.AddRange(GetShouldConditions(leftFilter));
@@ -213,7 +261,8 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
         return result;
 
         static RepeatedField<Condition> GetShouldConditions(Filter filter)
-            => filter switch
+        {
+            return filter switch
             {
                 // If the filter only contains Should conditions (string of ORs), those can be directly added to the result
                 // (concatenated into the Should with whatever comes out of the other side)
@@ -225,17 +274,19 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
                 // For all other cases, we need to wrap the filter in a condition and return that, to preserve the logical structure.
                 _ => [new Condition { Filter = filter }]
             };
+        }
     }
+
 
     private Filter TranslateNot(Expression expression)
     {
         // Special handling for !(a == b) and !(a != b)
         if (expression is BinaryExpression { NodeType: ExpressionType.Equal or ExpressionType.NotEqual } binary)
         {
-            return this.TranslateEqual(binary.Left, binary.Right, negated: binary.NodeType is ExpressionType.Equal);
+            return TranslateEqual(binary.Left, binary.Right, binary.NodeType is ExpressionType.Equal);
         }
 
-        var filter = this.Translate(expression);
+        var filter = Translate(expression);
 
         switch (filter)
         {
@@ -261,22 +312,24 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
 
     #endregion Logical operators
 
+
     private Filter TranslateMethodCall(MethodCallExpression methodCall)
     {
         return methodCall switch
         {
             // Enumerable.Contains(), List.Contains(), MemoryExtensions.Contains()
             _ when TryMatchContains(methodCall, out var source, out var item)
-                => this.TranslateContains(source, item),
+                => TranslateContains(source, item),
 
             // Enumerable.Any() with a Contains predicate (r => r.Strings.Any(s => array.Contains(s)))
             { Method.Name: nameof(Enumerable.Any), Arguments: [var anySource, LambdaExpression lambda] } any
                 when any.Method.DeclaringType == typeof(Enumerable)
-                => this.TranslateAny(anySource, lambda),
+                => TranslateAny(anySource, lambda),
 
             _ => throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}")
         };
     }
+
 
     private Filter TranslateContains(Expression source, Expression item)
     {
@@ -285,7 +338,7 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
             // Contains over field enumerable
             case var _ when this.TryBindProperty(source, out _):
                 // Oddly, in Qdrant, tag list contains is handled using a Match condition, just like equality.
-                return this.TranslateEqual(source, item);
+                return TranslateEqual(source, item);
 
             // Contains over inline enumerable
             case NewArrayExpression newArray:
@@ -348,6 +401,7 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
             }
         }
     }
+
 
     /// <summary>
     /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
@@ -419,6 +473,7 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
         static object?[] ExtractArrayValues(NewArrayExpression newArray)
         {
             var result = new object?[newArray.Expressions.Count];
+
             for (var i = 0; i < newArray.Expressions.Count; i++)
             {
                 if (newArray.Expressions[i] is not ConstantExpression { Value: var elementValue })

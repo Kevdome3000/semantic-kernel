@@ -1,9 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace SemanticKernel.Functions.UnitTests.OpenApi;
-
 using System;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -11,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+namespace SemanticKernel.Functions.UnitTests.OpenApi;
 
 internal sealed class HttpMessageHandlerStub : DelegatingHandler
 {
@@ -30,7 +30,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
     public HttpMessageHandlerStub()
     {
-        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json)
         };
@@ -39,7 +39,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
     public HttpMessageHandlerStub(Stream responseToReturn)
     {
-        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StreamContent(responseToReturn)
         };
@@ -48,7 +48,7 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
     public void ResetResponse()
     {
-        this.ResponseToReturn = new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+        ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("{}", Encoding.UTF8, MediaTypeNames.Application.Json)
         };
@@ -57,17 +57,17 @@ internal sealed class HttpMessageHandlerStub : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        this.Method = request.Method;
-        this.RequestUri = request.RequestUri;
-        this.RequestHeaders = request.Headers;
+        Method = request.Method;
+        RequestUri = request.RequestUri;
+        RequestHeaders = request.Headers;
 
-        this.RequestContent = request.Content is null
+        RequestContent = request.Content is null
             ? null
             : await request.Content.ReadAsByteArrayAsync(cancellationToken);
 
-        this.ContentHeaders = request.Content?.Headers;
+        ContentHeaders = request.Content?.Headers;
 
-        return await Task.FromResult(this.ResponseToReturn);
+        return await Task.FromResult(ResponseToReturn);
     }
 
 }

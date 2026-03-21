@@ -17,6 +17,7 @@ public sealed class ChatCompletionAgentFactory : AgentFactory
     /// </summary>
     public const string ChatCompletionAgentType = "chat_completion_agent";
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatCompletionAgentFactory"/> class.
     /// </summary>
@@ -25,15 +26,21 @@ public sealed class ChatCompletionAgentFactory : AgentFactory
     {
     }
 
+
     /// <inheritdoc/>
-    public override Task<Agent?> TryCreateAsync(Kernel kernel, AgentDefinition agentDefinition, AgentCreationOptions? agentCreationOptions = null, CancellationToken cancellationToken = default)
+    public override Task<Agent?> TryCreateAsync(
+        Kernel kernel,
+        AgentDefinition agentDefinition,
+        AgentCreationOptions? agentCreationOptions = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(agentDefinition);
 
         ChatCompletionAgent? agent = null;
-        if (this.IsSupported(agentDefinition))
+
+        if (IsSupported(agentDefinition))
         {
-            agent = new ChatCompletionAgent()
+            agent = new ChatCompletionAgent
             {
                 Name = agentDefinition.Name,
                 Description = agentDefinition.Description,
@@ -41,7 +48,7 @@ public sealed class ChatCompletionAgentFactory : AgentFactory
                 Arguments = agentDefinition.GetDefaultKernelArguments(kernel),
                 Kernel = kernel,
                 Template = agentDefinition.GetPromptTemplate(kernel, agentCreationOptions?.PromptTemplateFactory),
-                LoggerFactory = kernel.LoggerFactory,
+                LoggerFactory = kernel.LoggerFactory
             };
         }
 

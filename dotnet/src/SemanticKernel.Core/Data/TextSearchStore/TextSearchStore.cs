@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+#pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -19,7 +21,7 @@ namespace Microsoft.SemanticKernel.Data;
 /// <para>
 /// This class provides an opinionated schema for storing documents in a vector store. It is valuable for simple scenarios
 /// where you want to store text + embedding, or a reference to an external document + embedding without needing to customize the schema.
-/// If you want to control the schema yourself, you can use an implementation of <see cref="VectorStoreCollection{TKey, TRecord}"/>
+/// If you want to control the schema yourself, you can use an implementation of <see cref="VectorStoreCollection{TKey,TRecord}"/>
 /// with the <see cref="VectorStoreTextSearch{TRecord}"/> class instead.
 /// </para>
 /// <para>
@@ -41,7 +43,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     private static Regex AnyLanguageWordRegex() => s_anyLanguageWordRegex;
 #endif
 
-    private static readonly Func<string, ICollection<string>> s_defaultWordSegementer = text => ((IEnumerable<Match>)AnyLanguageWordRegex().Matches(text)).Select(x => x.Value).ToList();
+    private static readonly Func<string, ICollection<string>> s_defaultWordSegementer = text => AnyLanguageWordRegex().Matches(text).Select(x => x.Value).ToList();
 
     private readonly VectorStore _vectorStore;
     private readonly int _vectorDimensions;
@@ -50,8 +52,9 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
 
     private readonly VectorStoreCollection<TKey, TextRagStorageDocument<TKey>> _vectorStoreRecordCollection;
     private readonly SemaphoreSlim _collectionInitializationLock = new(1, 1);
-    private bool _collectionInitialized = false;
+    private bool _collectionInitialized;
     private bool _disposedValue;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TextSearchStore{TKey}"/> class.
@@ -99,12 +102,13 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
                 new VectorStoreDataProperty("Text", typeof(string)) { IsFullTextIndexed = true },
                 new VectorStoreDataProperty("SourceName", typeof(string)),
                 new VectorStoreDataProperty("SourceLink", typeof(string)),
-                new VectorStoreVectorProperty("TextEmbedding", typeof(string), vectorDimensions),
+                new VectorStoreVectorProperty("TextEmbedding", typeof(string), vectorDimensions)
             ]
         };
 
         _vectorStoreRecordCollection = _vectorStore.GetCollection<TKey, TextRagStorageDocument<TKey>>(collectionName, ragDocumentDefinition);
     }
+
 
     /// <summary>
     /// Upserts a batch of text chunks into the vector store.
@@ -130,12 +134,13 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
             {
                 Key = GenerateUniqueKey<TKey>(null),
                 Text = textChunk,
-                TextEmbedding = textChunk,
+                TextEmbedding = textChunk
             };
         });
 
         await vectorStoreRecordCollection.UpsertAsync(storageDocuments, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <summary>
     /// Upserts a batch of documents into the vector store.
@@ -169,30 +174,36 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
                 throw new ArgumentException($@"Either the {nameof(TextSearchDocument.SourceId)} or {nameof(TextSearchDocument.SourceLink)} properties must be set when the {nameof(TextSearchStoreUpsertOptions.PersistSourceText)} setting is false.", nameof(document));
             }
 
-            TKey key = GenerateUniqueKey<TKey>(_options.UseSourceIdAsPrimaryKey ?? false ? document.SourceId : null);
+            TKey key = GenerateUniqueKey<TKey>(_options.UseSourceIdAsPrimaryKey ?? false
+                ? document.SourceId
+                : null);
 
             return new TextRagStorageDocument<TKey>
             {
                 Key = key,
                 Namespaces = document.Namespaces.ToList(),
                 SourceId = document.SourceId,
-                Text = options?.PersistSourceText is false ? null : document.Text,
+                Text = options?.PersistSourceText is false
+                    ? null
+                    : document.Text,
                 SourceName = document.SourceName,
                 SourceLink = document.SourceLink,
-                TextEmbedding = document.Text,
+                TextEmbedding = document.Text
             };
         });
 
         await vectorStoreRecordCollection.UpsertAsync(storageDocuments, cancellationToken).ConfigureAwait(false);
     }
 
+
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         IEnumerable<TextRagStorageDocument<TKey>> searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
-        return new(searchResult.Select(x => x.Text ?? string.Empty).ToAsyncEnumerable());
+        return new KernelSearchResults<string>(searchResult.Select(x => x.Text ?? string.Empty).ToAsyncEnumerable());
     }
+
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
@@ -200,20 +211,23 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         IEnumerable<TextRagStorageDocument<TKey>> searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         IEnumerable<TextSearchResult> results = searchResult.Select(x => new TextSearchResult(x.Text ?? string.Empty) { Name = x.SourceName, Link = x.SourceLink });
-        return new(searchResult.Select(x =>
-            new TextSearchResult(x.Text ?? string.Empty)
-            {
-                Name = x.SourceName,
-                Link = x.SourceLink
-            }).ToAsyncEnumerable());
+        return new KernelSearchResults<TextSearchResult>(searchResult.Select(x =>
+                new TextSearchResult(x.Text ?? string.Empty)
+                {
+                    Name = x.SourceName,
+                    Link = x.SourceLink
+                })
+            .ToAsyncEnumerable());
     }
+
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         IEnumerable<TextRagStorageDocument<TKey>> searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
-        return new(searchResult.Select(x => (object)x).ToAsyncEnumerable());
+        return new KernelSearchResults<object>(searchResult.Select(x => (object)x).ToAsyncEnumerable());
     }
+
 
     /// <summary>
     /// Internal search implementation with hydration of id / link only storage.
@@ -233,32 +247,34 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         VectorStoreCollection<TKey, TextRagStorageDocument<TKey>> vectorStoreRecordCollection = await EnsureCollectionExistsAsync(cancellationToken).ConfigureAwait(false);
 
         // If the user has not opted out of hybrid search, check if the vector store supports it.
-        IKeywordHybridSearchable<TextRagStorageDocument<TKey>>? hybridSearchCollection = _options.UseHybridSearch ?? true ?
-            vectorStoreRecordCollection.GetService(typeof(IKeywordHybridSearchable<TextRagStorageDocument<TKey>>)) as IKeywordHybridSearchable<TextRagStorageDocument<TKey>> :
-            null;
+        IKeywordHybridSearchable<TextRagStorageDocument<TKey>>? hybridSearchCollection = _options.UseHybridSearch ?? true
+            ? vectorStoreRecordCollection.GetService(typeof(IKeywordHybridSearchable<TextRagStorageDocument<TKey>>)) as IKeywordHybridSearchable<TextRagStorageDocument<TKey>>
+            : null;
 
         // Optional filter to limit the search to a specific namespace.
-        Expression<Func<TextRagStorageDocument<TKey>, bool>>? filter = string.IsNullOrWhiteSpace(_options.SearchNamespace) ? null : x => x.Namespaces.Contains(_options.SearchNamespace);
+        Expression<Func<TextRagStorageDocument<TKey>, bool>>? filter = string.IsNullOrWhiteSpace(_options.SearchNamespace)
+            ? null
+            : x => x.Namespaces.Contains(_options.SearchNamespace);
 
         // Execute a hybrid search if possible, otherwise perform a regular vector search.
         IAsyncEnumerable<VectorSearchResult<TextRagStorageDocument<TKey>>> searchResult = hybridSearchCollection is null
             ? vectorStoreRecordCollection.SearchAsync(
                 query,
                 searchOptions?.Top ?? 3,
-                options: new()
+                new VectorSearchOptions<TextRagStorageDocument<TKey>>
                 {
-                    Filter = filter,
+                    Filter = filter
                 },
-                cancellationToken: cancellationToken)
+                cancellationToken)
             : hybridSearchCollection.HybridSearchAsync(
                 query,
                 _wordSegmenter(query),
                 searchOptions?.Top ?? 3,
-                options: new()
+                new HybridSearchOptions<TextRagStorageDocument<TKey>>
                 {
-                    Filter = filter,
+                    Filter = filter
                 },
-                cancellationToken: cancellationToken);
+                cancellationToken);
 
         // Retrieve the documents from the search results.
         var searchResponseDocs = await searchResult
@@ -288,10 +304,10 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
 
             // Update the retrieved documents with the retrieved text.
             searchResponseDocs = searchResponseDocs.GroupJoin(
-                retrievalResponses,
-                searchResponseDoc => (searchResponseDoc.SourceId, searchResponseDoc.SourceLink),
-                retrievalResponse => (retrievalResponse.SourceId, retrievalResponse.SourceLink),
-                (searchResponseDoc, textRetrievalResponse) => (searchResponseDoc, textRetrievalResponse))
+                    retrievalResponses,
+                    searchResponseDoc => (searchResponseDoc.SourceId, searchResponseDoc.SourceLink),
+                    retrievalResponse => (retrievalResponse.SourceId, retrievalResponse.SourceLink),
+                    (searchResponseDoc, textRetrievalResponse) => (searchResponseDoc, textRetrievalResponse))
                 .SelectMany(
                     joinedSet => joinedSet.textRetrievalResponse.DefaultIfEmpty(),
                     (combined, textRetrievalResponse) =>
@@ -304,6 +320,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
 
         return searchResponseDocs;
     }
+
 
     /// <summary>
     /// Thread safe method to get the collection and ensure that it is created at least once.
@@ -343,6 +360,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         return _vectorStoreRecordCollection;
     }
 
+
     /// <summary>
     /// Generates a unique key for the RAG document.
     /// </summary>
@@ -351,7 +369,8 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     /// <returns>A new unique key.</returns>
     /// <exception cref="NotSupportedException">Thrown if the requested key type is not supported.</exception>
     private static TDocumentKey GenerateUniqueKey<TDocumentKey>(string? sourceId)
-        => typeof(TDocumentKey) switch
+    {
+        return typeof(TDocumentKey) switch
         {
             _ when typeof(TDocumentKey) == typeof(string) && !string.IsNullOrWhiteSpace(sourceId) => (TDocumentKey)(object)sourceId!,
             _ when typeof(TDocumentKey) == typeof(string) => (TDocumentKey)(object)Guid.NewGuid().ToString(),
@@ -359,6 +378,8 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
 
             _ => throw new NotSupportedException($"Unsupported key of type '{typeof(TDocumentKey).Name}'")
         };
+    }
+
 
     /// <inheritdoc/>
     private void Dispose(bool disposing)
@@ -375,13 +396,15 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         }
     }
 
+
     /// <inheritdoc/>
     public void Dispose()
     {
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
+
 
     /// <summary>
     /// The data model to use for storing RAG documents in the vector store.

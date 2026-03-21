@@ -26,29 +26,34 @@ public readonly struct AgentMetadata(string type, string key, string description
     /// </summary>
     public string Description { get; } = description;
 
+
     /// <inheritdoc/>
     public override readonly bool Equals(object? obj)
     {
-        return obj is AgentMetadata agentMetadata && this.Equals(agentMetadata);
+        return obj is AgentMetadata agentMetadata && Equals(agentMetadata);
     }
+
 
     /// <inheritdoc/>
     public readonly bool Equals(AgentMetadata other)
     {
-        return this.Type.Equals(other.Type, StringComparison.Ordinal) && this.Key.Equals(other.Key, StringComparison.Ordinal);
+        return Type.Equals(other.Type, StringComparison.Ordinal) && Key.Equals(other.Key, StringComparison.Ordinal);
     }
+
 
     /// <inheritdoc/>
     public override readonly int GetHashCode()
     {
-        return HashCode.Combine(this.Type, this.Key);
+        return HashCode.Combine(Type, Key);
     }
+
 
     /// <inheritdoc/>
     public static bool operator ==(AgentMetadata left, AgentMetadata right)
     {
         return left.Equals(right);
     }
+
 
     /// <inheritdoc/>
     public static bool operator !=(AgentMetadata left, AgentMetadata right)

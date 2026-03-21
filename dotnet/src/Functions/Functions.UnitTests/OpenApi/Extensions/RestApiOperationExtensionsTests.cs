@@ -22,7 +22,7 @@ public class RestApiOperationExtensionsTests
         var operation = CreateTestOperation(method, payload);
 
         //Act
-        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: false);
+        var parameters = operation.GetParameters(false);
 
         //Assert
         Assert.NotNull(parameters);
@@ -40,6 +40,7 @@ public class RestApiOperationExtensionsTests
         Assert.Equal("Content type of REST API request body.", contentTypeParam.Description);
     }
 
+
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
@@ -51,7 +52,7 @@ public class RestApiOperationExtensionsTests
         var operation = CreateTestOperation(method, payload);
 
         //Act
-        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: false);
+        var parameters = operation.GetParameters(false);
 
         //Assert
         Assert.NotNull(parameters);
@@ -69,6 +70,7 @@ public class RestApiOperationExtensionsTests
         Assert.Equal("Content type of REST API request body.", contentTypeProp.Description);
     }
 
+
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
@@ -80,7 +82,7 @@ public class RestApiOperationExtensionsTests
         var operation = CreateTestOperation(method, payload);
 
         //Act
-        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: false);
+        var parameters = operation.GetParameters(false);
 
         //Assert
         Assert.NotNull(parameters);
@@ -98,6 +100,7 @@ public class RestApiOperationExtensionsTests
         Assert.Equal("Content type of REST API request body.", contentTypeParam.Description);
     }
 
+
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
@@ -109,7 +112,7 @@ public class RestApiOperationExtensionsTests
         var operation = CreateTestOperation(method, payload);
 
         //Act
-        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: false);
+        var parameters = operation.GetParameters(false);
 
         //Assert
         Assert.NotNull(parameters);
@@ -127,6 +130,7 @@ public class RestApiOperationExtensionsTests
         Assert.Equal("Content type of REST API request body.", contentTypeParam.Description);
     }
 
+
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
@@ -138,7 +142,7 @@ public class RestApiOperationExtensionsTests
         var operation = CreateTestOperation(method, payload);
 
         //Act
-        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: true);
+        var parameters = operation.GetParameters(true);
 
         //Assert
         Assert.NotNull(parameters);
@@ -176,6 +180,7 @@ public class RestApiOperationExtensionsTests
         Assert.Null(hasMagicWards.Description);
     }
 
+
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
@@ -187,7 +192,7 @@ public class RestApiOperationExtensionsTests
         var operation = CreateTestOperation(method, payload);
 
         //Act
-        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: true, enablePayloadNamespacing: true);
+        var parameters = operation.GetParameters(true, true);
 
         //Assert
         Assert.NotNull(parameters);
@@ -225,21 +230,28 @@ public class RestApiOperationExtensionsTests
         Assert.Null(hasMagicWards.Description);
     }
 
+
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
     public void ItShouldSetArgumentNameToPayloadParameters(string method)
     {
         //Arrange
-        var latitude = new RestApiPayloadProperty("location.latitude", "number", false, []);
-        var place = new RestApiPayloadProperty("place", "string", true, []);
+        var latitude = new RestApiPayloadProperty("location.latitude",
+            "number",
+            false,
+            []);
+        var place = new RestApiPayloadProperty("place",
+            "string",
+            true,
+            []);
 
         var payload = new RestApiPayload("application/json", [place, latitude]);
 
         var operation = CreateTestOperation(method, payload);
 
         //Act
-        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: true);
+        var parameters = operation.GetParameters(true);
 
         //Assert
         Assert.NotNull(parameters);
@@ -253,21 +265,28 @@ public class RestApiOperationExtensionsTests
         Assert.Equal("location_latitude", personNameProp.ArgumentName);
     }
 
+
     [Theory]
     [InlineData("PUT")]
     [InlineData("POST")]
     public void ItShouldNotSetArgumentNameToPayloadParametersIfItIsAlreadyProvided(string method)
     {
         //Arrange
-        var latitude = new RestApiPayloadProperty("location.latitude", "number", false, []) { ArgumentName = "alt.location.latitude" };
-        var place = new RestApiPayloadProperty("place", "string", true, []) { ArgumentName = "alt+place" };
+        var latitude = new RestApiPayloadProperty("location.latitude",
+            "number",
+            false,
+            []) { ArgumentName = "alt.location.latitude" };
+        var place = new RestApiPayloadProperty("place",
+            "string",
+            true,
+            []) { ArgumentName = "alt+place" };
 
         var payload = new RestApiPayload("application/json", [place, latitude]);
 
         var operation = CreateTestOperation(method, payload);
 
         //Act
-        var parameters = operation.GetParameters(addPayloadParamsFromMetadata: true);
+        var parameters = operation.GetParameters(true);
 
         //Assert
         Assert.NotNull(parameters);
@@ -281,14 +300,28 @@ public class RestApiOperationExtensionsTests
         Assert.Equal("alt.location.latitude", personNameProp.ArgumentName);
     }
 
+
     [Fact]
     public void ItShouldSetArgumentNameToNonPayloadParameters()
     {
         //Arrange
-        List<RestApiParameter> parameters = [
-            new RestApiParameter("p-1", "number", false, false, RestApiParameterLocation.Path),
-            new RestApiParameter("p$2", "string", false, false, RestApiParameterLocation.Query),
-            new RestApiParameter("p3", "number", false, false, RestApiParameterLocation.Header)
+        List<RestApiParameter> parameters =
+        [
+            new("p-1",
+                "number",
+                false,
+                false,
+                RestApiParameterLocation.Path),
+            new("p$2",
+                "string",
+                false,
+                false,
+                RestApiParameterLocation.Query),
+            new("p3",
+                "number",
+                false,
+                false,
+                RestApiParameterLocation.Header)
         ];
 
         var operation = CreateTestOperation("GET", parameters: parameters);
@@ -312,14 +345,28 @@ public class RestApiOperationExtensionsTests
         Assert.Equal("p3", headerParameter.ArgumentName);
     }
 
+
     [Fact]
     public void ItShouldNotSetArgumentNameToNonPayloadParametersIfItIsAlreadyProvided()
     {
         //Arrange
-        List<RestApiParameter> parameters = [
-            new RestApiParameter("p-1", "number", false, false, RestApiParameterLocation.Path) { ArgumentName = "alt.p1" },
-            new RestApiParameter("p$2", "string", false, false, RestApiParameterLocation.Query) { ArgumentName = "alt.p2" },
-            new RestApiParameter("p3", "number", false, false, RestApiParameterLocation.Header) { ArgumentName = "alt.p3" }
+        List<RestApiParameter> parameters =
+        [
+            new("p-1",
+                "number",
+                false,
+                false,
+                RestApiParameterLocation.Path) { ArgumentName = "alt.p1" },
+            new("p$2",
+                "string",
+                false,
+                false,
+                RestApiParameterLocation.Query) { ArgumentName = "alt.p2" },
+            new("p3",
+                "number",
+                false,
+                false,
+                RestApiParameterLocation.Header) { ArgumentName = "alt.p3" }
         ];
 
         var operation = CreateTestOperation("GET", parameters: parameters);
@@ -343,72 +390,79 @@ public class RestApiOperationExtensionsTests
         Assert.Equal("alt.p3", headerParameter.ArgumentName);
     }
 
-    private static RestApiOperation CreateTestOperation(string method, RestApiPayload? payload = null, Uri? url = null, List<RestApiParameter>? parameters = null)
+
+    private static RestApiOperation CreateTestOperation(
+        string method,
+        RestApiPayload? payload = null,
+        Uri? url = null,
+        List<RestApiParameter>? parameters = null)
     {
         return new RestApiOperation(
-            id: "fake-id",
-            servers: [new(url?.AbsoluteUri)],
-            path: "fake-path",
-            method: new HttpMethod(method),
-            description: "fake-description",
-            parameters: parameters ?? [],
-            responses: new Dictionary<string, RestApiExpectedResponse>(),
-            securityRequirements: [],
-            payload: payload);
+            "fake-id",
+            [new RestApiServer(url?.AbsoluteUri)],
+            "fake-path",
+            new HttpMethod(method),
+            "fake-description",
+            parameters ?? [],
+            new Dictionary<string, RestApiExpectedResponse>(),
+            [],
+            payload);
     }
+
 
     private static RestApiPayload CreateTestJsonPayload()
     {
         var name = new RestApiPayloadProperty(
-            name: "name",
-            type: "string",
-            isRequired: true,
-            properties: [],
-            description: "The name.");
+            "name",
+            "string",
+            true,
+            [],
+            "The name.");
 
         var leader = new RestApiPayloadProperty(
-            name: "leader",
-            type: "string",
-            isRequired: true,
-            properties: [],
-            description: "The leader.");
+            "leader",
+            "string",
+            true,
+            [],
+            "The leader.");
 
         var landmarks = new RestApiPayloadProperty(
-            name: "landmarks",
-            type: "array",
-            isRequired: false,
-            properties: [],
-            description: "The landmarks.");
+            "landmarks",
+            "array",
+            false,
+            [],
+            "The landmarks.");
 
         var location = new RestApiPayloadProperty(
-            name: "location",
-            type: "object",
-            isRequired: true,
-            properties: [landmarks],
-            description: "The location.");
+            "location",
+            "object",
+            true,
+            [landmarks],
+            "The location.");
 
         var rulingCouncil = new RestApiPayloadProperty(
-            name: "rulingCouncil",
-            type: "object",
-            isRequired: true,
-            properties: [leader],
-            description: "The ruling council.");
+            "rulingCouncil",
+            "object",
+            true,
+            [leader],
+            "The ruling council.");
 
         var population = new RestApiPayloadProperty(
-            name: "population",
-            type: "integer",
-            isRequired: true,
-            properties: [],
-            description: "The population.");
+            "population",
+            "integer",
+            true,
+            [],
+            "The population.");
 
         var hasMagicWards = new RestApiPayloadProperty(
-            name: "hasMagicWards",
-            type: "boolean",
-            isRequired: false,
-            properties: []);
+            "hasMagicWards",
+            "boolean",
+            false,
+            []);
 
         return new RestApiPayload("application/json", [name, location, rulingCouncil, population, hasMagicWards]);
     }
+
 
     private static RestApiPayload CreateTestTextPayload()
     {

@@ -7,7 +7,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
@@ -31,6 +30,7 @@ internal static class ResponseThreadActions
         var responseAgentThread = agentThread as OpenAIResponseAgentThread;
 
         var overrideHistory = history;
+
         if (!agent.StoreEnabled)
         {
             // Use the thread chat history
@@ -42,10 +42,14 @@ internal static class ResponseThreadActions
         var inputItems = overrideHistory.Select(c => c.ToResponseItem()).ToList();
         FunctionCallsProcessor functionProcessor = new();
         FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true, RetainArgumentTypes = true };
-        for (int requestIndex = 0; ; requestIndex++)
+
+        for (int requestIndex = 0;; requestIndex++)
         {
             // Create a response using the OpenAI Responses API
-            var clientResult = await agent.Client.CreateResponseAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false);
+            creationOptions.InputItems.Clear();
+
+            foreach (var item in inputItems) { creationOptions.InputItems.Add(item); }
+            var clientResult = await agent.Client.CreateResponseAsync(creationOptions, cancellationToken).ConfigureAwait(false);
             var response = clientResult.Value;
             ThrowIfIncompleteOrFailed(agent, response);
 
@@ -77,6 +81,7 @@ internal static class ResponseThreadActions
                 .OfType<FunctionCallResponseItem>()
                 .Select(f => f.ToFunctionCallContent())
                 .ToList();
+
             if (functionCalls.Count == 0)
             {
                 break;
@@ -85,12 +90,13 @@ internal static class ResponseThreadActions
             // Invoke functions and create function output items for results
             FunctionResultContent[] functionResults =
                 await functionProcessor.InvokeFunctionCallsAsync(
-                    message,
-                    (_) => true,
-                    functionOptions,
-                    agent.GetKernel(options),
-                    isStreaming: false,
-                    cancellationToken).ConfigureAwait(false);
+                        message,
+                        _ => true,
+                        functionOptions,
+                        agent.GetKernel(options),
+                        false,
+                        cancellationToken)
+                    .ConfigureAwait(false);
             var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, fr.Result?.ToString() ?? string.Empty)).ToList();
 
             // If store is enabled we only need to send the function output items
@@ -108,12 +114,13 @@ internal static class ResponseThreadActions
             ChatMessageContent functionResultMessage = new()
             {
                 Role = AuthorRole.Tool,
-                Items = items,
+                Items = items
             };
             overrideHistory.Add(functionResultMessage);
             yield return functionResultMessage;
         }
     }
+
 
     internal static async IAsyncEnumerable<StreamingChatMessageContent> InvokeStreamingAsync(
         OpenAIResponseAgent agent,
@@ -125,6 +132,7 @@ internal static class ResponseThreadActions
         var responseAgentThread = agentThread as OpenAIResponseAgentThread;
 
         var overrideHistory = history;
+
         if (!agent.StoreEnabled)
         {
             // Use the thread chat history
@@ -137,9 +145,10 @@ internal static class ResponseThreadActions
         FunctionCallsProcessor functionProcessor = new();
         FunctionChoiceBehaviorOptions functionOptions = new() { AllowConcurrentInvocation = true, AllowParallelCalls = true, RetainArgumentTypes = true };
         ChatMessageContent? message = null;
-        for (int requestIndex = 0; ; requestIndex++)
+
+        for (int requestIndex = 0;; requestIndex++)
         {
-            // Make the call to the OpenAIResponseClient and process the streaming results.
+            // Make the call to the ResponsesClient and process the streaming results.
             DateTimeOffset? createdAt = null;
             string? responseId = null;
             string? modelId = null;
@@ -147,8 +156,13 @@ internal static class ResponseThreadActions
             Dictionary<int, MessageResponseItem> outputIndexToMessages = [];
             Dictionary<int, FunctionCallInfo>? functionCallInfos = null;
             StreamingFunctionCallUpdateContent? functionCallUpdateContent = null;
-            OpenAIResponse? response = null;
-            await foreach (var streamingUpdate in agent.Client.CreateResponseStreamingAsync(inputItems, creationOptions, cancellationToken).ConfigureAwait(false))
+            ResponseResult? response = null;
+            creationOptions.InputItems.Clear();
+
+            foreach (var item in inputItems) { creationOptions.InputItems.Add(item); }
+            creationOptions.StreamingEnabled = true;
+
+            await foreach (var streamingUpdate in agent.Client.CreateResponseStreamingAsync(creationOptions, cancellationToken).ConfigureAwait(false))
             {
                 switch (streamingUpdate)
                 {
@@ -172,7 +186,7 @@ internal static class ResponseThreadActions
                                 break;
 
                             case FunctionCallResponseItem fcri:
-                                (functionCallInfos ??= [])[outputItemAddedUpdate.OutputIndex] = new(fcri);
+                                (functionCallInfos ??= [])[outputItemAddedUpdate.OutputIndex] = new FunctionCallInfo(fcri);
                                 break;
                         }
 
@@ -193,7 +207,7 @@ internal static class ResponseThreadActions
                     {
                         if (functionCallInfos?.TryGetValue(functionCallArgumentsDeltaUpdate.OutputIndex, out FunctionCallInfo? callInfo) is true)
                         {
-                            _ = (callInfo.Arguments ??= new()).Append(functionCallArgumentsDeltaUpdate.Delta);
+                            _ = (callInfo.Arguments ??= new StringBuilder()).Append(functionCallArgumentsDeltaUpdate.Delta);
                         }
 
                         break;
@@ -209,11 +223,11 @@ internal static class ResponseThreadActions
 
                             yield return new StreamingChatMessageContent(
                                 lastRole ?? AuthorRole.Assistant,
-                                content: null)
+                                null)
                             {
                                 ModelId = modelId,
                                 InnerContent = functionCallOutputDoneUpdate,
-                                Items = [functionCallUpdateContent],
+                                Items = [functionCallUpdateContent]
                             };
                         }
 
@@ -222,10 +236,12 @@ internal static class ResponseThreadActions
 
                     case StreamingResponseErrorUpdate errorUpdate:
                         yield return errorUpdate.ToStreamingChatMessageContent(modelId, lastRole);
+
                         break;
 
                     case StreamingResponseRefusalDoneUpdate refusalDone:
                         yield return refusalDone.ToStreamingChatMessageContent(modelId, lastRole);
+
                         break;
                 }
             }
@@ -256,12 +272,13 @@ internal static class ResponseThreadActions
             // Invoke functions and create function output items for results
             FunctionResultContent[] functionResults =
                 await functionProcessor.InvokeFunctionCallsAsync(
-                    message!,
-                    (_) => true,
-                    functionOptions,
-                    agent.GetKernel(options),
-                    isStreaming: true,
-                    cancellationToken).ConfigureAwait(false);
+                        message!,
+                        _ => true,
+                        functionOptions,
+                        agent.GetKernel(options),
+                        true,
+                        cancellationToken)
+                    .ConfigureAwait(false);
             var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, fr.Result?.ToString() ?? string.Empty)).ToList();
 
             // If store is enabled we only need to send the function output items
@@ -279,20 +296,21 @@ internal static class ResponseThreadActions
             ChatMessageContent functionResultMessage = new()
             {
                 Role = AuthorRole.Tool,
-                Items = items,
+                Items = items
             };
             StreamingChatMessageContent streamingFunctionResultMessage =
                 new(AuthorRole.Tool,
-                    content: null)
+                    null)
                 {
                     ModelId = modelId,
                     InnerContent = functionCallUpdateContent,
-                    Items = [functionCallUpdateContent],
+                    Items = [functionCallUpdateContent]
                 };
             overrideHistory.Add(functionResultMessage);
             yield return streamingFunctionResultMessage;
         }
     }
+
 
     private static ChatHistory GetChatHistory(AgentThread agentThread)
     {
@@ -304,7 +322,8 @@ internal static class ResponseThreadActions
         throw new InvalidOperationException("The agent thread is not a ChatHistoryAgentThread.");
     }
 
-    private static void ThrowIfIncompleteOrFailed(OpenAIResponseAgent agent, OpenAIResponse response)
+
+    private static void ThrowIfIncompleteOrFailed(OpenAIResponseAgent agent, ResponseResult response)
     {
         if (response.Status is ResponseStatus.Incomplete or ResponseStatus.Failed)
         {
@@ -313,6 +332,7 @@ internal static class ResponseThreadActions
         }
     }
 
+
     /// <summary>POCO representing function calling info.</summary>
     /// <remarks>Used to concatenation information for a single function call from across multiple streaming updates.</remarks>
     private sealed class FunctionCallInfo(FunctionCallResponseItem item)
@@ -320,6 +340,7 @@ internal static class ResponseThreadActions
         public readonly FunctionCallResponseItem ResponseItem = item;
         public StringBuilder? Arguments;
     }
+
 
     private const int MaximumAutoInvokeAttempts = 128;
 }

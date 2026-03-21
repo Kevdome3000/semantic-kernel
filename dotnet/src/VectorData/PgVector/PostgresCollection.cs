@@ -10,11 +10,8 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
-using Npgsql;
-using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
@@ -42,7 +39,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     private readonly string _databaseName;
 
     /// <summary>The database schema.</summary>
-    private readonly string _schema;
+    private readonly string? _schema;
 
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
@@ -112,7 +109,10 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             name,
             static options => typeof(TRecord) == typeof(Dictionary<string, object?>)
                 ? throw new NotSupportedException(VectorDataStrings.NonDynamicCollectionWithDictionaryNotSupported(typeof(PostgresDynamicCollection)))
-                : new PostgresModelBuilder().Build(typeof(TRecord), options.Definition, options.EmbeddingGenerator),
+                : new PostgresModelBuilder().Build(typeof(TRecord),
+                    typeof(TKey),
+                    options.Definition,
+                    options.EmbeddingGenerator),
             options)
     {
     }
@@ -252,28 +252,8 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
             // TODO: Ideally we'd group together vector properties using the same generator (and with the same input and output properties),
             // and generate embeddings for them in a single batch. That's some more complexity though.
-            if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<float>>(records, cancellationToken, out var floatTask))
-            {
-                generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
-                generatedEmbeddings[vectorProperty] = await floatTask.ConfigureAwait(false);
-            }
-#if NET
-            else if (vectorProperty.TryGenerateEmbeddings<TRecord, Embedding<Half>>(records, cancellationToken, out var halfTask))
-            {
-                generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
-                generatedEmbeddings[vectorProperty] = await halfTask.ConfigureAwait(false);
-            }
-#endif
-            else if (vectorProperty.TryGenerateEmbeddings<TRecord, BinaryEmbedding>(records, cancellationToken, out var binaryTask))
-            {
-                generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
-                generatedEmbeddings[vectorProperty] = await binaryTask.ConfigureAwait(false);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The embedding generator configured on property '{vectorProperty.ModelName}' cannot produce an embedding of type '{typeof(Embedding<float>).Name}' for the given input type.");
-            }
+            generatedEmbeddings ??= new Dictionary<VectorPropertyModel, IReadOnlyList<Embedding>>(vectorPropertyCount);
+            generatedEmbeddings[vectorProperty] = await vectorProperty.GenerateEmbeddingsAsync(records.Select(r => vectorProperty.GetValueAsObject(r)), cancellationToken).ConfigureAwait(false);
         }
 
         using var connection = await _dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
@@ -456,7 +436,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         PostgresSqlBuilder.BuildDeleteBatchCommand(command,
             _schema,
             Name,
-            _model.KeyProperty.StorageName,
+            _model.KeyProperty,
             listOfKeys);
 
         await RunOperationAsync("DeleteBatch", () => command.ExecuteNonQueryAsync(cancellationToken)).ConfigureAwait(false);
@@ -483,7 +463,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         }
 
         var vectorProperty = _model.GetVectorPropertyOrSingle(options);
-        var pgVector = await this.ConvertSearchInputToVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
+        var pgVector = await ConvertSearchInputToVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
         // Simulating skip/offset logic locally, since OFFSET can work only with LIMIT in combination
         // and LIMIT is not supported in vector search extension, instead of LIMIT - "k" parameter is used.
@@ -544,7 +524,7 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         var vectorProperty = _model.GetVectorPropertyOrSingle<TRecord>(new VectorSearchOptions<TRecord> { VectorProperty = options.VectorProperty });
         var textProperty = _model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
-        var pgVector = await this.ConvertSearchInputToVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
+        var pgVector = await ConvertSearchInputToVectorAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
         using var connection = await _dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
         using var command = connection.CreateCommand();
@@ -643,6 +623,35 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             // Prepare the SQL commands.
             using var batch = connection.CreateBatch();
 
+            // First, check if the pgvector extension is already installed in PostgreSQL, and then install it if not.
+            // Note that we do a separate check before doing CREATE EXTENSION IF EXISTS in order to know if it was actually created,
+            // since in that case we must also must call ReloadTypesAsync() at the Npgsql level
+            batch.BatchCommands.Add(new NpgsqlBatchCommand("SELECT EXISTS(SELECT * FROM pg_extension WHERE extname='vector')"));
+            batch.BatchCommands.Add(new NpgsqlBatchCommand("CREATE EXTENSION IF NOT EXISTS vector"));
+
+            bool extensionAlreadyExisted;
+
+            try
+            {
+                extensionAlreadyExisted = (bool)(await batch.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false))!;
+            }
+            catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.UniqueViolation)
+            {
+                // CREATE EXTENSION IF NOT EXISTS is not atomic in PG, so concurrent sessions doing this at the same time
+                // may trigger a unique constraint violation. We ignore it and interpret it to mean that the extension
+                // already exists.
+                extensionAlreadyExisted = true;
+            }
+
+            if (!extensionAlreadyExisted)
+            {
+                await connection.ReloadTypesAsync().ConfigureAwait(false);
+            }
+
+            batch.BatchCommands.Clear();
+
+            // Now create the table and any indexes.
+            // Note that this must be done in a separate batch/transaction as the creation of the extension above.
             batch.BatchCommands.Add(
                 new NpgsqlBatchCommand(PostgresSqlBuilder.BuildCreateTableSql(_schema,
                     Name,
@@ -689,46 +698,43 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
 
     /// <summary>
-        /// Converts a search input value to a PostgreSQL vector representation, generating embeddings if necessary.
-        /// </summary>
-        private async Task<object> ConvertSearchInputToVectorAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
-            where TInput : notnull
+    /// Converts a search input value to a PostgreSQL vector representation, generating embeddings if necessary.
+    /// </summary>
+    private async Task<object> ConvertSearchInputToVectorAsync<TInput>(TInput searchValue, VectorPropertyModel vectorProperty, CancellationToken cancellationToken)
+        where TInput : notnull
+    {
+        object vector = searchValue switch
         {
-            object vector = searchValue switch
-            {
-                // Dense float32
-                ReadOnlyMemory<float> r => r,
-                float[] f => new ReadOnlyMemory<float>(f),
-                Embedding<float> e => e.Vector,
-                _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<float>> generator
-                    => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+            // Dense float32
+            ReadOnlyMemory<float> r => r,
+            float[] f => new ReadOnlyMemory<float>(f),
+            Embedding<float> e => e.Vector,
 
 #if NET
-                // Dense float16
-                ReadOnlyMemory<Half> r => r,
-                Half[] f => new ReadOnlyMemory<Half>(f),
-                Embedding<Half> e => e.Vector,
-                _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, Embedding<Half>> generator
-                    => await generator.GenerateVectorAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+            // Dense float16
+            ReadOnlyMemory<Half> r => r,
+            Half[] f => new ReadOnlyMemory<Half>(f),
+            Embedding<Half> e => e.Vector,
 #endif
 
-                // Dense Binary
-                BitArray b => b,
-                BinaryEmbedding e => e.Vector,
-                _ when vectorProperty.EmbeddingGenerator is IEmbeddingGenerator<TInput, BinaryEmbedding> generator
-                    => await generator.GenerateAsync(searchValue, cancellationToken: cancellationToken).ConfigureAwait(false),
+            // Dense Binary
+            BitArray b => b,
+            BinaryEmbedding e => e.Vector,
 
-                // Sparse
-                SparseVector sv => sv,
-                // TODO: Add a PG-specific SparseVectorEmbedding type
+            // Sparse
+            SparseVector sv => sv,
+            // TODO: Add a PG-specific SparseVectorEmbedding type
 
-                _ => vectorProperty.EmbeddingGenerator is null
-                    ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), PostgresModelBuilder.SupportedVectorTypes))
-                    : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
-            };
+            _ when vectorProperty.EmbeddingGenerationDispatcher is not null
+                => await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false),
 
-            var pgVector = PostgresPropertyMapping.MapVectorForStorageModel(vector);
-            Verify.NotNull(pgVector);
-            return pgVector;
-        }
+            _ => vectorProperty.EmbeddingGenerator is null
+                ? throw new NotSupportedException(VectorDataStrings.InvalidSearchInputAndNoEmbeddingGeneratorWasConfigured(searchValue.GetType(), PostgresModelBuilder.SupportedVectorTypes))
+                : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
+        };
+
+        var pgVector = PostgresPropertyMapping.MapVectorForStorageModel(vector);
+        Verify.NotNull(pgVector);
+        return pgVector;
+    }
 }

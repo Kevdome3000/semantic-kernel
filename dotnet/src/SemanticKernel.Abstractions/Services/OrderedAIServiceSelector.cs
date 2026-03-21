@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.Services;
+
 /// <summary>
 /// Implementation of <see cref="IAIServiceSelector"/> that selects the AI service based on the order of the execution settings.
 /// Uses the service id or model id to select the preferred service provider and then returns the service and associated execution settings.
@@ -17,14 +18,39 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IChatClient
 {
     public static OrderedAIServiceSelector Instance { get; } = new();
 
-    /// <inheritdoc/>
-    [Experimental("SKEXP0001")]
-    public bool TrySelectChatClient<T>(Kernel kernel, KernelFunction function, KernelArguments arguments, [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IChatClient
-        => TrySelect(kernel, function, arguments, out service, out serviceSettings);
 
     /// <inheritdoc/>
-    public bool TrySelectAIService<T>(Kernel kernel, KernelFunction function, KernelArguments arguments, [NotNullWhen(true)] out T? service, out PromptExecutionSettings? serviceSettings) where T : class, IAIService
-        => TrySelect(kernel, function, arguments, out service, out serviceSettings);
+    [Experimental("SKEXP0001")]
+    public bool TrySelectChatClient<T>(
+        Kernel kernel,
+        KernelFunction function,
+        KernelArguments arguments,
+        [NotNullWhen(true)] out T? service,
+        out PromptExecutionSettings? serviceSettings) where T : class, IChatClient
+    {
+        return TrySelect(kernel,
+            function,
+            arguments,
+            out service,
+            out serviceSettings);
+    }
+
+
+    /// <inheritdoc/>
+    public bool TrySelectAIService<T>(
+        Kernel kernel,
+        KernelFunction function,
+        KernelArguments arguments,
+        [NotNullWhen(true)] out T? service,
+        out PromptExecutionSettings? serviceSettings) where T : class, IAIService
+    {
+        return TrySelect(kernel,
+            function,
+            arguments,
+            out service,
+            out serviceSettings);
+    }
+
 
     private bool TrySelect<T>(
         Kernel kernel,
@@ -113,19 +139,22 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IChatClient
         return false;
 
         // Get's a non-required service, regardless of service key
-        static T? GetAnyService(Kernel kernel) =>
-            kernel.Services is IKeyedServiceProvider
-                ? kernel.GetAllServices<T>().
-                    LastOrDefault()
+        static T? GetAnyService(Kernel kernel)
+        {
+            return kernel.Services is IKeyedServiceProvider
+                ? kernel.GetAllServices<T>().LastOrDefault()
                 : // see comments in Kernel/KernelBuilder for why we can't use GetKeyedService
                 kernel.Services.GetService<T>();
+        }
     }
+
 
     private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class
     {
         foreach (T? service in kernel.GetAllServices<T>())
         {
             string? serviceModelId = null;
+
             if (service is IAIService aiService)
             {
                 serviceModelId = aiService.GetModelId();
@@ -133,7 +162,8 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IChatClient
             else if (service is IChatClient chatClient)
             {
                 serviceModelId = chatClient.GetModelId();
-}
+            }
+
             if (!string.IsNullOrEmpty(serviceModelId) && serviceModelId == modelId)
             {
                 return service;

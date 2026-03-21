@@ -14,6 +14,7 @@ internal static class HandoffMessages
     /// </summary>
     internal static readonly ChatMessageContent Empty = new();
 
+
     /// <summary>
     /// The input message.
     /// </summary>
@@ -24,6 +25,7 @@ internal static class HandoffMessages
         /// </summary>
         public IList<ChatMessageContent> Messages { get; init; } = [];
     }
+
 
     /// <summary>
     /// The final result.
@@ -36,10 +38,12 @@ internal static class HandoffMessages
         public ChatMessageContent Message { get; init; } = Empty;
     }
 
+
     /// <summary>
     /// Signals the handoff to another agent.
     /// </summary>
     public sealed class Request;
+
 
     /// <summary>
     /// Broadcast an agent response to all actors in the orchestration.
@@ -52,13 +56,21 @@ internal static class HandoffMessages
         public ChatMessageContent Message { get; init; } = Empty;
     }
 
-    /// <summary>
-    /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Result"/>.
-    /// </summary>
-    public static InputTask AsInputTaskMessage(this IEnumerable<ChatMessageContent> messages) => new() { Messages = [.. messages] };
 
     /// <summary>
     /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Result"/>.
     /// </summary>
-    public static Result AsResultMessage(this ChatMessageContent message) => new() { Message = message };
+    public static InputTask AsInputTaskMessage(this IEnumerable<ChatMessageContent> messages)
+    {
+        return new InputTask { Messages = [.. messages] };
+    }
+
+
+    /// <summary>
+    /// Extension method to convert a <see cref="ChatMessageContent"/> to a <see cref="Result"/>.
+    /// </summary>
+    public static Result AsResultMessage(this ChatMessageContent message)
+    {
+        return new Result { Message = message };
+    }
 }

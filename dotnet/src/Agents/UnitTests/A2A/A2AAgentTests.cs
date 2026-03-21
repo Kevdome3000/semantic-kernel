@@ -2,11 +2,11 @@
 
 using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
+using A2A;
 using Microsoft.SemanticKernel.Agents.A2A;
 using Xunit;
 
@@ -26,15 +26,16 @@ public sealed class A2AAgentTests : BaseA2AClientTest
         using var httpClient = new HttpClient();
 
         // Arrange & Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new A2AAgent(null!, new()));
-        Assert.Throws<ArgumentNullException>(() => new A2AAgent(this.Client, null!));
+        Assert.Throws<ArgumentNullException>(() => new A2AAgent(null!, new AgentCard()));
+        Assert.Throws<ArgumentNullException>(() => new A2AAgent(Client, null!));
     }
+
 
     [Fact]
     public async Task VerifyConstructor()
     {
         // Arrange & Act
-        var agent = new A2AAgent(this.Client, await this.CreateAgentCardAsync());
+        var agent = new A2AAgent(Client, await CreateAgentCardAsync());
 
         // Assert
         Assert.NotNull(agent);
@@ -42,45 +43,49 @@ public sealed class A2AAgentTests : BaseA2AClientTest
         Assert.Equal("Handles requests relating to invoices.", agent.Description);
     }
 
+
     [Fact]
     public async Task VerifyInvokeAsync()
     {
         // Arrange
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeResponse, Encoding.UTF8, "application/json") }
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(InvokeResponse, Encoding.UTF8, "application/json") }
         );
-        var agent = new A2AAgent(this.Client, await this.CreateAgentCardAsync());
+        var agent = new A2AAgent(Client, await CreateAgentCardAsync());
 
         // Act
         var responseItems = agent.InvokeAsync("List the latest invoices for Contoso?");
 
         // Assert
         Assert.NotNull(responseItems);
-        var items = await responseItems!.ToListAsync<AgentResponseItem<ChatMessageContent>>();
+        var items = await responseItems!.ToListAsync();
         Assert.Single(items);
         Assert.StartsWith("Here are the latest invoices for Contoso:", items[0].Message.Content);
     }
+
 
     [Fact]
     public async Task VerifyInvokeStreamingAsync()
     {
         // Arrange
-        this.MessageHandlerStub.ResponsesToReturn.Add(
-            new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(InvokeResponse, Encoding.UTF8, "application/json") }
+        MessageHandlerStub.ResponsesToReturn.Add(
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(InvokeResponse, Encoding.UTF8, "application/json") }
         );
-        var agent = new A2AAgent(this.Client, await this.CreateAgentCardAsync());
+        var agent = new A2AAgent(Client, await CreateAgentCardAsync());
 
         // Act
         var responseItems = agent.InvokeStreamingAsync("List the latest invoices for Contoso?");
 
         // Assert
         Assert.NotNull(responseItems);
-        var items = await responseItems!.ToListAsync<AgentResponseItem<StreamingChatMessageContent>>();
+        var items = await responseItems!.ToListAsync();
         Assert.Single(items);
         Assert.StartsWith("Here are the latest invoices for Contoso:", items[0].Message.Content);
     }
 
+
     #region private
+
     private const string InvokeResponse =
         """
         {
@@ -121,5 +126,8 @@ public sealed class A2AAgentTests : BaseA2AClientTest
             }
         }
         """;
+
     #endregion
+
+
 }

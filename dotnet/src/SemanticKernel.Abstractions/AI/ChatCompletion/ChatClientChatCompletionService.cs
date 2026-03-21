@@ -18,6 +18,7 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
     /// <summary>The wrapped <see cref="IChatClient"/>.</summary>
     private readonly IChatClient _chatClient;
 
+
     /// <summary>Initializes the <see cref="ChatClientChatCompletionService"/> for <paramref name="chatClient"/>.</summary>
     internal ChatClientChatCompletionService(IChatClient chatClient, IServiceProvider? serviceProvider)
     {
@@ -31,22 +32,29 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         Attributes = new ReadOnlyDictionary<string, object?>(attrs);
 
         var metadata = chatClient.GetService<ChatClientMetadata>();
+
         if (metadata?.ProviderUri is not null)
         {
             attrs[AIServiceExtensions.EndpointKey] = metadata.ProviderUri.ToString();
         }
+
         if (metadata?.DefaultModelId is not null)
         {
             attrs[AIServiceExtensions.ModelIdKey] = metadata.DefaultModelId;
         }
     }
 
+
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes { get; }
 
+
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
-        ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chatHistory);
 
@@ -59,9 +67,10 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         var currentSize = messageList.Count;
 
         var completion = await _chatClient.GetResponseAsync(
-            messageList,
-            executionSettings.ToChatOptions(kernel),
-            cancellationToken).ConfigureAwait(false);
+                messageList,
+                executionSettings.ToChatOptions(kernel),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         if (completion.Messages.Count > 0)
         {
@@ -78,9 +87,13 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         return [];
     }
 
+
     /// <inheritdoc/>
     public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
-        ChatHistory chatHistory, PromptExecutionSettings? executionSettings = null, Kernel? kernel = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        ChatHistory chatHistory,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(chatHistory);
 
@@ -92,22 +105,23 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         ChatRole? role = null;
 
         await foreach (var update in _chatClient.GetStreamingResponseAsync(
-            chatHistory.ToChatMessageList(),
-            executionSettings.ToChatOptions(kernel),
-            cancellationToken).ConfigureAwait(false))
+                chatHistory.ToChatMessageList(),
+                executionSettings.ToChatOptions(kernel),
+                cancellationToken)
+            .ConfigureAwait(false))
         {
             role ??= update.Role;
 
             // Message tools and function calls should be individual messages in the history.
-            foreach (var fcc in update.Contents.Where(c => c is Microsoft.Extensions.AI.FunctionCallContent or Microsoft.Extensions.AI.FunctionResultContent))
+            foreach (var fcc in update.Contents.Where(c => c is Extensions.AI.FunctionCallContent or Extensions.AI.FunctionResultContent))
             {
-                if (fcc is Microsoft.Extensions.AI.FunctionCallContent functionCallContent)
+                if (fcc is Extensions.AI.FunctionCallContent functionCallContent)
                 {
                     chatHistory.Add(new ChatMessage(ChatRole.Assistant, [functionCallContent]).ToChatMessageContent());
                     continue;
                 }
 
-                if (fcc is Microsoft.Extensions.AI.FunctionResultContent functionResultContent)
+                if (fcc is Extensions.AI.FunctionResultContent functionResultContent)
                 {
                     chatHistory.Add(new ChatMessage(ChatRole.Tool, [functionResultContent]).ToChatMessageContent());
                 }
