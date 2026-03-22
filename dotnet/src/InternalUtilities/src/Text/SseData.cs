@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.SemanticKernel.Text;
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes
 

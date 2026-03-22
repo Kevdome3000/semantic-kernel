@@ -2,9 +2,11 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.PgVector;
+using Npgsql;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

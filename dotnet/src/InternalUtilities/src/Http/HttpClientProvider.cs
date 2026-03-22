@@ -1,5 +1,10 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
+
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
 #if NET
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;

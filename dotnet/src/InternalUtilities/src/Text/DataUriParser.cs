@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+
 #pragma warning disable CA1307 // Specify StringComparison
 #pragma warning disable CA1847 // Use StringBuilder.Append when concatenating strings
 

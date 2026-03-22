@@ -1,5 +1,10 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using AudioContent = Microsoft.SemanticKernel.AudioContent;
 using BinaryContent = Microsoft.SemanticKernel.BinaryContent;
 using ChatMessageContent = Microsoft.SemanticKernel.ChatMessageContent;

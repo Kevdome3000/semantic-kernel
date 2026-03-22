@@ -7,8 +7,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
+using Npgsql;
+using NpgsqlTypes;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 

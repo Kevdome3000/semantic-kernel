@@ -1,5 +1,12 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Microsoft.SemanticKernel.Http;
 
 [ExcludeFromCodeCoverage]

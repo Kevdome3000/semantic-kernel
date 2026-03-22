@@ -1,9 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+
 namespace Microsoft.SemanticKernel;
 
 [ExcludeFromCodeCoverage]
-internal static class KernelVerify
+internal static partial class KernelVerify
 {
 #if NET
     [GeneratedRegex("^[0-9A-Za-z_]*$")]

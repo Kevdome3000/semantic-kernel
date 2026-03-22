@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -27,7 +28,7 @@ public sealed class VectorPropertyModel<TInput>(string modelName) : VectorProper
     {
         return embeddingGenerator switch
         {
-            IEmbeddingGenerator<TInput, TEmbedding> when this.Type == typeof(TInput) && (userRequestedEmbeddingType is null || userRequestedEmbeddingType == typeof(TEmbedding))
+            IEmbeddingGenerator<TInput, TEmbedding> when Type == typeof(TInput) && (userRequestedEmbeddingType is null || userRequestedEmbeddingType == typeof(TEmbedding))
                 => typeof(TEmbedding),
 
             null => throw new ArgumentNullException(nameof(embeddingGenerator), "This method should only be called when an embedding generator is configured."),

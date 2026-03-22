@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Net.Http;
+
 namespace Microsoft.SemanticKernel.Http;
 
 /// <summary>

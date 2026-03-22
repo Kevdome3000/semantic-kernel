@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
+
 namespace Microsoft.Extensions.VectorData;
 
 /// <summary>Defines an abstract base class for options passed to a collection.</summary>

@@ -1,5 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using Microsoft.Extensions.AI;
+
 #pragma warning disable IDE0005 // Using directive is unnecessary.
 #pragma warning restore IDE0005 // Using directive is unnecessary.
 

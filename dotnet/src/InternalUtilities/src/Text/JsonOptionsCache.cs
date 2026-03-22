@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+
 namespace Microsoft.SemanticKernel.Text;
 
 /// <summary>Caches common configurations of <see cref="JsonSerializerOptions"/>.</summary>\

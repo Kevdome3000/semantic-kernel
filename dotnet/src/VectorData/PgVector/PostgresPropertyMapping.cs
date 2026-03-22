@@ -5,8 +5,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
+using Npgsql;
+using NpgsqlTypes;
+using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
@@ -20,9 +24,9 @@ internal static class PostgresPropertyMapping
             float[] a => new Vector(a),
 
 #if NET
-            ReadOnlyMemory<Half> m => new Pgvector.HalfVector(m),
-            Embedding<Half> e => new Pgvector.HalfVector(e.Vector),
-            Half[] a => new Pgvector.HalfVector(a),
+            ReadOnlyMemory<Half> m => new HalfVector(m),
+            Embedding<Half> e => new HalfVector(e.Vector),
+            Half[] a => new HalfVector(a),
 #endif
 
             BitArray bitArray => bitArray,
@@ -65,7 +69,6 @@ internal static class PostgresPropertyMapping
 
             _ => null
         };
-}
 
 
 /// <summary>

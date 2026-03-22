@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 
 namespace Microsoft.Extensions.VectorData;
 

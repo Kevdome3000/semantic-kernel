@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics.Tensors;
 using System.Reflection;
 using Microsoft.Extensions.VectorData;
 

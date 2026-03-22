@@ -4,8 +4,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
+using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
@@ -59,7 +61,8 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(ModelBuildingOpti
 
         static bool IsValid(Type type)
         {
-            return type == typeof(bool) || type == typeof(short) || type == typeof(int) || type == typeof(long) || type == typeof(float) || type == typeof(double) || type == typeof(decimal) || type == typeof(string) || type == typeof(byte[]) || type == typeof(DateTime) || type == typeof(DateTimeOffset) ||#if NET
+            return type == typeof(bool) || type == typeof(short) || type == typeof(int) || type == typeof(long) || type == typeof(float) || type == typeof(double) || type == typeof(decimal) || type == typeof(string) || type == typeof(byte[]) || type == typeof(DateTime) || type == typeof(DateTimeOffset) ||
+#if NET
             type == typeof(DateOnly)
                 || type == typeof(TimeOnly)
                 ||

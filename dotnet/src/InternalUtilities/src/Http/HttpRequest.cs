@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel;

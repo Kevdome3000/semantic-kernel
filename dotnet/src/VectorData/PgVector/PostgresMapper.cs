@@ -5,7 +5,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
+using Npgsql;
+using Pgvector;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
 
@@ -59,7 +62,7 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                     }
 
 #if NET
-                    case Pgvector.HalfVector { Memory: ReadOnlyMemory<Half> memory }:
+                    case HalfVector { Memory: ReadOnlyMemory<Half> memory }:
                     {
                         vectorProperty.SetValueAsObject(record,
                             (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch

@@ -1,9 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+
 namespace Microsoft.SemanticKernel;
 
 [ExcludeFromCodeCoverage]
-internal static class Verify
+internal static partial class Verify
 {
 #if NET
     [GeneratedRegex("^[^.]+\\.[^.]+$")]
