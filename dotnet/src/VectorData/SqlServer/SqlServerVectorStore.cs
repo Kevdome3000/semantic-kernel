@@ -1,5 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
+
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
 /// <summary>
@@ -95,6 +106,7 @@ public sealed class SqlServerVectorStore : VectorStore
     /// <inheritdoc/>
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
+
         using SqlConnection connection = new(_connectionString);
         using SqlCommand command = SqlServerCommandBuilder.SelectTableNames(connection, _schema);
 

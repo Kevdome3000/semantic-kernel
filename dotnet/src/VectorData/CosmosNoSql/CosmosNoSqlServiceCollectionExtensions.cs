@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 using Microsoft.SemanticKernel.Http;

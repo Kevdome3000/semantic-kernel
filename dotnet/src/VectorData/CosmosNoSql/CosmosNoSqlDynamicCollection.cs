@@ -1,3 +1,8 @@
+using Microsoft.Azure.Cosmos;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;

@@ -21,7 +21,6 @@ public sealed class OrchestrationResult<TValue> : IDisposable
     private readonly ILogger _logger;
     private bool _isDisposed;
 
-
     internal OrchestrationResult(
         OrchestrationContext context,
         TaskCompletionSource<TValue> completion,
@@ -34,7 +33,6 @@ public sealed class OrchestrationResult<TValue> : IDisposable
         _logger = logger;
     }
 
-
     /// <summary>
     /// Releases all resources used by the <see cref="OrchestrationResult{TValue}"/> instance.
     /// </summary>
@@ -43,7 +41,6 @@ public sealed class OrchestrationResult<TValue> : IDisposable
         Dispose(true);
         GC.SuppressFinalize(this);
     }
-
 
     /// <summary>
     /// Gets the orchestration name associated with this orchestration result.
@@ -54,7 +51,6 @@ public sealed class OrchestrationResult<TValue> : IDisposable
     /// Gets the topic identifier associated with this orchestration result.
     /// </summary>
     public TopicId Topic => _context.Topic;
-
 
     /// <summary>
     /// Asynchronously retrieves the orchestration result value.
@@ -68,20 +64,12 @@ public sealed class OrchestrationResult<TValue> : IDisposable
     /// <exception cref="TimeoutException">Thrown if the orchestration does not complete within the specified timeout period.</exception>
     public async ValueTask<TValue> GetValueAsync(TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
-#if !NETCOREAPP
-        if (_isDisposed)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
-#else
         ObjectDisposedException.ThrowIf(this._isDisposed, this);
-#endif
 
         _logger.LogOrchestrationResultAwait(Orchestration, Topic);
 
         if (timeout.HasValue)
         {
-#if NET
             try
             {
                 await this._completion.Task.WaitAsync(timeout.Value, cancellationToken).ConfigureAwait(false);
@@ -91,22 +79,12 @@ public sealed class OrchestrationResult<TValue> : IDisposable
                 this._logger.LogOrchestrationResultTimeout(this.Orchestration, this.Topic);
                 throw;
             }
-#else
-            Task completedTask = await Task.WhenAny(_completion.Task, Task.Delay(timeout.Value, cancellationToken)).ConfigureAwait(false);
-
-            if (completedTask != _completion.Task)
-            {
-                _logger.LogOrchestrationResultTimeout(Orchestration, Topic);
-                throw new TimeoutException($"Orchestration did not complete within the allowed duration ({timeout}).");
-            }
-#endif
         }
 
         _logger.LogOrchestrationResultComplete(Orchestration, Topic);
 
         return await _completion.Task.ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Cancel the orchestration associated with this result.
@@ -118,20 +96,12 @@ public sealed class OrchestrationResult<TValue> : IDisposable
     /// </remarks>
     public void Cancel()
     {
-#if !NETCOREAPP
-        if (_isDisposed)
-        {
-            throw new ObjectDisposedException(GetType().Name);
-        }
-#else
         ObjectDisposedException.ThrowIf(this._isDisposed, this);
-#endif
 
         _logger.LogOrchestrationResultCancelled(Orchestration, Topic);
         _cancelSource.Cancel();
         _completion.SetCanceled();
     }
-
 
     private void Dispose(bool disposing)
     {

@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -46,7 +49,7 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
             // Don't create a property if it doesn't exist in the dictionary
             if (dataModel.TryGetValue(property.ModelName, out var vectorValue))
             {
-                var vector = generatedEmbeddings?[i]?[recordIndex] is Embedding ge
+                var vector = generatedEmbeddings?[i]?[recordIndex] is MEAI.Embedding ge
                     ? ge
                     : vectorValue;
 
@@ -59,7 +62,7 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
                 var memory = vector switch
                 {
                     ReadOnlyMemory<float> m => m,
-                    Embedding<float> e => e.Vector,
+                    MEAI.Embedding<float> e => e.Vector,
                     float[] a => a,
 
                     _ => throw new UnreachableException()
@@ -134,7 +137,7 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
                             (Nullable.GetUnderlyingType(vectorProperty.Type) ?? vectorProperty.Type) switch
                             {
                                 Type t when t == typeof(ReadOnlyMemory<float>) => new ReadOnlyMemory<float>(vector),
-                                Type t when t == typeof(Embedding<float>) => new Embedding<float>(vector),
+                                Type t when t == typeof(MEAI.Embedding<float>) => new MEAI.Embedding<float>(vector),
                                 Type t when t == typeof(float[]) => vector,
 
                                 _ => throw new UnreachableException()

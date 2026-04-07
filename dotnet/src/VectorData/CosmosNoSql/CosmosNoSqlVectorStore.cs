@@ -1,5 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;

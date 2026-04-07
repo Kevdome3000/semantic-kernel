@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.ChatCompletion;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -12,11 +13,7 @@ internal static class DefaultTransforms
 {
     public static ValueTask<IEnumerable<ChatMessageContent>> FromInput<TInput>(TInput input, CancellationToken cancellationToken = default)
     {
-#if !NETCOREAPP
-        return TransformInput().AsValueTask();
-#else
         return ValueTask.FromResult(TransformInput());
-#endif
 
         IEnumerable<ChatMessageContent> TransformInput()
         {
@@ -29,7 +26,6 @@ internal static class DefaultTransforms
             };
         }
     }
-
 
     public static ValueTask<TOutput> ToOutput<TOutput>(IList<ChatMessageContent> result, CancellationToken cancellationToken = default)
     {

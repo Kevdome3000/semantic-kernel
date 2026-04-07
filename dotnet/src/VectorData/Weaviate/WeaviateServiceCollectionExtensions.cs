@@ -1,5 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
+using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
+using System;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using Microsoft.SemanticKernel.Http;

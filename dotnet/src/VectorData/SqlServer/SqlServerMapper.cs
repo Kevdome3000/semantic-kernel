@@ -1,5 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlTypes;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using System;
 using System.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;

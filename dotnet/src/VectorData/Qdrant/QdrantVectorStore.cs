@@ -1,6 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Qdrant.Client;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
+using Grpc.Core;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 

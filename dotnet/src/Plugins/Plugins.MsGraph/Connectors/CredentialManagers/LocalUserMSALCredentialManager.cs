@@ -1,5 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Identity.Client.Extensions.Msal;
+using Microsoft.Identity.Client;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.CredentialManagers;

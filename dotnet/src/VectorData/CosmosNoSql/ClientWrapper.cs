@@ -1,3 +1,6 @@
+using Microsoft.Azure.Cosmos;
+using System.Threading;
+using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;

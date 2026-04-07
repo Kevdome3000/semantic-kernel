@@ -1,5 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Nodes;
+using System.Text.Json;
+using System;
 using System.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;

@@ -1,5 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlTypes;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;

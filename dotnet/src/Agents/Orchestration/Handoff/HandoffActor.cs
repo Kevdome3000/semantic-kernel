@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.ChatCompletion;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -25,7 +26,6 @@ internal sealed class HandoffActor :
 
     private string? _handoffAgent;
     private string? _taskSummary;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HandoffActor"/> class.
@@ -61,19 +61,16 @@ internal sealed class HandoffActor :
         _resultHandoff = resultHandoff;
     }
 
-
     /// <summary>
     /// Gets or sets the callback to be invoked for interactive input.
     /// </summary>
     public OrchestrationInteractiveCallback? InteractiveCallback { get; init; }
-
 
     /// <inheritdoc/>
     protected override bool ResponseCallbackFilter(ChatMessageContent response)
     {
         return response.Role == AuthorRole.Tool;
     }
-
 
     /// <inheritdoc/>
     protected override AgentInvokeOptions CreateInvokeOptions(Func<ChatMessageContent, Task> messageHandler)
@@ -101,33 +98,22 @@ internal sealed class HandoffActor :
         return options;
     }
 
-
     /// <inheritdoc/>
     public ValueTask HandleAsync(HandoffMessages.InputTask item, MessageContext messageContext)
     {
         _taskSummary = null;
         _cache.AddRange(item.Messages);
 
-#if !NETCOREAPP
-        return Task.CompletedTask.AsValueTask();
-#else
         return ValueTask.CompletedTask;
-#endif
     }
-
 
     /// <inheritdoc/>
     public ValueTask HandleAsync(HandoffMessages.Response item, MessageContext messageContext)
     {
         _cache.Add(item.Message);
 
-#if !NETCOREAPP
-        return Task.CompletedTask.AsValueTask();
-#else
         return ValueTask.CompletedTask;
-#endif
     }
-
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(HandoffMessages.Request item, MessageContext messageContext)
@@ -178,7 +164,6 @@ internal sealed class HandoffActor :
         }
     }
 
-
     private KernelPlugin CreateHandoffPlugin()
     {
         return KernelPluginFactory.CreateFromFunctions(HandoffInvocationFilter.HandoffPlugin, CreateHandoffFunctions());
@@ -203,19 +188,13 @@ internal sealed class HandoffActor :
         }
     }
 
-
     private ValueTask HandoffAsync(string agentName, CancellationToken cancellationToken = default)
     {
         Logger.LogHandoffFunctionCall(Id, agentName);
         _handoffAgent = agentName;
 
-#if !NETCOREAPP
-        return Task.CompletedTask.AsValueTask();
-#else
         return ValueTask.CompletedTask;
-#endif
     }
-
 
     private async ValueTask EndAsync(string summary, CancellationToken cancellationToken)
     {

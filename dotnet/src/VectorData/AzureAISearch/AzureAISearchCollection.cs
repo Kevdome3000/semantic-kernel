@@ -1,7 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Azure;
+using Azure.Search.Documents;
+using Azure.Search.Documents.Indexes;
+using Azure.Search.Documents.Indexes.Models;
+using Azure.Search.Documents.Models;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -515,9 +524,9 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         {
             ReadOnlyMemory<float> r => r,
             float[] f => new ReadOnlyMemory<float>(f),
-            Embedding<float> e => e.Vector,
+            MEAI.Embedding<float> e => e.Vector,
             _ when vectorProperty.EmbeddingGenerationDispatcher is not null
-                => ((Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false)).Vector,
+                => ((MEAI.Embedding<float>)await vectorProperty.GenerateEmbeddingAsync(searchValue, cancellationToken).ConfigureAwait(false)).Vector,
 
             // A string was passed without an embedding generator being configured; send the string to Azure AI Search for backend embedding generation.
             string when vectorProperty.EmbeddingGenerator is null => (ReadOnlyMemory<float>?)null,
@@ -582,7 +591,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             return default;
         }
 
-        return (TRecord)_mappper!.MapFromStorageToDataModel(jsonObject, includeVectors);
+        return _mappper!.MapFromStorageToDataModel(jsonObject, includeVectors);
     }
 
 
@@ -663,7 +672,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     {
         await foreach (var result in results.ConfigureAwait(false))
         {
-            var document = (TRecord)_mappper!.MapFromStorageToDataModel(result.Document, includeVectors);
+            var document = _mappper!.MapFromStorageToDataModel(result.Document, includeVectors);
             yield return new VectorSearchResult<TRecord>(document, result.Score);
         }
     }

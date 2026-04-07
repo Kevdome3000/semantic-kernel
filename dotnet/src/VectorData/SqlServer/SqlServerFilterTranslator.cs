@@ -1,6 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #if NET
+using Microsoft.Extensions.VectorData.ProviderServices;
+using System.Collections.Generic;
+using System.Collections;
+using System.Linq.Expressions;
+using System.Text;
+using System;
 using System.Globalization;
 #endif
 

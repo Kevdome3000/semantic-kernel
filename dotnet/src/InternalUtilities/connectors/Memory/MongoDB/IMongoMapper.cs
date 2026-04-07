@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
+using MongoDB.Bson;
+
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 internal interface IMongoMapper<TRecord>

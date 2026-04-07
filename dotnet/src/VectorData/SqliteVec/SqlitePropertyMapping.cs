@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Data.Common;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
+
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 /// <summary>

@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
+using Google.Protobuf.Collections;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Qdrant.Client.Grpc;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 

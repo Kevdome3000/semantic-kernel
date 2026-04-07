@@ -1,6 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Grpc.Core;
+using Grpc.Net.Client;
 using Microsoft.SemanticKernel.Plugins.Grpc.Model;
+using ProtoBuf;
 
 namespace Microsoft.SemanticKernel.Plugins.Grpc;
 

@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.ClientModel.Primitives;
 using System.Collections.Generic;

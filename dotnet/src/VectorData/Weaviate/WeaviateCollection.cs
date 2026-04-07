@@ -1,5 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
+using System.Linq;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Net;
+using System.Runtime.CompilerServices;
+using System.Text.Json.Nodes;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 using System.Diagnostics;
 using Microsoft.Extensions.VectorData;
 

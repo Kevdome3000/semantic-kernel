@@ -1,6 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections;
+using System.Linq;
+using System;
 using System.Diagnostics;
+using System.Linq.Expressions;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData.ProviderServices.Filter;
+using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 

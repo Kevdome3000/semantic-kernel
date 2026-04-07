@@ -1,3 +1,8 @@
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData;
+using MongoDB.Bson;
+using System.Collections.Generic;
+using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;

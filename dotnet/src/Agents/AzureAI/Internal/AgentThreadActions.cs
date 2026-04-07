@@ -1,4 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using Microsoft.SemanticKernel.ChatCompletion;
 using System;
 using System.ClientModel;
 using System.Collections.Generic;

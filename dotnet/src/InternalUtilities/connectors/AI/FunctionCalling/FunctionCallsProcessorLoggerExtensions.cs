@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.SemanticKernel.Connectors.FunctionCalling;
 
 [ExcludeFromCodeCoverage]

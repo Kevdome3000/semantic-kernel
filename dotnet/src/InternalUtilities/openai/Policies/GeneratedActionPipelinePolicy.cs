@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.ClientModel.Primitives;
+
 /// <summary>
 /// Generic action pipeline policy for processing messages.
 /// </summary>

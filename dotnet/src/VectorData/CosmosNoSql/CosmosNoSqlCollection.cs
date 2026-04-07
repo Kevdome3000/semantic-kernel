@@ -1,7 +1,25 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.Extensions.VectorData;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.AI;
 using DistanceFunction = Microsoft.Azure.Cosmos.DistanceFunction;
+using IndexKind = Microsoft.Extensions.VectorData.IndexKind;
+using SKDistanceFunction = Microsoft.Extensions.VectorData.DistanceFunction;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Linq;
+using System.Net;
+using System.Runtime.CompilerServices;
+using System.Text.Json.Nodes;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
+using Microsoft.Extensions.VectorData;
 using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;

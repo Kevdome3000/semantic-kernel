@@ -1,3 +1,14 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Memory;
+using Milvus.Client;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Connectors.Milvus;

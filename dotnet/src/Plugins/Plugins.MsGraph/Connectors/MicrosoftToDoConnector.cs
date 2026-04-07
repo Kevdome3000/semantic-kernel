@@ -1,5 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Graph.Models;
+using Microsoft.Graph;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 

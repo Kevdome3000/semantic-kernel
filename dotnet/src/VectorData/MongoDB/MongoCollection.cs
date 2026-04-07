@@ -1,6 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 using MEVD = Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
@@ -11,13 +18,13 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 /// <typeparam name="TKey">The data type of the record key. Must be <see cref="string"/>.</typeparam>
 /// <typeparam name="TRecord">The data model to use for adding, updating and retrieving data from storage.</typeparam>
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecord>, IKeywordHybridSearchable<TRecord>
+public class MongoCollection<TKey, TRecord> : MEVD.VectorStoreCollection<TKey, TRecord>, MEVD.IKeywordHybridSearchable<TRecord>
     where TKey : notnull
     where TRecord : class
 #pragma warning restore CA1711 // Identifiers should not have incorrect suffix
 {
     /// <summary>Metadata about vector store record collection.</summary>
-    private readonly VectorStoreCollectionMetadata _collectionMetadata;
+    private readonly MEVD.VectorStoreCollectionMetadata _collectionMetadata;
 
     /// <summary>Property name to be used for search similarity score value.</summary>
     private const string ScorePropertyName = "similarityScore";
@@ -29,7 +36,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     private static readonly MEVD.VectorSearchOptions<TRecord> s_defaultVectorSearchOptions = new();
 
     /// <summary>The default options for hybrid vector search.</summary>
-    private static readonly HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
+    private static readonly MEVD.HybridSearchOptions<TRecord> s_defaultKeywordVectorizedHybridSearchOptions = new();
 
     /// <summary><see cref="IMongoDatabase"/> that can be used to manage the collections in MongoDB.</summary>
     private readonly IMongoDatabase _mongoDatabase;
@@ -195,7 +202,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
 
 
     /// <inheritdoc />
-    public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
+    public override async Task<TRecord?> GetAsync(TKey key, MEVD.RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
         Verify.NotNull(key);
 
@@ -229,7 +236,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     /// <inheritdoc />
     public override async IAsyncEnumerable<TRecord> GetAsync(
         IEnumerable<TKey> keys,
-        RecordRetrievalOptions? options = null,
+        MEVD.RecordRetrievalOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(keys);
@@ -408,7 +415,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     #region Search
 
     /// <inheritdoc />
-    public override async IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
+    public override async IAsyncEnumerable<MEVD.VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput searchValue,
         int top,
         MEVD.VectorSearchOptions<TRecord>? options = null,
@@ -511,7 +518,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     public override async IAsyncEnumerable<TRecord> GetAsync(
         Expression<Func<TRecord, bool>> filter,
         int top,
-        FilteredRecordRetrievalOptions<TRecord>? options = null,
+        MEVD.FilteredRecordRetrievalOptions<TRecord>? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         Verify.NotNull(filter);
@@ -559,11 +566,11 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
 
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(
+    public async IAsyncEnumerable<MEVD.VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(
         TInput searchValue,
         ICollection<string> keywords,
         int top,
-        HybridSearchOptions<TRecord>? options = null,
+        MEVD.HybridSearchOptions<TRecord>? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
         where TInput : notnull
     {
@@ -640,7 +647,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
         return
             serviceKey is not null
                 ? null
-                : serviceType == typeof(VectorStoreCollectionMetadata)
+                : serviceType == typeof(MEVD.VectorStoreCollectionMetadata)
                     ? _collectionMetadata
                     : serviceType == typeof(IMongoDatabase)
                         ? _mongoDatabase
@@ -757,7 +764,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
     }
 
 
-    private async IAsyncEnumerable<VectorSearchResult<TRecord>> EnumerateAndMapSearchResultsAsync(
+    private async IAsyncEnumerable<MEVD.VectorSearchResult<TRecord>> EnumerateAndMapSearchResultsAsync(
         IAsyncCursor<BsonDocument> cursor,
         int skip,
         bool includeVectors,
@@ -774,7 +781,7 @@ public class MongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRecor
                     var score = response[ScorePropertyName].AsDouble;
                     var record = _mapper.MapFromStorageToDataModel(response[DocumentPropertyName].AsBsonDocument, includeVectors);
 
-                    yield return new VectorSearchResult<TRecord>(record, score);
+                    yield return new MEVD.VectorSearchResult<TRecord>(record, score);
                 }
 
                 skipCounter++;

@@ -1,3 +1,9 @@
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData;
+using System.Linq.Expressions;
+using System.Linq;
+using System.Text.Json;
+using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;

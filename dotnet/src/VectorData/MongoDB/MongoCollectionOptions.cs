@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData;
+
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>

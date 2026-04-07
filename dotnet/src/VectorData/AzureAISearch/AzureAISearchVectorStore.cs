@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using Azure;
+using Azure.Search.Documents.Indexes;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using static Microsoft.Extensions.VectorData.VectorStoreErrorHandler;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;

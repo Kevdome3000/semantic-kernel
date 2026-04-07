@@ -19,7 +19,6 @@ namespace Microsoft.SemanticKernel.Agents.Orchestration;
 /// <param name="response">The agent response</param>
 public delegate ValueTask OrchestrationResponseCallback(ChatMessageContent response);
 
-
 /// <summary>
 /// Called to expose the streamed response produced by any agent.
 /// </summary>
@@ -27,12 +26,10 @@ public delegate ValueTask OrchestrationResponseCallback(ChatMessageContent respo
 /// <param name="isFinal">Indicates if streamed content is final chunk of the message.</param>
 public delegate ValueTask OrchestrationStreamingCallback(StreamingChatMessageContent response, bool isFinal);
 
-
 /// <summary>
 /// Called when human interaction is requested.
 /// </summary>
 public delegate ValueTask<ChatMessageContent> OrchestrationInteractiveCallback();
-
 
 /// <summary>
 /// Base class for multi-agent agent orchestration patterns.
@@ -53,7 +50,6 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
 
         Members = members;
     }
-
 
     /// <summary>
     /// Gets the description of the orchestration.
@@ -100,7 +96,6 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     /// agent type and topic formatting as well as logging.
     /// </summary>
     protected string OrchestrationLabel { get; }
-
 
     /// <summary>
     /// Initiates processing of the orchestration.
@@ -152,7 +147,6 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
             logger);
     }
 
-
     /// <summary>
     /// Initiates processing according to the orchestration pattern.
     /// </summary>
@@ -165,7 +159,6 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
         TopicId topic,
         IEnumerable<ChatMessageContent> input,
         AgentType? entryAgent);
-
 
     /// <summary>
     /// Orchestration specific registration, including members and returns an optional entry agent.
@@ -181,7 +174,6 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
         RegistrationContext registrar,
         ILogger logger);
 
-
     /// <summary>
     /// Formats and returns a unique AgentType based on the provided topic and suffix.
     /// </summary>
@@ -192,7 +184,6 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
     {
         return new AgentType($"{topic.Type}_{suffix}");
     }
-
 
     /// <summary>
     /// Registers the orchestration's root and boot agents, setting up completion and target routing.
@@ -238,11 +229,7 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
                                 completion,
                                 StartAsync,
                                 context.LoggerFactory.CreateLogger<RequestActor>());
-#if !NETCOREAPP
-                        return actor.AsValueTask<IHostableAgent>();
-#else
                         return ValueTask.FromResult<IHostableAgent>(actor);
-#endif
                     })
                 .ConfigureAwait(false);
 
@@ -258,7 +245,6 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
                 entryAgent);
         }
     }
-
 
     /// <summary>
     /// A context used during registration (<see cref="RegisterAsync"/>).
@@ -289,11 +275,7 @@ public abstract partial class AgentOrchestration<TInput, TOutput>
                                     outputTransform,
                                     completion,
                                     context.LoggerFactory.CreateLogger<ResultActor<TResult>>());
-#if !NETCOREAPP
-                            return actor.AsValueTask<IHostableAgent>();
-#else
                         return ValueTask.FromResult<IHostableAgent>(actor);
-#endif
                         })
                     .ConfigureAwait(false);
 

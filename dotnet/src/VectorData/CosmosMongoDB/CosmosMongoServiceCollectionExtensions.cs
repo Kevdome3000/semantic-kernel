@@ -1,5 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
+using MongoDB.Driver;
+using System.Diagnostics.CodeAnalysis;
+using System;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.CosmosMongoDB;
 using Microsoft.SemanticKernel.Http;

@@ -1,3 +1,12 @@
+using Microsoft.Extensions.VectorData.ProviderServices.Filter;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using System.Collections.Generic;
+using System.Collections;
+using System.Globalization;
+using System.Linq.Expressions;
+using System.Linq;
+using System.Text;
+using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;

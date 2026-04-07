@@ -1,3 +1,11 @@
+using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Client;

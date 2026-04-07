@@ -1,5 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Graph.Models;
+using Microsoft.Graph;
+using System.IO;
+using System.Net.Http;
+using System.Net;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;

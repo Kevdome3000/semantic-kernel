@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using MongoDB.Bson;
+
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>

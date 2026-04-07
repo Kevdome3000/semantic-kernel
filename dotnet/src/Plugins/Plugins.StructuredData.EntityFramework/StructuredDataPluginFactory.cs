@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Reflection;
+using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel;

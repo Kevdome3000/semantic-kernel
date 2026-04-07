@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using Azure.Search.Documents.Indexes;
+using Microsoft.Extensions.AI;
+
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>

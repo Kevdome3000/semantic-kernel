@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData;
+using Qdrant.Client.Grpc;
+
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 /// <summary>

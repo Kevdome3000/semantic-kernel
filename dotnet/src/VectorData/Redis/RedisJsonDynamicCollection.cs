@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using StackExchange.Redis;
+
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Logging;
+using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;

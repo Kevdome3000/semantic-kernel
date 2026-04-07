@@ -1,3 +1,9 @@
+using Microsoft.Graph.Models;
+using Microsoft.Graph;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Threading;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;

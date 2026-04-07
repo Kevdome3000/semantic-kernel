@@ -1,8 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 using Microsoft.SemanticKernel.Http;
+using MongoDB.Driver;
+using MongoDB.Driver.Core.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

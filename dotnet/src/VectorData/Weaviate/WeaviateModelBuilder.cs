@@ -1,3 +1,9 @@
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;

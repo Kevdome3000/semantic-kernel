@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#if NET472
-using System.Net.Http;
-#endif
 using System.Text.Json;
 using Microsoft.Azure.Cosmos;
 using Microsoft.SemanticKernel.Connectors.CosmosNoSql;

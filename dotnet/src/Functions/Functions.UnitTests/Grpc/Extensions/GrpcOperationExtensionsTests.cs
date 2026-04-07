@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using Microsoft.SemanticKernel.Plugins.Grpc.Model;
 using Xunit;
 

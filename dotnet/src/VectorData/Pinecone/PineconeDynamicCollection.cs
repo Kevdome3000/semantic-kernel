@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Pinecone;
+
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
 /// <summary>

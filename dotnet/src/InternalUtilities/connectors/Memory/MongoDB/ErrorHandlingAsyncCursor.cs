@@ -1,11 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.VectorData;
+using MongoDB.Driver;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>
-/// A decorator for <see cref="IAsyncCursor{T}"/> that handles errors on move next.
+/// A decorator for <see cref="IAsyncCursor{TDocument}"/> that handles errors on move next.
 /// </summary>
 /// <typeparam name="T">The type that the cursor returns.</typeparam>
 internal class ErrorHandlingAsyncCursor<T> : IAsyncCursor<T>

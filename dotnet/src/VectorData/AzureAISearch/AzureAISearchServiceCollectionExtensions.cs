@@ -1,5 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using Azure;
+using Azure.Core;
+using Azure.Core.Serialization;
+using Azure.Search.Documents;
+using Azure.Search.Documents.Indexes;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using Microsoft.SemanticKernel.Http;

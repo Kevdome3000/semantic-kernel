@@ -1,3 +1,5 @@
+using Microsoft.Extensions.AI;
+using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;

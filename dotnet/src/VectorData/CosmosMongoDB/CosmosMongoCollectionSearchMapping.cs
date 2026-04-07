@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData;
+using MongoDB.Bson;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;

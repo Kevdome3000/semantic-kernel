@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using MongoDB.Driver;
+using System.Collections.Generic;
+using System;
 using Microsoft.SemanticKernel.Connectors.MongoDB;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;

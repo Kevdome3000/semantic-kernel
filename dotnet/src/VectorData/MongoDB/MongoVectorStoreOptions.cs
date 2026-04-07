@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
+
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>

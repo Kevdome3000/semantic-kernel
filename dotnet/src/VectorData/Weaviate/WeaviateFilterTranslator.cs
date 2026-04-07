@@ -1,5 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.VectorData.ProviderServices.Filter;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using System.Collections;
+using System.Linq.Expressions;
+using System.Linq;
+using System.Text.Json;
+using System.Text;
+using System;
 using System.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;

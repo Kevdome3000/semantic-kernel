@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Graph.Models;
+using System.Linq;
+using System;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
@@ -33,7 +36,7 @@ internal static class MicrosoftGraphModelExtensions
     /// <summary>
     /// Convert a Microsoft Graph email address to an email address.
     /// </summary>
-    public static EmailAddress ToEmailAddress(this Microsoft.Graph.Models.EmailAddress graphEmailAddress)
+    public static Models.EmailAddress ToEmailAddress(this Microsoft.Graph.Models.EmailAddress graphEmailAddress)
     {
         return new EmailAddress
         {

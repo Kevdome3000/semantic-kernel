@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using Microsoft.Extensions.VectorData;
+
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>

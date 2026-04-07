@@ -16,7 +16,6 @@ public static class AgentRuntimeExtensions
 {
     internal const string DirectMessageTopicSuffix = ":";
 
-
     /// <summary>
     /// Registers an agent type with the runtime, providing a factory function to create instances of the agent.
     /// </summary>
@@ -38,7 +37,6 @@ public static class AgentRuntimeExtensions
             serviceProvider,
             additionalArguments);
     }
-
 
     /// <summary>
     /// Registers an agent type with the runtime using the specified runtime type and additional constructor arguments.
@@ -64,7 +62,6 @@ public static class AgentRuntimeExtensions
         return runtime.RegisterAgentFactoryAsync(type, factory);
     }
 
-
     /// <summary>
     /// Registers implicit subscriptions for an agent type based on the type's custom attributes.
     /// </summary>
@@ -86,7 +83,6 @@ public static class AgentRuntimeExtensions
             skipClassSubscriptions,
             skipDirectMessageSubscription);
     }
-
 
     /// <summary>
     /// Registers implicit subscriptions for the specified agent type using runtime type information.
@@ -114,7 +110,6 @@ public static class AgentRuntimeExtensions
             await runtime.AddSubscriptionAsync(subscription).ConfigureAwait(false);
         }
     }
-
 
     /// <summary>
     /// Binds subscription definitions for the given agent type based on the custom attributes applied to the runtime type.
@@ -148,7 +143,6 @@ public static class AgentRuntimeExtensions
         return [.. subscriptions];
     }
 
-
     /// <summary>
     /// Instantiates and activates an agent asynchronously using dependency injection.
     /// </summary>
@@ -162,19 +156,11 @@ public static class AgentRuntimeExtensions
         {
             IHostableAgent agent = (BaseAgent)ActivatorUtilities.CreateInstance(serviceProvider, runtimeType, additionalArguments);
 
-#if !NETCOREAPP
-            return agent.AsValueTask();
-#else
             return ValueTask.FromResult(agent);
-#endif
         }
         catch (Exception e) when (!e.IsCriticalException())
         {
-#if !NETCOREAPP
-            return e.AsValueTask<IHostableAgent>();
-#else
             return ValueTask.FromException<IHostableAgent>(e);
-#endif
         }
     }
 }

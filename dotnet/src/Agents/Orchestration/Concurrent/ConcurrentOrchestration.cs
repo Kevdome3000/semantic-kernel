@@ -26,7 +26,6 @@ public class ConcurrentOrchestration<TInput, TOutput>
     {
     }
 
-
     /// <inheritdoc />
     protected override ValueTask StartAsync(
         IAgentRuntime runtime,
@@ -36,7 +35,6 @@ public class ConcurrentOrchestration<TInput, TOutput>
     {
         return runtime.PublishMessageAsync(input.AsInputMessage(), topic);
     }
-
 
     /// <inheritdoc />
     protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(
@@ -59,11 +57,7 @@ public class ConcurrentOrchestration<TInput, TOutput>
                         outputType,
                         Members.Count,
                         context.LoggerFactory.CreateLogger<ConcurrentResultActor>());
-#if !NETCOREAPP
-                    return actor.AsValueTask<IHostableAgent>();
-#else
                 return ValueTask.FromResult<IHostableAgent>(actor);
-#endif
                 })
             .ConfigureAwait(false);
         logger.LogRegisterActor(OrchestrationLabel, resultType, "RESULTS");
@@ -86,11 +80,7 @@ public class ConcurrentOrchestration<TInput, TOutput>
                                 agent,
                                 resultType,
                                 context.LoggerFactory.CreateLogger<ConcurrentActor>());
-#if !NETCOREAPP
-                            return actor.AsValueTask<IHostableAgent>();
-#else
                         return ValueTask.FromResult<IHostableAgent>(actor);
-#endif
                         })
                     .ConfigureAwait(false);
 

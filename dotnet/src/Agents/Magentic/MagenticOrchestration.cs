@@ -20,7 +20,6 @@ public class MagenticOrchestration<TInput, TOutput> :
 
     private readonly MagenticManager _manager;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="MagenticOrchestration{TInput, TOutput}"/> class.
     /// </summary>
@@ -33,7 +32,6 @@ public class MagenticOrchestration<TInput, TOutput> :
 
         _manager = manager;
     }
-
 
     /// <inheritdoc />
     protected override ValueTask StartAsync(
@@ -48,7 +46,6 @@ public class MagenticOrchestration<TInput, TOutput> :
         }
         return runtime.PublishMessageAsync(input.AsInputTaskMessage(), entryAgent.Value);
     }
-
 
     /// <inheritdoc />
     protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(
@@ -91,11 +88,7 @@ public class MagenticOrchestration<TInput, TOutput> :
                             team,
                             outputType,
                             context.LoggerFactory.CreateLogger<MagenticManagerActor>());
-#if !NETCOREAPP
-                    return actor.AsValueTask<IHostableAgent>();
-#else
                         return ValueTask.FromResult<IHostableAgent>(actor);
-#endif
                     })
                 .ConfigureAwait(false);
         logger.LogRegisterActor(OrchestrationLabel, managerType, "MANAGER");
@@ -114,11 +107,7 @@ public class MagenticOrchestration<TInput, TOutput> :
                         context,
                         agent,
                         context.LoggerFactory.CreateLogger<MagenticAgentActor>());
-#if !NETCOREAPP
-                    return actor.AsValueTask<IHostableAgent>();
-#else
                     return ValueTask.FromResult<IHostableAgent>(actor);
-#endif
                 });
     }
 }

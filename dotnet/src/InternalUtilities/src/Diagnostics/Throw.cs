@@ -23,7 +23,6 @@ namespace Microsoft.SemanticKernel;
 internal static class Throw
 {
 
-
     #region For Object
 
     /// <summary>
@@ -44,7 +43,6 @@ internal static class Throw
 
         return argument;
     }
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentNullException"/> if the specified argument is <see langword="null"/>,
@@ -85,7 +83,6 @@ internal static class Throw
         return member;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentException" /> if the specified member is <see langword="null"/>.
     /// </summary>
@@ -123,7 +120,6 @@ internal static class Throw
 
     #endregion
 
-
     #region For String
 
     /// <summary>
@@ -137,12 +133,6 @@ internal static class Throw
     [return: NotNull]
     public static string IfNullOrWhitespace([NotNull] string? argument, [CallerArgumentExpression(nameof(argument))] string paramName = "")
     {
-#if !NETCOREAPP3_1_OR_GREATER
-        if (argument == null)
-        {
-            ArgumentNullException(paramName);
-        }
-#endif
 
         if (string.IsNullOrWhiteSpace(argument))
         {
@@ -159,7 +149,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentNullException"/> if the string is <see langword="null"/>,
     /// or <see cref="System.ArgumentException"/> if it is empty.
@@ -171,12 +160,6 @@ internal static class Throw
     [return: NotNull]
     public static string IfNullOrEmpty([NotNull] string? argument, [CallerArgumentExpression(nameof(argument))] string paramName = "")
     {
-#if !NETCOREAPP3_1_OR_GREATER
-        if (argument == null)
-        {
-            ArgumentNullException(paramName);
-        }
-#endif
 
         if (string.IsNullOrEmpty(argument))
         {
@@ -194,7 +177,6 @@ internal static class Throw
     }
 
     #endregion
-
 
     #region For Buffer
 
@@ -215,7 +197,6 @@ internal static class Throw
 
     #endregion
 
-
     #region For Enums
 
     /// <summary>
@@ -229,11 +210,7 @@ internal static class Throw
     public static T IfOutOfRange<T>(T argument, [CallerArgumentExpression(nameof(argument))] string paramName = "")
         where T : struct, Enum
     {
-#if NET
         if (!Enum.IsDefined<T>(argument))
-#else
-        if (!Enum.IsDefined(typeof(T), argument))
-#endif
         {
             ArgumentOutOfRangeException(paramName, $"{argument} is an invalid value for enum type {typeof(T)}");
         }
@@ -242,7 +219,6 @@ internal static class Throw
     }
 
     #endregion
-
 
     #region For Collections
 
@@ -304,58 +280,41 @@ internal static class Throw
 
     #endregion
 
-
     #region Exceptions
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentNullException"/>.
     /// </summary>
     /// <param name="paramName">The name of the parameter that caused the exception.</param>
-#if !NET6_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.NoInlining)]
-#endif
     [DoesNotReturn]
     public static void ArgumentNullException(string paramName)
         => throw new ArgumentNullException(paramName);
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentNullException"/>.
     /// </summary>
     /// <param name="paramName">The name of the parameter that caused the exception.</param>
     /// <param name="message">A message that describes the error.</param>
-#if !NET6_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.NoInlining)]
-#endif
     [DoesNotReturn]
     public static void ArgumentNullException(string paramName, string? message)
         => throw new ArgumentNullException(paramName, message);
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/>.
     /// </summary>
     /// <param name="paramName">The name of the parameter that caused the exception.</param>
-#if !NET6_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.NoInlining)]
-#endif
     [DoesNotReturn]
     public static void ArgumentOutOfRangeException(string paramName)
         => throw new ArgumentOutOfRangeException(paramName);
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/>.
     /// </summary>
     /// <param name="paramName">The name of the parameter that caused the exception.</param>
     /// <param name="message">A message that describes the error.</param>
-#if !NET6_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.NoInlining)]
-#endif
     [DoesNotReturn]
     public static void ArgumentOutOfRangeException(string paramName, string? message)
         => throw new ArgumentOutOfRangeException(paramName, message);
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/>.
@@ -363,26 +322,18 @@ internal static class Throw
     /// <param name="paramName">The name of the parameter that caused the exception.</param>
     /// <param name="actualValue">The value of the argument that caused this exception.</param>
     /// <param name="message">A message that describes the error.</param>
-#if !NET6_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.NoInlining)]
-#endif
     [DoesNotReturn]
     public static void ArgumentOutOfRangeException(string paramName, object? actualValue, string? message)
         => throw new ArgumentOutOfRangeException(paramName, actualValue, message);
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentException"/>.
     /// </summary>
     /// <param name="paramName">The name of the parameter that caused the exception.</param>
     /// <param name="message">A message that describes the error.</param>
-#if !NET6_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.NoInlining)]
-#endif
     [DoesNotReturn]
     public static void ArgumentException(string paramName, string? message)
         => throw new ArgumentException(message, paramName);
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentException"/>.
@@ -394,40 +345,28 @@ internal static class Throw
     /// If the <paramref name="innerException"/> is not a <see langword="null"/>, the current exception is raised in a catch
     /// block that handles the inner exception.
     /// </remarks>
-#if !NET6_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.NoInlining)]
-#endif
     [DoesNotReturn]
     public static void ArgumentException(string paramName, string? message, Exception? innerException)
         => throw new ArgumentException(message, paramName, innerException);
-
 
     /// <summary>
     /// Throws an <see cref="System.InvalidOperationException"/>.
     /// </summary>
     /// <param name="message">A message that describes the error.</param>
-#if !NET6_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.NoInlining)]
-#endif
     [DoesNotReturn]
     public static void InvalidOperationException(string message)
         => throw new InvalidOperationException(message);
-
 
     /// <summary>
     /// Throws an <see cref="System.InvalidOperationException"/>.
     /// </summary>
     /// <param name="message">A message that describes the error.</param>
     /// <param name="innerException">The exception that is the cause of the current exception.</param>
-#if !NET6_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.NoInlining)]
-#endif
     [DoesNotReturn]
     public static void InvalidOperationException(string message, Exception? innerException)
         => throw new InvalidOperationException(message, innerException);
 
     #endregion
-
 
     #region For Integer
 
@@ -449,7 +388,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
     /// </summary>
@@ -467,7 +405,6 @@ internal static class Throw
 
         return argument;
     }
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
@@ -487,7 +424,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
     /// </summary>
@@ -505,7 +441,6 @@ internal static class Throw
 
         return argument;
     }
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
@@ -531,7 +466,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
     /// </summary>
@@ -550,7 +484,6 @@ internal static class Throw
     }
 
     #endregion
-
 
     #region For Unsigned Integer
 
@@ -572,7 +505,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
     /// </summary>
@@ -590,7 +522,6 @@ internal static class Throw
 
         return argument;
     }
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
@@ -610,7 +541,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
     /// </summary>
@@ -628,7 +558,6 @@ internal static class Throw
 
         return argument;
     }
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
@@ -654,7 +583,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
     /// </summary>
@@ -673,7 +601,6 @@ internal static class Throw
     }
 
     #endregion
-
 
     #region For Long
 
@@ -695,7 +622,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
     /// </summary>
@@ -713,7 +639,6 @@ internal static class Throw
 
         return argument;
     }
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
@@ -733,7 +658,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
     /// </summary>
@@ -751,7 +675,6 @@ internal static class Throw
 
         return argument;
     }
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
@@ -777,7 +700,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
     /// </summary>
@@ -796,7 +718,6 @@ internal static class Throw
     }
 
     #endregion
-
 
     #region For Unsigned Long
 
@@ -818,7 +739,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
     /// </summary>
@@ -836,7 +756,6 @@ internal static class Throw
 
         return argument;
     }
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
@@ -856,7 +775,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
     /// </summary>
@@ -874,7 +792,6 @@ internal static class Throw
 
         return argument;
     }
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
@@ -900,7 +817,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
     /// </summary>
@@ -919,7 +835,6 @@ internal static class Throw
     }
 
     #endregion
-
 
     #region For Double
 
@@ -944,7 +859,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater than max.
     /// </summary>
@@ -965,7 +879,6 @@ internal static class Throw
 
         return argument;
     }
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is less or equal than min.
@@ -988,7 +901,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is greater or equal than max.
     /// </summary>
@@ -1009,7 +921,6 @@ internal static class Throw
 
         return argument;
     }
-
 
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is not in the specified range.
@@ -1036,7 +947,6 @@ internal static class Throw
         return argument;
     }
 
-
     /// <summary>
     /// Throws an <see cref="System.ArgumentOutOfRangeException"/> if the specified number is equal to 0.
     /// </summary>
@@ -1057,6 +967,5 @@ internal static class Throw
     }
 
     #endregion
-
 
 }

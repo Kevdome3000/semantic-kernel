@@ -1,6 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 #if NET
+using Community.OData.Linq;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 using OData2Linq;
 #else
 #endif

@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using MongoDB.Driver;
+
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 /// <summary>

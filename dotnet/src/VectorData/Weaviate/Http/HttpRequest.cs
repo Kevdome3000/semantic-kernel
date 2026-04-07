@@ -1,3 +1,7 @@
+using System.Net.Http;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+using System.Text;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Connectors.Weaviate;

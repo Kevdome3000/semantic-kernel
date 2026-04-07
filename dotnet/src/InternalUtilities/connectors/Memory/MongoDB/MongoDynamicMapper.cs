@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using MongoDB.Bson;
 
 namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 

@@ -19,7 +19,6 @@ public class GroupChatOrchestration<TInput, TOutput> :
 
     private readonly GroupChatManager _manager;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatOrchestration{TInput, TOutput}"/> class.
     /// </summary>
@@ -32,7 +31,6 @@ public class GroupChatOrchestration<TInput, TOutput> :
 
         _manager = manager;
     }
-
 
     /// <inheritdoc />
     protected override ValueTask StartAsync(
@@ -47,7 +45,6 @@ public class GroupChatOrchestration<TInput, TOutput> :
         }
         return runtime.PublishMessageAsync(input.AsInputTaskMessage(), entryAgent.Value);
     }
-
 
     /// <inheritdoc />
     protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(
@@ -90,11 +87,7 @@ public class GroupChatOrchestration<TInput, TOutput> :
                             team,
                             outputType,
                             context.LoggerFactory.CreateLogger<GroupChatManagerActor>());
-#if !NETCOREAPP
-                        return actor.AsValueTask<IHostableAgent>();
-#else
                     return ValueTask.FromResult<IHostableAgent>(actor);
-#endif
                     })
                 .ConfigureAwait(false);
         logger.LogRegisterActor(OrchestrationLabel, managerType, "MANAGER");
@@ -113,11 +106,7 @@ public class GroupChatOrchestration<TInput, TOutput> :
                         context,
                         agent,
                         context.LoggerFactory.CreateLogger<GroupChatAgentActor>());
-#if !NETCOREAPP
-                    return actor.AsValueTask<IHostableAgent>();
-#else
                     return ValueTask.FromResult<IHostableAgent>(actor);
-#endif
                 });
     }
 }

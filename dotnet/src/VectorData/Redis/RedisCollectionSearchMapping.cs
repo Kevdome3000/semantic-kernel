@@ -1,5 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq.Expressions;
+using System.Runtime.InteropServices;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using NRedisStack.Search;
+
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 /// <summary>

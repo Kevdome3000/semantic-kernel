@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Data.Sqlite;
+
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 internal static class SqliteExtensions

@@ -45,7 +45,6 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
     /// </summary>
     public AgentMetadata Metadata { get; }
 
-
     /// <summary>
     /// Initializes a new instance of the BaseAgent class with the specified identifier, runtime, description, and optional logger.
     /// </summary>
@@ -69,7 +68,6 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
         _handlerInvokers = HandlerInvoker.ReflectAgentHandlers(this);
     }
 
-
     /// <summary>
     /// Handles an incoming message by determining its type and invoking the corresponding handler method if available.
     /// </summary>
@@ -89,37 +87,25 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
         return null;
     }
 
-
     /// <inheritdoc/>
     public virtual ValueTask<JsonElement> SaveStateAsync()
     {
         return new ValueTask<JsonElement>(JsonElement.Parse("{}"));
     }
 
-
     /// <inheritdoc/>
     public virtual ValueTask LoadStateAsync(JsonElement state)
     {
-#if !NETCOREAPP
-        return Task.CompletedTask.AsValueTask();
-#else
         return ValueTask.CompletedTask;
-#endif
     }
-
 
     /// <summary>
     /// Closes this agent gracefully by releasing allocated resources and performing any necessary cleanup.
     /// </summary>
     public virtual ValueTask CloseAsync()
     {
-#if !NETCOREAPP
-        return Task.CompletedTask.AsValueTask();
-#else
         return ValueTask.CompletedTask;
-#endif
     }
-
 
     /// <summary>
     /// Sends a message to a specified recipient agent through the runtime.
@@ -138,7 +124,6 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
             return null;
         }
     }
-
 
     /// <summary>
     /// Sends a message to a specified recipient agent through the runtime.
@@ -160,7 +145,6 @@ public abstract class BaseAgent : IHostableAgent, ISaveState
             messageId,
             cancellationToken);
     }
-
 
     /// <summary>
     /// Publishes a message to all agents subscribed to a specific topic through the runtime.

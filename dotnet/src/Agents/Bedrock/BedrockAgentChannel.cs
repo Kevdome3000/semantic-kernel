@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents.Extensions;
+using Microsoft.SemanticKernel.ChatCompletion;
+using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;

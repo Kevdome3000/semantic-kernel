@@ -24,7 +24,6 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
     {
     }
 
-
     /// <inheritdoc />
     protected override async ValueTask StartAsync(
         IAgentRuntime runtime,
@@ -38,7 +37,6 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
         }
         await runtime.PublishMessageAsync(input.AsRequestMessage(), entryAgent.Value).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(
@@ -77,14 +75,9 @@ public class SequentialOrchestration<TInput, TOutput> : AgentOrchestration<TInpu
                         nextAgent,
                         context.LoggerFactory.CreateLogger<SequentialActor>());
 
-#if !NETCOREAPP
-                    return actor.AsValueTask<IHostableAgent>();
-#else
                     return ValueTask.FromResult<IHostableAgent>(actor);
-#endif
                 });
     }
-
 
     private AgentType GetAgentType(TopicId topic, int index)
     {

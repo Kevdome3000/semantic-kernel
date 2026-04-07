@@ -1,7 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
+using System.Linq.Expressions;
 using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData.ProviderServices.Filter;
+using Pinecone;
+using CollectionModel = Microsoft.Extensions.VectorData.ProviderServices.CollectionModel;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 

@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
+
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 internal interface IRedisJsonMapper<TRecord>

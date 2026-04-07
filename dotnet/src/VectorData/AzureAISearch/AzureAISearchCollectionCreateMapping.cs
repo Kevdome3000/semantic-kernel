@@ -1,5 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Azure.Search.Documents.Indexes.Models;
+using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
+
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 /// <summary>

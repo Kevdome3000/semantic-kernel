@@ -1,5 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
+using System.ComponentModel;
+using System.IO;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph;

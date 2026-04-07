@@ -1,3 +1,12 @@
+using Fluid.Ast;
+using Fluid;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Web;
+using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;

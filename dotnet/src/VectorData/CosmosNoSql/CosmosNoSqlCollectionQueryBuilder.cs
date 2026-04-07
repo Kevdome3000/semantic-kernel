@@ -1,3 +1,11 @@
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Linq;
+using System.Text;
+using System;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;

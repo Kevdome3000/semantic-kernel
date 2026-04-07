@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Linq;
 using System.IO;
 using Microsoft.SemanticKernel.Plugins.Grpc.Protobuf;
 using SemanticKernel.Functions.UnitTests.Grpc.Protobuf.TestPlugins;

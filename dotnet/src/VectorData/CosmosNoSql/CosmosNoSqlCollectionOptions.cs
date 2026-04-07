@@ -1,3 +1,7 @@
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.VectorData;
+using System.Collections.Generic;
+using System.Text.Json;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;

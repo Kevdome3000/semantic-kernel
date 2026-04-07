@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using Microsoft.SemanticKernel.Http;
+
 namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 
 /// <summary>

@@ -18,7 +18,6 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
 {
     private readonly OrchestrationHandoffs _handoffs;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="HandoffOrchestration{TInput, TOutput}"/> class.
     /// </summary>
@@ -44,12 +43,10 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
         _handoffs = handoffs;
     }
 
-
     /// <summary>
     /// Gets or sets the callback to be invoked for interactive input.
     /// </summary>
     public OrchestrationInteractiveCallback? InteractiveCallback { get; init; }
-
 
     /// <inheritdoc />
     protected override async ValueTask StartAsync(
@@ -65,7 +62,6 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
         await runtime.PublishMessageAsync(input.AsInputTaskMessage(), topic).ConfigureAwait(false);
         await runtime.PublishMessageAsync(new HandoffMessages.Request(), entryAgent.Value).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     protected override async ValueTask<AgentType?> RegisterOrchestrationAsync(
@@ -102,11 +98,7 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
                                 {
                                     InteractiveCallback = InteractiveCallback
                                 };
-#if !NETCOREAPP
-                            return actor.AsValueTask<IHostableAgent>();
-#else
                         return ValueTask.FromResult<IHostableAgent>(actor);
-#endif
                         })
                     .ConfigureAwait(false);
             agentMap[agent.Name ?? agent.Id] = agentType;
@@ -134,7 +126,6 @@ public class HandoffOrchestration<TInput, TOutput> : AgentOrchestration<TInput, 
 
         return agentMap[_handoffs.FirstAgentName];
     }
-
 
     private AgentType GetAgentType(TopicId topic, int index)
     {

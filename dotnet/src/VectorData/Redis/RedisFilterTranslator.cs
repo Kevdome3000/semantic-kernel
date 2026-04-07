@@ -1,5 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections;
+using System.Linq;
+using System;
+using System.Linq.Expressions;
+using System.Text;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData.ProviderServices.Filter;
+
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 #pragma warning disable MEVD9001 // Experimental: filter translation base types

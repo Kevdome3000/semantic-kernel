@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
+using Pinecone;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 

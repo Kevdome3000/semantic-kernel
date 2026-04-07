@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 
 #pragma warning disable CA1812 // Avoid uninstantiated internal classes

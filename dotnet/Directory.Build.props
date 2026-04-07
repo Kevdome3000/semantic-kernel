@@ -8,7 +8,7 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <LangVersion>latestmajor</LangVersion>
         <Nullable>enable</Nullable>
-        <ImplicitUsings>disable</ImplicitUsings>
+        <ImplicitUsings>enable</ImplicitUsings>
         <NoWarn>$(NoWarn);IDE0290;IDE0079</NoWarn>
     </PropertyGroup>
 
@@ -36,5 +36,11 @@
         <AssemblyAttribute Include="System.CLSCompliantAttribute">
             <_Parameter1>false</_Parameter1>
         </AssemblyAttribute>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Global usings for namespaces previously provided by polyfill files (net10.0 only) -->
+        <Using Include="System.Diagnostics.CodeAnalysis"/>
+        <Using Include="System.Runtime.CompilerServices"/>
     </ItemGroup>
 </Project>

@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Microsoft.Extensions.VectorData.ProviderServices;
 using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
@@ -43,8 +46,8 @@ internal sealed class AzureAISearchMapper<TRecord>(CollectionModel model, JsonSe
         {
             var property = model.VectorProperties[i];
 
-            Embedding<float>? embedding = generatedEmbeddings?[i]?[recordIndex] is Embedding ge
-                ? (Embedding<float>)ge
+            MEAI.Embedding<float>? embedding = generatedEmbeddings?[i]?[recordIndex] is MEAI.Embedding ge
+                ? (MEAI.Embedding<float>)ge
                 : null;
 
             if (embedding is null)
@@ -59,8 +62,8 @@ internal sealed class AzureAISearchMapper<TRecord>(CollectionModel model, JsonSe
                         // So there's nothing for us to do.
                         continue;
 
-                    case var t when t == typeof(Embedding<float>):
-                        embedding = (Embedding<float>)property.GetValueAsObject(dataModel)!;
+                    case var t when t == typeof(MEAI.Embedding<float>):
+                        embedding = (MEAI.Embedding<float>)property.GetValueAsObject(dataModel)!;
                         break;
 
                     default:
@@ -112,7 +115,7 @@ internal sealed class AzureAISearchMapper<TRecord>(CollectionModel model, JsonSe
                 // If the vector property .NET type is Embedding<float>, we need to create the JSON structure for it
                 // (JSON array embedded inside an object representing the embedding), so that the deserialization below
                 // works correctly.
-                if (vectorProperty.Type == typeof(Embedding<float>))
+                if (vectorProperty.Type == typeof(MEAI.Embedding<float>))
                 {
                     var arrayNode = storageModel[vectorProperty.StorageName];
 
@@ -120,7 +123,7 @@ internal sealed class AzureAISearchMapper<TRecord>(CollectionModel model, JsonSe
                     {
                         storageModel[vectorProperty.StorageName] = new JsonObject
                         {
-                            [nameof(Embedding<float>.Vector)] = arrayNode.DeepClone()
+                            [nameof(MEAI.Embedding<float>.Vector)] = arrayNode.DeepClone()
                         };
                     }
                 }

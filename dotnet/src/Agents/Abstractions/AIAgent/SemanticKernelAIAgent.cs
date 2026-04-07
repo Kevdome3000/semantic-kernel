@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using MAAI = Microsoft.Agents.AI;
 using MEAI = Microsoft.Extensions.AI;
 

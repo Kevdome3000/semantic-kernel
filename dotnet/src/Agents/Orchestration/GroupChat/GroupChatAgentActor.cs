@@ -19,7 +19,6 @@ internal sealed class GroupChatAgentActor :
 {
     private readonly List<ChatMessageContent> _cache;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatAgentActor"/> class.
     /// </summary>
@@ -43,26 +42,19 @@ internal sealed class GroupChatAgentActor :
         _cache = [];
     }
 
-
     /// <inheritdoc/>
     public ValueTask HandleAsync(GroupChatMessages.Group item, MessageContext messageContext)
     {
         _cache.AddRange(item.Messages);
 
-#if !NETCOREAPP
-        return Task.CompletedTask.AsValueTask();
-#else
         return ValueTask.CompletedTask;
-#endif
     }
-
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(GroupChatMessages.Reset item, MessageContext messageContext)
     {
         await DeleteThreadAsync(messageContext.CancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public async ValueTask HandleAsync(GroupChatMessages.Speak item, MessageContext messageContext)

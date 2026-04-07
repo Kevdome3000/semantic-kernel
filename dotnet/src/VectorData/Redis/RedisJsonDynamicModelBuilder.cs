@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData.ProviderServices;
+
 namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 internal class RedisJsonDynamicModelBuilder(CollectionModelBuildingOptions options) : CollectionModelBuilder(options)

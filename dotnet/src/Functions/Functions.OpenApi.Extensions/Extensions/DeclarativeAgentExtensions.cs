@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.Plugins.OpenApi;
 using System;
 using System.IO;
 using System.Linq;

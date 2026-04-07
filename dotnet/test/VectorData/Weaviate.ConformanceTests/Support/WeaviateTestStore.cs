@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#if NET472
-using System.Net.Http;
-#endif
 using Microsoft.SemanticKernel.Connectors.Weaviate;
 using VectorData.ConformanceTests.Support;
 using Weaviate.ConformanceTests.Support.TestContainer;

@@ -35,7 +35,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
     /// </summary>
     public bool DeliverToSelf { get; set; } //= false;
 
-
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
@@ -43,7 +42,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         _shutdownSource?.Dispose();
         _finishSource?.Dispose();
     }
-
 
     /// <summary>
     /// Starts the runtime service.
@@ -63,7 +61,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
 
         return Task.CompletedTask;
     }
-
 
     /// <summary>
     /// Stops the runtime service.
@@ -88,7 +85,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         return Task.CompletedTask;
     }
 
-
     /// <summary>
     /// This will run until the message queue is empty and then stop the runtime.
     /// </summary>
@@ -102,7 +98,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
 
         _shouldContinue = oldShouldContinue;
     }
-
 
     /// <inheritdoc/>
     public ValueTask PublishMessageAsync(
@@ -122,14 +117,9 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
             _messageDeliveryQueue.Enqueue(delivery);
             Interlocked.Increment(ref messageQueueCount);
 
-#if !NETCOREAPP
-            return Task.CompletedTask.AsValueTask();
-#else
             return ValueTask.CompletedTask;
-#endif
         });
     }
-
 
     /// <inheritdoc/>
     public async ValueTask<object?> SendMessageAsync(
@@ -161,7 +151,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
             .ConfigureAwait(false);
     }
 
-
     /// <inheritdoc/>
     public async ValueTask<AgentId> GetAgentAsync(AgentId agentId, bool lazy = true)
     {
@@ -173,13 +162,11 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         return agentId;
     }
 
-
     /// <inheritdoc/>
     public ValueTask<AgentId> GetAgentAsync(AgentType agentType, string key = AgentId.DefaultKey, bool lazy = true)
     {
         return GetAgentAsync(new AgentId(agentType, key), lazy);
     }
-
 
     /// <inheritdoc/>
     public ValueTask<AgentId> GetAgentAsync(string agent, string key = AgentId.DefaultKey, bool lazy = true)
@@ -187,14 +174,12 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         return GetAgentAsync(new AgentId(agent, key), lazy);
     }
 
-
     /// <inheritdoc/>
     public async ValueTask<AgentMetadata> GetAgentMetadataAsync(AgentId agentId)
     {
         IHostableAgent agent = await EnsureAgentAsync(agentId).ConfigureAwait(false);
         return agent.Metadata;
     }
-
 
     /// <inheritdoc/>
     public async ValueTask<TAgent> TryGetUnderlyingAgentInstanceAsync<TAgent>(AgentId agentId) where TAgent : IHostableAgent
@@ -209,7 +194,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         return concreteAgent;
     }
 
-
     /// <inheritdoc/>
     public async ValueTask LoadAgentStateAsync(AgentId agentId, JsonElement state)
     {
@@ -217,14 +201,12 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         await agent.LoadStateAsync(state).ConfigureAwait(false);
     }
 
-
     /// <inheritdoc/>
     public async ValueTask<JsonElement> SaveAgentStateAsync(AgentId agentId)
     {
         IHostableAgent agent = await EnsureAgentAsync(agentId).ConfigureAwait(false);
         return await agent.SaveStateAsync().ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public ValueTask AddSubscriptionAsync(ISubscriptionDefinition subscription)
@@ -236,13 +218,8 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
 
         _subscriptions.Add(subscription.Id, subscription);
 
-#if !NETCOREAPP
-        return Task.CompletedTask.AsValueTask();
-#else
         return ValueTask.CompletedTask;
-#endif
     }
-
 
     /// <inheritdoc/>
     public ValueTask RemoveSubscriptionAsync(string subscriptionId)
@@ -254,13 +231,8 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
 
         _subscriptions.Remove(subscriptionId);
 
-#if !NETCOREAPP
-        return Task.CompletedTask.AsValueTask();
-#else
         return ValueTask.CompletedTask;
-#endif
     }
-
 
     /// <inheritdoc/>
     public async ValueTask LoadStateAsync(JsonElement state)
@@ -277,7 +249,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         }
     }
 
-
     /// <inheritdoc/>
     public async ValueTask<JsonElement> SaveStateAsync()
     {
@@ -290,7 +261,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         }
         return JsonSerializer.SerializeToElement(state);
     }
-
 
     /// <summary>
     /// Registers an agent factory with the runtime, associating it with a specific agent type.
@@ -305,7 +275,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
     return RegisterAgentFactoryAsync(type, async ValueTask<IHostableAgent> (agentId, runtime) => await factoryFunc(agentId, runtime).ConfigureAwait(false));
     }
 
-
     /// <inheritdoc/>
     public ValueTask<AgentType> RegisterAgentFactoryAsync(AgentType type, Func<AgentId, IAgentRuntime, ValueTask<IHostableAgent>> factoryFunc)
     {
@@ -316,26 +285,16 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
 
         _agentFactories.Add(type, factoryFunc);
 
-#if !NETCOREAPP
-        return type.AsValueTask();
-#else
         return ValueTask.FromResult(type);
-#endif
     }
-
 
     /// <inheritdoc/>
     public ValueTask<AgentProxy> TryGetAgentProxyAsync(AgentId agentId)
     {
         AgentProxy proxy = new(agentId, this);
 
-#if !NETCOREAPP
-        return proxy.AsValueTask();
-#else
         return ValueTask.FromResult(proxy);
-#endif
     }
-
 
     private ValueTask ProcessNextMessageAsync(CancellationToken cancellation = default)
     {
@@ -346,13 +305,8 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
             return delivery.InvokeAsync(cancellation);
         }
 
-#if !NETCOREAPP
-        return Task.CompletedTask.AsValueTask();
-#else
         return ValueTask.CompletedTask;
-#endif
     }
-
 
     private async Task RunAsync(CancellationToken cancellation)
     {
@@ -389,7 +343,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         await Task.WhenAll([.. pendingTasks.Values.Where(task => task is not null)]).ConfigureAwait(false);
         await FinishAsync(_finishSource?.Token ?? CancellationToken.None).ConfigureAwait(false);
     }
-
 
     private async ValueTask PublishMessageServicerAsync(MessageEnvelope envelope, CancellationToken deliveryToken)
     {
@@ -445,7 +398,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         }
     }
 
-
     private async ValueTask<object?> SendMessageServicerAsync(MessageEnvelope envelope, CancellationToken deliveryToken)
     {
         if (!envelope.Receiver.HasValue)
@@ -466,7 +418,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         return await agent.OnMessageAsync(envelope.Message, messageContext).ConfigureAwait(false);
     }
 
-
     private async ValueTask<IHostableAgent> EnsureAgentAsync(AgentId agentId)
     {
         if (!agentInstances.TryGetValue(agentId, out IHostableAgent? agent))
@@ -482,7 +433,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
 
         return agentInstances[agentId];
     }
-
 
     private async Task FinishAsync(CancellationToken token)
     {
@@ -500,7 +450,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         _shutdownSource = null;
     }
 
-
 #pragma warning disable CA1822 // Mark members as static
     private ValueTask<T> ExecuteTracedAsync<T>(Func<ValueTask<T>> func)
 #pragma warning restore CA1822 // Mark members as static
@@ -508,7 +457,6 @@ public sealed class InProcessRuntime : IAgentRuntime, IAsyncDisposable
         // TODO: Bind tracing
         return func();
     }
-
 
 #pragma warning disable CA1822 // Mark members as static
     private ValueTask ExecuteTracedAsync(Func<ValueTask> func)

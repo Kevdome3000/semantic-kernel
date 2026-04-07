@@ -1,5 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System;
+using System.Linq.Expressions;
+using Google.Protobuf.Collections;
+using Google.Protobuf.WellKnownTypes;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData.ProviderServices.Filter;
+using Qdrant.Client.Grpc;
 using Expression = System.Linq.Expressions.Expression;
 using Range = Qdrant.Client.Grpc.Range;
 

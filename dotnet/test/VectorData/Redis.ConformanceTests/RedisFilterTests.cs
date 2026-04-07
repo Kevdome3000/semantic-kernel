@@ -118,15 +118,11 @@ public class RedisHashSetFilterTests(RedisHashSetFilterTests.Fixture fixture)
     public override Task Contains_with_Enumerable_Contains()
         => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_Enumerable_Contains());
 
-#if !NETFRAMEWORK
     public override Task Contains_with_MemoryExtensions_Contains()
         => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_MemoryExtensions_Contains());
-#endif
 
-#if NET10_0_OR_GREATER
     public override Task Contains_with_MemoryExtensions_Contains_with_null_comparer()
         => Assert.ThrowsAsync<InvalidOperationException>(() => base.Contains_with_MemoryExtensions_Contains_with_null_comparer());
-#endif
 
     // Array fields not supported on Redis HashSet - Any tests
     public override Task Any_with_Contains_over_inline_string_array()

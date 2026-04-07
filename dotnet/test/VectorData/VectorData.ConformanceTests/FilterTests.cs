@@ -348,21 +348,17 @@ public abstract class FilterTests<TKey>(FilterTests<TKey>.Fixture fixture)
             r => Enumerable.Contains(r.StringArray, "x"),
             r => ((string[])r["StringArray"]!).Contains("x"));
 
-#if !NETFRAMEWORK
     [ConditionalFact]
     public virtual Task Contains_with_MemoryExtensions_Contains()
         => this.TestFilterAsync(
             r => MemoryExtensions.Contains(r.StringArray, "x"),
             r => ((string[])r["StringArray"]!).Contains("x"));
-#endif
 
-#if NET10_0_OR_GREATER
     [ConditionalFact]
     public virtual Task Contains_with_MemoryExtensions_Contains_with_null_comparer()
         => this.TestFilterAsync(
             r => MemoryExtensions.Contains(r.StringArray, "x", comparer: null),
             r => ((string[])r["StringArray"]!).Contains("x"));
-#endif
 
 #pragma warning restore RCS1196 // Call extension method as instance method
 

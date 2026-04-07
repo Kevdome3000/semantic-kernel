@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.ChatCompletion;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 

@@ -1,5 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlTypes;
+using Microsoft.Extensions.AI;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Microsoft.Extensions.VectorData;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Text.Json;
+using System.Text;
+using System;
 using System.Diagnostics;
 
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities

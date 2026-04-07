@@ -1,3 +1,4 @@
+using Microsoft.Extensions.AI;
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosMongoDB;

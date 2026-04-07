@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.SemanticKernel.ChatCompletion;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,7 +24,6 @@ public sealed class GroupChatManagerResult<TValue>(TValue value)
     public TValue Value { get; } = value;
 }
 
-
 /// <summary>
 /// A manager that manages the flow of a group chat.
 /// </summary>
@@ -31,12 +31,10 @@ public abstract class GroupChatManager
 {
     private int _invocationCount;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupChatManager"/> class.
     /// </summary>
     protected GroupChatManager() { }
-
 
     /// <summary>
     /// Gets the number of times the group chat manager has been invoked.
@@ -53,7 +51,6 @@ public abstract class GroupChatManager
     /// </summary>
     public OrchestrationInteractiveCallback? InteractiveCallback { get; init; }
 
-
     /// <summary>
     /// Filters the results of the group chat based on the provided chat history.
     /// </summary>
@@ -61,7 +58,6 @@ public abstract class GroupChatManager
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A <see cref="GroupChatManagerResult{TValue}"/> containing the filtered result as a string.</returns>
     public abstract ValueTask<GroupChatManagerResult<string>> FilterResults(ChatHistory history, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Selects the next agent to participate in the group chat based on the provided chat history and team.
@@ -72,7 +68,6 @@ public abstract class GroupChatManager
     /// <returns>A <see cref="GroupChatManagerResult{TValue}"/> containing the identifier of the next agent as a string.</returns>
     public abstract ValueTask<GroupChatManagerResult<string>> SelectNextAgent(ChatHistory history, GroupChatTeam team, CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Determines whether user input should be requested based on the provided chat history.
     /// </summary>
@@ -80,7 +75,6 @@ public abstract class GroupChatManager
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A <see cref="GroupChatManagerResult{TValue}"/> indicating whether user input should be requested.</returns>
     public abstract ValueTask<GroupChatManagerResult<bool>> ShouldRequestUserInput(ChatHistory history, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Determines whether the group chat should be terminated based on the provided chat history and invocation count.
@@ -103,10 +97,6 @@ public abstract class GroupChatManager
 
         GroupChatManagerResult<bool> result = new(resultValue) { Reason = reason };
 
-#if !NETCOREAPP
-        return result.AsValueTask();
-#else
         return ValueTask.FromResult(result);
-#endif
     }
 }

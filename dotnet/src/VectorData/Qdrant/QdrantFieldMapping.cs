@@ -1,5 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Qdrant.Client.Grpc;
+using System.Collections.Generic;
+using System.Collections;
+using System.Globalization;
+using System.Linq;
+using System;
 using System.Diagnostics;
 
 namespace Microsoft.SemanticKernel.Connectors.Qdrant;

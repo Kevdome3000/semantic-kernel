@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Google.Protobuf.Reflection;
 using Microsoft.SemanticKernel.Plugins.Grpc.Model;
+using ProtoBuf;
 
 namespace Microsoft.SemanticKernel.Plugins.Grpc.Protobuf;
 
