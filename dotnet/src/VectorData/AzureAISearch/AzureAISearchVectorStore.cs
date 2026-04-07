@@ -78,7 +78,7 @@ public sealed class AzureAISearchVectorStore : VectorStore
 #else
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
-        => new AzureAISearchDynamicCollection(
+        => new(
             _searchIndexClient,
             name,
             new AzureAISearchCollectionOptions

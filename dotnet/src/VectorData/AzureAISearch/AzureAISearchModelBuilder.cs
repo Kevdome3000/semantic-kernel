@@ -67,7 +67,8 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
                 || type == typeof(DateTime)
                 ||
 #if NET
-               type == typeof(DateOnly) ||
+                type == typeof(DateOnly)
+                ||
 #endif
                 type == typeof(DateTimeOffset);
     }

@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
 using MAAI = Microsoft.Agents.AI;
 
 namespace Microsoft.SemanticKernel.Agents;

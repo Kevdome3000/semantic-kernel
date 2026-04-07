@@ -9,7 +9,7 @@
         <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
         <NoWarn>$(NoWarn);SKEXP0001,SKEXP0120</NoWarn>
         <EnablePackageValidation>true</EnablePackageValidation>
-        <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
+        <IsAotCompatible>true</IsAotCompatible>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 

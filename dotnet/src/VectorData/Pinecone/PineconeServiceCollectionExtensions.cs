@@ -28,8 +28,7 @@ public static class PineconeServiceCollectionExtensions
         Func<IServiceProvider, PineconeVectorStoreOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
-        return AddKeyedPineconeVectorStore(services,
-            null,
+        return services.AddKeyedPineconeVectorStore(null,
             clientProvider,
             optionsProvider,
             lifetime);
@@ -94,8 +93,7 @@ public static class PineconeServiceCollectionExtensions
         PineconeVectorStoreOptions? options = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
-        return AddKeyedPineconeVectorStore(services,
-            null,
+        return services.AddKeyedPineconeVectorStore(null,
             apiKey,
             clientOptions,
             options,
@@ -150,8 +148,7 @@ public static class PineconeServiceCollectionExtensions
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
     {
-        return AddKeyedPineconeCollection<TRecord>(services,
-            null,
+        return services.AddKeyedPineconeCollection<TRecord>(null,
             name,
             clientProvider,
             optionsProvider,
@@ -221,8 +218,7 @@ public static class PineconeServiceCollectionExtensions
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
     {
-        return AddKeyedPineconeCollection<TRecord>(services,
-            null,
+        return services.AddKeyedPineconeCollection<TRecord>(null,
             name,
             apiKey,
             clientOptions,

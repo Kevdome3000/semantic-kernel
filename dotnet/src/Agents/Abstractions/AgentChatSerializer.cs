@@ -1,4 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Agents.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents;

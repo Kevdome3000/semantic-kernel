@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Globalization;
+
 namespace Microsoft.SemanticKernel.Connectors.SqliteVec;
 
 internal sealed class SqliteFilterTranslator : SqlFilterTranslator
@@ -25,17 +27,17 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
                 _sql.Append('\'').Append(g.ToString().ToUpperInvariant()).Append('\'');
                 break;
             case DateTime dateTime:
-                _sql.Append('\'').Append(dateTime.ToString("yyyy-MM-dd HH:mm:ss.FFFFFFF", System.Globalization.CultureInfo.InvariantCulture)).Append('\'');
+                _sql.Append('\'').Append(dateTime.ToString("yyyy-MM-dd HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture)).Append('\'');
                 break;
             case DateTimeOffset dateTimeOffset:
-                _sql.Append('\'').Append(dateTimeOffset.ToString("yyyy-MM-dd HH:mm:ss.FFFFFFFzzz", System.Globalization.CultureInfo.InvariantCulture)).Append('\'');
+                _sql.Append('\'').Append(dateTimeOffset.ToString("yyyy-MM-dd HH:mm:ss.FFFFFFFzzz", CultureInfo.InvariantCulture)).Append('\'');
                 break;
 #if NET
             case DateOnly dateOnly:
-                this._sql.Append('\'').Append(dateOnly.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)).Append('\'');
+                _sql.Append('\'').Append(dateOnly.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append('\'');
                 break;
             case TimeOnly timeOnly:
-                this._sql.Append('\'').Append(timeOnly.ToString("HH:mm:ss.FFFFFFF", System.Globalization.CultureInfo.InvariantCulture)).Append('\'');
+                _sql.Append('\'').Append(timeOnly.ToString("HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture)).Append('\'');
                 break;
 #endif
             default:

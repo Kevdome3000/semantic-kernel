@@ -24,8 +24,7 @@ public static class SqliteServiceCollectionExtensions
         Func<IServiceProvider, SqliteVectorStoreOptions>? optionsProvider = null,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
-        return AddKeyedSqliteVectorStore(services,
-            null,
+        return services.AddKeyedSqliteVectorStore(null,
             connectionStringProvider,
             optionsProvider,
             lifetime);
@@ -85,8 +84,7 @@ public static class SqliteServiceCollectionExtensions
         where TKey : notnull
         where TRecord : class
     {
-        return AddKeyedSqliteCollection<TKey, TRecord>(services,
-            null,
+        return services.AddKeyedSqliteCollection<TKey, TRecord>(null,
             name,
             connectionStringProvider,
             optionsProvider,
@@ -162,8 +160,7 @@ public static class SqliteServiceCollectionExtensions
         where TKey : notnull
         where TRecord : class
     {
-        return AddKeyedSqliteCollection<TKey, TRecord>(services,
-            null,
+        return services.AddKeyedSqliteCollection<TKey, TRecord>(null,
             name,
             connectionString,
             options,

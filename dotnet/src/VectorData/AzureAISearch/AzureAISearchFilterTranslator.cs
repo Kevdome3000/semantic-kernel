@@ -129,7 +129,7 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
                 return;
 #if NET
             case DateOnly d:
-                this._filter.Append(new DateTimeOffset(d.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero).ToString("o"));
+                _filter.Append(new DateTimeOffset(d.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero).ToString("o"));
                 return;
 #endif
 

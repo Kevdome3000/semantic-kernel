@@ -35,7 +35,7 @@ public sealed class PineconeVectorStore : VectorStore
         _pineconeClient = pineconeClient;
         _embeddingGenerator = options?.EmbeddingGenerator;
 
-        _metadata = new()
+        _metadata = new VectorStoreMetadata
         {
             VectorStoreSystemName = PineconeConstants.VectorStoreSystemName
         };
@@ -69,7 +69,7 @@ public sealed class PineconeVectorStore : VectorStore
 #else
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
-        => new PineconeDynamicCollection(
+        => new(
             _pineconeClient,
             name,
             new PineconeCollectionOptions

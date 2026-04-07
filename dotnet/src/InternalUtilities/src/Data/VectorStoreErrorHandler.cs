@@ -1,15 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.Extensions.VectorData;
 
 #pragma warning disable MEVD9000 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -417,9 +407,7 @@ internal static class VectorStoreErrorHandler
         Func<Task<TResult>> operation,
         CancellationToken cancellationToken)
     {
-        return await ExecuteWithErrorHandlingAsync(
-                connection,
-                new VectorStoreCollectionMetadata
+        return await connection.ExecuteWithErrorHandlingAsync(new VectorStoreCollectionMetadata
                 {
                     VectorStoreSystemName = metadata.VectorStoreSystemName,
                     VectorStoreName = metadata.VectorStoreName,

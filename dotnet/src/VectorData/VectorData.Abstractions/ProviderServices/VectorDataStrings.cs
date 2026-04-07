@@ -55,7 +55,7 @@ public static class VectorDataStrings
 
     public static string IncompatibleEmbeddingGenerator(VectorPropertyModel vectorProperty, IEmbeddingGenerator embeddingGenerator, string supportedOutputTypes)
     {
-        return $"Embedding generator '{TypeName(embeddingGenerator.GetType())}' on vector property '{vectorProperty.ModelName}' cannot convert the input type '{vectorProperty.Type.TypeName()}' to a supported vector type (one of: {supportedOutputTypes}).";
+        return $"Embedding generator '{embeddingGenerator.GetType().TypeName()}' on vector property '{vectorProperty.ModelName}' cannot convert the input type '{vectorProperty.Type.TypeName()}' to a supported vector type (one of: {supportedOutputTypes}).";
     }
 
 

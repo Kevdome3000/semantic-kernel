@@ -16,7 +16,7 @@ public sealed class FunctionInvokingEventArgs : CancelKernelEventArgs
     /// <param name="function">The <see cref="KernelFunction"/> with which this event is associated.</param>
     /// <param name="arguments">The arguments associated with the operation.</param>
     public FunctionInvokingEventArgs(KernelFunction function, KernelArguments arguments) :
-        base(function, arguments, null)
+        base(function, arguments)
     {
     }
 }

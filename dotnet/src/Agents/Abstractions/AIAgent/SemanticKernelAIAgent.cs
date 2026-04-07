@@ -1,5 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using MAAI = Microsoft.Agents.AI;
 using MEAI = Microsoft.Extensions.AI;
 
@@ -68,7 +75,7 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
 
     /// <inheritdoc />
     public override async Task<MAAI.AgentRunResponse> RunAsync(
-        IEnumerable<ChatMessage> messages,
+        IEnumerable<MEAI.ChatMessage> messages,
         MAAI.AgentThread? thread = null,
         MAAI.AgentRunOptions? options = null,
         CancellationToken cancellationToken = default)
@@ -80,7 +87,7 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
             throw new InvalidOperationException("The provided thread is not compatible with the agent. Only threads created by the agent can be used.");
         }
 
-        List<ChatMessage> responseMessages = [];
+        List<MEAI.ChatMessage> responseMessages = [];
         var invokeOptions = new AgentInvokeOptions
         {
             OnIntermediateMessage = msg =>
@@ -90,7 +97,7 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
                 // we must remove the text message to avoid the function result showing up in the user output.
                 var chatMessage = msg.ToChatMessage();
 
-                if (chatMessage.Role == ChatRole.Tool
+                if (chatMessage.Role == MEAI.ChatRole.Tool
                     && chatMessage.Contents.Count == 2
                     && chatMessage.Contents[0] is MEAI.TextContent textContent
                     && chatMessage.Contents[1] is MEAI.FunctionResultContent functionResultContent
@@ -105,7 +112,7 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
         };
 
         AgentResponseItem<ChatMessageContent>? lastResponseItem = null;
-        ChatMessage? lastResponseMessage = null;
+        MEAI.ChatMessage? lastResponseMessage = null;
 
         await foreach (var responseItem in _innerAgent.InvokeAsync(messages.Select(x => x.ToChatMessageContent()).ToList(),
                 typedThread.InnerThread,
@@ -128,7 +135,7 @@ internal sealed class SemanticKernelAIAgent : MAAI.AIAgent
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<MAAI.AgentRunResponseUpdate> RunStreamingAsync(
-        IEnumerable<ChatMessage> messages,
+        IEnumerable<MEAI.ChatMessage> messages,
         MAAI.AgentThread? thread = null,
         MAAI.AgentRunOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)

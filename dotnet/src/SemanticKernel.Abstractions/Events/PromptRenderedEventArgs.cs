@@ -21,7 +21,7 @@ public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
     /// <param name="arguments">The arguments associated with the operation.</param>
     /// <param name="renderedPrompt">The prompt that was rendered by the associated operation.</param>
     public PromptRenderedEventArgs(KernelFunction function, KernelArguments arguments, string renderedPrompt) :
-        base(function, arguments, null)
+        base(function, arguments)
     {
         RenderedPrompt = renderedPrompt;
     }

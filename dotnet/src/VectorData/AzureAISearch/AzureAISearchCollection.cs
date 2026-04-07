@@ -93,7 +93,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             ? (IAzureAISearchMapper<TRecord>)(object)new AzureAISearchDynamicMapper(_model, options.JsonSerializerOptions)
             : new AzureAISearchMapper<TRecord>(_model, options.JsonSerializerOptions);
 
-        _collectionMetadata = new()
+        _collectionMetadata = new VectorStoreCollectionMetadata
         {
             VectorStoreSystemName = AzureAISearchConstants.VectorStoreSystemName,
             VectorStoreName = searchIndexClient.ServiceName,
@@ -356,7 +356,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         Verify.NotNull(filter);
         Verify.NotLessThan(top, 1);
 
-        options ??= new();
+        options ??= new FilteredRecordRetrievalOptions<TRecord>();
 
         var includeVectors = options.IncludeVectors;
 
@@ -386,7 +386,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
         if (options.OrderBy is not null)
         {
-            foreach (var pair in options.OrderBy(new()).Values)
+            foreach (var pair in options.OrderBy(new FilteredRecordRetrievalOptions<TRecord>.OrderByDefinition()).Values)
             {
                 PropertyModel property = _model.GetDataOrKeyProperty(pair.PropertySelector);
                 string name = property.StorageName;
@@ -477,11 +477,8 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         // Build search options.
         var searchOptions = BuildSearchOptions(
             _model,
-            new()
+            new VectorSearchOptions<TRecord>
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                OldFilter = options.OldFilter,
-#pragma warning restore CS0618 // Type or member is obsolete
                 Filter = options.Filter,
                 VectorProperty = options.VectorProperty,
                 Skip = options.Skip
@@ -585,7 +582,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             return default;
         }
 
-        return (TRecord)(object)_mappper!.MapFromStorageToDataModel(jsonObject, includeVectors);
+        return (TRecord)_mappper!.MapFromStorageToDataModel(jsonObject, includeVectors);
     }
 
 
@@ -666,7 +663,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     {
         await foreach (var result in results.ConfigureAwait(false))
         {
-            var document = (TRecord)(object)_mappper!.MapFromStorageToDataModel(result.Document, includeVectors);
+            var document = (TRecord)_mappper!.MapFromStorageToDataModel(result.Document, includeVectors);
             yield return new VectorSearchResult<TRecord>(document, result.Score);
         }
     }
@@ -729,16 +726,10 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             throw new NotSupportedException(VectorDataStrings.IncludeVectorsNotSupportedWithEmbeddingGeneration);
         }
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
         // Build filter object.
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => AzureAISearchCollectionSearchMapping.BuildLegacyFilterString(legacyFilter, model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new AzureAISearchFilterTranslator().Translate(newFilter, model),
-            _ => null
-        };
-#pragma warning restore CS0618
+        var filter = options.Filter is not null
+            ? new AzureAISearchFilterTranslator().Translate(options.Filter, model)
+            : null;
 
         // Build search options.
         var searchOptions = new SearchOptions

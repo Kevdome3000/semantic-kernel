@@ -29,8 +29,7 @@ public static class AzureAISearchServiceCollectionExtensions
         Func<IServiceProvider, AzureAISearchVectorStoreOptions>? optionsProvider = default,
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
     {
-        return AddKeyedAzureAISearchVectorStore(services,
-            null,
+        return services.AddKeyedAzureAISearchVectorStore(null,
             clientProvider,
             optionsProvider,
             lifetime);
@@ -215,8 +214,7 @@ public static class AzureAISearchServiceCollectionExtensions
         ServiceLifetime lifetime = ServiceLifetime.Singleton)
         where TRecord : class
     {
-        return AddKeyedAzureAISearchCollection<TRecord>(services,
-            null,
+        return services.AddKeyedAzureAISearchCollection<TRecord>(null,
             name,
             clientProvider,
             optionsProvider,

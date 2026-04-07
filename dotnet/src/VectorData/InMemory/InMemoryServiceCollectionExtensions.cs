@@ -30,7 +30,7 @@ public static class InMemoryServiceCollectionExtensions
             (sp, obj) =>
             {
                 options ??= sp.GetService<InMemoryVectorStoreOptions>()
-                    ?? new()
+                    ?? new InMemoryVectorStoreOptions
                     {
                         EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                     };
@@ -69,11 +69,11 @@ public static class InMemoryServiceCollectionExtensions
             (sp, obj) =>
             {
                 options ??= sp.GetService<InMemoryCollectionOptions>()
-                    ?? new()
+                    ?? new InMemoryCollectionOptions
                     {
                         EmbeddingGenerator = sp.GetService<IEmbeddingGenerator>()
                     };
-                return (new InMemoryCollection<TKey, TRecord>(collectionName, options) as VectorStoreCollection<TKey, TRecord>)!;
+                return new InMemoryCollection<TKey, TRecord>(collectionName, options)!;
             });
 
         services.AddKeyedSingleton<IVectorSearchable<TRecord>>(

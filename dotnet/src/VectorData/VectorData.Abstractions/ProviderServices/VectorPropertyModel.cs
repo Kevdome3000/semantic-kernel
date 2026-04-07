@@ -62,10 +62,12 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
 
     /// <summary>
     /// Gets or sets the type representing the embedding stored in the database if <see cref="EmbeddingGenerator"/> is set.
-    /// Otherwise, this property is identical to <see cref="Type"/>.
+    /// Otherwise, this property is identical to <see cref="PropertyModel.Type"/>.
     /// </summary>
-    // TODO: sort out the nullability story here: EmbeddingType must be non-null after model building is complete, but can be null during
-    // model building as we're figuring things out (i.e. introduce a provider-facing interface where the property is non-nullable).
+    /// <remarks>
+    /// This property may be <see langword="null"/> during model building while the embedding type is being resolved,
+    /// but is guaranteed to be non-null after building completes (validation ensures this).
+    /// </remarks>
     [AllowNull]
     public Type EmbeddingType { get; set; } = null!;
 
@@ -163,7 +165,7 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
                         values.Select(v => v is string s
                             ? s
                             : throw new InvalidOperationException($"Property '{ModelName}' was configured with an embedding generator accepting a string, but {v?.GetType().Name ?? "null"} was provided.")),
-                        options: null,
+                        null,
                         cancellationToken)
                     .ConfigureAwait(false),
 
@@ -172,7 +174,7 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
                         values.Select(v => v is DataContent c
                             ? c
                             : throw new InvalidOperationException($"Property '{ModelName}' was configured with an embedding generator accepting a {nameof(DataContent)}, but {v?.GetType().Name ?? "null"} was provided.")),
-                        options: null,
+                        null,
                         cancellationToken)
                     .ConfigureAwait(false),
 
@@ -193,10 +195,10 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
         return EmbeddingGenerator switch
         {
             IEmbeddingGenerator<string, TEmbedding> generator when value is string s
-                => await generator.GenerateAsync(s, options: null, cancellationToken).ConfigureAwait(false),
+                => await generator.GenerateAsync(s, null, cancellationToken).ConfigureAwait(false),
 
             IEmbeddingGenerator<DataContent, TEmbedding> generator when value is DataContent c
-                => await generator.GenerateAsync(c, options: null, cancellationToken).ConfigureAwait(false),
+                => await generator.GenerateAsync(c, null, cancellationToken).ConfigureAwait(false),
 
             null => throw new UnreachableException("This method should only be called when an embedding generator is configured."),
 

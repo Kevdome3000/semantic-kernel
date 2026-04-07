@@ -47,7 +47,7 @@ public sealed class VectorPropertyModel<TInput>(string modelName) : VectorProper
                         values.Select(v => v is TInput s
                             ? s
                             : throw new InvalidOperationException($"Property '{ModelName}' was configured with an embedding generator accepting a {typeof(TInput).Name}, but {v?.GetType().Name ?? "null"} was provided.")),
-                        options: null,
+                        null,
                         cancellationToken)
                     .ConfigureAwait(false);
 
@@ -66,7 +66,7 @@ public sealed class VectorPropertyModel<TInput>(string modelName) : VectorProper
     {
         if (EmbeddingGenerator is IEmbeddingGenerator<TInput, TEmbedding> generator && value is TInput t)
         {
-            return await generator.GenerateAsync(t, options: null, cancellationToken).ConfigureAwait(false);
+            return await generator.GenerateAsync(t, null, cancellationToken).ConfigureAwait(false);
         }
 
         // Fall through to base class which checks for string and DataContent input types.

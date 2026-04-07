@@ -45,6 +45,7 @@ internal sealed class SqliteMapper<TRecord>(CollectionModel model)
                 using var stream = reader.GetStream(ordinal);
 
                 var length = stream.Length;
+
                 if (length % 4 != 0)
                 {
                     throw new InvalidOperationException($"Retrieved value for vector property '{property.StorageName}' which is not a valid byte array length (expected multiple of 4, got {stream.Length}).");

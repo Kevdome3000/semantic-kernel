@@ -585,16 +585,10 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         var vectorProperty = _model.GetVectorPropertyOrSingle(options);
         var vectorArray = await GetSearchVectorArrayAsync(searchValue, vectorProperty, cancellationToken).ConfigureAwait(false);
 
-#pragma warning disable CS0618 // Type or member is obsolete
         // Build filter object.
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => QdrantCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, _model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, _model),
-            _ => new Filter()
-        };
-#pragma warning restore CS0618 // Type or member is obsolete
+        var filter = options.Filter is not null
+            ? new QdrantFilterTranslator().Translate(options.Filter, _model)
+            : new Filter();
 
         // Specify whether to include vectors in the search results.
         var vectorsSelector = new WithVectorsSelector { Enable = options.IncludeVectors };
@@ -746,16 +740,9 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         var textDataProperty = _model.GetFullTextDataPropertyOrSingle(options.AdditionalProperty);
 
         // Build filter object.
-#pragma warning disable CS0618 // Type or member is obsolete
-        // Build filter object.
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => QdrantCollectionSearchMapping.BuildFromLegacyFilter(legacyFilter, _model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new QdrantFilterTranslator().Translate(newFilter, _model),
-            _ => new Filter()
-        };
-#pragma warning restore CS0618 // Type or member is obsolete
+        var filter = options.Filter is not null
+            ? new QdrantFilterTranslator().Translate(options.Filter, _model)
+            : new Filter();
 
         // Specify whether to include vectors in the search results.
         var vectorsSelector = new WithVectorsSelector { Enable = options.IncludeVectors };

@@ -1,7 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
+using Microsoft.Extensions.VectorData.ProviderServices;
+using Pinecone;
 using CollectionModel = Microsoft.Extensions.VectorData.ProviderServices.CollectionModel;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
@@ -23,7 +34,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     private readonly VectorStoreCollectionMetadata _collectionMetadata;
 
     private readonly PineconeClient _pineconeClient;
-    private readonly Extensions.VectorData.ProviderServices.CollectionModel _model;
+    private readonly CollectionModel _model;
     private readonly PineconeMapper<TRecord> _mapper;
     private IndexClient? _indexClient;
 
@@ -91,7 +102,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         _mapper = new PineconeMapper<TRecord>(_model);
 
-        _collectionMetadata = new()
+        _collectionMetadata = new VectorStoreCollectionMetadata
         {
             VectorStoreSystemName = PineconeConstants.VectorStoreSystemName,
             CollectionName = name
@@ -102,7 +113,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunCollectionOperationAsync(
+        return RunCollectionOperationAsync(
             "CollectionExists",
             async () =>
             {
@@ -207,7 +218,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             Ids = [GetStringKey(key)]
         };
 
-        var response = await this.RunIndexOperationAsync(
+        var response = await RunIndexOperationAsync(
                 "Get",
                 indexClient => indexClient.FetchAsync(request, cancellationToken: cancellationToken))
             .ConfigureAwait(false);
@@ -259,7 +270,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             Ids = keysList
         };
 
-        var response = await this.RunIndexOperationAsync(
+        var response = await RunIndexOperationAsync(
                 "GetBatch",
                 indexClient => indexClient.FetchAsync(request, cancellationToken: cancellationToken))
             .ConfigureAwait(false);
@@ -287,7 +298,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             Ids = [GetStringKey(key)]
         };
 
-        return this.RunIndexOperationAsync(
+        return RunIndexOperationAsync(
             "Delete",
             indexClient => indexClient.DeleteAsync(request, cancellationToken: cancellationToken));
     }
@@ -317,7 +328,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             Ids = keysList
         };
 
-        return this.RunIndexOperationAsync(
+        return RunIndexOperationAsync(
             "DeleteBatch",
             indexClient => indexClient.DeleteAsync(request, cancellationToken: cancellationToken));
     }
@@ -357,7 +368,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             Vectors = [vector]
         };
 
-        await this.RunIndexOperationAsync(
+        await RunIndexOperationAsync(
                 "Upsert",
                 indexClient => indexClient.UpsertAsync(request, cancellationToken: cancellationToken))
             .ConfigureAwait(false);
@@ -419,7 +430,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             Vectors = vectors
         };
 
-        await this.RunIndexOperationAsync(
+        await RunIndexOperationAsync(
                 "UpsertBatch",
                 indexClient => indexClient.UpsertAsync(request, cancellationToken: cancellationToken))
             .ConfigureAwait(false);
@@ -460,15 +471,9 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
                 : throw new InvalidOperationException(VectorDataStrings.IncompatibleEmbeddingGeneratorWasConfiguredForInputType(typeof(TInput), vectorProperty.EmbeddingGenerator.GetType()))
         };
 
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-        var filter = options switch
-        {
-            { OldFilter: not null, Filter: not null } => throw new ArgumentException("Either Filter or OldFilter can be specified, but not both"),
-            { OldFilter: VectorSearchFilter legacyFilter } => PineconeCollectionSearchMapping.BuildSearchFilter(options.OldFilter?.FilterClauses, _model),
-            { Filter: Expression<Func<TRecord, bool>> newFilter } => new PineconeFilterTranslator().Translate(newFilter, _model),
-            _ => null
-        };
-#pragma warning restore CS0618
+        var filter = options.Filter is not null
+            ? new PineconeFilterTranslator().Translate(options.Filter, _model)
+            : null;
 
         QueryRequest request = new()
         {
@@ -480,7 +485,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             Filter = filter
         };
 
-        QueryResponse response = await this.RunIndexOperationAsync(
+        QueryResponse response = await RunIndexOperationAsync(
                 "VectorizedSearch",
                 indexClient => indexClient.QueryAsync(request, cancellationToken: cancellationToken))
             .ConfigureAwait(false);
@@ -536,7 +541,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             throw new NotSupportedException("Pinecone does not support ordering.");
         }
 
-        options ??= new();
+        options ??= new FilteredRecordRetrievalOptions<TRecord>();
 
         if (options.IncludeVectors && _model.EmbeddingGenerationRequired)
         {
@@ -556,7 +561,7 @@ public class PineconeCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             Filter = new PineconeFilterTranslator().Translate(filter, _model)
         };
 
-        QueryResponse response = await this.RunIndexOperationAsync(
+        QueryResponse response = await RunIndexOperationAsync(
                 "Get",
                 indexClient => indexClient.QueryAsync(request, cancellationToken: cancellationToken))
             .ConfigureAwait(false);

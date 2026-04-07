@@ -231,8 +231,7 @@ public static class PostgresServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(connectionString);
 
-        return AddKeyedPostgresCollection<TKey, TRecord>(services,
-            null,
+        return services.AddKeyedPostgresCollection<TKey, TRecord>(null,
             name,
             sp => connectionString,
             sp => options,
@@ -266,8 +265,7 @@ public static class PostgresServiceCollectionExtensions
     {
         Verify.NotNullOrWhiteSpace(connectionString);
 
-        return AddKeyedPostgresCollection<TKey, TRecord>(services,
-            serviceKey,
+        return services.AddKeyedPostgresCollection<TKey, TRecord>(serviceKey,
             name,
             sp => connectionString,
             sp => options,
@@ -290,8 +288,7 @@ public static class PostgresServiceCollectionExtensions
         where TKey : notnull
         where TRecord : class
     {
-        return AddKeyedPostgresCollection<TKey, TRecord>(services,
-            null,
+        return services.AddKeyedPostgresCollection<TKey, TRecord>(null,
             name,
             connectionStringProvider,
             optionsProvider,

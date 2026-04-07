@@ -480,9 +480,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             _model,
             vectorProperty,
             pgVector,
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-            options.OldFilter,
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
             options.Filter,
             options.Skip,
             options.IncludeVectors,
@@ -539,9 +536,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             textProperty,
             pgVector,
             keywords,
-#pragma warning disable CS0618 // VectorSearchFilter is obsolete
-            options.OldFilter,
-#pragma warning restore CS0618 // VectorSearchFilter is obsolete
             options.Filter,
             options.Skip,
             options.IncludeVectors,

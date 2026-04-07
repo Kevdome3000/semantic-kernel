@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Diagnostics;
+using Microsoft.Extensions.VectorData.ProviderServices;
 
 namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 
@@ -14,7 +15,7 @@ namespace Microsoft.SemanticKernel.Connectors.Pinecone;
 // as we sometimes need to extend the collection (with for example another condition).
 internal class PineconeFilterTranslator : FilterTranslatorBase
 {
-    internal Metadata? Translate(LambdaExpression lambdaExpression, Extensions.VectorData.ProviderServices.CollectionModel model)
+    internal Metadata? Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
         // Pinecone doesn't seem to have a native way of expressing "always true" filters; since this scenario is important for fetching
         // all records (via GetAsync with filter), we special-case and support it here. Note that false isn't supported (useless),
@@ -55,7 +56,7 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
 
             // Special handling for bool constant as the filter expression (r => r.Bool)
             Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)
-                => this.GenerateEqualityComparison(property, true, ExpressionType.Equal),
+                => GenerateEqualityComparison(property, true, ExpressionType.Equal),
 
             MethodCallExpression methodCall => TranslateMethodCall(methodCall),
 
@@ -149,7 +150,7 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
 
             // Not over bool field (Filter => r => !r.Bool)
             case Expression when not.Operand.Type == typeof(bool) && this.TryBindProperty(not.Operand, out var property):
-                return this.GenerateEqualityComparison(property, false, ExpressionType.Equal);
+                return GenerateEqualityComparison(property, false, ExpressionType.Equal);
         }
 
         var operand = Translate(not.Operand);

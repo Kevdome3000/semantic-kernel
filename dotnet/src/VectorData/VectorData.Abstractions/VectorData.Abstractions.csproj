@@ -37,13 +37,11 @@
         <PackageReference Include="Microsoft.Extensions.AI.Abstractions"/>
     </ItemGroup>
 
-
     <ItemGroup>
         <!-- Include neticon.png and PACKAGE.md in the project. -->
         <None Include="neticon.png" Pack="true" PackagePath="."/>
         <None Include="PACKAGE.md" Pack="true" PackagePath="."/>
     </ItemGroup>
-
 
     <ItemGroup>
         <Compile Include="$(RepoRoot)/dotnet/src/InternalUtilities/src/Diagnostics/Verify.cs" Link="Shared/Diagnostics/%(Filename)%(Extension)"/>

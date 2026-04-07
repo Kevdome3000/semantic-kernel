@@ -78,7 +78,7 @@ public sealed class SqliteVectorStore : VectorStore
 #else
     public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
 #endif
-        => new SqliteDynamicCollection(
+        => new(
             _connectionString,
             name,
             new SqliteCollectionOptions

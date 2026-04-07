@@ -40,8 +40,4 @@
     <PackageReference Include="Dapr.Actors" />
   </ItemGroup>
 
-  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible($(TargetFramework), 'net10.0'))">
-    <PackageReference Include="System.Threading.Channels" />
-  </ItemGroup>
-
 </Project>

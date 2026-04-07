@@ -1,4 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text.Json.Serialization;
+using Microsoft.SemanticKernel.ChatCompletion;
+
 namespace Microsoft.SemanticKernel.Agents.Serialization;
 
 /// <summary>

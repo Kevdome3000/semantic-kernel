@@ -1,5 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.SemanticKernel.ChatCompletion;
+
 namespace Microsoft.SemanticKernel.Connectors.FunctionCalling;
 
 /// <summary>
@@ -40,7 +51,7 @@ internal sealed class FunctionCallsProcessor
     /// </remarks>
     internal const int MaximumAutoInvokeAttempts = 128;
 
-    /// <summary>Tracking <see cref="AsyncLocal{Int32}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
+    /// <summary>Tracking <see cref="AsyncLocal{T}"/> for <see cref="MaxInflightAutoInvokes"/>.</summary>
     /// <remarks>
     /// It is temporarily made internal to allow code that uses the old function model to read it and decide whether to continue auto-invocation or not.
     /// It should be made private when the old model is deprecated.
