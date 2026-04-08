@@ -10,12 +10,10 @@ namespace Microsoft.SemanticKernel.Connectors;
 
 #pragma warning disable MEVD9001 // Microsoft.Extensions.VectorData experimental connector-facing APIs
 
-
 internal abstract class SqlFilterTranslator : FilterTranslatorBase
 {
     protected readonly StringBuilder _sql;
     private readonly Expression _preprocessedExpression;
-
 
     internal SqlFilterTranslator(
         CollectionModel model,
@@ -28,9 +26,7 @@ internal abstract class SqlFilterTranslator : FilterTranslatorBase
         _preprocessedExpression = PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions { SupportsParameterization = true });
     }
 
-
     internal StringBuilder Clause => _sql;
-
 
     internal void Translate(bool appendWhere)
     {
@@ -41,7 +37,6 @@ internal abstract class SqlFilterTranslator : FilterTranslatorBase
 
         Translate(_preprocessedExpression, true);
     }
-
 
     protected void Translate(Expression? node, bool isSearchCondition = false)
     {
@@ -75,7 +70,6 @@ internal abstract class SqlFilterTranslator : FilterTranslatorBase
                 throw new NotSupportedException("Unsupported NodeType in filter: " + node?.NodeType);
         }
     }
-
 
     protected void TranslateBinary(BinaryExpression binary)
     {
@@ -134,7 +128,6 @@ internal abstract class SqlFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     protected virtual void TranslateConstant(object? value, bool isSearchCondition)
     {
         switch (value)
@@ -179,10 +172,8 @@ internal abstract class SqlFilterTranslator : FilterTranslatorBase
             case DateTime dateTime:
             case DateTimeOffset dateTimeOffset:
             case Array:
-#if NET
             case DateOnly dateOnly:
             case TimeOnly timeOnly:
-#endif
                 throw new UnreachableException("Database-specific format, needs to be implemented in the provider's derived translator.");
 
             case null:
@@ -193,7 +184,6 @@ internal abstract class SqlFilterTranslator : FilterTranslatorBase
                 throw new NotSupportedException("Unsupported constant type: " + value.GetType().Name);
         }
     }
-
 
     private void TranslateMember(MemberExpression memberExpression, bool isSearchCondition)
     {
@@ -206,15 +196,12 @@ internal abstract class SqlFilterTranslator : FilterTranslatorBase
         throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
 
-
     protected virtual void GenerateColumn(PropertyModel property, bool isSearchCondition = false) // StorageName is considered to be a safe input, we quote and escape it mostly to produce valid SQL.
     {
         _sql.Append('"').Append(property.StorageName.Replace("\"", "\"\"")).Append('"');
     }
 
-
     protected abstract void TranslateQueryParameter(object? value);
-
 
     private void TranslateMethodCall(MethodCallExpression methodCall, bool isSearchCondition = false)
     {
@@ -242,7 +229,6 @@ internal abstract class SqlFilterTranslator : FilterTranslatorBase
                 throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}");
         }
     }
-
 
     private void TranslateContains(Expression source, Expression item)
     {
@@ -287,11 +273,9 @@ internal abstract class SqlFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     protected abstract void TranslateContainsOverArrayColumn(Expression source, Expression item);
 
     protected abstract void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value);
-
 
     /// <summary>
     /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
@@ -351,9 +335,7 @@ internal abstract class SqlFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     protected abstract void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values);
-
 
     private void TranslateUnary(UnaryExpression unary, bool isSearchCondition)
     {

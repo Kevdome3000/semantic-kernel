@@ -31,7 +31,6 @@ public sealed class SqlServerVectorStore : VectorStore
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerVectorStore"/> class.
     /// </summary>
@@ -58,16 +57,11 @@ public sealed class SqlServerVectorStore : VectorStore
         };
     }
 
-
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc/>
     [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
-#if NET
     public override SqlServerCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
-#else
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
-#endif
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new SqlServerCollection<TKey, TRecord>(
@@ -80,16 +74,11 @@ public sealed class SqlServerVectorStore : VectorStore
                     EmbeddingGenerator = _embeddingGenerator
                 });
 
-
     /// <inheritdoc />
     // TODO: The provider uses unsafe JSON serialization in many places, #11963
     [RequiresUnreferencedCode("The SQL Server provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The SQL Server provider is currently incompatible with NativeAOT.")]
-#if NET
     public override SqlServerDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
-#else
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
-#endif
         => new SqlServerDynamicCollection(
             _connectionString,
             name,
@@ -101,7 +90,6 @@ public sealed class SqlServerVectorStore : VectorStore
             }
         );
 #pragma warning restore IDE0090
-
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -127,7 +115,6 @@ public sealed class SqlServerVectorStore : VectorStore
         }
     }
 
-
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
@@ -135,14 +122,12 @@ public sealed class SqlServerVectorStore : VectorStore
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
-
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
         var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
-
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)

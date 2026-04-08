@@ -15,8 +15,6 @@ Before:
 using System.Linq;
 using System.Text.RegularExpressions;
 
-
-
 internal sealed partial class FunctionIdBlock : Block, ITextRendering
 After:
 internal sealed partial class FunctionIdBlock : Block, ITextRendering
@@ -35,7 +33,6 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
     internal string PluginName { get; } = string.Empty;
 
     internal string FunctionName { get; } = string.Empty;
-
 
     public FunctionIdBlock(string? text, ILoggerFactory? loggerFactory = null)
         : base(text?.Trim(), loggerFactory)
@@ -60,7 +57,6 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
         FunctionName = Content;
     }
 
-
     public override bool IsValid(out string errorMsg)
     {
         if (!ValidContentRegex().IsMatch(Content))
@@ -82,13 +78,11 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
         return true;
     }
 
-
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
         return Content;
     }
-
 
     private static bool HasMoreThanOneDot(string? value)
     {
@@ -99,14 +93,7 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
         return value.Any(t => t == '.' && ++count > 1);
     }
 
-
-#if NET
     [GeneratedRegex("^[a-zA-Z0-9_.]*$")]
     private static partial Regex ValidContentRegex();
-#else
-    private static Regex ValidContentRegex() => s_validContentRegex;
-
-    private static readonly Regex s_validContentRegex = new("^[a-zA-Z0-9_.]*$");
-#endif
 
 }

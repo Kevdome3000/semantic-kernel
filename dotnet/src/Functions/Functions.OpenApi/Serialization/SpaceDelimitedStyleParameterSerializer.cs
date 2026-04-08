@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text.Json.Nodes;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;

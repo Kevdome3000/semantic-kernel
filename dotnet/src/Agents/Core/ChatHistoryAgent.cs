@@ -2,11 +2,7 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Agents;
 

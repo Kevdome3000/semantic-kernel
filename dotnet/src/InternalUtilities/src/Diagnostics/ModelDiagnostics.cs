@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Json;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -614,8 +610,7 @@ internal static class ModelDiagnostics
                         return new TextContent(text, metadata: lastContent.Metadata);
                     })
                     .ToList();
-                SetCompletionResponse(activity,
-                    textCompletions,
+                activity.SetCompletionResponse(textCompletions,
                     promptTokens,
                     completionTokens);
                 break;
@@ -634,8 +629,7 @@ internal static class ModelDiagnostics
                 {
                     chatCompletions.FirstOrDefault()?.Items.Add(functionCall);
                 }
-                SetCompletionResponse(activity,
-                    chatCompletions,
+                activity.SetCompletionResponse(chatCompletions,
                     promptTokens,
                     completionTokens);
                 break;

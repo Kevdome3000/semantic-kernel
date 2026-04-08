@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -21,12 +19,12 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("voice")]
     public string Voice
     {
-        get => this._voice;
+        get => _voice;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._voice = value;
+            ThrowIfFrozen();
+            _voice = value;
         }
     }
 
@@ -37,12 +35,12 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ResponseFormat
     {
-        get => this._responseFormat;
+        get => _responseFormat;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._responseFormat = value;
+            ThrowIfFrozen();
+            _responseFormat = value;
         }
     }
 
@@ -53,14 +51,15 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? Speed
     {
-        get => this._speed;
+        get => _speed;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._speed = value;
+            ThrowIfFrozen();
+            _speed = value;
         }
     }
+
 
     /// <summary>
     /// Creates an instance of <see cref="OpenAITextToAudioExecutionSettings"/> class with default voice - "alloy".
@@ -70,26 +69,31 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     {
     }
 
+
     /// <summary>
     /// Creates an instance of <see cref="OpenAITextToAudioExecutionSettings"/> class.
     /// </summary>
     /// <param name="voice">The voice to use when generating the audio. Supported voices are alloy, echo, fable, onyx, nova, and shimmer.</param>
     public OpenAITextToAudioExecutionSettings(string? voice)
     {
-        this._voice = voice ?? DefaultVoice;
+        _voice = voice ?? DefaultVoice;
     }
+
 
     /// <inheritdoc/>
     public override PromptExecutionSettings Clone()
     {
-        return new OpenAITextToAudioExecutionSettings(this.Voice)
+        return new OpenAITextToAudioExecutionSettings(Voice)
         {
-            ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
-            Speed = this.Speed,
-            ResponseFormat = this.ResponseFormat
+            ModelId = ModelId,
+            ExtensionData = ExtensionData is not null
+                ? new Dictionary<string, object>(ExtensionData)
+                : null,
+            Speed = Speed,
+            ResponseFormat = ResponseFormat
         };
     }
+
 
     /// <summary>
     /// Converts <see cref="PromptExecutionSettings"/> to derived <see cref="OpenAITextToAudioExecutionSettings"/> type.
@@ -115,6 +119,7 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
         return openAIExecutionSettings!;
     }
 
+
     #region private ================================================================================
 
     private const string DefaultVoice = "alloy";
@@ -124,4 +129,6 @@ public sealed class OpenAITextToAudioExecutionSettings : PromptExecutionSettings
     private string _voice;
 
     #endregion
+
+
 }

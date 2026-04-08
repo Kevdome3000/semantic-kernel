@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Embeddings;
 using OpenAI;
@@ -21,6 +15,7 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
 {
     private readonly ClientCore _client;
     private readonly int? _dimensions;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAITextEmbeddingGenerationService"/> class.
@@ -40,16 +35,17 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         int? dimensions = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
-        this._client = new(
-            modelId: modelId,
-            apiKey: apiKey,
+        _client = new ClientCore(
+            modelId,
+            apiKey,
             endpoint: null,
             organizationId: organization,
             httpClient: httpClient,
             logger: loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
 
-        this._dimensions = dimensions;
+        _dimensions = dimensions;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAITextEmbeddingGenerationService"/> class.
@@ -65,12 +61,14 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         int? dimensions = null)
     {
         Verify.NotNullOrWhiteSpace(modelId);
-        this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
-        this._dimensions = dimensions;
+        _client = new ClientCore(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextEmbeddingGenerationService)));
+        _dimensions = dimensions;
     }
 
+
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => _client.Attributes;
+
 
     /// <inheritdoc/>
     public Task<IList<ReadOnlyMemory<float>>> GenerateEmbeddingsAsync(
@@ -78,7 +76,11 @@ public sealed class OpenAITextEmbeddingGenerationService : ITextEmbeddingGenerat
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        this._client.LogActionDetails();
-        return this._client.GetEmbeddingsAsync(this._client.ModelId, data, kernel, this._dimensions, cancellationToken);
+        _client.LogActionDetails();
+        return _client.GetEmbeddingsAsync(_client.ModelId,
+            data,
+            kernel,
+            _dimensions,
+            cancellationToken);
     }
 }

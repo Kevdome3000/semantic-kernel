@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -49,12 +46,15 @@ public static class OpenAIChatHistoryExtensions
 
             if (chatMessage.Content is { Length: > 0 } contentUpdate)
             {
-                (contentBuilder ??= new()).Append(contentUpdate);
+                (contentBuilder ??= new StringBuilder()).Append(contentUpdate);
             }
 
             if (includeToolCalls)
             {
-                OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatMessage.ToolCallUpdates, ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex);
+                OpenAIFunctionToolCall.TrackStreamingToolingUpdate(chatMessage.ToolCallUpdates,
+                    ref toolCallIdsByIndex,
+                    ref functionNamesByIndex,
+                    ref functionArgumentBuildersByIndex);
             }
 
             // Is always expected to have at least one chunk with the role provided from a streaming message
@@ -71,14 +71,14 @@ public static class OpenAIChatHistoryExtensions
 
             chatHistory.Add(
                 new OpenAIChatMessageContent(
-                    role,
-                    contentBuilder?.ToString() ?? string.Empty,
-                    messageContents[0].ModelId!,
-                    includeToolCalls
-                        ? OpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex)
-                        : [],
-                    metadata)
-                { AuthorName = streamedName });
+                        role,
+                        contentBuilder?.ToString() ?? string.Empty,
+                        messageContents[0].ModelId!,
+                        includeToolCalls
+                            ? OpenAIFunctionToolCall.ConvertToolCallUpdatesToFunctionToolCalls(ref toolCallIdsByIndex, ref functionNamesByIndex, ref functionArgumentBuildersByIndex)
+                            : [],
+                        metadata)
+                    { AuthorName = streamedName });
         }
     }
 }

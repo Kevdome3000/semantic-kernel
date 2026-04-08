@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.BedrockAgentRuntime;
 using Amazon.BedrockAgentRuntime.Model;
+using BedrockFunctionResult = Amazon.BedrockAgentRuntime.Model.FunctionResult;
 using Amazon.Runtime.EventStreams;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Connectors.FunctionCalling;
@@ -222,7 +223,7 @@ internal static class BedrockAgentInvokeExtensions
                         {
                             return new InvocationResultMember
                             {
-                                FunctionResult = new FunctionResult
+                                FunctionResult = new BedrockFunctionResult
                                 {
                                     ActionGroup = agent.KernelFunctionActionGroupSignature,
                                     Function = functionResult.FunctionName,

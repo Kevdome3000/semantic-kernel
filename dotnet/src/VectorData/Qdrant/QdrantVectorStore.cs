@@ -36,7 +36,6 @@ public sealed class QdrantVectorStore : VectorStore
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStore"/> class.
     /// </summary>
@@ -47,7 +46,6 @@ public sealed class QdrantVectorStore : VectorStore
         : this(new MockableQdrantClient(qdrantClient, ownsClient), options)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QdrantVectorStore"/> class.
@@ -70,7 +68,6 @@ public sealed class QdrantVectorStore : VectorStore
         };
     }
 
-
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
@@ -78,16 +75,11 @@ public sealed class QdrantVectorStore : VectorStore
         base.Dispose(disposing);
     }
 
-
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
     [RequiresDynamicCode("This overload of GetCollection() is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
     [RequiresUnreferencedCode("This overload of GetCollecttion() is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
-#if NET
     public override QdrantCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
-#else
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
-#endif
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new QdrantCollection<TKey, TRecord>(_qdrantClient.Share,
@@ -99,13 +91,8 @@ public sealed class QdrantVectorStore : VectorStore
                     EmbeddingGenerator = _embeddingGenerator
                 });
 
-
     /// <inheritdoc />
-#if NET
     public override QdrantDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
-#else
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
-#endif
         => new QdrantDynamicCollection(_qdrantClient.Share,
             name,
             new QdrantCollectionOptions
@@ -115,7 +102,6 @@ public sealed class QdrantVectorStore : VectorStore
                 EmbeddingGenerator = _embeddingGenerator
             });
 #pragma warning restore IDE0090
-
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -132,7 +118,6 @@ public sealed class QdrantVectorStore : VectorStore
         }
     }
 
-
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
@@ -140,14 +125,12 @@ public sealed class QdrantVectorStore : VectorStore
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
-
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
         var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
-
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)

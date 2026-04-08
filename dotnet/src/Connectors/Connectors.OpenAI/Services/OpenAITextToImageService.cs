@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.TextToImage;
 
@@ -19,7 +14,8 @@ public class OpenAITextToImageService : ITextToImageService
     private readonly ClientCore _client;
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => _client.Attributes;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAITextToImageService"/> class.
@@ -36,8 +32,14 @@ public class OpenAITextToImageService : ITextToImageService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        this._client = new(modelId ?? "gpt-image-1", apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(this.GetType()));
+        _client = new ClientCore(modelId ?? "gpt-image-1",
+            apiKey,
+            organization,
+            null,
+            httpClient,
+            loggerFactory?.CreateLogger(GetType()));
     }
+
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ImageContent>> GetImageContentsAsync(
@@ -45,5 +47,11 @@ public class OpenAITextToImageService : ITextToImageService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetImageContentsAsync(this._client.ModelId, input, executionSettings, kernel, cancellationToken);
+    {
+        return _client.GetImageContentsAsync(_client.ModelId,
+            input,
+            executionSettings,
+            kernel,
+            cancellationToken);
+    }
 }

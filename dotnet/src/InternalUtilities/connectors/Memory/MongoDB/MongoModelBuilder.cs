@@ -24,7 +24,6 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
         UsesExternalSerializer = true
     };
 
-
     protected override void ProcessProperty(PropertyInfo? clrProperty, VectorStoreProperty? definitionProperty, Type? type)
     {
         base.ProcessProperty(clrProperty, definitionProperty, type);
@@ -36,12 +35,10 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
         }
     }
 
-
     protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
     {
         return keyPropertyType == typeof(Guid) || keyPropertyType == typeof(ObjectId);
     }
-
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
@@ -56,13 +53,10 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
         }
     }
 
-
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         supportedTypes = "string, int, long, double, float, bool, decimal, DateTime, DateTimeOffset,"
-#if NET
             + " DateOnly,"
-#endif
             + " or arrays/lists of these types";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
@@ -85,18 +79,14 @@ internal class MongoModelBuilder() : CollectionModelBuilder(s_validationOptions)
                 || type == typeof(DateTime)
                 || type == typeof(DateTimeOffset)
                 ||
-#if NET
                 type == typeof(DateOnly) ||
-#endif
                 false;
     }
-
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         return IsVectorPropertyTypeValidCore(type, out supportedTypes);
     }
-
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {

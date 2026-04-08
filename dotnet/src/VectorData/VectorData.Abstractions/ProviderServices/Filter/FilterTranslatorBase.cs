@@ -27,7 +27,6 @@ public abstract class FilterTranslatorBase
     /// </summary>
     protected ParameterExpression RecordParameter { get; private set; } = null!;
 
-
     /// <summary>
     /// Preprocesses the filter expression before translation.
     /// Sets <see cref="Model"/> and <see cref="RecordParameter"/>, runs the preprocessing visitor,
@@ -45,7 +44,6 @@ public abstract class FilterTranslatorBase
         var preprocessor = new FilterTranslationPreprocessor(options.SupportsParameterization);
         return preprocessor.Preprocess(lambdaExpression.Body);
     }
-
 
     /// <summary>
     /// Tries to match a Contains method call expression and extract the source collection and item expressions.
@@ -104,7 +102,6 @@ public abstract class FilterTranslatorBase
                 return false;
         }
     }
-
 
     /// <summary>
     /// Tries to bind an expression to a property in the collection model.
@@ -167,7 +164,6 @@ public abstract class FilterTranslatorBase
 
         return true;
     }
-
 
     /// <summary>
     /// Tries to unwrap an implicit cast to Span or ReadOnlySpan that may be present in expressions
@@ -235,7 +231,6 @@ public abstract class FilterTranslatorBase
         return false;
     }
 
-
     #region FilterTranslationPreprocessor
 
     /// <summary>
@@ -246,12 +241,10 @@ public abstract class FilterTranslatorBase
         private readonly bool _supportsParameterization;
         private List<string>? _parameterNames;
 
-
         internal FilterTranslationPreprocessor(bool supportsParameterization)
         {
             _supportsParameterization = supportsParameterization;
         }
-
 
         internal Expression Preprocess(Expression node)
         {
@@ -262,7 +255,6 @@ public abstract class FilterTranslatorBase
 
             return Visit(node);
         }
-
 
         /// <inheritdoc />
         protected override Expression VisitMember(MemberExpression node)
@@ -355,7 +347,6 @@ public abstract class FilterTranslatorBase
             return new QueryParameterExpression(name, evaluatedValue, visited.Type);
         }
 
-
         /// <inheritdoc />
         protected override Expression VisitNew(NewExpression node)
         {
@@ -367,10 +358,8 @@ public abstract class FilterTranslatorBase
             {
                 case ConstructorInfo constructor when constructor.DeclaringType == typeof(DateTimeOffset)
                     || constructor.DeclaringType == typeof(DateTime)
-#if NET
                     || constructor.DeclaringType == typeof(DateOnly)
                     || constructor.DeclaringType == typeof(TimeOnly)
-#endif
                     :
                     var constantArguments = new object?[visited.Arguments.Count];
 
@@ -390,11 +379,7 @@ public abstract class FilterTranslatorBase
                             try
                             {
                                 var evaluated = Expression.Lambda<Func<object>>(Expression.Convert(visited, typeof(object)))
-#if NET
                                     .Compile(true)
-#else
-                                    .Compile()
-#endif
                                     .Invoke();
 
                                 return Expression.Constant(evaluated, constructor.DeclaringType);
@@ -416,6 +401,5 @@ public abstract class FilterTranslatorBase
     }
 
     #endregion FilterTranslationPreprocessor
-
 
 }

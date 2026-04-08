@@ -1,12 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.Extensions.Logging;
-using System.Linq;
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Agents.CopilotStudio.Client;
 using Microsoft.SemanticKernel.Agents.CopilotStudio.Internal;
 
@@ -151,7 +145,7 @@ public sealed partial class CopilotStudioAgent : Agent
 
     private IAsyncEnumerable<ChatMessageContent> InvokeInternalAsync(ICollection<ChatMessageContent> messages, CopilotStudioAgentThread thread, CancellationToken cancellationToken)
     {
-        string question = string.Join<>(Environment.NewLine, messages.Select(m => m.Content));
+        string question = string.Join(Environment.NewLine, messages.Select(m => m.Content));
 
         return ActivityProcessor.ProcessActivity(Client.AskQuestionAsync(question, thread.Id, cancellationToken), Logger);
     }

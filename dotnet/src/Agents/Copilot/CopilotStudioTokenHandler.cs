@@ -1,14 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Agents.CopilotStudio.Client;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;

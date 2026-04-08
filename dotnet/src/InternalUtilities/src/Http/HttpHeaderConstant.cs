@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel.Http;
 
 /// <summary>Provides HTTP header names and values for common purposes.</summary>

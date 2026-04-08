@@ -1,11 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.IO;
-using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Http;
 
@@ -31,7 +26,6 @@ internal static class DocumentLoader
         return await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false);
     }
 
-
     internal static async Task<Stream> LoadDocumentFromUriAsStreamAsync(
         Uri uri,
         ILogger logger,
@@ -51,7 +45,6 @@ internal static class DocumentLoader
         var stream = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
         return new HttpResponseStream(stream, response);
     }
-
 
     private static async Task<HttpResponseMessage> LoadDocumentResponseFromUriAsync(
         Uri uri,
@@ -74,7 +67,6 @@ internal static class DocumentLoader
         return await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
-
     internal static async Task<string> LoadDocumentFromFilePathAsync(
         string filePath,
         ILogger logger,
@@ -88,13 +80,10 @@ internal static class DocumentLoader
 
         using var sr = File.OpenText(filePath);
         return await sr.ReadToEndAsync(
-#if NET
                 cancellationToken
-#endif
             )
             .ConfigureAwait(false);
     }
-
 
     private static void CheckIfFileExists(string filePath, ILogger logger)
     {
@@ -105,7 +94,6 @@ internal static class DocumentLoader
             throw exception;
         }
     }
-
 
     internal static Stream LoadDocumentFromFilePathAsStream(
         string filePath,
@@ -118,16 +106,11 @@ internal static class DocumentLoader
         return File.OpenRead(filePath);
     }
 
-
     internal static async Task<string> LoadDocumentFromStreamAsync(
         Stream stream,
         CancellationToken cancellationToken)
     {
         using StreamReader reader = new(stream);
-#if NET
         return await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
-#else
-        return await reader.ReadToEndAsync().ConfigureAwait(false);
-#endif
     }
 }

@@ -44,7 +44,6 @@ public sealed class WeaviateVectorStore : VectorStore
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="WeaviateVectorStore"/> class.
     /// </summary>
@@ -74,17 +73,12 @@ public sealed class WeaviateVectorStore : VectorStore
         };
     }
 
-
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
     /// <remarks>The collection name must start with a capital letter and contain only ASCII letters and digits.</remarks>
     [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
-#if NET
     public override WeaviateCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
-#else
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
-#endif
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new WeaviateCollection<TKey, TRecord>(
@@ -99,16 +93,11 @@ public sealed class WeaviateVectorStore : VectorStore
                     EmbeddingGenerator = _embeddingGenerator
                 });
 
-
     /// <inheritdoc />
     // TODO: The provider uses unsafe JSON serialization in many places, #11963
     [RequiresUnreferencedCode("The Weaviate provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Weaviate provider is currently incompatible with NativeAOT.")]
-#if NET
     public override WeaviateDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
-#else
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
-#endif
         => new WeaviateDynamicCollection(
             _httpClient,
             name,
@@ -121,7 +110,6 @@ public sealed class WeaviateVectorStore : VectorStore
                 EmbeddingGenerator = _embeddingGenerator
             });
 #pragma warning restore IDE0090
-
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -157,7 +145,6 @@ public sealed class WeaviateVectorStore : VectorStore
         }
     }
 
-
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
@@ -165,14 +152,12 @@ public sealed class WeaviateVectorStore : VectorStore
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
-
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
         var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
-
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)

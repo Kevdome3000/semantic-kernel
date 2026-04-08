@@ -36,7 +36,6 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="CosmosNoSqlVectorStore"/> class.
     /// </summary>
@@ -49,7 +48,6 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
     {
         Verify.NotNull(database);
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CosmosNoSqlVectorStore"/> class.
@@ -68,7 +66,6 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
         Verify.NotNullOrWhiteSpace(connectionString);
         Verify.NotNullOrWhiteSpace(databaseName);
     }
-
 
     private CosmosNoSqlVectorStore(
         ClientWrapper clientWrapper,
@@ -98,7 +95,6 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
         _clientWrapper = clientWrapper;
     }
 
-
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
@@ -106,16 +102,11 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
         base.Dispose(disposing);
     }
 
-
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
     [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
-#if NET
     public override CosmosNoSqlCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
-#else
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
-#endif
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new CosmosNoSqlCollection<TKey, TRecord>(
@@ -129,15 +120,10 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
                     EmbeddingGenerator = _embeddingGenerator
                 });
 
-
     /// <inheritdoc />
     [RequiresUnreferencedCode("The Cosmos NoSQL provider is currently incompatible with trimming.")]
     [RequiresDynamicCode("The Cosmos NoSQL provider is currently incompatible with NativeAOT.")]
-#if NET
     public override CosmosNoSqlDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
-#else
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
-#endif
         => new CosmosNoSqlDynamicCollection(
             _clientWrapper.Share(),
             _ => _database,
@@ -150,7 +136,6 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
             }
         );
 #pragma warning restore IDE0090
-
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<string> ListCollectionNamesAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -175,7 +160,6 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
         }
     }
 
-
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
@@ -183,14 +167,12 @@ public sealed class CosmosNoSqlVectorStore : VectorStore
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
-
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
         var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
-
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)

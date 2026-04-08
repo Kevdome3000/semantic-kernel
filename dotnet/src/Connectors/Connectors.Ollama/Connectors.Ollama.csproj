@@ -27,7 +27,10 @@
     <PackageReference Include="OllamaSharp">
       <ExcludeAssets>analyzers</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

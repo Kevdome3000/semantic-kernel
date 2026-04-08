@@ -118,14 +118,12 @@ internal sealed class SqlServerMapper<TRecord>(CollectionModel model)
                     case var t when t == typeof(DateTimeOffset):
                         property.SetValue(record, reader.GetDateTimeOffset(ordinal)); // DATETIMEOFFSET
                         break;
-#if NET
                     case var t when t == typeof(DateOnly):
                         property.SetValue(record, reader.GetFieldValue<DateOnly>(ordinal)); // DATE
                         break;
                     case var t when t == typeof(TimeOnly):
                         property.SetValue(record, reader.GetFieldValue<TimeOnly>(ordinal)); // TIME
                         break;
-#endif
 
                     // We map string[] and List<string> properties to SQL Server JSON columns, so deserialize from JSON here.
                     case var t when t == typeof(string[]):

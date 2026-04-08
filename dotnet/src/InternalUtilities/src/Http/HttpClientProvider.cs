@@ -1,15 +1,8 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection;
-#if NET
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-
-#endif
+using Microsoft.Extensions.DependencyInjection;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
 #pragma warning disable CA2215 // Dispose methods should call base class dispose
@@ -28,7 +21,7 @@ internal static class HttpClientProvider
     /// <returns>An instance of HttpClient.</returns>
     public static HttpClient GetHttpClient()
     {
-        return new(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        return new HttpClient(NonDisposableHttpClientHandler.Instance, false);
     }
 
 
@@ -58,7 +51,7 @@ internal static class HttpClientProvider
     /// <returns>An instance of HttpClient.</returns>
     public static HttpClient GetHttpClient(HttpClient? httpClient, IServiceProvider serviceProvider)
     {
-        return httpClient ?? GetHttpClient(serviceProvider?.GetService<HttpClient>());
+        return httpClient ?? GetHttpClient(serviceProvider.GetService<HttpClient>());
     }
 
 
@@ -94,7 +87,6 @@ internal static class HttpClientProvider
         }
 
 
-#if NET
         private static SocketsHttpHandler CreateHandler()
         {
             return new SocketsHttpHandler
@@ -109,23 +101,6 @@ internal static class HttpClientProvider
                 }
             };
         }
-#elif NETSTANDARD2_0_OR_GREATER
-        private static HttpClientHandler CreateHandler()
-        {
-            var handler = new HttpClientHandler();
-
-            try
-            {
-                handler.CheckCertificateRevocationList = true;
-            }
-            catch (PlatformNotSupportedException) { } // not supported on older frameworks
-
-            return handler;
-        }
-#elif NETFRAMEWORK
-        private static HttpClientHandler CreateHandler()
-            => new();
-#endif
 
     }
 }

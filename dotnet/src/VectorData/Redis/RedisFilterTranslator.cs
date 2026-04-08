@@ -12,11 +12,9 @@ namespace Microsoft.SemanticKernel.Connectors.Redis;
 
 #pragma warning disable MEVD9001 // Experimental: filter translation base types
 
-
 internal class RedisFilterTranslator : FilterTranslatorBase
 {
     private readonly StringBuilder _filter = new();
-
 
     internal string Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
@@ -33,7 +31,6 @@ internal class RedisFilterTranslator : FilterTranslatorBase
         Translate(preprocessedExpression);
         return _filter.ToString();
     }
-
 
     private void Translate(Expression? node)
     {
@@ -94,7 +91,6 @@ internal class RedisFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     private void TranslateEqualityComparison(BinaryExpression binary)
     {
         if (!TryProcessEqualityComparison(binary.Left, binary.Right) && !TryProcessEqualityComparison(binary.Right, binary.Left))
@@ -143,7 +139,6 @@ internal class RedisFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     private void TranslateNot(Expression expression)
     {
         // https://redis.io/docs/latest/develop/interact/search-and-query/query/combined/#not
@@ -151,7 +146,6 @@ internal class RedisFilterTranslator : FilterTranslatorBase
         Translate(expression);
         _filter.Append(')');
     }
-
 
     private void TranslateMethodCall(MethodCallExpression methodCall)
     {
@@ -173,7 +167,6 @@ internal class RedisFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     private void TranslateContains(Expression source, Expression item)
     {
         // Contains over tag field
@@ -191,7 +184,6 @@ internal class RedisFilterTranslator : FilterTranslatorBase
 
         throw new NotSupportedException("Contains supported only over tag field");
     }
-
 
     /// <summary>
     /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
@@ -269,11 +261,6 @@ internal class RedisFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     private static string SanitizeStringConstant(string value)
-#if NET
         => value.Replace("\"", "\\\"", StringComparison.Ordinal);
-#else
-        => value.Replace("\"", "\\\"");
-#endif
 }

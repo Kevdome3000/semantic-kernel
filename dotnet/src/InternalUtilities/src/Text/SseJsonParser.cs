@@ -1,13 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Text;
 
@@ -67,11 +60,7 @@ internal static class SseJsonParser
         finally
         {
             // Always dispose the stream immediately once enumeration is complete for any reason
-#if NET
             await stream.DisposeAsync().ConfigureAwait(false);
-#else
-            stream.Dispose();
-#endif
         }
     }
 

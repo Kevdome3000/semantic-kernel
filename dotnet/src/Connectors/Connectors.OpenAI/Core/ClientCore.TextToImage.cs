@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ClientModel;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using OpenAI.Images;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -34,16 +30,18 @@ internal partial class ClientCore
 
         var size = new GeneratedImageSize(width, height);
 
-        var imageOptions = new ImageGenerationOptions()
+        var imageOptions = new ImageGenerationOptions
         {
-            Size = size,
+            Size = size
         };
 
         // The model is not required by the OpenAI API and defaults to the DALL-E 2 server-side - https://platform.openai.com/docs/api-reference/images/create#images-create-model.
         // However, considering that the model is required by the OpenAI SDK and the ModelId property is optional, it defaults to gpt-image-1 in the line below.
-        targetModel = string.IsNullOrEmpty(targetModel) ? "gpt-image-1" : targetModel!;
+        targetModel = string.IsNullOrEmpty(targetModel)
+            ? "gpt-image-1"
+            : targetModel!;
 
-        ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client!.GetImageClient(targetModel).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
+        ClientResult<GeneratedImage> response = await RunRequestAsync(() => Client!.GetImageClient(targetModel).GenerateImageAsync(prompt, imageOptions, cancellationToken)).ConfigureAwait(false);
         var generatedImage = response.Value;
 
         if (generatedImage.ImageUri is not null)
@@ -58,6 +56,7 @@ internal partial class ClientCore
 
         throw new KernelException("The generated image has no valid content.");
     }
+
 
     /// <summary>
     /// Generates an image with the provided configuration.
@@ -81,22 +80,23 @@ internal partial class ClientCore
         // Convert the generic execution settings to OpenAI-specific settings
         var imageSettings = OpenAITextToImageExecutionSettings.FromExecutionSettings(executionSettings);
 
-        var imageGenerationOptions = new ImageGenerationOptions()
+        var imageGenerationOptions = new ImageGenerationOptions
         {
             Size = GetGeneratedImageSize(imageSettings.Size),
             ResponseFormat = GetResponseFormat(imageSettings.ResponseFormat),
             Style = GetGeneratedImageStyle(imageSettings.Style),
             Quality = GetGeneratedImageQuality(imageSettings.Quality),
-            EndUserId = imageSettings.EndUserId,
+            EndUserId = imageSettings.EndUserId
         };
 
-        ClientResult<GeneratedImage> response = await RunRequestAsync(() => this.Client!.GetImageClient(targetModel).GenerateImageAsync(input.Text, imageGenerationOptions, cancellationToken)).ConfigureAwait(false);
+        ClientResult<GeneratedImage> response = await RunRequestAsync(() => Client!.GetImageClient(targetModel).GenerateImageAsync(input.Text, imageGenerationOptions, cancellationToken)).ConfigureAwait(false);
         var generatedImage = response.Value;
 
         List<ImageContent> result = [];
+
         if (generatedImage.ImageUri is not null)
         {
-            result.Add(new ImageContent(uri: generatedImage.ImageUri) { InnerContent = generatedImage });
+            result.Add(new ImageContent(generatedImage.ImageUri) { InnerContent = generatedImage });
         }
         else
         {
@@ -106,10 +106,14 @@ internal partial class ClientCore
         return result;
     }
 
+
     private static GeneratedImageSize? GetGeneratedImageSize((int Width, int Height)? size)
-        => size is null
+    {
+        return size is null
             ? null
             : new GeneratedImageSize(size.Value.Width, size.Value.Height);
+    }
+
 
     private static GeneratedImageQuality? GetGeneratedImageQuality(string? quality)
     {
@@ -129,6 +133,7 @@ internal partial class ClientCore
         };
     }
 
+
     private static GeneratedImageStyle? GetGeneratedImageStyle(string? style)
     {
         if (style is null)
@@ -143,6 +148,7 @@ internal partial class ClientCore
             _ => throw new NotSupportedException($"The provided style '{style}' is not supported.")
         };
     }
+
 
     private static GeneratedImageFormat? GetResponseFormat(object? responseFormat)
     {

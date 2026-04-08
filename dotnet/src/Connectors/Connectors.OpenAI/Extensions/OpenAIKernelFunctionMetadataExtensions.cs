@@ -2,9 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
-using System.Collections.Generic;
-
-
 /// <summary>
 /// Extensions for <see cref="KernelFunctionMetadata"/> specific to the OpenAI connector.
 /// </summary>

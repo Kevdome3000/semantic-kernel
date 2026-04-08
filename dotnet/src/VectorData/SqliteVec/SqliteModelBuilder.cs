@@ -15,12 +15,10 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
         SupportsMultipleVectors = true
     };
 
-
     protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
     {
         return keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
     }
-
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
@@ -34,13 +32,10 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
         }
     }
 
-
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         supportedTypes = "int, long, short, string, bool, float, double, byte[], Guid, DateTime, DateTimeOffset"
-#if NET
             + ", DateOnly, TimeOnly"
-#endif
             ;
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
@@ -59,19 +54,15 @@ internal class SqliteModelBuilder() : CollectionModelBuilder(s_modelBuildingOpti
             || type == typeof(Guid)
             || type == typeof(DateTime)
             || type == typeof(DateTimeOffset)
-#if NET
             || type == typeof(DateOnly)
             || type == typeof(TimeOnly)
-#endif
             ;
     }
-
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         return IsVectorPropertyTypeValidCore(type, out supportedTypes);
     }
-
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {

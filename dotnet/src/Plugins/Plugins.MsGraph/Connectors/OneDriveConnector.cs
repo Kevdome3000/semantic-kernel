@@ -19,7 +19,6 @@ public class OneDriveConnector : ICloudDriveConnector
 {
     private readonly GraphServiceClient _graphServiceClient;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="OneDriveConnector"/> class.
     /// </summary>
@@ -28,7 +27,6 @@ public class OneDriveConnector : ICloudDriveConnector
     {
         _graphServiceClient = graphServiceClient;
     }
-
 
     /// <inheritdoc/>
     public async Task<Stream?> GetFileContentStreamAsync(string filePath, CancellationToken cancellationToken = default)
@@ -44,7 +42,6 @@ public class OneDriveConnector : ICloudDriveConnector
             .GetAsync(cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Checks if a file exists at the specified path in OneDrive.
@@ -83,7 +80,6 @@ public class OneDriveConnector : ICloudDriveConnector
                 ex);
         }
     }
-
 
     /// <inheritdoc/>
     public async Task UploadSmallFileAsync(string filePath, string destinationPath, CancellationToken cancellationToken = default)
@@ -124,17 +120,9 @@ public class OneDriveConnector : ICloudDriveConnector
         }
         catch (HttpRequestException ex)
         {
-#if NET
             throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
-#else
-            throw new HttpOperationException(null,
-                responseContent: null,
-                ex.Message,
-                ex);
-#endif
         }
     }
-
 
     /// <inheritdoc/>
     public async Task<string> CreateShareLinkAsync(
@@ -169,14 +157,7 @@ public class OneDriveConnector : ICloudDriveConnector
         }
         catch (HttpRequestException ex)
         {
-#if NET
             throw new HttpOperationException(ex.StatusCode, responseContent: null, ex.Message, ex);
-#else
-            throw new HttpOperationException(null,
-                responseContent: null,
-                ex.Message,
-                ex);
-#endif
         }
 
         string? result = response?.Link?.WebUrl;

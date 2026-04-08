@@ -82,7 +82,6 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
         return jsonObject;
     }
 
-
     /// <inheritdoc />
     public Dictionary<string, object?> MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
@@ -158,7 +157,6 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
         return result;
     }
 
-
     /// <summary>
     /// Get the value of the given json node as the given property type.
     /// </summary>
@@ -184,10 +182,8 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
             Type t when t == typeof(DateTime?) => value.GetValue<DateTime?>(),
             Type t when t == typeof(DateTimeOffset) => value.GetValue<DateTimeOffset>(),
             Type t when t == typeof(DateTimeOffset?) => value.GetValue<DateTimeOffset?>(),
-#if NET
             Type t when t == typeof(DateOnly) => DateOnly.FromDateTime(value.GetValue<DateTimeOffset>().DateTime),
             Type t when t == typeof(DateOnly?) => (DateOnly?)DateOnly.FromDateTime(value.GetValue<DateTimeOffset>().DateTime),
-#endif
 
             _ => (object?)null
         };
@@ -248,7 +244,6 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
         throw new UnreachableException($"Unsupported property type '{propertyType.Name}'.");
     }
 
-
     /// <summary>
     /// Converts a value to its storage representation for Azure AI Search.
     /// Azure AI Search only supports <see cref="DateTimeOffset"/> for date/time types, and always internally
@@ -262,9 +257,7 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
         var underlying = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
 
         if (underlying == typeof(DateTime)
-#if NET
             || underlying == typeof(DateOnly)
-#endif
         )
         {
             return propertyType == underlying
@@ -275,14 +268,11 @@ internal sealed class AzureAISearchDynamicMapper(CollectionModel model, JsonSeri
         return propertyType;
     }
 
-
     private static object ConvertToStorageValue(object value)
         => value switch
         {
             DateTime dateTime => new DateTimeOffset(dateTime, TimeSpan.Zero),
-#if NET
             DateOnly dateOnly => new DateTimeOffset(dateOnly.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
-#endif
             _ => value
         };
 }

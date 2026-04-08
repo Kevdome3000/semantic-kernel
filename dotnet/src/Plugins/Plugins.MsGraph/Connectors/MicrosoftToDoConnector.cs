@@ -10,6 +10,9 @@ using System.Threading;
 using System;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
 using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
+using TaskStatus = Microsoft.Graph.Models.TaskStatus;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Connectors.Diagnostics;
+using Microsoft.SemanticKernel.Plugins.MsGraph.Models;
 
 namespace Microsoft.SemanticKernel.Plugins.MsGraph.Connectors;
 

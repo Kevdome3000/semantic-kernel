@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.Experimental.Orchestration;
 
-
 public sealed partial class CollectEmailPlugin
 {
 
@@ -33,7 +32,6 @@ public sealed partial class CollectEmailPlugin
 
     private readonly PromptExecutionSettings _chatRequestSettings;
 
-
     public CollectEmailPlugin(Kernel kernel)
     {
         this._chat = kernel.GetRequiredService<IChatCompletionService>();
@@ -45,7 +43,6 @@ public sealed partial class CollectEmailPlugin
             Temperature = 0
         };
     }
-
 
     [KernelFunction("ConfigureEmailAddress")]
     [Description("Useful to assist in configuration of email address, must be called after email provided")]
@@ -83,13 +80,7 @@ public sealed partial class CollectEmailPlugin
         return response.Content ?? string.Empty;
     }
 
-
-#if NET
     [GeneratedRegex(EmailPattern)]
     private static partial Regex EmailRegex();
-#else
-    private static Regex EmailRegex() => s_emailRegex;
-    private static readonly Regex s_emailRegex = new(EmailPattern, RegexOptions.Compiled);
-#endif
 
 }

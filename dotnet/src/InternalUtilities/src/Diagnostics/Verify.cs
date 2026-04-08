@@ -1,12 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.SemanticKernel;
@@ -14,18 +8,8 @@ namespace Microsoft.SemanticKernel;
 [ExcludeFromCodeCoverage]
 internal static partial class Verify
 {
-#if NET
     [GeneratedRegex("^[^.]+\\.[^.]+$")]
     private static partial Regex FilenameRegex();
-#else
-    private static Regex FilenameRegex()
-    {
-        return s_filenameRegex;
-    }
-
-
-    private static readonly Regex s_filenameRegex = new("^[^.]+\\.[^.]+$", RegexOptions.Compiled);
-#endif
 
 
     /// <summary>
@@ -34,30 +18,14 @@ internal static partial class Verify
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNull([NotNull] object? obj, [CallerArgumentExpression(nameof(obj))] string? paramName = null)
     {
-#if NET
         ArgumentNullException.ThrowIfNull(obj, paramName);
-#else
-        if (obj is null)
-        {
-            ThrowArgumentNullException(paramName);
-        }
-#endif
     }
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void NotNullOrWhiteSpace([NotNull] string? str, [CallerArgumentExpression(nameof(str))] string? paramName = null)
     {
-#if NET
         ArgumentException.ThrowIfNullOrWhiteSpace(str, paramName);
-#else
-        NotNull(str, paramName);
-
-        if (string.IsNullOrWhiteSpace(str))
-        {
-            ThrowArgumentWhiteSpaceException(paramName);
-        }
-#endif
     }
 
 

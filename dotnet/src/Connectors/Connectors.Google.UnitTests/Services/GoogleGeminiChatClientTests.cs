@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#if NET
-
 using System;
 using Google.GenAI;
 using Microsoft.Extensions.AI;
@@ -158,4 +156,3 @@ public sealed class GoogleGeminiChatClientTests
     }
 }
 
-#endif

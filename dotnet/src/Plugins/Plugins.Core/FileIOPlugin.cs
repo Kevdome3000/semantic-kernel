@@ -48,7 +48,6 @@ public sealed class FileIOPlugin
     /// </remarks>
     public bool DisableFileOverwrite { get; set; } = true;
 
-
     /// <summary>
     /// Read a file
     /// </summary>
@@ -68,7 +67,6 @@ public sealed class FileIOPlugin
         using var reader = File.OpenText(path);
         return await reader.ReadToEndAsync().ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Write a file
@@ -103,18 +101,13 @@ public sealed class FileIOPlugin
             FileAccess.Write,
             FileShare.None);
         await writer.WriteAsync(text
-#if !NET
-            , 0, text.Length
-#endif
             )
             .ConfigureAwait(false);
     }
 
-
     #region private
 
     private HashSet<string>? _allowedFolders = [];
-
 
     /// <summary>
     /// If a list of allowed folder has been provided, the folder of the provided filePath is checked
@@ -171,6 +164,5 @@ public sealed class FileIOPlugin
     }
 
     #endregion
-
 
 }

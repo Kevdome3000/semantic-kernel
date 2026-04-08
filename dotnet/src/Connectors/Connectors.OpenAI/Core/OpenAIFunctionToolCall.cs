@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -16,6 +14,7 @@ public sealed class OpenAIFunctionToolCall
 {
     private string? _fullyQualifiedFunctionName;
 
+
     /// <summary>Initialize the <see cref="OpenAIFunctionToolCall"/> from a <see cref="ChatToolCall "/>.</summary>
     internal OpenAIFunctionToolCall(ChatToolCall functionToolCall)
     {
@@ -28,21 +27,24 @@ public sealed class OpenAIFunctionToolCall
         string? pluginName = null;
 
         int separatorPos = fullyQualifiedFunctionName.IndexOf(OpenAIFunction.NameSeparator, StringComparison.Ordinal);
+
         if (separatorPos >= 0)
         {
             pluginName = fullyQualifiedFunctionName.AsSpan(0, separatorPos).Trim().ToString();
             functionName = fullyQualifiedFunctionName.AsSpan(separatorPos + OpenAIFunction.NameSeparator.Length).Trim().ToString();
         }
 
-        this.Id = functionToolCall.Id;
-        this._fullyQualifiedFunctionName = fullyQualifiedFunctionName;
-        this.PluginName = pluginName;
-        this.FunctionName = functionName;
+        Id = functionToolCall.Id;
+        _fullyQualifiedFunctionName = fullyQualifiedFunctionName;
+        PluginName = pluginName;
+        FunctionName = functionName;
+
         if (!string.IsNullOrWhiteSpace(arguments))
         {
-            this.Arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>(arguments!);
+            Arguments = JsonSerializer.Deserialize<Dictionary<string, object?>>(arguments!);
         }
     }
+
 
     /// <summary>Gets the ID of the tool call.</summary>
     public string? Id { get; }
@@ -63,19 +65,24 @@ public sealed class OpenAIFunctionToolCall
     /// this is the same as <see cref="FunctionName"/>.
     /// </remarks>
     public string FullyQualifiedName =>
-        this._fullyQualifiedFunctionName ??=
-        string.IsNullOrEmpty(this.PluginName) ? this.FunctionName : $"{this.PluginName}{OpenAIFunction.NameSeparator}{this.FunctionName}";
+        _fullyQualifiedFunctionName ??=
+            string.IsNullOrEmpty(PluginName)
+                ? FunctionName
+                : $"{PluginName}{OpenAIFunction.NameSeparator}{FunctionName}";
+
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        var sb = new StringBuilder(this.FullyQualifiedName);
+        var sb = new StringBuilder(FullyQualifiedName);
 
         sb.Append('(');
-        if (this.Arguments is not null)
+
+        if (Arguments is not null)
         {
             string separator = "";
-            foreach (var arg in this.Arguments)
+
+            foreach (var arg in Arguments)
             {
                 sb.Append(separator).Append(arg.Key).Append(':').Append(arg.Value);
                 separator = ", ";
@@ -85,6 +92,7 @@ public sealed class OpenAIFunctionToolCall
 
         return sb.ToString();
     }
+
 
     /// <summary>
     /// Tracks tooling updates from streaming responses.
@@ -125,13 +133,14 @@ public sealed class OpenAIFunctionToolCall
             {
                 if (!(functionArgumentBuildersByIndex ??= []).TryGetValue(update.Index, out StringBuilder? arguments))
                 {
-                    functionArgumentBuildersByIndex[update.Index] = arguments = new();
+                    functionArgumentBuildersByIndex[update.Index] = arguments = new StringBuilder();
                 }
 
-                arguments.Append(update.FunctionArgumentsUpdate.ToString());
+                arguments.Append(update.FunctionArgumentsUpdate);
             }
         }
     }
+
 
     /// <summary>
     /// Converts the data built up by <see cref="TrackStreamingToolingUpdate"/> into an array of <see cref="ChatToolCall"/>s.
@@ -145,11 +154,13 @@ public sealed class OpenAIFunctionToolCall
         ref Dictionary<int, StringBuilder>? functionArgumentBuildersByIndex)
     {
         ChatToolCall[] toolCalls = [];
+
         if (toolCallIdsByIndex is { Count: > 0 })
         {
             toolCalls = new ChatToolCall[toolCallIdsByIndex.Count];
 
             int i = 0;
+
             foreach (KeyValuePair<int, string> toolCallIndexAndId in toolCallIdsByIndex)
             {
                 string? functionName = null;

@@ -21,12 +21,10 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(ModelBuildingOpti
         SupportsMultipleVectors = true
     };
 
-
     protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
     {
         return keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
     }
-
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
@@ -44,7 +42,6 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(ModelBuildingOpti
                 $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: short, int, long, string, Guid.");
         }
     }
-
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
@@ -73,21 +70,17 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(ModelBuildingOpti
                 || type == typeof(DateTime)
                 || type == typeof(DateTimeOffset)
                 ||
-#if NET
                 type == typeof(DateOnly)
                 || type == typeof(TimeOnly)
                 ||
-#endif
                 type == typeof(Guid);
         }
     }
-
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         return IsVectorPropertyTypeValidCore(type, out supportedTypes);
     }
-
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
@@ -102,16 +95,13 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(ModelBuildingOpti
             || type == typeof(Embedding<float>)
             || type == typeof(float[])
             ||
-#if NET
             type == typeof(ReadOnlyMemory<Half>)
             || type == typeof(Embedding<Half>)
             || type == typeof(Half[])
             ||
-#endif
             type == typeof(BitArray)
             || type == typeof(SparseVector);
     }
-
 
     /// <inheritdoc />
     protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
@@ -130,14 +120,11 @@ internal class PostgresModelBuilder() : CollectionModelBuilder(ModelBuildingOpti
         }
     }
 
-
     /// <inheritdoc />
     protected override IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; } =
     [
         EmbeddingGenerationDispatcher.Create<Embedding<float>>(),
-#if NET
         EmbeddingGenerationDispatcher.Create<Embedding<Half>>(),
-#endif
         EmbeddingGenerationDispatcher.Create<BinaryEmbedding>()
     ];
 }

@@ -119,7 +119,8 @@ public static class AzureAIInferenceServiceCollectionExtensions
     /// <param name="openTelemetrySourceName">An optional source name that will be used on the telemetry data.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    public static IServiceCollection AddAzureAIInferenceChatCompletion(this IServiceCollection services,
+    public static IServiceCollection AddAzureAIInferenceChatCompletion(
+        this IServiceCollection services,
         string modelId,
         ChatCompletionsClient? chatClient = null,
         string? serviceId = null,

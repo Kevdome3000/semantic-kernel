@@ -32,14 +32,12 @@ public class MongoDataTypeTests(MongoDataTypeTests.Fixture fixture)
             instantiationExpression: () => new DateTimeOffset(2020, 1, 1, 12, 30, 45, TimeSpan.Zero),
             isFilterable: false); // Operand type is not supported for $vectorSearch: date
 
-#if NET
     public override Task DateOnly()
         => this.Test<DateOnly>(
             "DateOnly",
             new DateOnly(2020, 1, 1),
             new DateOnly(2021, 2, 3),
             isFilterable: false); // Operand type is not supported for $vectorSearch: date
-#endif
 
     public override Task String_array()
         => this.Test<string[]>(
@@ -60,9 +58,7 @@ public class MongoDataTypeTests(MongoDataTypeTests.Fixture fixture)
             typeof(byte),
             typeof(short),
             typeof(Guid),
-#if NET
             typeof(TimeOnly)
-#endif
         ];
     }
 }

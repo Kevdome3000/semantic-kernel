@@ -1,11 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.Plugins.OpenApi;
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Plugins.Manifest;
@@ -102,7 +97,6 @@ public static class DeclarativeAgentExtensions
         return agent;
     }
 
-
     private static async Task ImportCAPFromActionAsync(
         DCAction action,
         string? manifestDirectory,
@@ -132,7 +126,6 @@ public static class DeclarativeAgentExtensions
         }
     }
 
-
     private static async Task<string?> GetEffectiveInstructionsAsync(
         string? manifestFilePath,
         string? source,
@@ -143,15 +136,10 @@ public static class DeclarativeAgentExtensions
         {
             return source;
         }
-#if NET
         var filePath = source[8..^3];
-#else
-        var filePath = source.Substring(8, source.Length - 11);
-#endif
         filePath = GetFullPath(manifestFilePath, filePath);
         return await DocumentLoader.LoadDocumentFromFilePathAsync(filePath, logger, cancellationToken).ConfigureAwait(false);
     }
-
 
     private static string GetFullPath(string? manifestDirectory, string relativeOrAbsolutePath)
     {

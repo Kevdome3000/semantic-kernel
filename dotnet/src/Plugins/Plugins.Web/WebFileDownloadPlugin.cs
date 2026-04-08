@@ -37,7 +37,6 @@ public sealed class WebFileDownloadPlugin
     /// </summary>
     public const string FilePathParamName = "filePath";
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="WebFileDownloadPlugin"/> class.
     /// </summary>
@@ -46,7 +45,6 @@ public sealed class WebFileDownloadPlugin
         this(HttpClientProvider.GetHttpClient(), loggerFactory)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WebFileDownloadPlugin"/> class.
@@ -58,7 +56,6 @@ public sealed class WebFileDownloadPlugin
         _httpClient = httpClient;
         _logger = loggerFactory?.CreateLogger(typeof(WebFileDownloadPlugin)) ?? NullLogger.Instance;
     }
-
 
     /// <summary>
     /// List of allowed domains to download from.
@@ -106,7 +103,6 @@ public sealed class WebFileDownloadPlugin
     /// Defaults to 10 MB.
     /// </remarks>
     public long MaximumDownloadSize { get; set; } = 10 * 1024 * 1024;
-
 
     /// <summary>
     /// Downloads a file to a local file path.
@@ -170,21 +166,13 @@ public sealed class WebFileDownloadPlugin
         {
             long totalBytesWritten = 0;
             int bytesRead;
-#if NET
             while ((bytesRead = await source.ReadAsync(buffer.AsMemory(0, bufferSize), cancellationToken).ConfigureAwait(false)) != 0)
-#else
-            while ((bytesRead = await source.ReadAsync(buffer, 0, bufferSize, cancellationToken).ConfigureAwait(false)) != 0)
-#endif
             {
                 if (totalBytesWritten + bytesRead > MaximumDownloadSize)
                 {
                     throw new InvalidOperationException($"The file size exceeds the maximum allowed size of {MaximumDownloadSize} bytes.");
                 }
-#if NET
                 await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
-#else
-                await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
-#endif
                 totalBytesWritten += bytesRead;
             }
         }
@@ -194,14 +182,12 @@ public sealed class WebFileDownloadPlugin
         }
     }
 
-
     #region private
 
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
     private HashSet<string>? _allowedDomains = [];
     private HashSet<string>? _allowedFolders = [];
-
 
     /// <summary>
     /// If a list of allowed domains has been provided, the host of the provided uri is checked
@@ -215,7 +201,6 @@ public sealed class WebFileDownloadPlugin
             && _allowedDomains.Count > 0
             && _allowedDomains.Contains(uri.Host);
     }
-
 
     /// <summary>
     /// If a list of allowed folder has been provided, the folder of the provided filePath is checked
@@ -272,6 +257,5 @@ public sealed class WebFileDownloadPlugin
     }
 
     #endregion
-
 
 }

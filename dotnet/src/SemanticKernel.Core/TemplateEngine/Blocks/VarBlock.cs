@@ -11,7 +11,6 @@ internal sealed partial class VarBlock : Block, ITextRendering
 
     internal string Name { get; } = string.Empty;
 
-
     public VarBlock(string? content, ILoggerFactory? loggerFactory = null) : base(content?.Trim(), loggerFactory)
     {
         if (Content.Length < 2)
@@ -23,7 +22,6 @@ internal sealed partial class VarBlock : Block, ITextRendering
 
         Name = Content.Substring(1);
     }
-
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
     // ReSharper disable TemplateIsNotCompileTimeConstantProblem
@@ -68,7 +66,6 @@ internal sealed partial class VarBlock : Block, ITextRendering
     }
 #pragma warning restore CA2254
 
-
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
@@ -92,14 +89,7 @@ internal sealed partial class VarBlock : Block, ITextRendering
         return null;
     }
 
-
-#if NET
     [GeneratedRegex("^[a-zA-Z0-9_]*$")]
     private static partial Regex ValidNameRegex();
-#else
-    private static Regex ValidNameRegex() => s_validNameRegex;
-
-    private static readonly Regex s_validNameRegex = new("^[a-zA-Z0-9_]*$", RegexOptions.Compiled);
-#endif
 
 }

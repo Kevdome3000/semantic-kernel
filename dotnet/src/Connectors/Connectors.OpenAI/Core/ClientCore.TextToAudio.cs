@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ClientModel;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using OpenAI.Audio;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -37,16 +33,23 @@ internal partial class ClientCore
         SpeechGenerationOptions options = new()
         {
             ResponseFormat = responseFormat,
-            SpeedRatio = audioExecutionSettings.Speed,
+            SpeedRatio = audioExecutionSettings.Speed
         };
 
-        ClientResult<BinaryData> response = await RunRequestAsync(() => this.Client!.GetAudioClient(targetModel).GenerateSpeechAsync(prompt, GetGeneratedSpeechVoice(audioExecutionSettings?.Voice), options, cancellationToken)).ConfigureAwait(false);
+        ClientResult<BinaryData> response = await RunRequestAsync(() => Client!.GetAudioClient(targetModel)
+            .GenerateSpeechAsync(prompt,
+                GetGeneratedSpeechVoice(audioExecutionSettings?.Voice),
+                options,
+                cancellationToken))
+            .ConfigureAwait(false);
 
         return [new AudioContent(response.Value.ToArray(), mimeType)];
     }
 
+
     private static GeneratedSpeechVoice GetGeneratedSpeechVoice(string? voice)
-        => voice?.ToUpperInvariant() switch
+    {
+        return voice?.ToUpperInvariant() switch
         {
             "ALLOY" => GeneratedSpeechVoice.Alloy,
             "ECHO" => GeneratedSpeechVoice.Echo,
@@ -54,8 +57,10 @@ internal partial class ClientCore
             "ONYX" => GeneratedSpeechVoice.Onyx,
             "NOVA" => GeneratedSpeechVoice.Nova,
             "SHIMMER" => GeneratedSpeechVoice.Shimmer,
-            _ => throw new NotSupportedException($"The voice '{voice}' is not supported."),
+            _ => throw new NotSupportedException($"The voice '{voice}' is not supported.")
         };
+    }
+
 
     private static (GeneratedSpeechFormat? Format, string? MimeType) GetGeneratedSpeechFormatAndMimeType(string? format)
     {

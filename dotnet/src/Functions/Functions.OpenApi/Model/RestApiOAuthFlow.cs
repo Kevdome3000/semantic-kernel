@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;

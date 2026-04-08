@@ -1,12 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
 using System.Data;
 using System.Data.Common;
 
@@ -448,11 +441,7 @@ internal static class VectorStoreErrorHandler
         }
         catch (DbException ex)
         {
-#if NET
             await connection.DisposeAsync().ConfigureAwait(false);
-#else
-            connection.Dispose();
-#endif
 
             throw new VectorStoreException("Call to vector store failed.", ex)
             {
@@ -464,11 +453,7 @@ internal static class VectorStoreErrorHandler
         }
         catch (IOException ex)
         {
-#if NET
             await connection.DisposeAsync().ConfigureAwait(false);
-#else
-            connection.Dispose();
-#endif
 
             throw new VectorStoreException("Call to vector store failed.", ex)
             {
@@ -480,11 +465,7 @@ internal static class VectorStoreErrorHandler
         }
         catch (Exception)
         {
-#if NET
             await connection.DisposeAsync().ConfigureAwait(false);
-#else
-            connection.Dispose();
-#endif
             throw;
         }
     }

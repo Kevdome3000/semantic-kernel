@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
@@ -58,7 +56,6 @@ internal static partial class RestApiOperationExtensions
         return parameters;
     }
 
-
     /// <summary>
     /// Returns the default return parameter metadata for a given REST API operation.
     /// </summary>
@@ -76,7 +73,6 @@ internal static partial class RestApiOperationExtensions
 
         return returnParameter;
     }
-
 
     /// <summary>
     /// Retrieves the default response.
@@ -97,7 +93,6 @@ internal static partial class RestApiOperationExtensions
         // If no appropriate response is found, return null or throw an exception
         return null;
     }
-
 
     /// <summary>
     /// Retrieves the payload parameters for a given REST API operation.
@@ -152,7 +147,6 @@ internal static partial class RestApiOperationExtensions
         ];
     }
 
-
     /// <summary>
     /// Creates the 'content-type' artificial parameter for a REST API operation.
     /// </summary>
@@ -169,7 +163,6 @@ internal static partial class RestApiOperationExtensions
             RestApiParameterStyle.Simple,
             description: "Content type of REST API request body.");
     }
-
 
     /// <summary>
     /// Creates the 'payload' artificial parameter for a REST API operation.
@@ -190,7 +183,6 @@ internal static partial class RestApiOperationExtensions
             description: operation.Payload?.Description ?? "REST API request body.",
             schema: operation.Payload?.Schema);
     }
-
 
     /// <summary>
     /// Retrieves parameters from REST API payload metadata.
@@ -261,7 +253,6 @@ internal static partial class RestApiOperationExtensions
         return parameters;
     }
 
-
     /// <summary>
     /// Gets the property name based on the provided parameters.
     /// </summary>
@@ -281,15 +272,9 @@ internal static partial class RestApiOperationExtensions
         return property.Name;
     }
 
-
     private const string MediaTypeTextPlain = "text/plain";
     private static readonly string[] s_preferredResponses = ["200", "201", "202", "203", "204", "205", "206", "207", "208", "226", "2XX", "default"];
 
-#if NET
     [GeneratedRegex("[^0-9A-Za-z_]+")]
     private static partial Regex InvalidSymbolsRegex();
-#else
-    private static Regex InvalidSymbolsRegex() => s_invalidSymbolsRegex;
-    private static readonly Regex s_invalidSymbolsRegex = new("[^0-9A-Za-z_]+", RegexOptions.Compiled);
-#endif
 }

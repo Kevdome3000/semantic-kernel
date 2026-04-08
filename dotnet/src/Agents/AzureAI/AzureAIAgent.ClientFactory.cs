@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Net.Http;
 using Azure.AI.Agents.Persistent;
 using Azure.Core;
 using Azure.Core.Pipeline;

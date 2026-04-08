@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Diagnostics;
 using Microsoft.Extensions.AI;
 using Pinecone;
 

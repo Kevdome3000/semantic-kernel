@@ -22,7 +22,6 @@ internal static class SqlitePropertyMapping
         return byteArray;
     }
 
-
     public static List<SqliteColumn> GetColumns(IReadOnlyList<PropertyModel> properties, bool data)
     {
         const string DistanceMetricConfigurationName = "distance_metric";
@@ -80,7 +79,6 @@ internal static class SqlitePropertyMapping
         return columns;
     }
 
-
     public static TPropertyType? GetPropertyValue<TPropertyType>(DbDataReader reader, string propertyName)
     {
         int propertyIndex = reader.GetOrdinal(propertyName);
@@ -90,7 +88,6 @@ internal static class SqlitePropertyMapping
             ? default
             : reader.GetFieldValue<TPropertyType>(propertyIndex);
     }
-
 
     #region private
 
@@ -118,10 +115,8 @@ internal static class SqlitePropertyMapping
             // Date/time types - represent as TEXT (ISO 8601)
             Type t when t == typeof(DateTime) || t == typeof(DateTime?) => "TEXT",
             Type t when t == typeof(DateTimeOffset) || t == typeof(DateTimeOffset?) => "TEXT",
-#if NET
             Type t when t == typeof(DateOnly) || t == typeof(DateOnly?) => "TEXT",
             Type t when t == typeof(TimeOnly) || t == typeof(TimeOnly?) => "TEXT",
-#endif
 
             // Byte array (BLOB)
             Type t when t == typeof(byte[]) => "BLOB",
@@ -129,7 +124,6 @@ internal static class SqlitePropertyMapping
             // Default fallback for unknown types
             _ => throw new NotSupportedException($"Property '{property.ModelName}' has type '{property.Type.Name}', which is not supported by SQLite connector.")
         };
-
 
     private static string GetDistanceMetric(VectorPropertyModel vectorProperty)
     {
@@ -142,13 +136,11 @@ internal static class SqlitePropertyMapping
         };
     }
 
-
     private static string GetStorageVectorPropertyType(VectorPropertyModel vectorProperty)
     {
         return $"FLOAT[{vectorProperty.Dimensions}]";
     }
 
     #endregion
-
 
 }

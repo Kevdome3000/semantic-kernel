@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using Microsoft.Agents.CopilotStudio.Client;
 using Microsoft.Agents.CopilotStudio.Client.Discovery;
 using Microsoft.Extensions.Configuration;

@@ -1,20 +1,17 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+
 using Fluid.Ast;
 using Fluid;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Web;
-using System;
-﻿// Copyright (c) Microsoft. All rights reserved.
 
 namespace Microsoft.SemanticKernel.PromptTemplates.Liquid;
 
 /// <summary>
 /// Represents a Liquid prompt template.
 /// </summary>
-internal sealed class LiquidPromptTemplate : IPromptTemplate
+internal sealed partial class LiquidPromptTemplate : IPromptTemplate
 {
     private static readonly FluidParser s_parser = new();
 
@@ -31,19 +28,8 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     private readonly IFluidTemplate _liquidTemplate;
     private readonly Dictionary<string, object> _inputVariables;
 
-#if NET
     [GeneratedRegex(@"(?<role>system|assistant|user|function|developer):\s+")]
     private static partial Regex RoleRegex();
-#else
-    private static Regex RoleRegex()
-    {
-        return s_roleRegex;
-    }
-
-
-    private static readonly Regex s_roleRegex = new(@"(?<role>system|assistant|user|function|developer):\s+", RegexOptions.Compiled);
-#endif
-
 
     /// <summary>Initializes the <see cref="LiquidPromptTemplate"/>.</summary>
     /// <param name="config">Prompt template configuration</param>
@@ -98,7 +84,6 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         }
     }
 
-
     /// <inheritdoc/>
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public async Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
@@ -149,7 +134,6 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         return renderedResult;
     }
 
-
     #region Private
 
     private string Encoding(string text)
@@ -158,7 +142,6 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         text = HttpUtility.HtmlEncode(text);
         return text;
     }
-
 
     private string ReplaceReservedStringBackToColonIfNeeded(string text)
     {
@@ -169,7 +152,6 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
 
         return text.Replace(ReservedString, ColonString);
     }
-
 
     /// <summary>
     /// Gets the variables for the prompt template, including setting any default values from the prompt config.
@@ -202,7 +184,6 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
 
         return ctx;
     }
-
 
     /// <summary>
     /// Encodes argument value if necessary, or throws an exception if encoding is not supported.
@@ -250,7 +231,6 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
             $"Argument '{propertyName}' has a value that doesn't support automatic encoding. " + $"Set {nameof(InputVariable.AllowDangerouslySetContent)} to 'true' for this argument and implement custom encoding, " + "or provide the value as a string.");
     }
 
-
     /// <summary>
     /// Determines if a type is considered safe and doesn't require encoding.
     /// </summary>
@@ -260,7 +240,6 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     {
         return type == typeof(byte) || type == typeof(sbyte) || type == typeof(bool) || type == typeof(ushort) || type == typeof(short) || type == typeof(char) || type == typeof(uint) || type == typeof(int) || type == typeof(ulong) || type == typeof(long) || type == typeof(float) || type == typeof(double) || type == typeof(decimal) || type == typeof(TimeSpan) || type == typeof(DateTime) || type == typeof(DateTimeOffset) || type == typeof(Guid) || type.IsEnum;
     }
-
 
     /// <summary>
     /// Visitor for <see cref="IFluidTemplate"/> looking for variables that are only
@@ -275,7 +254,6 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
         private readonly Stack<Statement> _statementStack = new();
         private bool _valid = true;
 
-
         public static HashSet<string> InferInputs(IFluidTemplate template)
         {
             var visitor = new SimpleVariablesVisitor();
@@ -289,7 +267,6 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
 
             return visitor._variables;
         }
-
 
         public override Statement Visit(Statement statement)
         {
@@ -309,7 +286,6 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
                 _statementStack.Pop();
             }
         }
-
 
         protected override Expression VisitMemberExpression(MemberExpression memberExpression)
         {
@@ -342,6 +318,5 @@ internal sealed class LiquidPromptTemplate : IPromptTemplate
     }
 
     #endregion
-
 
 }

@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -33,11 +29,11 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? ReasoningEffort
     {
-        get => this._reasoningEffort;
+        get => _reasoningEffort;
         set
         {
-            this.ThrowIfFrozen();
-            this._reasoningEffort = value;
+            ThrowIfFrozen();
+            _reasoningEffort = value;
         }
     }
 
@@ -50,12 +46,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? Temperature
     {
-        get => this._temperature;
+        get => _temperature;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._temperature = value;
+            ThrowIfFrozen();
+            _temperature = value;
         }
     }
 
@@ -68,12 +64,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? TopP
     {
-        get => this._topP;
+        get => _topP;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._topP = value;
+            ThrowIfFrozen();
+            _topP = value;
         }
     }
 
@@ -86,12 +82,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? PresencePenalty
     {
-        get => this._presencePenalty;
+        get => _presencePenalty;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._presencePenalty = value;
+            ThrowIfFrozen();
+            _presencePenalty = value;
         }
     }
 
@@ -104,12 +100,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public double? FrequencyPenalty
     {
-        get => this._frequencyPenalty;
+        get => _frequencyPenalty;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._frequencyPenalty = value;
+            ThrowIfFrozen();
+            _frequencyPenalty = value;
         }
     }
 
@@ -120,12 +116,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? MaxTokens
     {
-        get => this._maxTokens;
+        get => _maxTokens;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._maxTokens = value;
+            ThrowIfFrozen();
+            _maxTokens = value;
         }
     }
 
@@ -136,12 +132,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<string>? StopSequences
     {
-        get => this._stopSequences;
+        get => _stopSequences;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._stopSequences = value;
+            ThrowIfFrozen();
+            _stopSequences = value;
         }
     }
 
@@ -153,12 +149,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public long? Seed
     {
-        get => this._seed;
+        get => _seed;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._seed = value;
+            ThrowIfFrozen();
+            _seed = value;
         }
     }
 
@@ -179,12 +175,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? ResponseFormat
     {
-        get => this._responseFormat;
+        get => _responseFormat;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._responseFormat = value;
+            ThrowIfFrozen();
+            _responseFormat = value;
         }
     }
 
@@ -196,12 +192,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ChatSystemPrompt
     {
-        get => this._chatSystemPrompt;
+        get => _chatSystemPrompt;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._chatSystemPrompt = value;
+            ThrowIfFrozen();
+            _chatSystemPrompt = value;
         }
     }
 
@@ -214,12 +210,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ChatDeveloperPrompt
     {
-        get => this._chatDeveloperPrompt;
+        get => _chatDeveloperPrompt;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._chatDeveloperPrompt = value;
+            ThrowIfFrozen();
+            _chatDeveloperPrompt = value;
         }
     }
 
@@ -230,12 +226,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<int, int>? TokenSelectionBiases
     {
-        get => this._tokenSelectionBiases;
+        get => _tokenSelectionBiases;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._tokenSelectionBiases = value;
+            ThrowIfFrozen();
+            _tokenSelectionBiases = value;
         }
     }
 
@@ -271,12 +267,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// </remarks>
     public ToolCallBehavior? ToolCallBehavior
     {
-        get => this._toolCallBehavior;
+        get => _toolCallBehavior;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._toolCallBehavior = value;
+            ThrowIfFrozen();
+            _toolCallBehavior = value;
         }
     }
 
@@ -287,12 +283,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? User
     {
-        get => this._user;
+        get => _user;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._user = value;
+            ThrowIfFrozen();
+            _user = value;
         }
     }
 
@@ -305,12 +301,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? Logprobs
     {
-        get => this._logprobs;
+        get => _logprobs;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._logprobs = value;
+            ThrowIfFrozen();
+            _logprobs = value;
         }
     }
 
@@ -321,12 +317,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? TopLogprobs
     {
-        get => this._topLogprobs;
+        get => _topLogprobs;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._topLogprobs = value;
+            ThrowIfFrozen();
+            _topLogprobs = value;
         }
     }
 
@@ -337,12 +333,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<string, string>? Metadata
     {
-        get => this._metadata;
+        get => _metadata;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._metadata = value;
+            ThrowIfFrozen();
+            _metadata = value;
         }
     }
 
@@ -354,12 +350,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonConverter(typeof(OptionalBoolJsonConverter))]
     public bool? Store
     {
-        get => this._store;
+        get => _store;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._store = value;
+            ThrowIfFrozen();
+            _store = value;
         }
     }
 
@@ -384,12 +380,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? WebSearchOptions
     {
-        get => this._webSearchOptions;
+        get => _webSearchOptions;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._webSearchOptions = value;
+            ThrowIfFrozen();
+            _webSearchOptions = value;
         }
     }
 
@@ -412,12 +408,12 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Modalities
     {
-        get => this._responseModalities;
+        get => _responseModalities;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._responseModalities = value;
+            ThrowIfFrozen();
+            _responseModalities = value;
         }
     }
 
@@ -438,46 +434,49 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Audio
     {
-        get => this._audioOptions;
+        get => _audioOptions;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._audioOptions = value;
+            ThrowIfFrozen();
+            _audioOptions = value;
         }
     }
+
 
     /// <inheritdoc/>
     public override void Freeze()
     {
-        if (this.IsFrozen)
+        if (IsFrozen)
         {
             return;
         }
 
         base.Freeze();
 
-        if (this._stopSequences is not null)
+        if (_stopSequences is not null)
         {
-            this._stopSequences = new ReadOnlyCollection<string>(this._stopSequences);
+            _stopSequences = new ReadOnlyCollection<string>(_stopSequences);
         }
 
-        if (this._tokenSelectionBiases is not null)
+        if (_tokenSelectionBiases is not null)
         {
-            this._tokenSelectionBiases = new ReadOnlyDictionary<int, int>(this._tokenSelectionBiases);
+            _tokenSelectionBiases = new ReadOnlyDictionary<int, int>(_tokenSelectionBiases);
         }
 
-        if (this._metadata is not null)
+        if (_metadata is not null)
         {
-            this._metadata = new ReadOnlyDictionary<string, string>(this._metadata);
+            _metadata = new ReadOnlyDictionary<string, string>(_metadata);
         }
     }
+
 
     /// <inheritdoc/>
     public override PromptExecutionSettings Clone()
     {
-        return this.Clone<OpenAIPromptExecutionSettings>();
+        return Clone<OpenAIPromptExecutionSettings>();
     }
+
 
     /// <summary>
     /// Create a new settings object with the values from another settings object.
@@ -489,7 +488,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     {
         if (executionSettings is null)
         {
-            return new OpenAIPromptExecutionSettings()
+            return new OpenAIPromptExecutionSettings
             {
                 MaxTokens = defaultMaxTokens
             };
@@ -510,6 +509,7 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
         return openAIExecutionSettings;
     }
 
+
     /// <summary>
     /// Clone the settings object.
     /// </summary>
@@ -517,51 +517,61 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     /// <returns>A new instance of the settings object.</returns>
     protected internal T Clone<T>() where T : OpenAIPromptExecutionSettings, new()
     {
-        return new T()
+        return new T
         {
-            ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
-            Temperature = this.Temperature,
-            TopP = this.TopP,
-            PresencePenalty = this.PresencePenalty,
-            FrequencyPenalty = this.FrequencyPenalty,
-            MaxTokens = this.MaxTokens,
-            StopSequences = this.StopSequences is not null ? new List<string>(this.StopSequences) : null,
-            Seed = this.Seed,
-            ResponseFormat = this.ResponseFormat,
-            TokenSelectionBiases = this.TokenSelectionBiases is not null ? new Dictionary<int, int>(this.TokenSelectionBiases) : null,
-            ToolCallBehavior = this.ToolCallBehavior,
-            FunctionChoiceBehavior = this.FunctionChoiceBehavior,
-            User = this.User,
-            ChatSystemPrompt = this.ChatSystemPrompt,
-            ChatDeveloperPrompt = this.ChatDeveloperPrompt,
-            Logprobs = this.Logprobs,
-            TopLogprobs = this.TopLogprobs,
-            Store = this.Store,
-            Metadata = this.Metadata is not null ? new Dictionary<string, string>(this.Metadata) : null,
-            ReasoningEffort = this.ReasoningEffort,
-            WebSearchOptions = this.WebSearchOptions,
-            Modalities = this.Modalities,
-            Audio = this.Audio,
+            ModelId = ModelId,
+            ExtensionData = ExtensionData is not null
+                ? new Dictionary<string, object>(ExtensionData)
+                : null,
+            Temperature = Temperature,
+            TopP = TopP,
+            PresencePenalty = PresencePenalty,
+            FrequencyPenalty = FrequencyPenalty,
+            MaxTokens = MaxTokens,
+            StopSequences = StopSequences is not null
+                ? new List<string>(StopSequences)
+                : null,
+            Seed = Seed,
+            ResponseFormat = ResponseFormat,
+            TokenSelectionBiases = TokenSelectionBiases is not null
+                ? new Dictionary<int, int>(TokenSelectionBiases)
+                : null,
+            ToolCallBehavior = ToolCallBehavior,
+            FunctionChoiceBehavior = FunctionChoiceBehavior,
+            User = User,
+            ChatSystemPrompt = ChatSystemPrompt,
+            ChatDeveloperPrompt = ChatDeveloperPrompt,
+            Logprobs = Logprobs,
+            TopLogprobs = TopLogprobs,
+            Store = Store,
+            Metadata = Metadata is not null
+                ? new Dictionary<string, string>(Metadata)
+                : null,
+            ReasoningEffort = ReasoningEffort,
+            WebSearchOptions = WebSearchOptions,
+            Modalities = Modalities,
+            Audio = Audio
         };
     }
+
 
     /// <inheritdoc/>
     protected override ChatHistory PrepareChatHistoryForRequest(ChatHistory chatHistory)
     {
         // Inserts system and developer prompts at the beginning of the chat history if they are not already present.
-        if (!string.IsNullOrWhiteSpace(this.ChatDeveloperPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.Developer))
+        if (!string.IsNullOrWhiteSpace(ChatDeveloperPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.Developer))
         {
-            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.Developer, this.ChatDeveloperPrompt));
+            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.Developer, ChatDeveloperPrompt));
         }
 
-        if (!string.IsNullOrWhiteSpace(this.ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
+        if (!string.IsNullOrWhiteSpace(ChatSystemPrompt) && !chatHistory.Any(m => m.Role == AuthorRole.System))
         {
-            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.System, this.ChatSystemPrompt));
+            chatHistory.Insert(0, new ChatMessageContent(AuthorRole.System, ChatSystemPrompt));
         }
 
         return chatHistory;
     }
+
 
     #region private ================================================================================
 
@@ -588,4 +598,6 @@ public class OpenAIPromptExecutionSettings : PromptExecutionSettings
     private object? _audioOptions;
 
     #endregion
+
+
 }

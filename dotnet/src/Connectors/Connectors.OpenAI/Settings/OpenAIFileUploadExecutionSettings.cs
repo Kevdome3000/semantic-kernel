@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
 /// <summary>
@@ -20,11 +17,12 @@ public sealed class OpenAIFileUploadExecutionSettings
     /// <param name="purpose">The file purpose</param>
     public OpenAIFileUploadExecutionSettings(string fileName, OpenAIFilePurpose purpose)
     {
-        Verify.NotNull(fileName, nameof(fileName));
+        Verify.NotNull(fileName);
 
-        this.FileName = fileName;
-        this.Purpose = purpose;
+        FileName = fileName;
+        Purpose = purpose;
     }
+
 
     /// <summary>
     /// The file name.

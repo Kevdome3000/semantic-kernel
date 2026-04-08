@@ -1,8 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Azure;
 using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;

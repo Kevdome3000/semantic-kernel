@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Chat;
@@ -24,6 +23,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     /// </summary>
     internal static string FunctionToolCallsProperty => "ChatResponseMessage.FunctionToolCalls";
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// This constructor is for internal use and JSON deserialization.
@@ -31,36 +31,65 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     [JsonConstructor]
     internal OpenAIChatMessageContent()
     {
-        this.Role = AuthorRole.User; // Default role
-        this.ToolCalls = [];
+        Role = AuthorRole.User; // Default role
+        ToolCalls = [];
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
     internal OpenAIChatMessageContent(OpenAIChatCompletion completion, string modelId, IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(new AuthorRole(completion.Role.ToString()), CreateContentItems(completion.Content), modelId, completion, System.Text.Encoding.UTF8, CreateMetadataDictionary(completion.ToolCalls, metadata))
+        : base(new AuthorRole(completion.Role.ToString()),
+            CreateContentItems(completion.Content),
+            modelId,
+            completion,
+            Encoding.UTF8,
+            CreateMetadataDictionary(completion.ToolCalls, metadata))
     {
-        this.ToolCalls = completion.ToolCalls;
+        ToolCalls = completion.ToolCalls;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
-    internal OpenAIChatMessageContent(ChatMessageRole role, string? content, string modelId, IReadOnlyList<ChatToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(new AuthorRole(role.ToString()), content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
+    internal OpenAIChatMessageContent(
+        ChatMessageRole role,
+        string? content,
+        string modelId,
+        IReadOnlyList<ChatToolCall> toolCalls,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(new AuthorRole(role.ToString()),
+            content,
+            modelId,
+            content,
+            Encoding.UTF8,
+            CreateMetadataDictionary(toolCalls, metadata))
     {
-        this.ToolCalls = toolCalls;
+        ToolCalls = toolCalls;
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIChatMessageContent"/> class.
     /// </summary>
-    internal OpenAIChatMessageContent(AuthorRole role, string? content, string modelId, IReadOnlyList<ChatToolCall> toolCalls, IReadOnlyDictionary<string, object?>? metadata = null)
-        : base(role, content, modelId, content, System.Text.Encoding.UTF8, CreateMetadataDictionary(toolCalls, metadata))
+    internal OpenAIChatMessageContent(
+        AuthorRole role,
+        string? content,
+        string modelId,
+        IReadOnlyList<ChatToolCall> toolCalls,
+        IReadOnlyDictionary<string, object?>? metadata = null)
+        : base(role,
+            content,
+            modelId,
+            content,
+            Encoding.UTF8,
+            CreateMetadataDictionary(toolCalls, metadata))
     {
-        this.ToolCalls = toolCalls;
+        ToolCalls = toolCalls;
     }
+
 
     private static ChatMessageContentItemCollection CreateContentItems(IReadOnlyList<ChatMessageContentPart> contentUpdate)
     {
@@ -78,11 +107,13 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
         return collection;
     }
 
+
     /// <summary>
     /// A list of the tools called by the model.
     /// </summary>
     [JsonConverter(typeof(ChatToolCallListJsonConverter))]
     public IReadOnlyList<ChatToolCall> ToolCalls { get; set; }
+
 
     /// <summary>
     /// Retrieve the resulting function from the chat result.
@@ -92,7 +123,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
     {
         List<OpenAIFunctionToolCall>? functionToolCallList = null;
 
-        foreach (var toolCall in this.ToolCalls)
+        foreach (var toolCall in ToolCalls)
         {
             if (toolCall.Kind == ChatToolCallKind.Function)
             {
@@ -108,6 +139,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
         return [];
     }
 
+
     private static IReadOnlyDictionary<string, object?>? CreateMetadataDictionary(
         IReadOnlyList<ChatToolCall> toolCalls,
         IReadOnlyDictionary<string, object?>? original)
@@ -116,6 +148,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
         if (toolCalls.Count > 0)
         {
             Dictionary<string, object?> newDictionary;
+
             if (original is null)
             {
                 // There's no existing metadata to clone; just allocate a new dictionary.
@@ -130,6 +163,7 @@ public sealed class OpenAIChatMessageContent : ChatMessageContent
             {
                 // There's metadata to clone but we have to do so one item at a time.
                 newDictionary = new Dictionary<string, object?>(original.Count + 1);
+
                 foreach (var kvp in original)
                 {
                     newDictionary[kvp.Key] = kvp.Value;

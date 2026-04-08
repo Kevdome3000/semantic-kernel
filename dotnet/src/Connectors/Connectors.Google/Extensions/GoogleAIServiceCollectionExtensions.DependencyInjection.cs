@@ -51,7 +51,6 @@ public static class GoogleAIServiceCollectionExtensions
                 dimensions: dimensions));
     }
 
-#if NET
     /// <summary>
     /// Add Google GenAI <see cref="IChatClient"/> to the specified service collection.
     /// </summary>
@@ -191,5 +190,4 @@ public static class GoogleAIServiceCollectionExtensions
 
         return services;
     }
-#endif
 }

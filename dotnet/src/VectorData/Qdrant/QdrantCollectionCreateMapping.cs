@@ -47,12 +47,9 @@ internal static class QdrantCollectionCreateMapping
         { typeof(DateTime?), PayloadSchemaType.Datetime },
         { typeof(DateTimeOffset?), PayloadSchemaType.Datetime },
 
-#if NET
         { typeof(DateOnly), PayloadSchemaType.Datetime },
         { typeof(DateOnly?), PayloadSchemaType.Datetime },
-#endif
     };
-
 
     /// <summary>
     /// Maps a single <see cref="VectorStoreVectorProperty"/> to a qdrant <see cref="VectorParams"/>.
@@ -69,7 +66,6 @@ internal static class QdrantCollectionCreateMapping
 
         return new VectorParams { Size = (ulong)vectorProperty.Dimensions, Distance = GetSDKDistanceAlgorithm(vectorProperty) };
     }
-
 
     /// <summary>
     /// Maps a collection of <see cref="VectorStoreVectorProperty"/> to a qdrant <see cref="VectorParamsMap"/>.
@@ -89,7 +85,6 @@ internal static class QdrantCollectionCreateMapping
 
         return vectorParamsMap;
     }
-
 
     /// <summary>
     /// Get the configured <see cref="Distance"/> from the given <paramref name="vectorProperty"/>.

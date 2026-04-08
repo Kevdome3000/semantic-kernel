@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ClientModel;
 using System.Collections;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Azure.Core;
@@ -76,7 +73,6 @@ internal static class FoundryWorkflowHelperExtensions
         return uriBuilder.Uri;
     }
 
-
     /// <summary>
     /// Determines whether the <see cref="RequestContent"/> contains a workflow pattern.
     /// </summary>
@@ -87,17 +83,38 @@ internal static class FoundryWorkflowHelperExtensions
         return IsWorkflowInternal(content, (c, s) => c?.WriteTo(s, default));
     }
 
-
     /// <summary>
-    /// Determines whether the <see cref="System.ClientModel.BinaryContent"/> contains a workflow pattern.
+    /// Determines whether the <see cref="Microsoft.SemanticKernel.BinaryContent"/> contains a workflow pattern.
     /// </summary>
     /// <param name="content">The binary content.</param>
     /// <returns><c>true</c> if the content contains a workflow pattern; otherwise, <c>false</c>.</returns>
     public static bool IsWorkflow(this BinaryContent content)
     {
-        return IsWorkflowInternal(content, (c, s) => c?.WriteTo(s));
+#pragma warning disable CA1031 // Do not catch general exception types
+        try
+        {
+            var data = content?.Data;
+            if (data == null) { return false; }
+            using var stream = new MemoryStream(data.Value.ToArray());
+            return StreamContainsWorkflowPattern(stream, @"""assistant_id"":""wf_", @"""workflow_version");
+        }
+        catch
+        {
+            // ignore
+        }
+#pragma warning restore CA1031 // Do not catch general exception types
+        return false;
     }
 
+    /// <summary>
+    /// Determines whether the <see cref="System.ClientModel.BinaryContent"/> contains a workflow pattern.
+    /// </summary>
+    /// <param name="content">The pipeline binary content.</param>
+    /// <returns><c>true</c> if the content contains a workflow pattern; otherwise, <c>false</c>.</returns>
+    public static bool IsWorkflow(this System.ClientModel.BinaryContent content)
+    {
+        return IsWorkflowInternal(content, (c, s) => c?.WriteTo(s, default));
+    }
 
     private static bool IsWorkflowInternal<T>(T content, Action<T, Stream> writeToStream)
     {
@@ -115,7 +132,6 @@ internal static class FoundryWorkflowHelperExtensions
 #pragma warning restore CA1031 // Do not catch general exception types
         return false;
     }
-
 
     private static bool StreamContainsWorkflowPattern(Stream stream, params string[] bodies)
     {
@@ -148,13 +164,8 @@ internal static class FoundryWorkflowHelperExtensions
         return false;
     }
 
-
     private static bool Contains(this string source, string value, StringComparison comparison)
     {
-#if NET
         return source.Contains(value, comparison);
-#else
-        return source.IndexOf(value, comparison) >= 0;
-#endif
     }
 }

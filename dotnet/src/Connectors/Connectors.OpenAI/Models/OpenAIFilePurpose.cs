@@ -2,10 +2,6 @@
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-
-
 /// <summary>
 /// Defines the purpose associated with the uploaded file:
 /// https://platform.openai.com/docs/api-reference/files/object#files/object-purpose
@@ -63,8 +59,8 @@ public readonly struct OpenAIFilePurpose : IEquatable<OpenAIFilePurpose>
     /// <param name="label">The label to associate with this <see cref="OpenAIFilePurpose"/>.</param>
     public OpenAIFilePurpose(string label)
     {
-        Verify.NotNullOrWhiteSpace(label, nameof(label));
-        this.Label = label!;
+        Verify.NotNullOrWhiteSpace(label);
+        Label = label!;
     }
 
 
@@ -76,7 +72,9 @@ public readonly struct OpenAIFilePurpose : IEquatable<OpenAIFilePurpose>
     /// <param name="right"> the second <see cref="OpenAIFilePurpose"/> instance to compare </param>
     /// <returns> true if left and right are both null or have equivalent labels; false otherwise </returns>
     public static bool operator ==(OpenAIFilePurpose left, OpenAIFilePurpose right)
-        => left.Equals(right);
+    {
+        return left.Equals(right);
+    }
 
 
     /// <summary>
@@ -87,25 +85,36 @@ public readonly struct OpenAIFilePurpose : IEquatable<OpenAIFilePurpose>
     /// <param name="right"> the second <see cref="OpenAIFilePurpose"/> instance to compare </param>
     /// <returns> false if left and right are both null or have equivalent labels; true otherwise </returns>
     public static bool operator !=(OpenAIFilePurpose left, OpenAIFilePurpose right)
-        => !(left == right);
+    {
+        return !(left == right);
+    }
 
 
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)
-        => obj is OpenAIFilePurpose otherPurpose && this == otherPurpose;
+    {
+        return obj is OpenAIFilePurpose otherPurpose && this == otherPurpose;
+    }
 
 
     /// <inheritdoc/>
     public bool Equals(OpenAIFilePurpose other)
-        => string.Equals(this.Label, other.Label, StringComparison.OrdinalIgnoreCase);
+    {
+        return string.Equals(Label, other.Label, StringComparison.OrdinalIgnoreCase);
+    }
 
 
     /// <inheritdoc/>
     public override int GetHashCode()
-        => StringComparer.OrdinalIgnoreCase.GetHashCode(this.Label);
+    {
+        return StringComparer.OrdinalIgnoreCase.GetHashCode(Label);
+    }
 
 
     /// <inheritdoc/>
-    public override string ToString() => this.Label;
+    public override string ToString()
+    {
+        return Label;
+    }
 
 }

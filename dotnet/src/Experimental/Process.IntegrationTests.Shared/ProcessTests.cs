@@ -475,15 +475,5 @@ public sealed class ProcessTests : IClassFixture<ProcessTestFixture>
         }
     }
 
-#if !NET
-    private void AssertStepState<T>(KernelProcess processInfo, string stepName, Predicate<KernelProcessStepState<T>> predicate) where T : class, new()
-    {
-        KernelProcessStepInfo? stepInfo = processInfo.Steps.FirstOrDefault(s => s.State.Name == stepName);
-        Assert.NotNull(stepInfo);
-        var outputStepResult = stepInfo.State as KernelProcessStepState<T>;
-        Assert.NotNull(outputStepResult?.State);
-        Assert.True(predicate(outputStepResult));
-    }
-#endif
     #endregion
 }

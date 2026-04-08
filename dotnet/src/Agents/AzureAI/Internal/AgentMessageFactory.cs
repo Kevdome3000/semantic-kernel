@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.SemanticKernel.ChatCompletion;
-using System.Linq;
-using System.Collections.Generic;
 using Azure.AI.Agents.Persistent;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI.Internal;

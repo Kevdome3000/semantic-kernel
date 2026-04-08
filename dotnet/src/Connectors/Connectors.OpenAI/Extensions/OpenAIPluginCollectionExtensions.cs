@@ -4,9 +4,6 @@ using OpenAI.Chat;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
-using System.Diagnostics.CodeAnalysis;
-
-
 /// <summary>
 /// Extension methods for <see cref="IReadOnlyKernelPluginCollection"/>.
 /// </summary>
@@ -25,8 +22,10 @@ public static class OpenAIPluginCollectionExtensions
         this IReadOnlyKernelPluginCollection plugins,
         ChatToolCall functionToolCall,
         [NotNullWhen(true)] out KernelFunction? function,
-        out KernelArguments? arguments) =>
-        plugins.TryGetFunctionAndArguments(new OpenAIFunctionToolCall(functionToolCall), out function, out arguments);
+        out KernelArguments? arguments)
+    {
+        return plugins.TryGetFunctionAndArguments(new OpenAIFunctionToolCall(functionToolCall), out function, out arguments);
+    }
 
 
     /// <summary>

@@ -72,19 +72,16 @@ public abstract class PropertyModel(string modelName, Type type)
             }
 
             // Reference types: check NRT annotation via NullabilityInfoContext when available
-#if NET
             if (PropertyInfo is { } propertyInfo)
             {
                 var nullabilityInfo = new NullabilityInfoContext().Create(propertyInfo);
                 return nullabilityInfo.ReadState != NullabilityState.NotNull;
             }
-#endif
 
             // Dynamic mapping or old framework: assume nullable for reference types
             return true;
         }
     }
-
 
     /// <summary>
     /// Configures the property accessors using a CLR <see cref="System.Reflection.PropertyInfo"/> for POCO mapping.
@@ -104,7 +101,6 @@ public abstract class PropertyModel(string modelName, Type type)
             }
         };
     }
-
 
     /// <summary>
     /// Configures the property accessors for dynamic mapping using <see cref="Dictionary{TKey, TValue}"/>.
@@ -132,7 +128,6 @@ public abstract class PropertyModel(string modelName, Type type)
         _setter = (record, value) => ((Dictionary<string, object?>)record)[modelName] = value;
     }
 
-
     /// <summary>
     /// Reads the property from the given <paramref name="record"/>, returning the value as an <see cref="object"/>.
     /// </summary>
@@ -141,7 +136,6 @@ public abstract class PropertyModel(string modelName, Type type)
         Debug.Assert(_getter is not null, "Property accessors have not been configured.");
         return _getter!(record);
     }
-
 
     /// <summary>
     /// Writes the property from the given <paramref name="record"/>, accepting the value to write as an <see cref="object"/>.
@@ -152,7 +146,6 @@ public abstract class PropertyModel(string modelName, Type type)
         _setter!(record, value);
     }
 
-
     /// <summary>
     /// Reads the property from the given <paramref name="record"/>.
     /// </summary>
@@ -161,7 +154,6 @@ public abstract class PropertyModel(string modelName, Type type)
     {
         return (T)(object)GetValueAsObject(record)!;
     }
-
 
     /// <summary>
     /// Writes the property from the given <paramref name="record"/>.

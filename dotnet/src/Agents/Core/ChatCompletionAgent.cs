@@ -2,15 +2,8 @@
 
 using Microsoft.SemanticKernel.Arguments.Extensions;
 using Microsoft.SemanticKernel.ChatCompletion;
-using System.Linq;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Agents.Extensions;
 using Microsoft.SemanticKernel.Diagnostics;
@@ -281,7 +274,7 @@ public sealed class ChatCompletionAgent : ChatHistoryAgent
     internal static (IChatCompletionService service, PromptExecutionSettings? executionSettings) GetChatCompletionService(Kernel kernel, KernelArguments? arguments)
     {
         // Need to provide a KernelFunction to the service selector as a container for the execution-settings.
-        KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("placeholder", arguments?.ExecutionSettings?.Values);
+        KernelFunction nullPrompt = KernelFunctionFactory.CreateFromPrompt("placeholder", JsonSerializerOptions.Default, arguments?.ExecutionSettings?.Values);
 
         kernel.ServiceSelector.TrySelectAIService<IChatCompletionService>(kernel,
             nullPrompt,

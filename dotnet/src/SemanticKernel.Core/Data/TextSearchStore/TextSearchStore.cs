@@ -35,13 +35,8 @@ namespace Microsoft.SemanticKernel.Data;
 public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     where TKey : notnull
 {
-#if NET
     [GeneratedRegex(@"\p{L}+", RegexOptions.IgnoreCase, "en-US")]
     private static partial Regex AnyLanguageWordRegex();
-#else
-    private static readonly Regex s_anyLanguageWordRegex = new(@"\p{L}+", RegexOptions.Compiled);
-    private static Regex AnyLanguageWordRegex() => s_anyLanguageWordRegex;
-#endif
 
     private static readonly Func<string, ICollection<string>> s_defaultWordSegementer = text => AnyLanguageWordRegex().Matches(text).Select(x => x.Value).ToList();
 
@@ -54,7 +49,6 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
     private readonly SemaphoreSlim _collectionInitializationLock = new(1, 1);
     private bool _collectionInitialized;
     private bool _disposedValue;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TextSearchStore{TKey}"/> class.
@@ -109,7 +103,6 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         _vectorStoreRecordCollection = _vectorStore.GetCollection<TKey, TextRagStorageDocument<TKey>>(collectionName, ragDocumentDefinition);
     }
 
-
     /// <summary>
     /// Upserts a batch of text chunks into the vector store.
     /// </summary>
@@ -140,7 +133,6 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
 
         await vectorStoreRecordCollection.UpsertAsync(storageDocuments, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Upserts a batch of documents into the vector store.
@@ -195,7 +187,6 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         await vectorStoreRecordCollection.UpsertAsync(storageDocuments, cancellationToken).ConfigureAwait(false);
     }
 
-
     /// <inheritdoc/>
     public async Task<KernelSearchResults<string>> SearchAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
@@ -203,7 +194,6 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
 
         return new KernelSearchResults<string>(searchResult.Select(x => x.Text ?? string.Empty).ToAsyncEnumerable());
     }
-
 
     /// <inheritdoc/>
     public async Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
@@ -220,14 +210,12 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
             .ToAsyncEnumerable());
     }
 
-
     /// <inheritdoc/>
     public async Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
         IEnumerable<TextRagStorageDocument<TKey>> searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
         return new KernelSearchResults<object>(searchResult.Select(x => (object)x).ToAsyncEnumerable());
     }
-
 
     /// <summary>
     /// Internal search implementation with hydration of id / link only storage.
@@ -321,7 +309,6 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         return searchResponseDocs;
     }
 
-
     /// <summary>
     /// Thread safe method to get the collection and ensure that it is created at least once.
     /// </summary>
@@ -360,7 +347,6 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         return _vectorStoreRecordCollection;
     }
 
-
     /// <summary>
     /// Generates a unique key for the RAG document.
     /// </summary>
@@ -380,7 +366,6 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         };
     }
 
-
     /// <inheritdoc/>
     private void Dispose(bool disposing)
     {
@@ -396,7 +381,6 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         }
     }
 
-
     /// <inheritdoc/>
     public void Dispose()
     {
@@ -404,7 +388,6 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         Dispose(true);
         GC.SuppressFinalize(this);
     }
-
 
     /// <summary>
     /// The data model to use for storing RAG documents in the vector store.

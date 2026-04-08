@@ -30,7 +30,6 @@ public sealed class KernelParameterMetadata
     /// <summary>The serializer options to generate JSON schema.</summary>
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
 
-
     /// <summary>Initializes the <see cref="KernelParameterMetadata"/> for a parameter with the specified name.</summary>
     /// <param name="name">The name of the parameter.</param>
     /// <exception cref="ArgumentNullException">The <paramref name="name"/> was null.</exception>
@@ -42,7 +41,6 @@ public sealed class KernelParameterMetadata
     {
     }
 
-
     /// <summary>Initializes the <see cref="KernelParameterMetadata"/> for a parameter with the specified name.</summary>
     /// <param name="name">The name of the parameter.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
@@ -53,7 +51,6 @@ public sealed class KernelParameterMetadata
         Name = name;
         _jsonSerializerOptions = jsonSerializerOptions;
     }
-
 
     /// <summary>Initializes a <see cref="KernelParameterMetadata"/> as a copy of another <see cref="KernelParameterMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
@@ -72,7 +69,6 @@ public sealed class KernelParameterMetadata
         _jsonSerializerOptions = metadata._jsonSerializerOptions;
     }
 
-
     /// <summary>Initializes a <see cref="KernelParameterMetadata"/> as a copy of another <see cref="KernelParameterMetadata"/>.</summary>
     /// <exception cref="ArgumentNullException">The <paramref name="metadata"/> was null.</exception>
     /// <param name="metadata">The metadata to copy.</param>
@@ -89,7 +85,6 @@ public sealed class KernelParameterMetadata
         _schema = metadata._schema;
         _jsonSerializerOptions = jsonSerializerOptions;
     }
-
 
     /// <summary>Gets the name of the function.</summary>
     public string Name
@@ -168,7 +163,6 @@ public sealed class KernelParameterMetadata
             : new InitializedSchema { Inferred = false, Schema = value };
     }
 
-
     /// <summary>Infers a JSON schema from a <see cref="Type"/> and description.</summary>
     /// <param name="parameterType">The parameter type. If null, no schema can be inferred.</param>
     /// <param name="defaultValue">The parameter's default value, if any.</param>
@@ -190,10 +184,8 @@ public sealed class KernelParameterMetadata
             // Type must be usable as a generic argument to be used with JsonSchemaBuilder.
             bool invalidAsGeneric =
                 // from RuntimeType.ThrowIfTypeNeverValidGenericArgument
-#if NET
                 parameterType.IsFunctionPointer
                 ||
-#endif
                 parameterType.IsPointer
                 || parameterType.IsByRef
                 || parameterType == typeof(void);
@@ -227,7 +219,6 @@ public sealed class KernelParameterMetadata
         // it again. If inference failed, we just leave the Schema null in the instance.
         return new InitializedSchema { Inferred = true, Schema = schema };
     }
-
 
     /// <summary>A wrapper for a <see cref="KernelJsonSchema"/> and whether it was inferred or set explicitly by the user.</summary>
     internal sealed class InitializedSchema

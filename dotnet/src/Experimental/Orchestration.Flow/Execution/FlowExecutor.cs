@@ -14,7 +14,6 @@ using Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-
 /// <summary>
 /// This is a flow executor which iterates over the flow steps and executes them one by one.
 /// </summary>
@@ -70,47 +69,23 @@ internal partial class FlowExecutor : IFlowExecutor
     /// </summary>
     private const string RestrictedPluginName = "FlowExecutor_Excluded";
 
-
     /// <summary>
     /// The regex for parsing the final answer response
     /// </summary>
-#if NET
     [GeneratedRegex(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline)]
     private static partial Regex FinalAnswerRegex();
-#else
-    private static Regex FinalAnswerRegex() => s_finalAnswerRegex;
-
-
-    private static readonly Regex s_finalAnswerRegex = new(@"\[FINAL.+\](?<final_answer>.+)", RegexOptions.Singleline | RegexOptions.Compiled);
-#endif
-
 
     /// <summary>
     /// The regex for parsing the question
     /// </summary>
-#if NET
     [GeneratedRegex(@"\[QUESTION\](?<question>.+)", RegexOptions.Singleline)]
     private static partial Regex QuestionRegex();
-#else
-    private static Regex QuestionRegex() => s_questionRegex;
-
-
-    private static readonly Regex s_questionRegex = new(@"\[QUESTION\](?<question>.+)", RegexOptions.Singleline | RegexOptions.Compiled);
-#endif
-
 
     /// <summary>
     /// The regex for parsing the thought response
     /// </summary>
-#if NET
     [GeneratedRegex(@"\[THOUGHT\](?<thought>.+)", RegexOptions.Singleline)]
     private static partial Regex ThoughtRegex();
-#else
-    private static Regex ThoughtRegex() => s_thoughtRegex;
-
-
-    private static readonly Regex s_thoughtRegex = new(@"\[THOUGHT\](?<thought>.+)", RegexOptions.Singleline | RegexOptions.Compiled);
-#endif
 
     /// <summary>
     /// Check repeat step function
@@ -131,7 +106,6 @@ internal partial class FlowExecutor : IFlowExecutor
     /// ExecuteStep function
     /// </summary>
     private readonly KernelFunction _executeStepFunction;
-
 
     internal FlowExecutor(
         IKernelBuilder kernelBuilder,
@@ -161,7 +135,6 @@ internal partial class FlowExecutor : IFlowExecutor
         this._executeStepFunction = KernelFunctionFactory.CreateFromMethod(this.ExecuteStepAsync, "ExecuteStep", "Execute a flow step");
     }
 
-
     private PromptTemplateConfig ImportPromptTemplateConfig(string functionName)
     {
         var config = KernelFunctionYaml.ToPromptTemplateConfig(EmbeddedResource.Read($"Plugins.{functionName}.yaml")!);
@@ -179,7 +152,6 @@ internal partial class FlowExecutor : IFlowExecutor
 
         return config;
     }
-
 
     public async Task<FunctionResult> ExecuteFlowAsync(
         Flow flow,
@@ -512,7 +484,6 @@ internal partial class FlowExecutor : IFlowExecutor
         return new FunctionResult(this._executeFlowFunction, outputs, metadata: rootContext);
     }
 
-
     private void PropagateVariable(KernelArguments rootContext, FunctionResult stepResult, string variableName)
     {
         if (stepResult.Metadata!.ContainsKey(variableName))
@@ -520,7 +491,6 @@ internal partial class FlowExecutor : IFlowExecutor
             rootContext[variableName] = stepResult.Metadata[variableName];
         }
     }
-
 
     private async Task CompleteStepAsync(
         KernelArguments context,
@@ -555,7 +525,6 @@ internal partial class FlowExecutor : IFlowExecutor
             ConfigureAwait(false);
     }
 
-
     private void ValidateStep(FlowStep step, KernelArguments context)
     {
         if (step.Requires.Any(p => !context.ContainsName(p)))
@@ -563,7 +532,6 @@ internal partial class FlowExecutor : IFlowExecutor
             throw new KernelException($"Step {step.Goal} requires arguments {string.Join(",", step.Requires.Where(p => !context.ContainsName(p)))} that are not provided. ");
         }
     }
-
 
     private async Task<RepeatOrStartStepResult?> CheckStartStepAsync(
         KernelArguments context,
@@ -583,7 +551,6 @@ internal partial class FlowExecutor : IFlowExecutor
             ConfigureAwait(false);
     }
 
-
     private async Task<RepeatOrStartStepResult?> CheckRepeatStepAsync(
         KernelArguments context,
         FlowStep step,
@@ -601,7 +568,6 @@ internal partial class FlowExecutor : IFlowExecutor
                 input).
             ConfigureAwait(false);
     }
-
 
     private async Task<RepeatOrStartStepResult?> CheckRepeatOrStartStepAsync(
         KernelArguments context,
@@ -695,7 +661,6 @@ internal partial class FlowExecutor : IFlowExecutor
         return null;
     }
 
-
     private string CreateRepeatOrStartStepScratchPad(ChatHistory chatHistory)
     {
         var scratchPadLines = new List<string>();
@@ -721,7 +686,6 @@ internal partial class FlowExecutor : IFlowExecutor
         return string.Join("\n", scratchPadLines).
             Trim();
     }
-
 
     private async Task<FunctionResult> ExecuteStepAsync(
         FlowStep step,
@@ -936,7 +900,6 @@ internal partial class FlowExecutor : IFlowExecutor
 
         throw new KernelException($"Failed to complete step {stepId} for session {sessionId}.");
     }
-
 
     private sealed class RepeatOrStartStepResult(bool? execute, string? prompt = null)
     {

@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
 using Azure.AI.Agents.Persistent;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;

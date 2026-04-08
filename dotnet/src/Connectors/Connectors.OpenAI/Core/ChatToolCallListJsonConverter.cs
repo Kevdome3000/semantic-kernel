@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using OpenAI.Chat;
@@ -38,6 +36,7 @@ internal sealed class ChatToolCallListJsonConverter : JsonConverter<IReadOnlyLis
             if (reader.TokenType == JsonTokenType.StartObject)
             {
                 var toolCall = ReadChatToolCall(ref reader);
+
                 if (toolCall != null)
                 {
                     toolCalls.Add(toolCall);
@@ -47,6 +46,7 @@ internal sealed class ChatToolCallListJsonConverter : JsonConverter<IReadOnlyLis
 
         return toolCalls;
     }
+
 
     public override void Write(Utf8JsonWriter writer, IReadOnlyList<ChatToolCall> value, JsonSerializerOptions options)
     {
@@ -59,6 +59,7 @@ internal sealed class ChatToolCallListJsonConverter : JsonConverter<IReadOnlyLis
 
         writer.WriteEndArray();
     }
+
 
     private static ChatToolCall? ReadChatToolCall(ref Utf8JsonReader reader)
     {
@@ -100,6 +101,7 @@ internal sealed class ChatToolCallListJsonConverter : JsonConverter<IReadOnlyLis
 
         return null;
     }
+
 
     private static void WriteChatToolCall(Utf8JsonWriter writer, ChatToolCall toolCall)
     {

@@ -40,7 +40,6 @@ public static partial class KernelPluginFactory
         return CreateFromObject(ActivatorUtilities.CreateInstance<T>(serviceProvider)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
     }
 
-
     /// <summary>Creates a plugin that wraps a new instance of the specified type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">Specifies the type of the object to wrap.</typeparam>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to use for serialization and deserialization of various aspects of the function.</param>
@@ -67,7 +66,6 @@ public static partial class KernelPluginFactory
             serviceProvider?.GetService<ILoggerFactory>());
     }
 
-
     /// <summary>Creates a plugin that wraps a new instance of the specified type <paramref name="instanceType"/>.</summary>
     /// <param name="instanceType">
     /// Specifies the type of the object to wrap.
@@ -91,7 +89,6 @@ public static partial class KernelPluginFactory
         serviceProvider ??= EmptyServiceProvider.Instance;
         return CreateFromObject(ActivatorUtilities.CreateInstance(serviceProvider, instanceType)!, pluginName, serviceProvider?.GetService<ILoggerFactory>());
     }
-
 
     /// <summary>Creates a plugin that wraps a new instance of the specified type <paramref name="instanceType"/>.</summary>
     /// <param name="instanceType">
@@ -127,7 +124,6 @@ public static partial class KernelPluginFactory
             serviceProvider?.GetService<ILoggerFactory>());
     }
 
-
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
     /// <param name="pluginName">
@@ -145,7 +141,6 @@ public static partial class KernelPluginFactory
     {
         return CreateFromObjectInternal(target, pluginName, loggerFactory: loggerFactory);
     }
-
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -174,7 +169,6 @@ public static partial class KernelPluginFactory
             loggerFactory);
     }
 
-
     /// <summary>Initializes the new plugin from the provided name and function collection.</summary>
     /// <param name="pluginName">The name for the plugin.</param>
     /// <param name="functions">The initial functions to be available as part of the plugin.</param>
@@ -187,7 +181,6 @@ public static partial class KernelPluginFactory
     {
         return CreateFromFunctions(pluginName, null, functions);
     }
-
 
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
     /// <param name="pluginName">The name for the plugin.</param>
@@ -202,7 +195,6 @@ public static partial class KernelPluginFactory
     {
         return new DefaultKernelPlugin(pluginName, description, functions);
     }
-
 
     /// <summary>Creates a name for a plugin based on its type name.</summary>
     private static string CreatePluginName(Type type)
@@ -245,7 +237,6 @@ public static partial class KernelPluginFactory
 
         return name;
     }
-
 
     /// <summary>Creates a plugin that wraps the specified target object.</summary>
     /// <param name="target">The instance of the class to be wrapped.</param>
@@ -313,12 +304,6 @@ public static partial class KernelPluginFactory
         return CreateFromFunctions(pluginName, description, functions);
     }
 
-
-#if NET
     [GeneratedRegex("[^0-9A-Za-z_]")]
     private static partial Regex InvalidPluginNameCharactersRegex();
-#else
-    private static Regex InvalidPluginNameCharactersRegex() => s_invalidPluginNameCharactersRegex;
-    private static readonly Regex s_invalidPluginNameCharactersRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
-#endif
 }

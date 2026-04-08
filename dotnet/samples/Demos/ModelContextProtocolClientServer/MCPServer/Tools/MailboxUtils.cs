@@ -72,10 +72,10 @@ internal sealed class MailboxUtils
             messages.Add(new SamplingMessage
             {
                 Role = Role.User,
-                Content = new TextContentBlock
+                Content = [new TextContentBlock
                 {
                     Text = $"Email from {email.Sender} with subject {email.Subject}. Body: {email.Body}",
-                }
+                }]
             });
 
             if (email.Attachments != null && email.Attachments.Count != 0)
@@ -85,11 +85,11 @@ internal sealed class MailboxUtils
                     messages.Add(new SamplingMessage
                     {
                         Role = Role.User,
-                        Content = new ImageContentBlock
+                        Content = [new ImageContentBlock
                         {
                             Data = Convert.ToBase64String(attachment),
                             MimeType = "image/png",
-                        }
+                        }]
                     });
                 }
             }

@@ -115,7 +115,6 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
         Assert.IsType<GoogleAIEmbeddingGenerator>(embeddingsGenerationService);
     }
 
-#if NET
     [Fact]
     public void GoogleGenAIChatClientShouldBeRegisteredInKernelServicesWithApiKey()
     {
@@ -256,5 +255,4 @@ public sealed class GoogleAIServiceCollectionExtensionsTests
         var chatClient = serviceProvider.GetRequiredService<IChatClient>();
         Assert.NotNull(chatClient);
     }
-#endif
 }

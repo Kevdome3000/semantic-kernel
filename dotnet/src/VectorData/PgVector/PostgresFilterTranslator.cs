@@ -15,7 +15,6 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
 {
     private int _parameterIndex;
 
-
     internal PostgresFilterTranslator(
         CollectionModel model,
         LambdaExpression lambdaExpression,
@@ -25,9 +24,7 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         _parameterIndex = startParamIndex;
     }
 
-
     internal List<object> ParameterValues { get; } = [];
-
 
     protected override void TranslateConstant(object? value, bool isSearchCondition)
     {
@@ -58,7 +55,6 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
                 _sql.Append('\'').Append(dateTimeOffset.ToString("yyyy-MM-ddTHH:mm:ss.FFFFFFZ", CultureInfo.InvariantCulture)).Append('\'');
                 return;
 
-#if NET
             case DateOnly dateOnly:
                 _sql.Append('\'').Append(dateOnly.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append('\'');
                 return;
@@ -66,7 +62,6 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
             case TimeOnly timeOnly:
                 _sql.Append('\'').Append(timeOnly.ToString("HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture)).Append('\'');
                 return;
-#endif
 
             // Array constants (ARRAY[1, 2, 3])
             case IEnumerable v when v.GetType() is var type && (type.IsArray || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)):
@@ -93,7 +88,6 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         }
     }
 
-
     protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
     {
         Translate(source);
@@ -101,7 +95,6 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         Translate(item);
         _sql.Append(']');
     }
-
 
     protected override void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value)
     {
@@ -111,7 +104,6 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         _sql.Append(')');
     }
 
-
     protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
     {
         // Translate r.Strings.Any(s => array.Contains(s)) to: column && ARRAY[values]
@@ -120,7 +112,6 @@ internal sealed class PostgresFilterTranslator : SqlFilterTranslator
         _sql.Append(" && ");
         TranslateConstant(values, false);
     }
-
 
     protected override void TranslateQueryParameter(object? value)
     {

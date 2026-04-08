@@ -78,7 +78,6 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
         return document;
     }
 
-
     /// <inheritdoc />
     public Dictionary<string, object?> MapFromStorageToDataModel(BsonDocument storageModel, bool includeVectors)
     {
@@ -143,7 +142,6 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
         return result;
     }
 
-
     #region private
 
     private static object? GetDataPropertyValue(string propertyName, Type propertyType, BsonValue value)
@@ -174,12 +172,10 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
             Type t when t == typeof(DateTimeOffset?) => value.ToNullableUniversalTime() is DateTime dateTime
                 ? new DateTimeOffset(value.ToUniversalTime(), TimeSpan.Zero)
                 : null,
-#if NET
             Type t when t == typeof(DateOnly) => DateOnly.FromDateTime(value.ToUniversalTime()),
             Type t when t == typeof(DateOnly?) => value.ToNullableUniversalTime() is DateTime dateTime
                 ? DateOnly.FromDateTime(dateTime)
                 : null,
-#endif
 
             _ => (object?)null
         };
@@ -241,6 +237,5 @@ internal sealed class MongoDynamicMapper(CollectionModel model) : IMongoMapper<D
     }
 
     #endregion
-
 
 }

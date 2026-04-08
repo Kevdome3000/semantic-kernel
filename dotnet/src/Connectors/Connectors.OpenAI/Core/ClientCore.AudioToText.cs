@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using OpenAI.Audio;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -40,15 +35,19 @@ internal partial class ClientCore
 
         using var memoryStream = new MemoryStream(input.Data!.Value.ToArray());
 
-        AudioTranscription responseData = (await RunRequestAsync(() => this.Client!.GetAudioClient(targetModel).TranscribeAudioAsync(memoryStream, audioExecutionSettings?.Filename, audioOptions)).ConfigureAwait(false)).Value;
+        AudioTranscription responseData = (await RunRequestAsync(() => Client!.GetAudioClient(targetModel).TranscribeAudioAsync(memoryStream, audioExecutionSettings?.Filename, audioOptions)).ConfigureAwait(false)).Value;
 
-        return [new(responseData.Text)
-        {
-            ModelId = targetModel,
-            InnerContent = responseData,
-            Metadata = GetResponseMetadata(responseData)
-        }];
+        return
+        [
+            new TextContent(responseData.Text)
+            {
+                ModelId = targetModel,
+                InnerContent = responseData,
+                Metadata = GetResponseMetadata(responseData)
+            }
+        ];
     }
+
 
     /// <summary>
     /// Converts <see cref="OpenAIAudioToTextExecutionSettings"/> to <see cref="AudioTranscriptionOptions"/> type.
@@ -56,7 +55,8 @@ internal partial class ClientCore
     /// <param name="executionSettings">Instance of <see cref="OpenAIAudioToTextExecutionSettings"/>.</param>
     /// <returns>Instance of <see cref="AudioTranscriptionOptions"/>.</returns>
     private static AudioTranscriptionOptions AudioOptionsFromExecutionSettings(OpenAIAudioToTextExecutionSettings executionSettings)
-        => new()
+    {
+        return new AudioTranscriptionOptions
         {
             TimestampGranularities = ConvertTimestampGranularities(executionSettings.TimestampGranularities),
             Language = executionSettings.Language,
@@ -64,10 +64,13 @@ internal partial class ClientCore
             Temperature = executionSettings.Temperature,
             ResponseFormat = ConvertResponseFormat(executionSettings.ResponseFormat)
         };
+    }
+
 
     private static AudioTimestampGranularities ConvertTimestampGranularities(ICollection<string>? timestampGranularities)
     {
         AudioTimestampGranularities result = AudioTimestampGranularities.Default;
+
         if (timestampGranularities is null || timestampGranularities.Count == 0)
         {
             return result;
@@ -90,6 +93,7 @@ internal partial class ClientCore
         return result;
     }
 
+
     private static AudioTranscriptionFormat? ConvertResponseFormat(string? responseFormat)
     {
         if (responseFormat is null)
@@ -107,11 +111,14 @@ internal partial class ClientCore
         };
     }
 
+
     private static Dictionary<string, object?> GetResponseMetadata(AudioTranscription audioTranscription)
-        => new(3)
+    {
+        return new Dictionary<string, object?>(3)
         {
             [nameof(audioTranscription.Language)] = audioTranscription.Language,
             [nameof(audioTranscription.Duration)] = audioTranscription.Duration,
             [nameof(audioTranscription.Segments)] = audioTranscription.Segments
         };
+    }
 }

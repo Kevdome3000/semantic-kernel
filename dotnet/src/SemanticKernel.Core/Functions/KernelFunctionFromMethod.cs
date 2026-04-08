@@ -45,7 +45,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         { typeof(sbyte), s => sbyte.Parse(s) }
     };
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
@@ -81,7 +80,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                 LoggerFactory = loggerFactory
             });
     }
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -120,7 +118,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             });
     }
 
-
     /* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
     Before:
         /// <summary>
@@ -134,7 +131,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     After:
         /// <inheritdoc/>
     */
-
 
     /* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
     Before:
@@ -183,7 +179,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         return result;
     }
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
@@ -229,7 +224,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         return result;
     }
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunctionMetadata"/> instance for a method, specified via an <see cref="MethodInfo"/> instance.
     /// </summary>
@@ -261,7 +255,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                 LoggerFactory = loggerFactory
             });
     }
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunctionMetadata"/> instance for a method, specified via an <see cref="MethodInfo"/> instance.
@@ -296,7 +289,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             });
     }
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunctionMetadata"/> instance for a method, specified via an <see cref="MethodInfo"/> instance.
     /// </summary>
@@ -328,7 +320,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         return result.Metadata;
     }
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunctionMetadata"/> instance for a method, specified via an <see cref="MethodInfo"/> instance.
@@ -366,7 +357,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         return result.Metadata;
     }
 
-
     /// <inheritdoc/>
     protected override ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
@@ -378,7 +368,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             arguments,
             cancellationToken);
     }
-
 
     /// <inheritdoc/>
     protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
@@ -422,7 +411,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         throw new NotSupportedException($"Streaming function {Name} does not support type {typeof(TResult)}");
     }
 
-
     /// <inheritdoc/>
     public override KernelFunction Clone(string? pluginName = null)
     {
@@ -443,7 +431,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             Metadata.AdditionalProperties);
     }
 
-
     /// <summary>Delegate used to invoke the underlying delegate.</summary>
     private delegate ValueTask<FunctionResult> ImplementationFunc(
         Kernel kernel,
@@ -451,11 +438,9 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         KernelArguments arguments,
         CancellationToken cancellationToken);
 
-
     private static readonly object[] s_cancellationTokenNoneArray = [CancellationToken.None];
 
     private readonly ImplementationFunc _function;
-
 
     private record struct MethodDetails(
         string Name,
@@ -464,7 +449,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         List<KernelParameterMetadata> Parameters,
         KernelReturnParameterMetadata ReturnParameter);
 
-
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     private KernelFunctionFromMethod(
@@ -486,7 +470,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
     {
     }
 
-
     private KernelFunctionFromMethod(
         MethodInfo method,
         ImplementationFunc implementationFunc,
@@ -507,7 +490,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             additionalMetadata)
     {
     }
-
 
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
@@ -533,7 +515,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         _underlyingMethod = method;
     }
 
-
     private KernelFunctionFromMethod(
         MethodInfo method,
         ImplementationFunc implementationFunc,
@@ -557,7 +538,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         _function = implementationFunc;
         _underlyingMethod = method;
     }
-
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "This method is AOT save.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "This method is AOT safe.")]
@@ -573,7 +553,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             target,
             jsonSerializerOptions);
     }
-
 
     [RequiresUnreferencedCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to handle various aspects of the function creation and invocation, making it incompatible with AOT scenarios.")]
@@ -698,7 +677,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         };
     }
 
-
     /// <summary>Gets whether a method has a known async return type.</summary>
     private static bool IsAsyncMethod(MethodInfo method)
     {
@@ -721,7 +699,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         return false;
     }
-
 
     /// <summary>
     /// Gets a delegate for handling the marshaling of a parameter.
@@ -943,7 +920,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         return (parameterFunc, parameterView);
     }
 
-
     /// <summary>
     /// Tries to deserialize the given value into an object of the specified target type.
     /// </summary>
@@ -991,7 +967,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
         return false;
     }
-
 
     /// <summary>
     /// Gets a delegate for handling the result value of a method, converting it into the <see cref="Task{FunctionResult}"/> to return from the invocation.
@@ -1103,13 +1078,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         if (returnType.IsGenericType)
         {
             // Task<T>
-#if NET
             if (returnType.GetGenericTypeDefinition() == typeof(Task<>) && (PropertyInfo)returnType.GetMemberWithSameMetadataDefinitionAs(s_taskGetResultPropertyInfo) is PropertyInfo taskPropertyInfo && taskPropertyInfo.GetGetMethod() is MethodInfo taskResultGetter)
-#else
-            if (returnType.GetGenericTypeDefinition() == typeof(Task<>) &&
-                returnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.
-                    GetGetMethod() is MethodInfo taskResultGetter)
-#endif
             {
                 return (taskResultGetter.ReturnType, async (kernel, function, result) =>
                         {
@@ -1123,14 +1092,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             }
 
             // ValueTask<T>
-#if NET
             if (returnType.GetGenericTypeDefinition() == typeof(ValueTask<>) && returnType.GetMemberWithSameMetadataDefinitionAs(s_valueTaskGetAsTaskMethodInfo) is MethodInfo valueTaskAsTask && valueTaskAsTask.ReturnType.GetMemberWithSameMetadataDefinitionAs(s_taskGetResultPropertyInfo) is PropertyInfo valueTaskPropertyInfo && valueTaskPropertyInfo.GetGetMethod() is MethodInfo asTaskResultGetter)
-#else
-            if (returnType.GetGenericTypeDefinition() == typeof(ValueTask<>) &&
-                    returnType.GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance) is MethodInfo valueTaskAsTask &&
-                    valueTaskAsTask.ReturnType.GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)?.
-                    GetGetMethod() is MethodInfo asTaskResultGetter)
-#endif
             {
                 return (asTaskResultGetter.ReturnType, async (kernel, function, result) =>
                         {
@@ -1147,14 +1109,8 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             // IAsyncEnumerable<T>
             if (returnType.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
             {
-#if NET
                 //typeof(IAsyncEnumerable<>).GetMethod("GetAsyncEnumerator")!;
                 MethodInfo? getAsyncEnumeratorMethod = returnType.GetMemberWithSameMetadataDefinitionAs(s_asyncEnumerableGetAsyncEnumeratorMethodInfo) as MethodInfo;
-#else
-                Type elementType = returnType.GetGenericArguments()[0];
-                MethodInfo? getAsyncEnumeratorMethod = typeof(IAsyncEnumerable<>).MakeGenericType(elementType).
-                    GetMethod("GetAsyncEnumerator");
-#endif
 
                 if (getAsyncEnumeratorMethod is not null)
                 {
@@ -1188,7 +1144,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         }
     }
 
-
     /// <summary>Invokes the MethodInfo with the specified target object and arguments.</summary>
     private static object? Invoke(MethodInfo method, object? target, object?[]? arguments)
     {
@@ -1215,14 +1170,12 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         return result;
     }
 
-
     /// <summary>Gets an exception that can be thrown indicating an invalid signature.</summary>
     [DoesNotReturn]
     private static Exception GetExceptionForInvalidSignature(MethodInfo method, string reason)
     {
         throw new KernelException($"Function '{method.Name}' is not supported by the kernel. {reason}");
     }
-
 
     /// <summary>Throws an exception indicating an invalid KernelFunctionFactory signature if the specified condition is not met.</summary>
     private static void ThrowForInvalidSignatureIf([DoesNotReturnIf(true)] bool condition, MethodInfo method, string reason)
@@ -1232,7 +1185,6 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             throw GetExceptionForInvalidSignature(method, reason);
         }
     }
-
 
     /// <summary>
     /// Gets a converter for type to ty conversion. For example, string to int, string to Guid, double to int, CustomType to string, etc.
@@ -1315,12 +1267,10 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
             });
     }
 
-
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => string.IsNullOrWhiteSpace(Description)
         ? Name
         : $"{Name} ({Description})";
-
 
     /// <summary>
     /// Remove characters from method name that are valid in metadata but invalid for SK.
@@ -1330,22 +1280,13 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
         return InvalidNameCharsRegex().Replace(methodName, "_");
     }
 
-
     /// <summary>Regex that flags any character other than ASCII digits or letters or the underscore.</summary>
-#if NET
     [GeneratedRegex("[^0-9A-Za-z_]")]
     private static partial Regex InvalidNameCharsRegex();
-#else
-    private static Regex InvalidNameCharsRegex() => s_invalidNameCharsRegex;
-
-    private static readonly Regex s_invalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
-#endif
 
     /// <summary>Parser functions for converting strings to parameter types.</summary>
     private static readonly ConcurrentDictionary<Type, Func<object?, CultureInfo, object?>?> s_parsers = new();
-#if NET
     private static readonly MethodInfo s_valueTaskGetAsTaskMethodInfo = typeof(ValueTask<>).GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance)!;
     private static readonly MemberInfo s_taskGetResultPropertyInfo = typeof(Task<>).GetProperty("Result", BindingFlags.Public | BindingFlags.Instance)!;
     private static readonly MethodInfo s_asyncEnumerableGetAsyncEnumeratorMethodInfo = typeof(IAsyncEnumerable<>).GetMethod("GetAsyncEnumerator")!;
-#endif
 }

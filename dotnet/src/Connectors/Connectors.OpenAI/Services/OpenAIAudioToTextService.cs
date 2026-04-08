@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.AudioToText;
 using OpenAI;
@@ -23,7 +18,8 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
     private readonly ClientCore _client;
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => _client.Attributes;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAudioToTextService"/> class.
@@ -40,9 +36,15 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
-        this._client = new(modelId, apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(typeof(OpenAIAudioToTextService)));
+        Verify.NotNullOrWhiteSpace(modelId);
+        _client = new ClientCore(modelId,
+            apiKey,
+            organization,
+            null,
+            httpClient,
+            loggerFactory?.CreateLogger(typeof(OpenAIAudioToTextService)));
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAIAudioToTextService"/> class.
@@ -55,9 +57,10 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
-        this._client = new(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
+        Verify.NotNullOrWhiteSpace(modelId);
+        _client = new ClientCore(modelId, openAIClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
     }
+
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
@@ -65,5 +68,10 @@ public sealed class OpenAIAudioToTextService : IAudioToTextService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetTextFromAudioContentsAsync(this._client.ModelId, content, executionSettings, cancellationToken);
+    {
+        return _client.GetTextFromAudioContentsAsync(_client.ModelId,
+            content,
+            executionSettings,
+            cancellationToken);
+    }
 }

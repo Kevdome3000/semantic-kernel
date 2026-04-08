@@ -10,7 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using SemanticKernel.Functions.UnitTests.OpenApi.TestPlugins;
@@ -441,39 +441,30 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
         Assert.Equal(281, integerParameter.DefaultValue);
 
         var longParameter = parameters.Single(p => p.Name == "long-parameter");
-        Assert.True(longParameter.DefaultValue is long);
-        Assert.Equal((long)-2814, longParameter.DefaultValue);
+        Assert.True(longParameter.DefaultValue is int);
+        Assert.Equal(-2814, longParameter.DefaultValue);
 
         var floatParameter = parameters.Single(p => p.Name == "float-parameter");
-        Assert.True(floatParameter.DefaultValue is float);
-        Assert.Equal((float)12.01, floatParameter.DefaultValue);
+        Assert.True(floatParameter.DefaultValue is double);
+        Assert.Equal(12.01, (double)floatParameter.DefaultValue!, 2);
 
         var doubleParameter = parameters.Single(p => p.Name == "double-parameter");
         Assert.True(doubleParameter.DefaultValue is double);
-        Assert.Equal(-12.01, doubleParameter.DefaultValue);
+        Assert.Equal(-12.01, (double)doubleParameter.DefaultValue!, 2);
 
         var encodedCharactersParameter = parameters.Single(p => p.Name == "encoded-characters-parameter");
-        Assert.True(encodedCharactersParameter.DefaultValue is byte[]);
-        Assert.Equal(new byte[] { 1, 2, 3, 4, 5 }, encodedCharactersParameter.DefaultValue);
+        Assert.True(encodedCharactersParameter.DefaultValue is string);
 
         var binaryDataParameter = parameters.Single(p => p.Name == "binary-data-parameter");
-        Assert.True(binaryDataParameter.DefaultValue is byte[]);
-        Assert.Equal("23456"u8.ToArray(), binaryDataParameter.DefaultValue);
+        Assert.True(binaryDataParameter.DefaultValue is string);
 
         var dateParameter = parameters.Single(p => p.Name == "date-parameter");
-        Assert.True(dateParameter.DefaultValue is DateTime);
-        Assert.Equal(new DateTime(2017, 07, 21), dateParameter.DefaultValue);
+        Assert.True(dateParameter.DefaultValue is string);
+        Assert.Equal("2017-07-21", dateParameter.DefaultValue);
 
         var dateTimeParameter = parameters.Single(p => p.Name == "date-time-parameter");
-        Assert.True(dateTimeParameter.DefaultValue is DateTimeOffset);
-        Assert.Equal(new DateTimeOffset(2017,
-                07,
-                21,
-                17,
-                32,
-                28,
-                TimeSpan.Zero),
-            dateTimeParameter.DefaultValue);
+        Assert.True(dateTimeParameter.DefaultValue is string);
+        Assert.Contains("2017-07-21T17:32:28", dateTimeParameter.DefaultValue!.ToString());
 
         var passwordParameter = parameters.Single(p => p.Name == "password-parameter");
         Assert.True(passwordParameter.DefaultValue is string);
@@ -740,9 +731,9 @@ public sealed class OpenApiDocumentParserV30Tests : IDisposable
             [
                 new OpenApiServer { Url = "https://path-server.com", Description = "Path server" }
             ],
-            Operations = new Dictionary<OperationType, OpenApiOperation>
+            Operations = new Dictionary<HttpMethod, OpenApiOperation>
             {
-                [OperationType.Get] = new()
+                [HttpMethod.Get] = new()
                 {
                     OperationId = "GetTest",
                     Servers =

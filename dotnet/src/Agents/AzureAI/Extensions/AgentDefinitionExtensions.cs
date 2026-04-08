@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.ClientModel.Primitives;
-using System.Collections.Generic;
-using System.Linq;
 using Azure.AI.Agents.Persistent;
 using Azure.AI.Projects;
 using Azure.Core;

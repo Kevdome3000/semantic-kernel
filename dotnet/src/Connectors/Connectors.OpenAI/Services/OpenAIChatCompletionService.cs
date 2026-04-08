@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -24,6 +18,7 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
     /// <summary>Core implementation shared by OpenAI clients.</summary>
     private readonly ClientCore _client;
 
+
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
     /// </summary>
@@ -38,16 +33,17 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         string? organization = null,
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null
-)
+    )
     {
-        this._client = new(
+        _client = new ClientCore(
             modelId,
             apiKey,
             organization,
-            endpoint: null,
+            null,
             httpClient,
             loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
     }
+
 
     /// <summary>
     /// Create an instance of the Custom Message API OpenAI chat completion connector
@@ -60,14 +56,14 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     [Experimental("SKEXP0010")]
     public OpenAIChatCompletionService(
-            string modelId,
-            Uri endpoint,
-            string? apiKey = null,
-            string? organization = null,
-            HttpClient? httpClient = null,
-            ILoggerFactory? loggerFactory = null)
+        string modelId,
+        Uri endpoint,
+        string? apiKey = null,
+        string? organization = null,
+        HttpClient? httpClient = null,
+        ILoggerFactory? loggerFactory = null)
     {
-        this._client = new(
+        _client = new ClientCore(
             modelId,
             apiKey,
             organization,
@@ -75,6 +71,7 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
             httpClient,
             loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
     }
+
 
     /// <summary>
     /// Create an instance of the OpenAI chat completion connector
@@ -87,14 +84,16 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         OpenAIClient openAIClient,
         ILoggerFactory? loggerFactory = null)
     {
-        this._client = new(
+        _client = new ClientCore(
             modelId,
             openAIClient,
             loggerFactory?.CreateLogger(typeof(OpenAIChatCompletionService)));
     }
 
+
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => _client.Attributes;
+
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
@@ -102,7 +101,14 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetChatMessageContentsAsync(this._client.ModelId, chatHistory, executionSettings, kernel, cancellationToken);
+    {
+        return _client.GetChatMessageContentsAsync(_client.ModelId,
+            chatHistory,
+            executionSettings,
+            kernel,
+            cancellationToken);
+    }
+
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(
@@ -110,7 +116,14 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetStreamingChatMessageContentsAsync(this._client.ModelId, chatHistory, executionSettings, kernel, cancellationToken);
+    {
+        return _client.GetStreamingChatMessageContentsAsync(_client.ModelId,
+            chatHistory,
+            executionSettings,
+            kernel,
+            cancellationToken);
+    }
+
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
@@ -118,7 +131,14 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetChatAsTextContentsAsync(this._client.ModelId, prompt, executionSettings, kernel, cancellationToken);
+    {
+        return _client.GetChatAsTextContentsAsync(_client.ModelId,
+            prompt,
+            executionSettings,
+            kernel,
+            cancellationToken);
+    }
+
 
     /// <inheritdoc/>
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
@@ -126,5 +146,11 @@ public sealed class OpenAIChatCompletionService : IChatCompletionService, ITextG
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetChatAsTextStreamingContentsAsync(this._client.ModelId, prompt, executionSettings, kernel, cancellationToken);
+    {
+        return _client.GetChatAsTextStreamingContentsAsync(_client.ModelId,
+            prompt,
+            executionSettings,
+            kernel,
+            cancellationToken);
+    }
 }

@@ -12,7 +12,6 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
 {
     internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[]";
 
-
     private static CollectionModelBuildingOptions GetModelBuildingOptions(bool hasNamedVectors)
     {
         return new()
@@ -21,7 +20,6 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
             SupportsMultipleVectors = hasNamedVectors
         };
     }
-
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
@@ -34,13 +32,10 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
         }
     }
 
-
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         supportedTypes = "string, bool, int, long, short, byte, float, double, decimal, DateTime, DateTimeOffset,"
-#if NET
             + " DateOnly,"
-#endif
             + " Guid, or arrays/lists of these types";
 
         return IsValid(type)
@@ -65,19 +60,15 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
                 || type == typeof(decimal)
                 || type == typeof(DateTime)
                 || type == typeof(DateTimeOffset)
-#if NET
                 || type == typeof(DateOnly)
-#endif
                 || type == typeof(Guid);
         }
     }
-
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         return IsVectorPropertyTypeValidCore(type, out supportedTypes);
     }
-
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
@@ -88,7 +79,6 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
             || type == typeof(Embedding<float>)
             || type == typeof(float[]);
     }
-
 
     /// <inheritdoc />
     protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
@@ -103,7 +93,6 @@ internal class WeaviateModelBuilder(bool hasNamedVectors) : CollectionJsonModelB
                 $"Property '{propertyModel.ModelName}' has storage name '{propertyModel.StorageName}' which is not a valid GraphQL identifier. " + "GraphQL identifiers must start with a letter or underscore, and contain only letters, digits, and underscores.");
         }
     }
-
 
     private static bool IsValidIdentifier(string name)
     {

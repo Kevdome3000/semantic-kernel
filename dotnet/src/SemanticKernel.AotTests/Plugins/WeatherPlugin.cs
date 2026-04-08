@@ -8,7 +8,7 @@ namespace SemanticKernel.AotTests.Plugins;
 internal sealed class WeatherPlugin
 {
     [KernelFunction]
-    [Description("Get the current weather in a given location.")]
+    [System.ComponentModel.Description("Get the current weather in a given location.")]
     public Weather GetCurrentWeather(Location location)
     {
         return location.City switch

@@ -11,7 +11,7 @@
               - doesn't work with Microsoft.ML.OnnxRuntime 1.22.1
               - works with Microsoft.ML.OnnxRuntime 1.22.0
     -->
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" VersionOverride="1.22.0" NoWarn="NU1605"/>
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" VersionOverride="1.24.4" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime.Gpu" />
     <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.Cuda"/>
     <ProjectReference Include="..\..\..\src\Connectors\Connectors.Onnx\Connectors.Onnx.csproj"/>

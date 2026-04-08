@@ -1,7 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
-using System.Net.Http;
-
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
 /// <summary>

@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using Microsoft.SemanticKernel.ChatCompletion;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using MAAI = Microsoft.Agents.AI;
 

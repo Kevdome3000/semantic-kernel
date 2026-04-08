@@ -19,7 +19,6 @@ public sealed class CloudDrivePlugin
     private readonly ICloudDriveConnector _connector;
     private readonly ILogger _logger;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="CloudDrivePlugin"/> class.
     /// </summary>
@@ -32,7 +31,6 @@ public sealed class CloudDrivePlugin
         _connector = connector;
         _logger = loggerFactory?.CreateLogger(typeof(CloudDrivePlugin)) ?? NullLogger.Instance;
     }
-
 
     /// <summary>
     /// Get the contents of a file stored in a cloud drive.
@@ -56,13 +54,10 @@ public sealed class CloudDrivePlugin
 
         using StreamReader sr = new(fileContentStream);
         return await sr.ReadToEndAsync(
-#if NET
             cancellationToken
-#endif
             )
             .ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Upload a small file to OneDrive (less than 4MB).
@@ -87,7 +82,6 @@ public sealed class CloudDrivePlugin
         // TODO Add support for large file uploads (i.e. upload sessions)
         await _connector.UploadSmallFileAsync(filePath, destinationPath, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Create a sharable link to a file stored in a cloud drive.

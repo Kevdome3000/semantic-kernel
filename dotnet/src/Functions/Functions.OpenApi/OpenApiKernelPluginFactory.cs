@@ -1,18 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
@@ -63,7 +56,6 @@ public static partial class OpenApiKernelPluginFactory
             .ConfigureAwait(false);
     }
 
-
     /// <summary>
     /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification.
     /// </summary>
@@ -107,7 +99,6 @@ public static partial class OpenApiKernelPluginFactory
             .ConfigureAwait(false);
     }
 
-
     /// <summary>
     /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification.
     /// </summary>
@@ -140,7 +131,6 @@ public static partial class OpenApiKernelPluginFactory
             .ConfigureAwait(false);
     }
 
-
     /// <summary>
     /// Creates <see cref="KernelPlugin"/> from an OpenAPI specification.
     /// </summary>
@@ -165,7 +155,6 @@ public static partial class OpenApiKernelPluginFactory
             httpClient: httpClient,
             specification: specification);
     }
-
 
     /// <summary>
     /// Creates a plugin from an OpenAPI specification.
@@ -203,7 +192,6 @@ public static partial class OpenApiKernelPluginFactory
             documentUri,
             loggerFactory);
     }
-
 
     /// <summary>
     /// Creates a plugin from an OpenAPI specification.
@@ -260,7 +248,6 @@ public static partial class OpenApiKernelPluginFactory
 
         return KernelPluginFactory.CreateFromFunctions(pluginName, specification.Info.Description, functions);
     }
-
 
     /// <summary>
     /// Registers <see cref="KernelFunctionFactory"/>> for a REST API operation.
@@ -373,7 +360,6 @@ public static partial class OpenApiKernelPluginFactory
             });
     }
 
-
     private static KernelJsonSchema? GetSchema(RestApiParameter p)
     {
         // Add description to the schema.
@@ -400,7 +386,6 @@ public static partial class OpenApiKernelPluginFactory
                 : KernelJsonSchema.Parse($$"""{"type":"{{p.Type}}"}"""));
     }
 
-
     #region private
 
     /// <summary>The metadata property bag key to use when storing the method of an operation.</summary>
@@ -420,7 +405,6 @@ public static partial class OpenApiKernelPluginFactory
 
     /// <summary>The metadata property bag key to use for the list of extension values provided in the swagger file at the operation level.</summary>
     private const string OperationExtensionsMetadataKey = "operation-extensions";
-
 
     /// <summary>
     /// Converts operation id to valid <see cref="KernelFunction"/> name.
@@ -456,7 +440,6 @@ public static partial class OpenApiKernelPluginFactory
 
         return result.ToString();
     }
-
 
     /// <summary>
     /// Converts operation id to valid <see cref="KernelFunction"/> name.
@@ -498,7 +481,6 @@ public static partial class OpenApiKernelPluginFactory
         return result;
     }
 
-
     /// <summary>
     /// Selects operations to parse and import.
     /// </summary>
@@ -521,7 +503,6 @@ public static partial class OpenApiKernelPluginFactory
         return !executionParameters?.OperationsToExclude.Contains(context.Id ?? string.Empty) ?? true;
 #pragma warning restore CS0618 // Type or member is obsolete
     }
-
 
     /// <summary>
     /// Converts the parameter type to a C# <see cref="Type"/> object.
@@ -550,19 +531,12 @@ public static partial class OpenApiKernelPluginFactory
         };
     }
 
-
     /// <summary>
     /// Used to convert operationId to SK function names.
     /// </summary>
-#if NET
     [GeneratedRegex("[^0-9A-Za-z_]")]
     private static partial Regex RemoveInvalidCharsRegex();
-#else
-    private static Regex RemoveInvalidCharsRegex() => s_removeInvalidCharsRegex;
-    private static readonly Regex s_removeInvalidCharsRegex = new("[^0-9A-Za-z_./-/{/}]", RegexOptions.Compiled);
-#endif
 
     #endregion
-
 
 }

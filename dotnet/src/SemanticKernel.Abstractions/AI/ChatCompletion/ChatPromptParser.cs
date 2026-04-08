@@ -27,12 +27,8 @@ internal static class ChatPromptParser
 
         if (prompt is not null
             &&
-#if NET
             prompt.Contains(MessageTagStart, StringComparison.OrdinalIgnoreCase)
             &&
-#else
-            prompt.IndexOf(MessageTagStart, StringComparison.OrdinalIgnoreCase) >= 0 &&
-#endif
             XmlPromptParser.TryParse(prompt, out var nodes)
             && TryParse(nodes, out chatHistory))
         {
@@ -42,7 +38,6 @@ internal static class ChatPromptParser
         chatHistory = null;
         return false;
     }
-
 
     /// <summary>
     /// Parses collection of <see cref="PromptNode"/> instances and sets output as <see cref="ChatHistory"/>.
@@ -61,7 +56,6 @@ internal static class ChatPromptParser
 
         return chatHistory is not null;
     }
-
 
     /// <summary>
     /// Parses a chat node and constructs a <see cref="ChatMessageContent"/> object.
@@ -94,7 +88,6 @@ internal static class ChatPromptParser
             : new ChatMessageContent(authorRole, node.Content);
     }
 
-
     /// <summary>
     /// Creates a new instance of <typeparamref name="T"/> from a data URI.
     /// </summary>
@@ -109,7 +102,6 @@ internal static class ChatPromptParser
             : new T { Uri = new Uri(content), MimeType = mimeType };
     }
 
-
     /// <summary>
     /// Factory for creating a <see cref="KernelContent"/> instance based on the tag name.
     /// </summary>
@@ -120,7 +112,6 @@ internal static class ChatPromptParser
         { AudioTagName, CreateBinaryContent<AudioContent> },
         { BinaryTagName, CreateBinaryContent<BinaryContent> }
     };
-
 
     /// <summary>
     /// Checks if <see cref="PromptNode"/> is valid chat message.
@@ -142,7 +133,6 @@ internal static class ChatPromptParser
         return
             node.TagName.Equals(MessageTagName, StringComparison.OrdinalIgnoreCase) && node.Attributes.ContainsKey(RoleAttributeName);
     }
-
 
     private const string MessageTagName = "message";
     private const string RoleAttributeName = "role";

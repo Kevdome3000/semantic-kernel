@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.ClientModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Microsoft.SemanticKernel;
+
 
 /// <summary>
 /// Provides extension methods for the <see cref="ClientResultException"/> class.
@@ -31,7 +31,9 @@ internal static class ClientResultExceptionExtensions
 #pragma warning restore CA1031
 
         return new HttpOperationException(
-            exception.Status == NoResponseReceived ? null : (HttpStatusCode?)exception.Status,
+            exception.Status == NoResponseReceived
+                ? null
+                : (HttpStatusCode?)exception.Status,
             responseContent,
             exception.Message,
             exception);

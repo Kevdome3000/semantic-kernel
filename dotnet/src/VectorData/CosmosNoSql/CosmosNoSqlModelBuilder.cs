@@ -19,7 +19,6 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
         ReservedKeyStorageName = CosmosNoSqlConstants.ReservedKeyPropertyName
     };
 
-
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
         // CosmosNoSqlKey is a composite key type (document ID + partition key) that doesn't correspond to any single key property type;
@@ -40,13 +39,10 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
         }
     }
 
-
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         supportedTypes = "string, int, long, double, float, bool, DateTime, DateTimeOffset,"
-#if NET
             + " DateOnly,"
-#endif
             + " or arrays/lists of these types";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
@@ -67,18 +63,14 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
                 || type == typeof(double)
                 || type == typeof(DateTime)
                 ||
-#if NET
                type == typeof(DateOnly) ||
-#endif
                 type == typeof(DateTimeOffset);
     }
-
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         return IsVectorPropertyTypeValidCore(type, out supportedTypes);
     }
-
 
     /// <inheritdoc />
     protected override IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; } =
@@ -87,7 +79,6 @@ internal class CosmosNoSqlModelBuilder() : CollectionJsonModelBuilder(s_modelBui
         EmbeddingGenerationDispatcher.Create<Embedding<byte>>(),
         EmbeddingGenerationDispatcher.Create<Embedding<sbyte>>()
     ];
-
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {

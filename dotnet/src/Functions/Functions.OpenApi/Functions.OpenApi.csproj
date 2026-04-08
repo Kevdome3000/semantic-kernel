@@ -23,7 +23,7 @@
         <PackageReference Include="Microsoft.Identity.Client"/>
         <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal"/>
         <PackageReference Include="Microsoft.OpenApi"/>
-        <PackageReference Include="Microsoft.OpenApi.Readers"/>
+        <PackageReference Include="Microsoft.OpenApi.YamlReader"/>
         <PackageReference Include="JsonSchema.Net"/>
     </ItemGroup>
     <ItemGroup>

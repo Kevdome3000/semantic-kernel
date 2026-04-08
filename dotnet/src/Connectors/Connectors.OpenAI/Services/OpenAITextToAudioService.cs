@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.TextToAudio;
@@ -28,7 +23,8 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
     public static string OrganizationKey => "Organization";
 
     /// <inheritdoc/>
-    public IReadOnlyDictionary<string, object?> Attributes => this._client.Attributes;
+    public IReadOnlyDictionary<string, object?> Attributes => _client.Attributes;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenAITextToAudioService"/> class.
@@ -45,9 +41,15 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
         HttpClient? httpClient = null,
         ILoggerFactory? loggerFactory = null)
     {
-        Verify.NotNullOrWhiteSpace(modelId, nameof(modelId));
-        this._client = new(modelId, apiKey, organization, null, httpClient, loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
+        Verify.NotNullOrWhiteSpace(modelId);
+        _client = new ClientCore(modelId,
+            apiKey,
+            organization,
+            null,
+            httpClient,
+            loggerFactory?.CreateLogger(typeof(OpenAITextToAudioService)));
     }
+
 
     /// <inheritdoc/>
     public Task<IReadOnlyList<AudioContent>> GetAudioContentsAsync(
@@ -55,5 +57,10 @@ public sealed class OpenAITextToAudioService : ITextToAudioService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
-        => this._client.GetAudioContentsAsync(this._client.ModelId, text, executionSettings, cancellationToken);
+    {
+        return _client.GetAudioContentsAsync(_client.ModelId,
+            text,
+            executionSettings,
+            cancellationToken);
+    }
 }

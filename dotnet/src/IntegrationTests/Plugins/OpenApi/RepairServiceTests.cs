@@ -282,11 +282,7 @@ public class RepairServiceTests
     {
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-#if NET
             request.Options.TryGetValue(OpenApiKernelFunctionContext.KernelFunctionContextKey, out var context);
-#else
-            request.Properties.TryGetValue(OpenApiKernelFunctionContext.KernelFunctionContextKey, out var context);
-#endif
 
             // Modify the HttpRequestMessage
             request.Headers.Add("Kernel-Function-Name", context?.Function?.Name);

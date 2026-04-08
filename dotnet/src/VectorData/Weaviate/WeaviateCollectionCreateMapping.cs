@@ -65,7 +65,6 @@ internal static class WeaviateCollectionCreateMapping
         return schema;
     }
 
-
     #region private
 
     /// <summary>
@@ -97,7 +96,6 @@ internal static class WeaviateCollectionCreateMapping
                     IndexKind.Dynamic)}")
         };
     }
-
 
     /// <summary>
     /// Maps record vector property distance function to Weaviate distance function.
@@ -135,7 +133,6 @@ internal static class WeaviateCollectionCreateMapping
         };
     }
 
-
     /// <summary>
     /// Maps record property type to Weaviate data type taking into account if the type is a collection or single value.
     /// </summary>
@@ -159,9 +156,7 @@ internal static class WeaviateCollectionCreateMapping
                 Type t when t == typeof(int) || t == typeof(long) || t == typeof(short) || t == typeof(byte) => "int",
                 Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) => "number",
                 Type t when t == typeof(DateTime) || t == typeof(DateTimeOffset) => "date",
-#if NET
                 Type t when t == typeof(DateOnly) => "date",
-#endif
                 Type t when t == typeof(Guid) => "uuid",
                 Type t when t == typeof(bool) => "boolean",
 
@@ -173,6 +168,5 @@ internal static class WeaviateCollectionCreateMapping
     }
 
     #endregion
-
 
 }

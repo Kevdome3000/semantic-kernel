@@ -13,15 +13,12 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
 {
     private readonly Dictionary<string, object> _parameters = [];
 
-
     internal SqliteFilterTranslator(CollectionModel model, LambdaExpression lambdaExpression)
         : base(model, lambdaExpression, sql: null)
     {
     }
 
-
     internal Dictionary<string, object> Parameters => _parameters;
-
 
     protected override void TranslateConstant(object? value, bool isSearchCondition)
     {
@@ -37,20 +34,17 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
             case DateTimeOffset dateTimeOffset:
                 _sql.Append('\'').Append(dateTimeOffset.ToString("yyyy-MM-dd HH:mm:ss.FFFFFFFzzz", CultureInfo.InvariantCulture)).Append('\'');
                 break;
-#if NET
             case DateOnly dateOnly:
                 _sql.Append('\'').Append(dateOnly.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append('\'');
                 break;
             case TimeOnly timeOnly:
                 _sql.Append('\'').Append(timeOnly.ToString("HH:mm:ss.FFFFFFF", CultureInfo.InvariantCulture)).Append('\'');
                 break;
-#endif
             default:
                 base.TranslateConstant(value, isSearchCondition);
                 break;
         }
     }
-
 
     // TODO: support Contains over array fields (#10343)
     protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
@@ -58,13 +52,11 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
         throw new NotSupportedException("Unsupported Contains expression");
     }
 
-
     // TODO: support Any over array fields (#10343)
     protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
     {
         throw new NotSupportedException("Unsupported method call: Enumerable.Any");
     }
-
 
     protected override void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value)
     {
@@ -94,7 +86,6 @@ internal sealed class SqliteFilterTranslator : SqlFilterTranslator
 
         _sql.Append(')');
     }
-
 
     protected override void TranslateQueryParameter(object? value)
     {

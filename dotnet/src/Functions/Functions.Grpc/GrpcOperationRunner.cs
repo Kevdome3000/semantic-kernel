@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Reflection;
+using System.Globalization;
 using System.Reflection.Emit;
 using System.Text.Json;
 using System.Text.Json.Nodes;

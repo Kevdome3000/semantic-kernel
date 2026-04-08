@@ -10,13 +10,11 @@ namespace Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 #pragma warning disable MEVD9001 // Experimental: filter translation base types
 
-
 internal class AzureAISearchFilterTranslator : FilterTranslatorBase
 {
     private readonly StringBuilder _filter = new();
 
     private static readonly char[] s_searchInDefaultDelimiter = [' ', ','];
-
 
     internal string Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
@@ -26,7 +24,6 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
 
         return _filter.ToString();
     }
-
 
     private void Translate(Expression? node)
     {
@@ -57,7 +54,6 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     private void TranslateBinary(BinaryExpression binary)
     {
         _filter.Append('(');
@@ -83,12 +79,10 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
         _filter.Append(')');
     }
 
-
     private void TranslateConstant(ConstantExpression constant)
     {
         GenerateLiteral(constant.Value);
     }
-
 
     private void GenerateLiteral(object? value)
     {
@@ -133,11 +127,9 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
             case DateTimeOffset d:
                 _filter.Append(d.ToString("o"));
                 return;
-#if NET
             case DateOnly d:
                 _filter.Append(new DateTimeOffset(d.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero).ToString("o"));
                 return;
-#endif
 
             case Array:
                 throw new NotImplementedException();
@@ -151,7 +143,6 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     private void TranslateMember(MemberExpression memberExpression)
     {
         if (this.TryBindProperty(memberExpression, out var property))
@@ -163,7 +154,6 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
 
         throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
-
 
     private void TranslateMethodCall(MethodCallExpression methodCall)
     {
@@ -192,7 +182,6 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
                 throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}");
         }
     }
-
 
     private void TranslateContains(Expression source, Expression item)
     {
@@ -224,7 +213,6 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
                 throw new NotSupportedException("Unsupported Contains expression");
         }
     }
-
 
     /// <summary>
     /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
@@ -262,7 +250,6 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
         GenerateSearchInValues(values);
         _filter.Append(')');
     }
-
 
     /// <summary>
     /// Generates the values portion of a search.in() call, including the comma, quotes, and optional delimiter.
@@ -334,7 +321,6 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
         _filter.Append(')');
     }
 
-
     private static object?[] ExtractArrayValues(NewArrayExpression newArray)
     {
         var result = new object?[newArray.Expressions.Count];
@@ -351,7 +337,6 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
 
         return result;
     }
-
 
     private void TranslateUnary(UnaryExpression unary)
     {

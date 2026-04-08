@@ -1,16 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json.Nodes;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Http;
 
 #pragma warning disable CA1859 // Use concrete types when possible for improved performance
@@ -125,7 +118,6 @@ internal sealed class RestApiOperationRunner
     /// </summary>
     private static readonly IReadOnlyList<string> s_defaultAllowedSchemes = ["https"];
 
-
     /// <summary>
     /// Creates an instance of the <see cref="RestApiOperationRunner"/> class.
     /// </summary>
@@ -184,7 +176,6 @@ internal sealed class RestApiOperationRunner
         };
     }
 
-
     /// <summary>
     /// Executes the specified <paramref name="operation"/> asynchronously, using the provided <paramref name="arguments"/>.
     /// </summary>
@@ -224,7 +215,6 @@ internal sealed class RestApiOperationRunner
             options,
             cancellationToken);
     }
-
 
     #region private
 
@@ -288,7 +278,6 @@ internal sealed class RestApiOperationRunner
         }
     }
 
-
     /// <summary>
     /// Sends an HTTP request.
     /// </summary>
@@ -311,11 +300,7 @@ internal sealed class RestApiOperationRunner
     {
         using var requestMessage = new HttpRequestMessage(operation.Method, url);
 
-#if NET
         requestMessage.Options.Set(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
-#else
-        requestMessage.Properties.Add(OpenApiKernelFunctionContext.KernelFunctionContextKey, new OpenApiKernelFunctionContext(options?.Kernel, options?.KernelFunction, options?.KernelArguments));
-#endif
 
         await _authCallback(requestMessage, cancellationToken).ConfigureAwait(false);
 
@@ -408,7 +393,6 @@ internal sealed class RestApiOperationRunner
         }
     }
 
-
     /// <summary>
     /// Reads the response content of an HTTP request and creates an operation response.
     /// </summary>
@@ -451,7 +435,6 @@ internal sealed class RestApiOperationRunner
         };
     }
 
-
     /// <summary>
     /// Builds operation payload.
     /// </summary>
@@ -493,7 +476,6 @@ internal sealed class RestApiOperationRunner
         return payloadFactory.Invoke(operation.Payload, arguments);
     }
 
-
     /// <summary>
     /// Builds "application/json" payload.
     /// </summary>
@@ -523,7 +505,6 @@ internal sealed class RestApiOperationRunner
 
         return (content, new StringContent(content, Encoding.UTF8, MediaTypeApplicationJson));
     }
-
 
     /// <summary>
     /// Builds a JSON object from a list of RestAPI operation payload properties.
@@ -578,7 +559,6 @@ internal sealed class RestApiOperationRunner
         return result;
     }
 
-
     /// <summary>
     /// Gets the expected schema for the specified status code.
     /// </summary>
@@ -606,7 +586,6 @@ internal sealed class RestApiOperationRunner
         return matchingResponse;
     }
 
-
     /// <summary>
     /// Builds "text/plain" payload.
     /// </summary>
@@ -622,7 +601,6 @@ internal sealed class RestApiOperationRunner
 
         return (payload, new StringContent(payload, Encoding.UTF8, MediaTypeTextPlain));
     }
-
 
     /// <summary>
     /// Retrieves the argument name for a payload property.
@@ -642,7 +620,6 @@ internal sealed class RestApiOperationRunner
             : $"{propertyNamespace}.{propertyName}";
     }
 
-
     /// <summary>
     /// Builds operation Url.
     /// </summary>
@@ -661,7 +638,6 @@ internal sealed class RestApiOperationRunner
 
         return new UriBuilder(url) { Query = operation.BuildQueryString(arguments) }.Uri;
     }
-
 
     /// <summary>
     /// Reads the HTTP content.
@@ -723,7 +699,6 @@ internal sealed class RestApiOperationRunner
         return content;
     }
 
-
     /// <summary>
     /// Builds the operation response.
     /// </summary>
@@ -781,7 +756,6 @@ internal sealed class RestApiOperationRunner
             .ConfigureAwait(false);
     }
 
-
     /// <summary>
     /// Adds the request options to the exception Data collection.
     /// </summary>
@@ -791,11 +765,7 @@ internal sealed class RestApiOperationRunner
     {
         IDictionary<string, object?>? requestOptions = null;
 
-#if NET
         requestOptions = requestMessage.Options;
-#else
-        requestOptions = requestMessage.Properties;
-#endif
 
         if (requestOptions is not null)
         {
@@ -804,6 +774,5 @@ internal sealed class RestApiOperationRunner
     }
 
     #endregion
-
 
 }

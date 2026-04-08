@@ -119,7 +119,6 @@ public static class GoogleAIKernelBuilderExtensions
         return builder;
     }
 
-#if NET
     /// <summary>
     /// Add Google GenAI <see cref="IChatClient"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
@@ -215,5 +214,4 @@ public static class GoogleAIKernelBuilderExtensions
 
         return builder;
     }
-#endif
 }

@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ClientModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -18,12 +15,15 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class OpenAIServiceCollectionExtensions
 {
+
+
     #region Chat Client
 
     /// <summary>
     /// White space constant.
     /// </summary>
     private const string SingleSpace = " ";
+
 
     /// <summary>
     /// Adds the OpenAI chat completion service to the list.
@@ -54,11 +54,11 @@ public static class OpenAIServiceCollectionExtensions
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
             var builder = new OpenAIClient(
-                    credential: new ApiKeyCredential(apiKey ?? SingleSpace),
-                    options: ClientCore.GetOpenAIClientOptions(
-                        httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                        endpoint: null,
-                        orgId: orgId))
+                    new ApiKeyCredential(apiKey ?? SingleSpace),
+                    ClientCore.GetOpenAIClientOptions(
+                        HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                        null,
+                        orgId))
                 .GetChatClient(modelId)
                 .AsIChatClient()
                 .AsBuilder()
@@ -78,6 +78,7 @@ public static class OpenAIServiceCollectionExtensions
         return services;
     }
 
+
     /// <summary>
     /// Adds the OpenAI chat completion service to the list.
     /// </summary>
@@ -88,7 +89,8 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openTelemetrySourceName">An optional name for the OpenTelemetry source.</param>
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="OpenTelemetryChatClient"/> instance.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
-    public static IServiceCollection AddOpenAIChatClient(this IServiceCollection services,
+    public static IServiceCollection AddOpenAIChatClient(
+        this IServiceCollection services,
         string modelId,
         OpenAIClient? openAIClient = null,
         string? serviceId = null,
@@ -120,6 +122,7 @@ public static class OpenAIServiceCollectionExtensions
 
         return services;
     }
+
 
     /// <summary>
     /// Adds the Custom OpenAI chat completion service to the list.
@@ -153,6 +156,7 @@ public static class OpenAIServiceCollectionExtensions
 
             // Get or create HttpClient with proper BaseAddress for the endpoint
             HttpClient innerHttpClient;
+
             if (httpClient is not null)
             {
                 innerHttpClient = httpClient;
@@ -160,6 +164,7 @@ public static class OpenAIServiceCollectionExtensions
             else
             {
                 var defaultClient = HttpClientProvider.GetHttpClient(serviceProvider);
+
                 // If using default client and it doesn't have BaseAddress set or BaseAddress doesn't match the endpoint, create one with the endpoint
                 if (defaultClient.BaseAddress is null || defaultClient.BaseAddress != endpoint)
                 {
@@ -176,11 +181,11 @@ public static class OpenAIServiceCollectionExtensions
             }
 
             var builder = new OpenAIClient(
-                    credential: new ApiKeyCredential(apiKey ?? SingleSpace),
-                    options: ClientCore.GetOpenAIClientOptions(
-                        httpClient: innerHttpClient,
-                        endpoint: endpoint,
-                        orgId: orgId))
+                    new ApiKeyCredential(apiKey ?? SingleSpace),
+                    ClientCore.GetOpenAIClientOptions(
+                        innerHttpClient,
+                        endpoint,
+                        orgId))
                 .GetChatClient(modelId)
                 .AsIChatClient()
                 .AsBuilder()
@@ -199,9 +204,12 @@ public static class OpenAIServiceCollectionExtensions
 
         return services;
     }
+
     #endregion
 
+
     #region Embedding Generator
+
     /// <summary>
     /// Adds the <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
@@ -231,28 +239,30 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNullOrWhiteSpace(modelId);
         Verify.NotNullOrWhiteSpace(apiKey);
 
-        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-        {
-            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-
-            var builder = new OpenAIClient(
-                   credential: new ApiKeyCredential(apiKey ?? SingleSpace),
-                   options: ClientCore.GetOpenAIClientOptions(
-                       httpClient: HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
-                       orgId: orgId))
-               .GetEmbeddingClient(modelId)
-               .AsIEmbeddingGenerator(dimensions)
-               .AsBuilder()
-               .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
-
-            if (loggerFactory is not null)
+        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId,
+            (serviceProvider, _) =>
             {
-                builder.UseLogging(loggerFactory);
-            }
+                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            return builder.Build();
-        });
+                var builder = new OpenAIClient(
+                        new ApiKeyCredential(apiKey ?? SingleSpace),
+                        ClientCore.GetOpenAIClientOptions(
+                            HttpClientProvider.GetHttpClient(httpClient, serviceProvider),
+                            orgId: orgId))
+                    .GetEmbeddingClient(modelId)
+                    .AsIEmbeddingGenerator(dimensions)
+                    .AsBuilder()
+                    .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+                if (loggerFactory is not null)
+                {
+                    builder.UseLogging(loggerFactory);
+                }
+
+                return builder.Build();
+            });
     }
+
 
     /// <summary>
     /// Adds the <see cref="IEmbeddingGenerator{TInput, TEmbedding}"/> to the <see cref="IServiceCollection"/>.
@@ -266,7 +276,8 @@ public static class OpenAIServiceCollectionExtensions
     /// <param name="openTelemetryConfig">An optional callback that can be used to configure the <see cref="IEmbeddingGenerator{String, Embedding}"/> instance.</param>
     /// <returns>The same instance as <paramref name="services"/>.</returns>
     [Experimental("SKEXP0010")]
-    public static IServiceCollection AddOpenAIEmbeddingGenerator(this IServiceCollection services,
+    public static IServiceCollection AddOpenAIEmbeddingGenerator(
+        this IServiceCollection services,
         string modelId,
         OpenAIClient? openAIClient = null,
         int? dimensions = null,
@@ -277,23 +288,27 @@ public static class OpenAIServiceCollectionExtensions
         Verify.NotNull(services);
         Verify.NotNullOrWhiteSpace(modelId);
 
-        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId, (serviceProvider, _) =>
-        {
-            var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-
-            var builder = (openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>())
-                .GetEmbeddingClient(modelId)
-                .AsIEmbeddingGenerator(dimensions)
-                .AsBuilder()
-                .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
-
-            if (loggerFactory is not null)
+        return services.AddKeyedSingleton<IEmbeddingGenerator<string, Embedding<float>>>(serviceId,
+            (serviceProvider, _) =>
             {
-                builder.UseLogging(loggerFactory);
-            }
+                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
 
-            return builder.Build();
-        });
+                var builder = (openAIClient ?? serviceProvider.GetRequiredService<OpenAIClient>())
+                    .GetEmbeddingClient(modelId)
+                    .AsIEmbeddingGenerator(dimensions)
+                    .AsBuilder()
+                    .UseOpenTelemetry(loggerFactory, openTelemetrySourceName, openTelemetryConfig);
+
+                if (loggerFactory is not null)
+                {
+                    builder.UseLogging(loggerFactory);
+                }
+
+                return builder.Build();
+            });
     }
+
     #endregion
+
+
 }

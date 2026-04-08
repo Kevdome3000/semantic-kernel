@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Text;
 using Microsoft.SemanticKernel.ChatCompletion;
 using OpenAI.Chat;
@@ -20,6 +18,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     /// The reason why the completion finished.
     /// </summary>
     public ChatFinishReason? FinishReason { get; set; }
+
 
     /// <summary>
     /// Create a new instance of the <see cref="OpenAIStreamingChatMessageContent"/> class.
@@ -44,21 +43,21 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
     {
         try
         {
-            this.FinishReason = chatUpdate.FinishReason;
+            FinishReason = chatUpdate.FinishReason;
 
             if (chatUpdate.Role.HasValue)
             {
-                this.Role = new AuthorRole(chatUpdate.Role.ToString()!);
+                Role = new AuthorRole(chatUpdate.Role.ToString()!);
             }
 
             if (chatUpdate.ToolCallUpdates is not null)
             {
-                this.ToolCallUpdates = chatUpdate.ToolCallUpdates;
+                ToolCallUpdates = chatUpdate.ToolCallUpdates;
             }
 
             if (chatUpdate.ContentUpdate is not null)
             {
-                this.Items = CreateContentItems(chatUpdate.ContentUpdate);
+                Items = CreateContentItems(chatUpdate.ContentUpdate);
             }
         }
         catch (NullReferenceException)
@@ -67,6 +66,7 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             // TODO: Remove this try-catch block once the bug is fixed.
         }
     }
+
 
     /// <summary>
     /// Create a new instance of the <see cref="OpenAIStreamingChatMessageContent"/> class.
@@ -95,18 +95,28 @@ public sealed class OpenAIStreamingChatMessageContent : StreamingChatMessageCont
             Encoding.UTF8,
             metadata)
     {
-        this.ToolCallUpdates = toolCallUpdates;
-        this.FinishReason = completionsFinishReason;
+        ToolCallUpdates = toolCallUpdates;
+        FinishReason = completionsFinishReason;
     }
+
 
     /// <summary>Gets any update information in the message about a tool call.</summary>
     public IReadOnlyList<StreamingChatToolCallUpdate>? ToolCallUpdates { get; }
 
-    /// <inheritdoc/>
-    public override byte[] ToByteArray() => this.Encoding.GetBytes(this.ToString());
 
     /// <inheritdoc/>
-    public override string ToString() => this.Content ?? string.Empty;
+    public override byte[] ToByteArray()
+    {
+        return Encoding.GetBytes(ToString());
+    }
+
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return Content ?? string.Empty;
+    }
+
 
     private static StreamingKernelContentItemCollection CreateContentItems(IReadOnlyList<ChatMessageContentPart> contentUpdate)
     {

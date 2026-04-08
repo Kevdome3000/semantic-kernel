@@ -2,8 +2,8 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using System.Text.Json.Nodes;
+using Microsoft.OpenApi;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
 using Xunit;
 
@@ -17,14 +17,14 @@ public class OpenApiSchemaExtensionsTests
         // Arrange
         var schema = new OpenApiSchema
         {
-            Type = "object",
-            Properties = new Dictionary<string, OpenApiSchema>
+            Type = JsonSchemaType.Object,
+            Properties = new Dictionary<string, IOpenApiSchema>
             {
-                ["property1"] = new()
+                ["property1"] = new OpenApiSchema
                 {
-                    Type = "number",
+                    Type = JsonSchemaType.Number,
                     Format = "double",
-                    Default = new OpenApiDouble(12.01)
+                    Default = JsonValue.Create(12.01)
                 }
             }
         };

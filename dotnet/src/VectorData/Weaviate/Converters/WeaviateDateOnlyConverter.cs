@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#if NET
 using System;
 using System.Globalization;
 using System.Text.Json;
@@ -36,4 +35,3 @@ internal sealed class WeaviateDateOnlyConverter : JsonConverter<DateOnly>
     }
 }
 
-#endif

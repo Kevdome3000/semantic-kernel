@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using Microsoft.Extensions.FileProviders;
 using Microsoft.SemanticKernel.Prompty;
 
 namespace Microsoft.SemanticKernel;

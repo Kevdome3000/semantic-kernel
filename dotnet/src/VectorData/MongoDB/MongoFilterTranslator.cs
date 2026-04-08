@@ -13,7 +13,6 @@ namespace Microsoft.SemanticKernel.Connectors.MongoDB;
 
 #pragma warning disable MEVD9001 // Experimental: filter translation base types
 
-
 // MongoDB query reference: https://www.mongodb.com/docs/manual/reference/operator/query
 // Information specific to vector search pre-filter: https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-stage/#atlas-vector-search-pre-filter
 internal class MongoFilterTranslator : FilterTranslatorBase
@@ -24,7 +23,6 @@ internal class MongoFilterTranslator : FilterTranslatorBase
 
         return Translate(preprocessedExpression);
     }
-
 
     private BsonDocument Translate(Expression? node)
     {
@@ -62,7 +60,6 @@ internal class MongoFilterTranslator : FilterTranslatorBase
         };
     }
 
-
     private BsonDocument TranslateEqualityComparison(BinaryExpression binary)
     {
         return this.TryBindProperty(binary.Left, out var property) && binary.Right is ConstantExpression { Value: var rightConstant }
@@ -72,7 +69,6 @@ internal class MongoFilterTranslator : FilterTranslatorBase
                 : throw new NotSupportedException("Invalid equality/comparison");
     }
 
-
     private BsonDocument GenerateEqualityComparison(PropertyModel property, object? value, ExpressionType nodeType)
     {
         if (value is null)
@@ -81,9 +77,7 @@ internal class MongoFilterTranslator : FilterTranslatorBase
         }
 
         if (value is DateTime or DateTimeOffset or decimal or IList
-#if NET
             or DateOnly
-#endif
         )
         {
             // Operand type is not supported for $vectorSearch: date/decimal
@@ -109,7 +103,6 @@ internal class MongoFilterTranslator : FilterTranslatorBase
 
         return new BsonDocument { [property.StorageName] = new BsonDocument { [filterOperator] = BsonValueFactory.Create(value) } };
     }
-
 
     private BsonDocument TranslateAndOr(BinaryExpression andOr)
     {
@@ -145,7 +138,6 @@ internal class MongoFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     private BsonDocument TranslateNot(UnaryExpression not)
     {
         switch (not.Operand)
@@ -176,7 +168,6 @@ internal class MongoFilterTranslator : FilterTranslatorBase
         throw new NotSupportedException("MongogDB does not support the NOT operator in vector search pre-filters");
     }
 
-
     private BsonDocument TranslateMethodCall(MethodCallExpression methodCall)
     {
         return methodCall switch
@@ -188,7 +179,6 @@ internal class MongoFilterTranslator : FilterTranslatorBase
             _ => throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}")
         };
     }
-
 
     private BsonDocument TranslateContains(Expression source, Expression item)
     {

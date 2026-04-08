@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Microsoft.SemanticKernel.Text;

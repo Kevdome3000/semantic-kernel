@@ -38,7 +38,7 @@ internal static class MicrosoftGraphModelExtensions
     /// </summary>
     public static Models.EmailAddress ToEmailAddress(this Microsoft.Graph.Models.EmailAddress graphEmailAddress)
     {
-        return new EmailAddress
+        return new Models.EmailAddress
         {
             Address = graphEmailAddress.Address,
             Name = graphEmailAddress.Name

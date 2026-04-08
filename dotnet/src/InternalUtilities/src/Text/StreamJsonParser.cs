@@ -1,14 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json.Nodes;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Text;
 
@@ -87,9 +80,7 @@ internal sealed class StreamJsonParser
             string? line;
 
             while ((line = await _reader.ReadLineAsync(
-#if NET
                         cancellationToken
-#endif
                     )
                     .ConfigureAwait(false)) is not null
                 || _lastLine is not null)

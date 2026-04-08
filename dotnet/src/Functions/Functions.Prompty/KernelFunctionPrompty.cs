@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.PromptTemplates.Handlebars;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
 using PromptyCore = Prompty.Core;
 

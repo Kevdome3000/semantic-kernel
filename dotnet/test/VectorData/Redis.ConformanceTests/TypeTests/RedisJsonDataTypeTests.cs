@@ -31,10 +31,8 @@ public class RedisJsonDataTypeTests(RedisJsonDataTypeTests.Fixture fixture)
             typeof(Guid),
             typeof(DateTime),
             typeof(DateTimeOffset),
-#if NET
             typeof(DateOnly),
             typeof(TimeOnly)
-#endif
         ];
     }
 }

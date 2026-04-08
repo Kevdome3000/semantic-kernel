@@ -17,7 +17,6 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
         UsesExternalSerializer = true
     };
 
-
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
         base.ValidateKeyProperty(keyProperty);
@@ -31,25 +30,20 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
         }
     }
 
-
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         return IsDataPropertyTypeValidCore(type, out supportedTypes);
     }
-
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         return IsVectorPropertyTypeValidCore(type, out supportedTypes);
     }
 
-
     internal static bool IsDataPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         supportedTypes = "string, int, long, double, float, bool, DateTime, DateTimeOffset,"
-#if NET
             + " DateOnly,"
-#endif
             + " or arrays/lists of these types";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
@@ -70,13 +64,10 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
                 || type == typeof(bool)
                 || type == typeof(DateTime)
                 ||
-#if NET
                 type == typeof(DateOnly)
                 ||
-#endif
                 type == typeof(DateTimeOffset);
     }
-
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
@@ -91,7 +82,6 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
             || type == typeof(float[]);
     }
 
-
     /// <inheritdoc />
     protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
     {
@@ -105,7 +95,6 @@ internal class AzureAISearchModelBuilder() : CollectionJsonModelBuilder(s_modelB
                 $"Property '{propertyModel.ModelName}' has storage name '{propertyModel.StorageName}' which is not a valid OData identifier. " + "OData identifiers must start with a letter or underscore, and contain only letters, digits, and underscores.");
         }
     }
-
 
     private static bool IsValidIdentifier(string name)
     {

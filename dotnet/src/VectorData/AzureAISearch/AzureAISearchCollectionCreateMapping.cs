@@ -21,7 +21,6 @@ internal static class AzureAISearchCollectionCreateMapping
         return new SearchableField(keyProperty.StorageName) { IsKey = true, IsFilterable = true };
     }
 
-
     /// <summary>
     /// Map from a <see cref="VectorStoreDataProperty"/> to an Azure AI Search <see cref="SimpleField"/>.
     /// </summary>
@@ -54,7 +53,6 @@ internal static class AzureAISearchCollectionCreateMapping
         };
     }
 
-
     /// <summary>
     /// Map form a <see cref="VectorStoreVectorProperty"/> to an Azure AI Search <see cref="VectorSearchField"/> and generate the required index configuration.
     /// </summary>
@@ -85,7 +83,6 @@ internal static class AzureAISearchCollectionCreateMapping
         return (new VectorSearchField(vectorProperty.StorageName, vectorProperty.Dimensions, vectorSearchProfileName), algorithmConfiguration, vectorSearchProfile);
     }
 
-
     /// <summary>
     /// Get the configured <see cref="IndexKind"/> from the given <paramref name="vectorProperty"/>.
     /// If none is configured the default is <see cref="IndexKind.Hnsw"/>.
@@ -96,7 +93,6 @@ internal static class AzureAISearchCollectionCreateMapping
     {
         return vectorProperty.IndexKind ?? IndexKind.Hnsw;
     }
-
 
     /// <summary>
     /// Get the configured <see cref="VectorSearchAlgorithmMetric"/> from the given <paramref name="vectorProperty"/>.
@@ -117,7 +113,6 @@ internal static class AzureAISearchCollectionCreateMapping
         };
     }
 
-
     /// <summary>
     /// Maps the given property type to the corresponding <see cref="SearchFieldDataType"/>.
     /// </summary>
@@ -137,9 +132,7 @@ internal static class AzureAISearchCollectionCreateMapping
             Type t when t == typeof(double) => SearchFieldDataType.Double,
             Type t when t == typeof(DateTime) => SearchFieldDataType.DateTimeOffset,
             Type t when t == typeof(DateTimeOffset) => SearchFieldDataType.DateTimeOffset,
-#if NET
             Type t when t == typeof(DateOnly) => SearchFieldDataType.DateTimeOffset,
-#endif
 
             Type t when t == typeof(string[]) => SearchFieldDataType.Collection(SearchFieldDataType.String),
             Type t when t == typeof(List<string>) => SearchFieldDataType.Collection(SearchFieldDataType.String),
@@ -157,10 +150,8 @@ internal static class AzureAISearchCollectionCreateMapping
             Type t when t == typeof(List<DateTime>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
             Type t when t == typeof(DateTimeOffset[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
             Type t when t == typeof(List<DateTimeOffset>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
-#if NET
             Type t when t == typeof(DateOnly[]) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
             Type t when t == typeof(List<DateOnly>) => SearchFieldDataType.Collection(SearchFieldDataType.DateTimeOffset),
-#endif
 
             _ => throw new NotSupportedException($"Data type '{propertyType}' for {nameof(VectorStoreDataProperty)} is not supported by the Azure AI Search VectorStore.")
         };

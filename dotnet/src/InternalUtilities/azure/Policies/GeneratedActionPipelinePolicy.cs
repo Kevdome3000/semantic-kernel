@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Core.Pipeline;
 

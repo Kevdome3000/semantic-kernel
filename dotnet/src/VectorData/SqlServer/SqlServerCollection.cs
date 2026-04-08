@@ -42,7 +42,6 @@ public class SqlServerCollection<TKey, TRecord>
     /// <summary>The database schema.</summary>
     private readonly string? _schema;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerCollection{TKey, TRecord}"/> class.
     /// </summary>
@@ -67,7 +66,6 @@ public class SqlServerCollection<TKey, TRecord>
             options)
     {
     }
-
 
     internal SqlServerCollection(
         string connectionString,
@@ -97,10 +95,8 @@ public class SqlServerCollection<TKey, TRecord>
         };
     }
 
-
     /// <inheritdoc/>
     public override string Name { get; }
-
 
     /// <inheritdoc/>
     public override async Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
@@ -123,13 +119,11 @@ public class SqlServerCollection<TKey, TRecord>
             .ConfigureAwait(false);
     }
 
-
     /// <inheritdoc/>
     public override Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
         return CreateCollectionAsync(true, cancellationToken);
     }
-
 
     private async Task CreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken)
     {
@@ -155,7 +149,6 @@ public class SqlServerCollection<TKey, TRecord>
         }
     }
 
-
     /// <inheritdoc/>
     public override async Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
@@ -172,7 +165,6 @@ public class SqlServerCollection<TKey, TRecord>
                 cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public override async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
@@ -195,7 +187,6 @@ public class SqlServerCollection<TKey, TRecord>
             .ConfigureAwait(false);
     }
 
-
     /// <inheritdoc/>
     public override async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
     {
@@ -211,12 +202,8 @@ public class SqlServerCollection<TKey, TRecord>
         {
             while (true)
             {
-#if NET
                 SqlCommand command = new("", connection, transaction);
                 await using (command.ConfigureAwait(false))
-#else
-                using (SqlCommand command = new("", connection, transaction))
-#endif
                 {
                     if (!SqlServerCommandBuilder.DeleteMany(
                         command,
@@ -239,20 +226,12 @@ public class SqlServerCollection<TKey, TRecord>
 
             if (taken > 0)
             {
-#if NET
                 await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-#else
-                transaction.Commit();
-#endif
             }
         }
         catch (DbException ex)
         {
-#if NET
             await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-#else
-            transaction.Rollback();
-#endif
 
             throw new VectorStoreException(ex.Message, ex)
             {
@@ -264,16 +243,11 @@ public class SqlServerCollection<TKey, TRecord>
         }
         catch (Exception)
         {
-#if NET
             await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-#else
-            transaction.Rollback();
-#endif
 
             throw;
         }
     }
-
 
     /// <inheritdoc/>
     public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
@@ -310,7 +284,6 @@ public class SqlServerCollection<TKey, TRecord>
                 cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<TRecord> GetAsync(
@@ -381,7 +354,6 @@ public class SqlServerCollection<TKey, TRecord>
         } while (command.Parameters.Count == SqlServerConstants.MaxParameterCount);
     }
 
-
     /// <inheritdoc/>
     public override async Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
@@ -442,7 +414,6 @@ public class SqlServerCollection<TKey, TRecord>
                 cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
@@ -529,12 +500,8 @@ public class SqlServerCollection<TKey, TRecord>
                     break;
                 }
 
-#if NET
                 SqlCommand command = new("", connection, transaction);
                 await using (command.ConfigureAwait(false))
-#else
-                using (SqlCommand command = new("", connection, transaction))
-#endif
                 {
                     if (!SqlServerCommandBuilder.Upsert<TKey>(
                         command,
@@ -576,20 +543,12 @@ public class SqlServerCollection<TKey, TRecord>
 
             if (taken > 0)
             {
-#if NET
                 await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-#else
-                transaction.Commit();
-#endif
             }
         }
         catch (DbException ex)
         {
-#if NET
             await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-#else
-            transaction.Rollback();
-#endif
 
             throw new VectorStoreException(ex.Message, ex)
             {
@@ -601,15 +560,10 @@ public class SqlServerCollection<TKey, TRecord>
         }
         catch (Exception)
         {
-#if NET
             await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
-#else
-            transaction.Rollback();
-#endif
             throw;
         }
     }
-
 
     #region Search
 
@@ -671,7 +625,6 @@ public class SqlServerCollection<TKey, TRecord>
             yield return record;
         }
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(
@@ -742,7 +695,6 @@ public class SqlServerCollection<TKey, TRecord>
 
     #endregion Search
 
-
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
     {
@@ -757,7 +709,6 @@ public class SqlServerCollection<TKey, TRecord>
                         ? this
                         : null;
     }
-
 
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ReadVectorSearchResultsAsync(
         SqlConnection connection,
@@ -803,7 +754,6 @@ public class SqlServerCollection<TKey, TRecord>
         }
     }
 
-
     private async IAsyncEnumerable<VectorSearchResult<TRecord>> ReadHybridSearchResultsAsync(
         SqlConnection connection,
         SqlCommand command,
@@ -843,7 +793,6 @@ public class SqlServerCollection<TKey, TRecord>
             connection.Dispose();
         }
     }
-
 
     /// <inheritdoc />
     public override async IAsyncEnumerable<TRecord> GetAsync(

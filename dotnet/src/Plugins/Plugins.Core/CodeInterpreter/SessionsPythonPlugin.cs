@@ -30,7 +30,6 @@ public sealed partial class SessionsPythonPlugin
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger _logger;
 
-
     /// <summary>
     /// Initializes a new instance of the SessionsPythonTool class.
     /// </summary>
@@ -57,7 +56,6 @@ public sealed partial class SessionsPythonPlugin
         _httpClientFactory = httpClientFactory;
         _logger = loggerFactory?.CreateLogger(typeof(SessionsPythonPlugin)) ?? NullLogger.Instance;
     }
-
 
     /// <summary>
     /// Executes the provided Python code.
@@ -112,7 +110,6 @@ public sealed partial class SessionsPythonPlugin
         return JsonSerializer.Deserialize<SessionsPythonCodeExecutionResult>(await response.Content.ReadAsStringWithExceptionMappingAsync(cancellationToken).ConfigureAwait(false))!;
     }
 
-
     /// <summary>
     /// Uploads a file to the `/mnt/data` directory of the current session.
     /// </summary>
@@ -158,7 +155,6 @@ public sealed partial class SessionsPythonPlugin
 
         return JsonSerializer.Deserialize<SessionsRemoteFileMetadata>(stringContent)!;
     }
-
 
     /// <summary>
     /// Downloads a file from the `/mnt/data` directory of the current session.
@@ -209,7 +205,6 @@ public sealed partial class SessionsPythonPlugin
         return fileContent;
     }
 
-
     /// <summary>
     /// Lists all entities: files or directories in the `/mnt/data` directory of the current session.
     /// </summary>
@@ -235,7 +230,6 @@ public sealed partial class SessionsPythonPlugin
         return files.Deserialize<SessionsRemoteFileMetadata[]>()!;
     }
 
-
     private static Uri GetBaseEndpoint(Uri endpoint)
     {
         if (endpoint.PathAndQuery.Contains("/python/execute"))
@@ -250,7 +244,6 @@ public sealed partial class SessionsPythonPlugin
 
         return endpoint;
     }
-
 
     /// <summary>
     /// Sanitize input to the python REPL.
@@ -269,7 +262,6 @@ public sealed partial class SessionsPythonPlugin
         return code;
     }
 
-
     /// <summary>
     /// Add headers to the HTTP request.
     /// </summary>
@@ -284,7 +276,6 @@ public sealed partial class SessionsPythonPlugin
             request.Headers.Add("Authorization", $"Bearer {await _authTokenProvider(cancellationToken).ConfigureAwait(false)}");
         }
     }
-
 
     /// <summary>
     /// Sends an HTTP request to the specified path with the specified method and content.
@@ -323,7 +314,6 @@ public sealed partial class SessionsPythonPlugin
 
         return await httpClient.SendWithSuccessCheckAsync(request, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Validates that the local file path is within allowed upload directories.
@@ -365,7 +355,6 @@ public sealed partial class SessionsPythonPlugin
         throw new InvalidOperationException(
             $"Access denied: '{localFilePath}' is not within allowed upload directories.");
     }
-
 
     /// <summary>
     /// Validates that the local file path is within allowed download directories.
@@ -411,19 +400,9 @@ public sealed partial class SessionsPythonPlugin
             $"Access denied: '{localFilePath}' is not within allowed download directories.");
     }
 
-
-#if NET
     [GeneratedRegex(@"^(\s|`)*(?i:python)?\s*", RegexOptions.ExplicitCapture)]
     private static partial Regex RemoveLeadingWhitespaceBackticksPython();
 
-
     [GeneratedRegex(@"(\s|`)*$", RegexOptions.ExplicitCapture)]
     private static partial Regex RemoveTrailingWhitespaceBackticks();
-#else
-    private static Regex RemoveLeadingWhitespaceBackticksPython() => s_removeLeadingWhitespaceBackticksPython;
-    private static readonly Regex s_removeLeadingWhitespaceBackticksPython = new(@"^(\s|`)*(?i:python)?\s*", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-
-    private static Regex RemoveTrailingWhitespaceBackticks() => s_removeTrailingWhitespaceBackticks;
-    private static readonly Regex s_removeTrailingWhitespaceBackticks = new(@"(\s|`)*$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
-#endif
 }

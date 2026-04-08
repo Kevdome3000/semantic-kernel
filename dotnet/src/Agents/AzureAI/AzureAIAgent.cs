@@ -2,11 +2,6 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.ChatCompletion;
-using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 using Microsoft.SemanticKernel.Agents.Extensions;

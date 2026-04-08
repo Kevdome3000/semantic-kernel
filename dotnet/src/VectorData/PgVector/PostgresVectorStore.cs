@@ -35,7 +35,6 @@ public sealed class PostgresVectorStore : VectorStore
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
     /// </summary>
@@ -61,7 +60,6 @@ public sealed class PostgresVectorStore : VectorStore
         };
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStore"/> class.
     /// </summary>
@@ -74,14 +72,12 @@ public sealed class PostgresVectorStore : VectorStore
     {
     }
 
-
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
         _dataSourceArc?.Dispose();
         base.Dispose(disposing);
     }
-
 
     /// <inheritdoc />
     public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
@@ -111,16 +107,11 @@ public sealed class PostgresVectorStore : VectorStore
         }
     }
 
-
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
     [RequiresDynamicCode("This overload of GetCollection() is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
     [RequiresUnreferencedCode("This overload of GetCollecttion() is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, call GetDynamicCollection() instead.")]
-#if NET
     public override PostgresCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
-#else
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
-#endif
         => typeof(TRecord) == typeof(Dictionary<string, object?>)
             ? throw new ArgumentException(VectorDataStrings.GetCollectionWithDictionaryNotSupported)
             : new PostgresCollection<TKey, TRecord>(
@@ -135,13 +126,8 @@ public sealed class PostgresVectorStore : VectorStore
                 }
             );
 
-
     /// <inheritdoc />
-#if NET
     public override PostgresDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
-#else
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
-#endif
         => new(
             _dataSource,
             _dataSourceArc,
@@ -155,7 +141,6 @@ public sealed class PostgresVectorStore : VectorStore
         );
 #pragma warning restore IDE0090 // Use 'new(...)'
 
-
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
     {
@@ -163,14 +148,12 @@ public sealed class PostgresVectorStore : VectorStore
         return collection.CollectionExistsAsync(cancellationToken);
     }
 
-
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
         var collection = GetDynamicCollection(name, s_generalPurposeDefinition);
         return collection.EnsureCollectionDeletedAsync(cancellationToken);
     }
-
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)

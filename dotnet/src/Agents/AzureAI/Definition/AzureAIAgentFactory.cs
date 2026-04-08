@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
 using Azure.AI.Agents.Persistent;
 
 namespace Microsoft.SemanticKernel.Agents.AzureAI;

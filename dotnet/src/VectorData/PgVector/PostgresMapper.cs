@@ -61,7 +61,6 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                         continue;
                     }
 
-#if NET
                     case HalfVector { Memory: ReadOnlyMemory<Half> memory }:
                     {
                         vectorProperty.SetValueAsObject(record,
@@ -78,7 +77,6 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                             });
                         continue;
                     }
-#endif
 
                     case BitArray bitArray when vectorProperty.Type == typeof(BinaryEmbedding):
                         vectorProperty.SetValueAsObject(record, new BinaryEmbedding(bitArray));
@@ -105,7 +103,6 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
 
         return record;
     }
-
 
     private static void PopulateProperty(PropertyModel property, NpgsqlDataReader reader, TRecord record)
     {
@@ -160,14 +157,12 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                     case var t when t == typeof(DateTimeOffset):
                         property.SetValue(record, reader.GetFieldValue<DateTimeOffset>(ordinal));
                         return;
-#if NET
                     case var t when t == typeof(DateOnly):
                         property.SetValue(record, reader.GetFieldValue<DateOnly>(ordinal));
                         return;
                     case var t when t == typeof(TimeOnly):
                         property.SetValue(record, reader.GetFieldValue<TimeOnly>(ordinal));
                         return;
-#endif
                     case var t when t == typeof(byte[]):
                         property.SetValue(record, reader.GetFieldValue<byte[]>(ordinal));
                         return;
@@ -215,14 +210,12 @@ internal sealed class PostgresMapper<TRecord>(CollectionModel model)
                             case Type t when t == typeof(List<DateTimeOffset>):
                                 property.SetValueAsObject(record, reader.GetFieldValue<List<DateTimeOffset>>(ordinal));
                                 return;
-#if NET
                             case Type t when t == typeof(List<DateOnly>):
                                 property.SetValueAsObject(record, reader.GetFieldValue<List<DateOnly>>(ordinal));
                                 return;
                             case Type t when t == typeof(List<TimeOnly>):
                                 property.SetValueAsObject(record, reader.GetFieldValue<List<TimeOnly>>(ordinal));
                                 return;
-#endif
                             case Type t when t == typeof(List<byte[]>):
                                 property.SetValueAsObject(record, reader.GetFieldValue<List<byte[]>>(ordinal));
                                 return;

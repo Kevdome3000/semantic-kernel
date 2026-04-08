@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -22,12 +20,12 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("filename")]
     public string Filename
     {
-        get => this._filename;
+        get => _filename;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._filename = value;
+            ThrowIfFrozen();
+            _filename = value;
         }
     }
 
@@ -38,12 +36,12 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Language
     {
-        get => this._language;
+        get => _language;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._language = value;
+            ThrowIfFrozen();
+            _language = value;
         }
     }
 
@@ -54,12 +52,12 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Prompt
     {
-        get => this._prompt;
+        get => _prompt;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._prompt = value;
+            ThrowIfFrozen();
+            _prompt = value;
         }
     }
 
@@ -70,12 +68,12 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ResponseFormat
     {
-        get => this._responseFormat;
+        get => _responseFormat;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._responseFormat = value;
+            ThrowIfFrozen();
+            _responseFormat = value;
         }
     }
 
@@ -89,12 +87,12 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public float? Temperature
     {
-        get => this._temperature;
+        get => _temperature;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._temperature = value;
+            ThrowIfFrozen();
+            _temperature = value;
         }
     }
 
@@ -109,14 +107,15 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IList<string>? TimestampGranularities
     {
-        get => this._timestampGranularities;
+        get => _timestampGranularities;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._timestampGranularities = value;
+            ThrowIfFrozen();
+            _timestampGranularities = value;
         }
     }
+
 
     /// <summary>
     /// Creates an instance of <see cref="OpenAIAudioToTextExecutionSettings"/> class with default filename - "file.mp3".
@@ -126,28 +125,33 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     {
     }
 
+
     /// <summary>
     /// Creates an instance of <see cref="OpenAIAudioToTextExecutionSettings"/> class.
     /// </summary>
     /// <param name="filename">Filename or identifier associated with audio data. Should be in format {filename}.{extension}</param>
     public OpenAIAudioToTextExecutionSettings(string filename)
     {
-        this._filename = filename;
+        _filename = filename;
     }
+
 
     /// <inheritdoc/>
     public override PromptExecutionSettings Clone()
     {
-        return new OpenAIAudioToTextExecutionSettings(this.Filename)
+        return new OpenAIAudioToTextExecutionSettings(Filename)
         {
-            ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
-            Temperature = this.Temperature,
-            ResponseFormat = this.ResponseFormat,
-            Language = this.Language,
-            Prompt = this.Prompt
+            ModelId = ModelId,
+            ExtensionData = ExtensionData is not null
+                ? new Dictionary<string, object>(ExtensionData)
+                : null,
+            Temperature = Temperature,
+            ResponseFormat = ResponseFormat,
+            Language = Language,
+            Prompt = Prompt
         };
     }
+
 
     /// <summary>
     /// Converts <see cref="PromptExecutionSettings"/> to derived <see cref="OpenAIAudioToTextExecutionSettings"/> type.
@@ -173,6 +177,7 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
         return openAIExecutionSettings!;
     }
 
+
     #region private ================================================================================
 
     private const string DefaultFilename = "file.mp3";
@@ -185,4 +190,6 @@ public sealed class OpenAIAudioToTextExecutionSettings : PromptExecutionSettings
     private IList<string>? _timestampGranularities;
 
     #endregion
+
+
 }

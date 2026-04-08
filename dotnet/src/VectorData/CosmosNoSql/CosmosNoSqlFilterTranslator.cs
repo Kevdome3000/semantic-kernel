@@ -13,12 +13,10 @@ namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
 
 #pragma warning disable MEVD9001 // Experimental: filter translation base types
 
-
 internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
 {
     private readonly Dictionary<string, object?> _parameters = [];
     private readonly StringBuilder _sql = new();
-
 
     internal (string WhereClause, Dictionary<string, object?> Parameters) Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
@@ -28,7 +26,6 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
 
         return (_sql.ToString(), _parameters);
     }
-
 
     private void Translate(Expression? node)
     {
@@ -67,7 +64,6 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     private void TranslateBinary(BinaryExpression binary)
     {
         _sql.Append('(');
@@ -93,12 +89,10 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         _sql.Append(')');
     }
 
-
     private void TranslateConstant(ConstantExpression constant)
     {
         this.TranslateConstant(constant.Value);
     }
-
 
     private void TranslateConstant(object? value)
     {
@@ -152,14 +146,12 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
                     .Append('"');
                 return;
 
-#if NET
             case DateOnly v:
                 this._sql
                     .Append('"')
                     .Append(v.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
                     .Append('"');
                 return;
-#endif
 
             case IEnumerable v when v.GetType() is var type && (type.IsArray || type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)):
                 _sql.Append('[');
@@ -188,7 +180,6 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     private void TranslateMember(MemberExpression memberExpression)
     {
         if (this.TryBindProperty(memberExpression, out var property))
@@ -199,7 +190,6 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
 
         throw new NotSupportedException($"Member access for '{memberExpression.Member.Name}' is unsupported - only member access over the filter parameter are supported");
     }
-
 
     private void TranslateNewArray(NewArrayExpression newArray)
     {
@@ -217,7 +207,6 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
 
         _sql.Append(']');
     }
-
 
     private void TranslateMethodCall(MethodCallExpression methodCall)
     {
@@ -246,7 +235,6 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     private void TranslateContains(Expression source, Expression item)
     {
         _sql.Append("ARRAY_CONTAINS(");
@@ -255,7 +243,6 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         Translate(item);
         _sql.Append(')');
     }
-
 
     /// <summary>
     /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).
@@ -316,7 +303,6 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     private void GenerateAnyContains(PropertyModel property, object? values)
     {
         _sql.Append("EXISTS(SELECT VALUE t FROM t IN ");
@@ -326,7 +312,6 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         _sql.Append(", t))");
     }
 
-
     private void GenerateAnyContains(PropertyModel property, QueryParameterExpression queryParameter)
     {
         _sql.Append("EXISTS(SELECT VALUE t FROM t IN ");
@@ -335,7 +320,6 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         TranslateQueryParameter(queryParameter.Name, queryParameter.Value);
         _sql.Append(", t))");
     }
-
 
     private void TranslateUnary(UnaryExpression unary)
     {
@@ -375,14 +359,12 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     protected void TranslateQueryParameter(string name, object? value)
     {
         name = '@' + name;
         _parameters.Add(name, value);
         _sql.Append(name);
     }
-
 
     protected virtual void GeneratePropertyAccess(PropertyModel property)
     {

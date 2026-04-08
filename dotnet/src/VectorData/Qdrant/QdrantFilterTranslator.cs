@@ -18,7 +18,6 @@ namespace Microsoft.SemanticKernel.Connectors.Qdrant;
 
 #pragma warning disable MEVD9001 // Experimental: filter translation base types
 
-
 // https://qdrant.tech/documentation/concepts/filtering
 internal class QdrantFilterTranslator : FilterTranslatorBase
 {
@@ -28,7 +27,6 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
 
         return Translate(preprocessedExpression);
     }
-
 
     private Filter Translate(Expression? node)
     {
@@ -63,7 +61,6 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
         };
     }
 
-
     private Filter TranslateEqual(Expression left, Expression right, bool negated = false)
     {
         return this.TryBindProperty(left, out var property) && right is ConstantExpression { Value: var rightConstant }
@@ -72,7 +69,6 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
                 ? GenerateEqual(property.StorageName, leftConstant, negated)
                 : throw new NotSupportedException("Invalid equality/comparison");
     }
-
 
     private Filter GenerateEqual(string propertyStorageName, object? value, bool negated = false)
     {
@@ -91,9 +87,7 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
                         bool v => new Match { Boolean = v },
                         DateTime v => new Match { Keyword = v.ToString("o") },
                         DateTimeOffset v => new Match { Keyword = v.ToString("o") },
-#if NET
                         DateOnly v => new Match { Keyword = v.ToString("O") },
-#endif
 
                         _ => throw new NotSupportedException($"Unsupported filter value type '{value.GetType().Name}'.")
                     }
@@ -113,7 +107,6 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
 
         return result;
     }
-
 
     private Filter TranslateComparison(BinaryExpression comparison)
     {
@@ -176,7 +169,6 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
                             }
                         },
 
-#if NET
                         DateOnly v => new FieldCondition
                         {
                             Key = property.StorageName,
@@ -188,7 +180,6 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
                                 Lte = comparison.NodeType == ExpressionType.LessThanOrEqual ? Timestamp.FromDateTimeOffset(new DateTimeOffset(v.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)) : null
                             }
                         },
-#endif
 
                         _ => throw new NotSupportedException($"Can't perform comparison on type '{constantValue?.GetType().Name}'")
                     }
@@ -218,7 +209,6 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
             return false;
         }
     }
-
 
     #region Logical operators
 
@@ -260,7 +250,6 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
         return leftFilter;
     }
 
-
     private Filter TranslateOrElse(Expression left, Expression right)
     {
         var leftFilter = Translate(left);
@@ -287,7 +276,6 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
             };
         }
     }
-
 
     private Filter TranslateNot(Expression expression)
     {
@@ -323,7 +311,6 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
 
     #endregion Logical operators
 
-
     private Filter TranslateMethodCall(MethodCallExpression methodCall)
     {
         return methodCall switch
@@ -340,7 +327,6 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
             _ => throw new NotSupportedException($"Unsupported method call: {methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}")
         };
     }
-
 
     private Filter TranslateContains(Expression source, Expression item)
     {
@@ -412,7 +398,6 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
             }
         }
     }
-
 
     /// <summary>
     /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).

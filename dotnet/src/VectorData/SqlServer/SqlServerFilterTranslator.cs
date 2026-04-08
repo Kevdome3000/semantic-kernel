@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#if NET
 using Microsoft.Extensions.VectorData.ProviderServices;
 using System.Collections.Generic;
 using System.Collections;
@@ -8,7 +7,6 @@ using System.Linq.Expressions;
 using System.Text;
 using System;
 using System.Globalization;
-#endif
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
 
@@ -17,7 +15,6 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
     private readonly List<object> _parameterValues = [];
     private readonly string? _tableAlias;
     private int _parameterIndex;
-
 
     internal SqlServerFilterTranslator(
         CollectionModel model,
@@ -31,9 +28,7 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         _tableAlias = tableAlias;
     }
 
-
     internal List<object> ParameterValues => _parameterValues;
-
 
     protected override void TranslateConstant(object? value, bool isSearchCondition)
     {
@@ -55,7 +50,6 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
             case DateTimeOffset dateTimeOffset:
                 _sql.Append('\'').Append(dateTimeOffset.ToString("o")).Append('\'');
                 return;
-#if NET
             case DateOnly dateOnly:
                 this._sql.Append('\'').Append(dateOnly.ToString("o")).Append('\'');
                 return;
@@ -64,14 +58,12 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
                     ? string.Format(CultureInfo.InvariantCulture, @"'{0:HH\:mm\:ss}'", value)
                     : string.Format(CultureInfo.InvariantCulture, @"'{0:HH\:mm\:ss\.FFFFFFF}'", value));
                 return;
-#endif
 
             default:
                 base.TranslateConstant(value, isSearchCondition);
                 break;
         }
     }
-
 
     protected override void GenerateColumn(PropertyModel property, bool isSearchCondition = false)
     {
@@ -90,7 +82,6 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         }
     }
 
-
     protected override void TranslateContainsOverArrayColumn(Expression source, Expression item)
     {
         if (item.Type != typeof(string))
@@ -104,7 +95,6 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
         Translate(item);
         _sql.Append(") = 1");
     }
-
 
     protected override void TranslateContainsOverParameterizedArray(Expression source, Expression item, object? value)
     {
@@ -134,7 +124,6 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 
         _sql.Append(')');
     }
-
 
     protected override void TranslateAnyContainsOverArrayColumn(PropertyModel property, object? values)
     {
@@ -167,7 +156,6 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
 
         _sql.Append("))");
     }
-
 
     protected override void TranslateQueryParameter(object? value)
     {

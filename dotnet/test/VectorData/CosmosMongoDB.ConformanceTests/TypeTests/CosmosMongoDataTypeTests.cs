@@ -42,9 +42,7 @@ public class CosmosMongoDataTypeTests(CosmosMongoDataTypeTests.Fixture fixture)
             typeof(byte),
             typeof(short),
             typeof(Guid),
-#if NET
             typeof(TimeOnly)
-#endif
         ];
     }
 }

@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Microsoft.SemanticKernel.Text;
 
 /// <summary>
@@ -132,9 +126,7 @@ internal sealed class SseReader(Stream stream) : IDisposable
     private async Task<SseLine?> ReadLineAsync(CancellationToken cancellationToken)
     {
         string? lineText = await _reader.ReadLineAsync(
-#if NET
                 cancellationToken
-#endif
             )
             .ConfigureAwait(false);
 

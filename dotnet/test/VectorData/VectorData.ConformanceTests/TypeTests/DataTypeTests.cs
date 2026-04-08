@@ -101,31 +101,23 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
     [ConditionalFact]
     public virtual Task DateOnly()
     {
-#if NET
         return fixture.UnsupportedDefaultTypes.Contains(typeof(DateOnly))
             ? Task.CompletedTask
             : this.Test<DateOnly>(
                 "DateOnly",
                 new DateOnly(2020, 1, 1),
                 new DateOnly(2021, 2, 3));
-#else
-        return Task.CompletedTask;
-#endif
     }
 
     [ConditionalFact]
     public virtual Task TimeOnly()
     {
-#if NET
         return fixture.UnsupportedDefaultTypes.Contains(typeof(TimeOnly))
             ? Task.CompletedTask
             : this.Test<TimeOnly>(
                 "TimeOnly",
                 new TimeOnly(12, 30, 45),
                 new TimeOnly(13, 40, 55));
-#else
-        return Task.CompletedTask;
-#endif
     }
 
     [ConditionalFact]
@@ -310,11 +302,7 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
             return Nullable.GetUnderlyingType(property.PropertyType) is not null;
         }
 
-#if NET
         return new NullabilityInfoContext().Create(property).ReadState != NullabilityState.NotNull;
-#else
-        return true; // Without NRT support, assume reference types are nullable
-#endif
     }
 
     protected virtual object? GenerateEmptyProperty(VectorStoreProperty property)
@@ -536,7 +524,6 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
                 properties.Add(new VectorStoreDataProperty(nameof(DefaultRecord.DateTimeOffset), typeof(DateTimeOffset)) { IsIndexed = true });
             }
 
-#if NET
             if (!this.UnsupportedDefaultTypes.Contains(typeof(DateOnly)))
             {
                 properties.Add(new VectorStoreDataProperty(nameof(DefaultRecord.DateOnly), typeof(DateOnly)) { IsIndexed = true });
@@ -546,7 +533,6 @@ public abstract class DataTypeTests<TKey, TRecord>(DataTypeTests<TKey, TRecord>.
             {
                 properties.Add(new VectorStoreDataProperty(nameof(DefaultRecord.TimeOnly), typeof(TimeOnly)) { IsIndexed = true });
             }
-#endif
             if (!this.UnsupportedDefaultTypes.Contains(typeof(string[])))
             {
                 properties.Add(new VectorStoreDataProperty(nameof(DefaultRecord.StringArray), typeof(string[])) { IsIndexed = true });
@@ -590,10 +576,8 @@ public abstract class DataTypeTests<TKey>()
         public DateTime DateTime { get; set; }
         public DateTimeOffset DateTimeOffset { get; set; }
 
-#if NET
         public DateOnly DateOnly { get; set; }
         public TimeOnly TimeOnly { get; set; }
-#endif
 
         public string[] StringArray { get; set; } = null!;
 

@@ -1,5 +1,4 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
 using Azure.AI.Agents.Persistent;
 using Microsoft.SemanticKernel.Agents.AzureAI.Internal;
 

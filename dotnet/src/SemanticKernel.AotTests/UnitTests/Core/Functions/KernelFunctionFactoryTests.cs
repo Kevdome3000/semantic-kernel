@@ -48,7 +48,7 @@ internal sealed class KernelFunctionFactoryTests
         string prompt = "Is it suitable for hiking today? - {{weather_utils.GetCurrentWeather location=$location}}";
 
         // Act
-        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(prompt, s_jsonSerializerOptions);
+        KernelFunction function = KernelFunctionFactory.CreateFromPrompt(prompt, s_jsonSerializerOptions, (IEnumerable<PromptExecutionSettings>?)null);
 
         // Assert
         await GetWeatherFunctionAsserts.AssertPromptFunctionSchemaAndInvocationResult(kernelBuilder.Build(), function);

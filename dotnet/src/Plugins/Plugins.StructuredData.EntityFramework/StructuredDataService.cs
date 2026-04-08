@@ -1,16 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-#if NET
-using Community.OData.Linq;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
+using System.Data.Entity.Infrastructure;
 using OData2Linq;
-#else
-#endif
 
 #pragma warning disable CA1308 // Normalize strings to uppercase
 

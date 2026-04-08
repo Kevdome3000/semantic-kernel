@@ -9,7 +9,6 @@ internal class QdrantModelBuilder(bool hasNamedVectors) : CollectionModelBuilder
 {
     internal const string SupportedVectorTypes = "ReadOnlyMemory<float>, Embedding<float>, float[]";
 
-
     private static CollectionModelBuildingOptions GetModelBuildOptions(bool hasNamedVectors)
     {
         return new()
@@ -18,7 +17,6 @@ internal class QdrantModelBuilder(bool hasNamedVectors) : CollectionModelBuilder
             SupportsMultipleVectors = hasNamedVectors
         };
     }
-
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
@@ -33,13 +31,10 @@ internal class QdrantModelBuilder(bool hasNamedVectors) : CollectionModelBuilder
         }
     }
 
-
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         supportedTypes = "string, int, long, double, float, bool, DateTime, DateTimeOffset,"
-#if NET
             + " DateOnly,"
-#endif
             + " or arrays/lists of these types";
 
         if (Nullable.GetUnderlyingType(type) is Type underlyingType)
@@ -60,18 +55,14 @@ internal class QdrantModelBuilder(bool hasNamedVectors) : CollectionModelBuilder
                 || type == typeof(bool)
                 || type == typeof(DateTime)
                 ||
-#if NET
                 type == typeof(DateOnly) ||
-#endif
                 type == typeof(DateTimeOffset);
     }
-
 
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         return IsVectorPropertyTypeValidCore(type, out supportedTypes);
     }
-
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {

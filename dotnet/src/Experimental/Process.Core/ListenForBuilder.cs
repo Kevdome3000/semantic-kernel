@@ -100,13 +100,8 @@ public sealed class ListenForBuilder
     {
         byte[] buffer = Encoding.UTF8.GetBytes(string.Join(":", keys));
 
-#if NET
         Span<byte> hash = stackalloc byte[32];
         SHA256.HashData(buffer, hash);
-#else
-        using SHA256 shaProvider = SHA256.Create();
-        byte[] hash = shaProvider.ComputeHash(buffer);
-#endif
 
         return Convert.ToBase64String(hash);
     }

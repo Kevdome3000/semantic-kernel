@@ -4,25 +4,18 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Interfaces;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Readers;
-using Microsoft.OpenApi.Writers;
+using Microsoft.OpenApi.Reader;
+using Microsoft.OpenApi.YamlReader;
 using Microsoft.SemanticKernel.Text;
-using SharpYaml.Serialization;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
@@ -40,18 +33,17 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// <returns>Specification of the REST API.</returns>
     public async Task<RestApiSpecification> ParseAsync(Stream stream, OpenApiDocumentParserOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var jsonObject = await DowngradeDocumentVersionToSupportedOneAsync(stream, cancellationToken).ConfigureAwait(false);
+        var settings = new OpenApiReaderSettings();
+        settings.AddYamlReader();
 
-        using var memoryStream = new MemoryStream(JsonSerializer.SerializeToUtf8Bytes(jsonObject, JsonOptionsCache.WriteIndented));
-
-        var result = await _openApiReader.ReadAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+        var result = await OpenApiDocument.LoadAsync(stream, settings: settings, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         AssertReadingSuccessful(result, options?.IgnoreNonCompliantErrors ?? false);
 
         return new RestApiSpecification(
-            ExtractRestApiInfo(result.OpenApiDocument),
-            CreateRestApiOperationSecurityRequirements(result.OpenApiDocument.SecurityRequirements),
-            ExtractRestApiOperations(result.OpenApiDocument, options, _logger));
+            ExtractRestApiInfo(result.Document),
+            CreateRestApiOperationSecurityRequirements(result.Document.Security),
+            ExtractRestApiOperations(result.Document, options, _logger));
     }
 
 
@@ -63,16 +55,6 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     private const int PayloadPropertiesHierarchyMaxDepth = 10;
 
     /// <summary>
-    /// Name of property that contains OpenAPI document version.
-    /// </summary>
-    private const string OpenApiVersionPropertyName = "openapi";
-
-    /// <summary>
-    /// Latest supported version of OpenAPI document.
-    /// </summary>
-    private static readonly Version s_latestSupportedVersion = new(3, 0, 1);
-
-    /// <summary>
     /// List of supported Media Types.
     /// </summary>
     private static readonly List<string> s_supportedMediaTypes =
@@ -81,69 +63,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
         "text/plain"
     ];
 
-    private readonly OpenApiStreamReader _openApiReader = new();
     private readonly ILogger _logger = loggerFactory?.CreateLogger(typeof(OpenApiDocumentParser)) ?? NullLogger.Instance;
-
-
-    /// <summary>
-    /// Downgrades the version of an OpenAPI document to the latest supported one - 3.0.1.
-    /// This class relies on Microsoft.OpenAPI.NET library to work with OpenAPI documents.
-    /// The library, at the moment, does not support 3.1 spec, and the latest supported version is 3.0.1.
-    /// There's an open issue tracking the support progress - https://github.com/microsoft/OpenAPI.NET/issues/795
-    /// This method should be removed/revised as soon the support is added.
-    /// </summary>
-    /// <param name="stream">The original OpenAPI document stream.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>OpenAPI document with downgraded document version.</returns>
-    private async Task<JsonObject> DowngradeDocumentVersionToSupportedOneAsync(Stream stream, CancellationToken cancellationToken)
-    {
-        var jsonObject = await ConvertContentToJsonAsync(stream, cancellationToken).ConfigureAwait(false) ?? throw new KernelException("Parsing of OpenAPI document failed.");
-
-        if (!jsonObject.TryGetPropertyValue(OpenApiVersionPropertyName, out var propertyNode))
-        {
-            // The document is either malformed or has 2.x version that specifies document version in the 'swagger' property rather than in the 'openapi' one.
-            return jsonObject;
-        }
-
-        if (propertyNode is not JsonValue value)
-        {
-            // The 'openapi' property has unexpected type.
-            return jsonObject;
-        }
-
-        if (!Version.TryParse(value.ToString(), out var version))
-        {
-            // The 'openapi' property is malformed.
-            return jsonObject;
-        }
-
-        if (version > s_latestSupportedVersion)
-        {
-            jsonObject[OpenApiVersionPropertyName] = s_latestSupportedVersion.ToString();
-        }
-
-        return jsonObject;
-    }
-
-
-    /// <summary>
-    /// Converts YAML content to JSON content.
-    /// The method uses SharpYaml library that comes as a not-direct dependency of Microsoft.OpenAPI.NET library.
-    /// Should be replaced later when there's more convenient way to convert YAML content to JSON one.
-    /// </summary>
-    /// <param name="stream">The YAML/JSON content stream.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
-    /// <returns>JSON content stream.</returns>
-    private static async Task<JsonObject?> ConvertContentToJsonAsync(Stream stream, CancellationToken cancellationToken = default)
-    {
-        var serializer = new Serializer();
-
-        var obj = serializer.Deserialize(stream);
-
-        using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(obj)));
-
-        return await JsonSerializer.DeserializeAsync<JsonObject>(memoryStream, cancellationToken: cancellationToken).ConfigureAwait(false);
-    }
 
 
     /// <summary>
@@ -198,7 +118,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     internal static List<RestApiOperation> CreateRestApiOperations(
         OpenApiDocument document,
         string path,
-        OpenApiPathItem pathItem,
+        IOpenApiPathItem pathItem,
         OpenApiDocumentParserOptions? options,
         ILogger logger)
     {
@@ -226,6 +146,12 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 
                 try
                 {
+                    var operationParameters = operationItem.Parameters ?? (IList<IOpenApiParameter>)[];
+                    var pathParameters = pathItem.Parameters ?? (IList<IOpenApiParameter>)[];
+                    var allParameters = operationParameters
+                        .Union(pathParameters, s_parameterNameAndLocationComparer)
+                        .Cast<OpenApiParameter>();
+
                     var operation = new RestApiOperation(
                         operationItem.OperationId,
                         globalServers,
@@ -236,13 +162,15 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
                         description: string.IsNullOrEmpty(operationItem.Description)
                             ? operationItem.Summary
                             : operationItem.Description,
-                        parameters: CreateRestApiOperationParameters(operationItem.OperationId, operationItem.Parameters.Union(pathItem.Parameters, s_parameterNameAndLocationComparer)),
+                        parameters: CreateRestApiOperationParameters(operationItem.OperationId, allParameters),
                         payload: CreateRestApiOperationPayload(operationItem.OperationId, operationItem.RequestBody),
                         responses: CreateRestApiOperationExpectedResponses(operationItem.Responses).ToDictionary(static item => item.Item1, static item => item.Item2),
                         securityRequirements: CreateRestApiOperationSecurityRequirements(operationItem.Security)
                     )
                     {
-                        Extensions = CreateRestApiOperationExtensions(operationItem.Extensions, logger),
+                        Extensions = operationItem.Extensions is not null
+                            ? CreateRestApiOperationExtensions(operationItem.Extensions, logger)
+                            : new Dictionary<string, object?>(),
                         Summary = operationItem.Summary
                     };
 
@@ -268,11 +196,11 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 
 
     /// <summary>
-    /// Compares two <see cref="OpenApiParameter"/> objects by their name and location.
+    /// Compares two <see cref="IOpenApiParameter"/> objects by their name and location.
     /// </summary>
-    private sealed class ParameterNameAndLocationComparer : IEqualityComparer<OpenApiParameter>
+    private sealed class ParameterNameAndLocationComparer : IEqualityComparer<IOpenApiParameter>
     {
-        public bool Equals(OpenApiParameter? x, OpenApiParameter? y)
+        public bool Equals(IOpenApiParameter? x, IOpenApiParameter? y)
         {
             if (x is null || y is null)
             {
@@ -282,7 +210,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
         }
 
 
-        public int GetHashCode([DisallowNull] OpenApiParameter obj)
+        public int GetHashCode([DisallowNull] IOpenApiParameter obj)
         {
             return HashCode.Combine(obj.Name, obj.In);
         }
@@ -304,7 +232,8 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 
         foreach (var server in servers)
         {
-            var variables = server.Variables.ToDictionary(item => item.Key, item => new RestApiServerVariable(item.Value.Default, item.Value.Description, item.Value.Enum));
+            var variables = server.Variables?.ToDictionary(item => item.Key, item => new RestApiServerVariable(item.Value.Default, item.Value.Description, item.Value.Enum))
+                ?? new Dictionary<string, RestApiServerVariable>();
             result.Add(new RestApiServer(server.Url, variables, server.Description));
         }
 
@@ -313,22 +242,38 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 
 
     /// <summary>
-    /// Build a <see cref="RestApiSecurityScheme"/> objects from the given <see cref="OpenApiSecurityScheme"/> object.
+    /// Build a <see cref="RestApiSecurityScheme"/> objects from the given <see cref="IOpenApiSecurityScheme"/> object.
     /// </summary>
     /// <param name="securityScheme">The REST API security scheme.</param>
-    private static RestApiSecurityScheme CreateRestApiSecurityScheme(OpenApiSecurityScheme securityScheme)
+    private static RestApiSecurityScheme CreateRestApiSecurityScheme(IOpenApiSecurityScheme securityScheme)
     {
         return new RestApiSecurityScheme
         {
             SecuritySchemeType = securityScheme.Type.ToString(),
             Description = securityScheme.Description,
             Name = securityScheme.Name,
-            In = (RestApiParameterLocation)Enum.Parse(typeof(RestApiParameterLocation), securityScheme.In.ToString()!),
+            In = TryParseParameterLocation(securityScheme.In),
             Scheme = securityScheme.Scheme,
             BearerFormat = securityScheme.BearerFormat,
             Flows = CreateRestApiOAuthFlows(securityScheme.Flows),
             OpenIdConnectUrl = securityScheme.OpenIdConnectUrl
         };
+    }
+
+
+    /// <summary>
+    /// Safely converts a <see cref="ParameterLocation"/> value to <see cref="RestApiParameterLocation"/>.
+    /// Returns <see cref="RestApiParameterLocation.Query"/> as a default if the value cannot be parsed.
+    /// </summary>
+    private static RestApiParameterLocation TryParseParameterLocation(ParameterLocation? parameterLocation)
+    {
+        var value = parameterLocation?.ToString();
+        if (!string.IsNullOrEmpty(value) && Enum.TryParse(typeof(RestApiParameterLocation), value, true, out var location))
+        {
+            return (RestApiParameterLocation)location!;
+        }
+
+        return default;
     }
 
 
@@ -382,12 +327,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
             {
                 foreach (var keyValuePair in item)
                 {
-                    if (keyValuePair.Key is not OpenApiSecurityScheme openApiSecurityScheme)
-                    {
-                        throw new KernelException("The security scheme is not supported.");
-                    }
-
-                    operationRequirements.Add(new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>> { { CreateRestApiSecurityScheme(openApiSecurityScheme), keyValuePair.Value } }));
+                    operationRequirements.Add(new RestApiSecurityRequirement(new Dictionary<RestApiSecurityScheme, IList<string>> { { CreateRestApiSecurityScheme(keyValuePair.Key), keyValuePair.Value } }));
                 }
             }
         }
@@ -409,27 +349,22 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     {
         var result = new Dictionary<string, object?>();
 
-        // Map each extension property.
         foreach (var extension in extensions)
         {
-            if (extension.Value is IOpenApiPrimitive primitive)
+            if (extension.Value is JsonNodeExtension jsonNodeExt)
             {
-                // Set primitive values directly into the dictionary.
-                object? extensionValueObj = GetParameterValue(primitive, "extension property", extension.Key);
-                result.Add(extension.Key, extensionValueObj);
-            }
-            else if (extension.Value is IOpenApiAny any)
-            {
-                // Serialize complex objects and set as json strings.
-                // The only remaining type not referenced here is null, but the default value of extensionValueObj
-                // is null, so if we just continue that will handle the null case.
-                if (any.AnyType is AnyType.Array or AnyType.Object)
+                var node = jsonNodeExt.Node;
+                if (node is JsonValue jsonValue)
                 {
-                    var schemaBuilder = new StringBuilder();
-                    var jsonWriter = new OpenApiJsonWriter(new StringWriter(schemaBuilder, CultureInfo.InvariantCulture), new OpenApiJsonWriterSettings { Terse = true });
-                    extension.Value.Write(jsonWriter, OpenApiSpecVersion.OpenApi3_0);
-                    object? extensionValueObj = schemaBuilder.ToString();
-                    result.Add(extension.Key, extensionValueObj);
+                    result.Add(extension.Key, GetJsonValueAsObject(jsonValue));
+                }
+                else if (node is JsonObject or JsonArray)
+                {
+                    result.Add(extension.Key, node.ToJsonString());
+                }
+                else
+                {
+                    result.Add(extension.Key, null);
                 }
             }
             else
@@ -439,6 +374,35 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
         }
 
         return result;
+    }
+
+
+    /// <summary>
+    /// Extracts a CLR object from a <see cref="JsonValue"/>.
+    /// </summary>
+    private static object? GetJsonValueAsObject(JsonValue jsonValue)
+    {
+        if (jsonValue.TryGetValue<int>(out var intVal))
+        {
+            return intVal;
+        }
+        if (jsonValue.TryGetValue<long>(out var longVal))
+        {
+            return longVal;
+        }
+        if (jsonValue.TryGetValue<double>(out var doubleVal))
+        {
+            return doubleVal;
+        }
+        if (jsonValue.TryGetValue<bool>(out var boolVal))
+        {
+            return boolVal;
+        }
+        if (jsonValue.TryGetValue<string>(out var strVal))
+        {
+            return strVal;
+        }
+        return jsonValue.ToJsonString();
     }
 
 
@@ -466,12 +430,12 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 
             var restParameter = new RestApiParameter(
                 parameter.Name,
-                parameter.Schema.Type,
+                parameter.Schema.GetSchemaType(),
                 parameter.Required,
                 parameter.Explode,
                 (RestApiParameterLocation)Enum.Parse(typeof(RestApiParameterLocation), parameter.In.ToString()!),
                 (RestApiParameterStyle)Enum.Parse(typeof(RestApiParameterStyle), parameter.Style.ToString()!),
-                parameter.Schema.Items?.Type,
+                parameter.Schema.Items?.GetSchemaType(),
                 GetParameterValue(parameter.Schema.Default, "parameter", parameter.Name),
                 parameter.Description,
                 parameter.Schema.Format,
@@ -491,7 +455,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// <param name="operationId">The operation id.</param>
     /// <param name="requestBody">The OpenAPI request body.</param>
     /// <returns>The REST API payload.</returns>
-    private static RestApiPayload? CreateRestApiOperationPayload(string operationId, OpenApiRequestBody requestBody)
+    private static RestApiPayload? CreateRestApiOperationPayload(string operationId, IOpenApiRequestBody? requestBody)
     {
         if (requestBody?.Content is null)
         {
@@ -517,9 +481,9 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// Handles the case when the media type contains additional parameters e.g. application/json; x-api-version=2.0.
     /// </remarks>
     /// <param name="content">The OpenAPI request body content.</param>
-    /// <returns>The first support ed media type.</returns>
+    /// <returns>The first supported media type.</returns>
     /// <exception cref="KernelException"></exception>
-    private static string? GetMediaType(IDictionary<string, OpenApiMediaType> content)
+    private static string? GetMediaType(IDictionary<string, IOpenApiMediaType> content)
     {
         foreach (var mediaType in s_supportedMediaTypes)
         {
@@ -545,6 +509,11 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     {
         foreach (var response in responses)
         {
+            if (response.Value.Content is null || response.Value.Content.Count == 0)
+            {
+                continue;
+            }
+
             var mediaType = GetMediaType(response.Value.Content);
 
             if (mediaType is not null)
@@ -565,7 +534,7 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// <param name="schema">An OpenAPI document schema representing request body properties.</param>
     /// <param name="level">Current level in OpenAPI schema.</param>
     /// <returns>The REST API payload properties.</returns>
-    private static List<RestApiPayloadProperty> GetPayloadProperties(string operationId, OpenApiSchema? schema, int level = 0)
+    private static List<RestApiPayloadProperty> GetPayloadProperties(string operationId, IOpenApiSchema? schema, int level = 0)
     {
         if (schema is null)
         {
@@ -579,6 +548,13 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 
         var result = new List<RestApiPayloadProperty>();
 
+        if (schema.Properties is null)
+        {
+            return result;
+        }
+
+        var requiredProperties = schema.Required ?? new HashSet<string>();
+
         foreach (var propertyPair in schema.Properties)
         {
             var propertyName = propertyPair.Key;
@@ -587,8 +563,8 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
 
             var property = new RestApiPayloadProperty(
                 propertyName,
-                propertySchema.Type,
-                schema.Required.Contains(propertyName),
+                propertySchema.GetSchemaType(),
+                requiredProperties.Contains(propertyName),
                 GetPayloadProperties(operationId, propertySchema, level + 1),
                 propertySchema.Description,
                 propertySchema.Format,
@@ -605,32 +581,23 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// <summary>
     /// Returns parameter value.
     /// </summary>
-    /// <param name="valueMetadata">The value metadata.</param>
+    /// <param name="valueMetadata">The value metadata as a JsonNode.</param>
     /// <param name="entityDescription">A description of the type of entity we are trying to get a value for.</param>
     /// <param name="entityName">The name of the entity that we are trying to get the value for.</param>
     /// <returns>The parameter value.</returns>
-    private static object? GetParameterValue(IOpenApiAny valueMetadata, string entityDescription, string entityName)
+    private static object? GetParameterValue(JsonNode? valueMetadata, string entityDescription, string entityName)
     {
-        if (valueMetadata is not IOpenApiPrimitive value)
+        if (valueMetadata is null)
         {
             return null;
         }
 
-        return value.PrimitiveType switch
+        if (valueMetadata is JsonValue jsonValue)
         {
-            PrimitiveType.Integer => ((OpenApiInteger)value).Value,
-            PrimitiveType.Long => ((OpenApiLong)value).Value,
-            PrimitiveType.Float => ((OpenApiFloat)value).Value,
-            PrimitiveType.Double => ((OpenApiDouble)value).Value,
-            PrimitiveType.String => ((OpenApiString)value).Value,
-            PrimitiveType.Byte => ((OpenApiByte)value).Value,
-            PrimitiveType.Binary => ((OpenApiBinary)value).Value,
-            PrimitiveType.Boolean => ((OpenApiBoolean)value).Value,
-            PrimitiveType.Date => ((OpenApiDate)value).Value,
-            PrimitiveType.DateTime => ((OpenApiDateTime)value).Value,
-            PrimitiveType.Password => ((OpenApiPassword)value).Value,
-            _ => throw new KernelException($"The value type '{value.PrimitiveType}' of {entityDescription} '{entityName}' is not supported.")
-        };
+            return GetJsonValueAsObject(jsonValue);
+        }
+
+        return valueMetadata.ToJsonString();
     }
 
 
@@ -644,10 +611,10 @@ public sealed class OpenApiDocumentParser(ILoggerFactory? loggerFactory = null)
     /// </param>
     private void AssertReadingSuccessful(ReadResult readResult, bool ignoreNonCompliantErrors)
     {
-        if (readResult.OpenApiDiagnostic.Errors.Any())
+        if (readResult.Diagnostic.Errors.Any())
         {
-            var title = readResult.OpenApiDocument.Info?.Title;
-            var errors = string.Join(";", readResult.OpenApiDiagnostic.Errors);
+            var title = readResult.Document.Info?.Title;
+            var errors = string.Join(";", readResult.Diagnostic.Errors);
 
             if (!ignoreNonCompliantErrors)
             {

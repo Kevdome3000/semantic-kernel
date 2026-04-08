@@ -14,13 +14,8 @@ namespace Microsoft.SemanticKernel.Agents.Runtime;
 /// </remarks>
 public readonly partial struct AgentType : IEquatable<AgentType>
 {
-#if NET
     [GeneratedRegex("^[a-zA-Z_][a-zA-Z0-9_]*$")]
     private static partial Regex TypeRegex();
-#else
-    private static Regex TypeRegex() => new("^[a-zA-Z_][a-zA-Z0-9_]*$", RegexOptions.Compiled);
-#endif
-
 
     internal static void Validate(string type)
     {
@@ -29,7 +24,6 @@ public readonly partial struct AgentType : IEquatable<AgentType>
             throw new ArgumentException($"Invalid AgentId type: '{type}'. Must be alphanumeric (a-z, 0-9, _) and cannot start with a number or contain spaces.");
         }
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AgentId"/> struct.
@@ -41,12 +35,10 @@ public readonly partial struct AgentType : IEquatable<AgentType>
         Name = type;
     }
 
-
     /// <summary>
     /// The string representation of this agent type.
     /// </summary>
     public string Name { get; }
-
 
     /// <summary>
     /// Returns the string representation of the <see cref="AgentType"/>.
@@ -56,7 +48,6 @@ public readonly partial struct AgentType : IEquatable<AgentType>
     {
         return Name;
     }
-
 
     /// <summary>
     /// Explicitly converts a <see cref="Type"/> to an <see cref="AgentType"/>.
@@ -68,7 +59,6 @@ public readonly partial struct AgentType : IEquatable<AgentType>
         return new AgentType(type.Name);
     }
 
-
     /// <summary>
     /// Implicitly converts a <see cref="string"/> to an <see cref="AgentType"/>.
     /// </summary>
@@ -78,7 +68,6 @@ public readonly partial struct AgentType : IEquatable<AgentType>
     {
         return new AgentType(type);
     }
-
 
     /// <summary>
     /// Implicitly converts an <see cref="AgentType"/> to a <see cref="string"/>.
@@ -90,13 +79,11 @@ public readonly partial struct AgentType : IEquatable<AgentType>
         return type.ToString();
     }
 
-
     /// <inheritdoc/>
     public override bool Equals(object? obj)
     {
         return obj is AgentType other && Equals(other);
     }
-
 
     /// <inheritdoc/>
     public bool Equals(AgentType other)
@@ -104,20 +91,17 @@ public readonly partial struct AgentType : IEquatable<AgentType>
         return Name.Equals(other.Name, StringComparison.Ordinal);
     }
 
-
     /// <inheritdoc/>
     public override int GetHashCode()
     {
         return Name.GetHashCode();
     }
 
-
     /// <inheritdoc/>
     public static bool operator ==(AgentType left, AgentType right)
     {
         return left.Equals(right);
     }
-
 
     /// <inheritdoc/>
     public static bool operator !=(AgentType left, AgentType right)

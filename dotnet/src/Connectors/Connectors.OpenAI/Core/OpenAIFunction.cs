@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
@@ -15,14 +12,20 @@ namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 /// </summary>
 public sealed class OpenAIFunctionParameter
 {
-    internal OpenAIFunctionParameter(string? name, string? description, bool isRequired, Type? parameterType, KernelJsonSchema? schema)
+    internal OpenAIFunctionParameter(
+        string? name,
+        string? description,
+        bool isRequired,
+        Type? parameterType,
+        KernelJsonSchema? schema)
     {
-        this.Name = name ?? string.Empty;
-        this.Description = description ?? string.Empty;
-        this.IsRequired = isRequired;
-        this.ParameterType = parameterType;
-        this.Schema = schema;
+        Name = name ?? string.Empty;
+        Description = description ?? string.Empty;
+        IsRequired = isRequired;
+        ParameterType = parameterType;
+        Schema = schema;
     }
+
 
     /// <summary>Gets the name of the parameter.</summary>
     public string Name { get; }
@@ -40,6 +43,7 @@ public sealed class OpenAIFunctionParameter
     public KernelJsonSchema? Schema { get; }
 }
 
+
 /// <summary>
 /// Represents a function return parameter that can be returned by a tool call to OpenAI.
 /// </summary>
@@ -47,10 +51,11 @@ public sealed class OpenAIFunctionReturnParameter
 {
     internal OpenAIFunctionReturnParameter(string? description, Type? parameterType, KernelJsonSchema? schema)
     {
-        this.Description = description ?? string.Empty;
-        this.Schema = schema;
-        this.ParameterType = parameterType;
+        Description = description ?? string.Empty;
+        Schema = schema;
+        ParameterType = parameterType;
     }
+
 
     /// <summary>Gets a description of the return parameter.</summary>
     public string Description { get; }
@@ -61,6 +66,7 @@ public sealed class OpenAIFunctionReturnParameter
     /// <summary>Gets a JSON schema for the return parameter, if known.</summary>
     public KernelJsonSchema? Schema { get; }
 }
+
 
 /// <summary>
 /// Represents a function that can be passed to the OpenAI API
@@ -75,18 +81,22 @@ public sealed class OpenAIFunction
     /// for this relatively common case.
     /// </remarks>
     private static readonly BinaryData s_zeroFunctionParametersSchema = new("""{"type":"object","required":[],"properties":{}}""");
+
     /// <summary>
     /// Same as above, but with additionalProperties: false for strict mode.
     /// </summary>
     private static readonly BinaryData s_zeroFunctionParametersSchema_strict = new("""{"type":"object","required":[],"properties":{},"additionalProperties":false}""");
+
     /// <summary>
     /// Cached schema for a descriptionless string.
     /// </summary>
     private static readonly KernelJsonSchema s_stringNoDescriptionSchema = KernelJsonSchema.Parse("""{"type":"string"}""");
+
     /// <summary>
     /// Cached schema for a descriptionless string that's nullable.
     /// </summary>
     private static readonly KernelJsonSchema s_stringNoDescriptionSchemaAndNull = KernelJsonSchema.Parse("""{"type":["string","null"]}""");
+
 
     /// <summary>Initializes the OpenAIFunction.</summary>
     internal OpenAIFunction(
@@ -98,12 +108,13 @@ public sealed class OpenAIFunction
     {
         Verify.NotNullOrWhiteSpace(functionName);
 
-        this.PluginName = pluginName;
-        this.FunctionName = functionName;
-        this.Description = description;
-        this.Parameters = parameters;
-        this.ReturnParameter = returnParameter;
+        PluginName = pluginName;
+        FunctionName = functionName;
+        Description = description;
+        Parameters = parameters;
+        ReturnParameter = returnParameter;
     }
+
 
     /// <summary>Gets the separator used between the plugin name and the function name, if a plugin name is present.</summary>
     /// <remarks>This separator was previously <c>_</c>, but has been changed to <c>-</c> to better align to the behavior elsewhere in SK and in response
@@ -123,7 +134,9 @@ public sealed class OpenAIFunction
     /// the same as <see cref="FunctionName"/>.
     /// </remarks>
     public string FullyQualifiedName =>
-        string.IsNullOrEmpty(this.PluginName) ? this.FunctionName : $"{this.PluginName}{NameSeparator}{this.FunctionName}";
+        string.IsNullOrEmpty(PluginName)
+            ? FunctionName
+            : $"{PluginName}{NameSeparator}{FunctionName}";
 
     /// <summary>Gets a description of the function.</summary>
     public string? Description { get; }
@@ -134,13 +147,18 @@ public sealed class OpenAIFunction
     /// <summary>Gets the return parameter of the function, if any.</summary>
     public OpenAIFunctionReturnParameter? ReturnParameter { get; }
 
+
     /// <summary>
     /// Converts the <see cref="OpenAIFunction"/> representation to the OpenAI SDK's
     /// <see cref="ChatTool"/> representation.
     /// </summary>
     /// <returns>A <see cref="ChatTool"/> containing all the function information.</returns>
     [Obsolete("Use the overload that takes a boolean parameter instead.")]
-    public ChatTool ToFunctionDefinition() => this.ToFunctionDefinition(false);
+    public ChatTool ToFunctionDefinition()
+    {
+        return ToFunctionDefinition(false);
+    }
+
 
     /// <summary>
     /// Converts the <see cref="OpenAIFunction"/> representation to the OpenAI SDK's
@@ -149,9 +167,12 @@ public sealed class OpenAIFunction
     /// <returns>A <see cref="ChatTool"/> containing all the function information.</returns>
     public ChatTool ToFunctionDefinition(bool allowStrictSchemaAdherence)
     {
-        BinaryData resultParameters = allowStrictSchemaAdherence ? s_zeroFunctionParametersSchema_strict : s_zeroFunctionParametersSchema;
+        BinaryData resultParameters = allowStrictSchemaAdherence
+            ? s_zeroFunctionParametersSchema_strict
+            : s_zeroFunctionParametersSchema;
 
-        IReadOnlyList<OpenAIFunctionParameter>? parameters = this.Parameters;
+        IReadOnlyList<OpenAIFunctionParameter>? parameters = Parameters;
+
         if (parameters is { Count: > 0 })
         {
             var properties = new Dictionary<string, KernelJsonSchema>();
@@ -163,9 +184,10 @@ public sealed class OpenAIFunction
                 {
                     (not null, true) => GetSanitizedSchemaForStrictMode(parameter.Schema, !parameter.IsRequired && allowStrictSchemaAdherence),
                     (not null, false) => parameter.Schema,
-                    (null, _) => GetDefaultSchemaForTypelessParameter(parameter.Description, allowStrictSchemaAdherence),
+                    (null, _) => GetDefaultSchemaForTypelessParameter(parameter.Description, allowStrictSchemaAdherence)
                 };
                 properties.Add(parameter.Name, parameterSchema);
+
                 if (parameter.IsRequired || allowStrictSchemaAdherence)
                 {
                     required.Add(parameter.Name);
@@ -184,18 +206,18 @@ public sealed class OpenAIFunction
                 {
                     type = "object",
                     required,
-                    properties,
+                    properties
                 });
         }
 
-        return ChatTool.CreateFunctionTool
-        (
-            functionName: this.FullyQualifiedName,
-            functionDescription: this.Description,
-            functionParameters: resultParameters,
-            functionSchemaIsStrict: allowStrictSchemaAdherence
+        return ChatTool.CreateFunctionTool(
+            FullyQualifiedName,
+            Description,
+            resultParameters,
+            allowStrictSchemaAdherence
         );
     }
+
 
     /// <summary>Gets a <see cref="KernelJsonSchema"/> for a typeless parameter with the specified description, defaulting to typeof(string)</summary>
     private static KernelJsonSchema GetDefaultSchemaForTypelessParameter(string? description, bool allowStrictSchemaAdherence)
@@ -203,14 +225,17 @@ public sealed class OpenAIFunction
         // If there's a description, incorporate it.
         if (!string.IsNullOrWhiteSpace(description))
         {
-            return allowStrictSchemaAdherence ?
-                GetOptionalStringSchemaWithDescription(description!) :
-                KernelJsonSchemaBuilder.Build(typeof(string), description, AIJsonSchemaCreateOptions.Default);
+            return allowStrictSchemaAdherence
+                ? GetOptionalStringSchemaWithDescription(description!)
+                : KernelJsonSchemaBuilder.Build(typeof(string), description, AIJsonSchemaCreateOptions.Default);
         }
 
         // Otherwise, we can use a cached schema for a string with no description.
-        return allowStrictSchemaAdherence ? s_stringNoDescriptionSchemaAndNull : s_stringNoDescriptionSchema;
+        return allowStrictSchemaAdherence
+            ? s_stringNoDescriptionSchemaAndNull
+            : s_stringNoDescriptionSchema;
     }
+
 
     /// <summary>
     /// Gets a <see cref="KernelJsonSchema"/> for a typeless parameter with the specified description, type string, and nullable.
@@ -222,10 +247,11 @@ public sealed class OpenAIFunction
         var jObject = new JsonObject
         {
             { "description", description },
-            { "type", new JsonArray { "string", "null" } },
+            { "type", new JsonArray { "string", "null" } }
         };
         return KernelJsonSchema.Parse(jObject.ToString());
     }
+
 
     /// <summary>
     /// Removes forbidden keywords from the schema and adds null to the types if required.
@@ -238,6 +264,7 @@ public sealed class OpenAIFunction
     {
         var originalSchema = JsonSerializer.Serialize(schema.RootElement);
         var node = JsonNode.Parse(originalSchema);
+
         if (node is not (JsonObject or JsonArray))
         {
             return schema;
@@ -256,6 +283,7 @@ public sealed class OpenAIFunction
                 case JsonObject obj:
                     InsertNullTypeIfRequired(insertNullType, obj);
                     NormalizeAdditionalProperties(obj);
+
                     foreach (var property in obj)
                     {
                         if (s_forbiddenKeywords.Contains(property.Key))
@@ -297,6 +325,7 @@ public sealed class OpenAIFunction
         }
     }
 
+
     /// <summary>
     /// Inserts null to the types if required or when nullable is true. Strict mode enforces setting all parameters as required when some are optional.
     /// The suggested approach is to add null to the types when they are optional so the model doesn't add random default values.
@@ -308,11 +337,11 @@ public sealed class OpenAIFunction
     /// <param name="jsonObject">The parsed JSON schema</param>
     private static void InsertNullTypeIfRequired(bool insertNullType, JsonObject jsonObject)
     {
-        if ((!insertNullType && (!jsonObject.TryGetPropertyValue(NullableKey, out var nullableRawValue) || !nullableRawValue!.GetValue<bool>())) ||
-            !jsonObject.TryGetPropertyValue(TypeKey, out var typeValue))
+        if (!insertNullType && (!jsonObject.TryGetPropertyValue(NullableKey, out var nullableRawValue) || !nullableRawValue!.GetValue<bool>()) || !jsonObject.TryGetPropertyValue(TypeKey, out var typeValue))
         {
             return;
         }
+
         if (typeValue is JsonArray jsonArray && !jsonArray.Contains(NullType))
         {
             jsonArray.Add(NullType);
@@ -323,6 +352,7 @@ public sealed class OpenAIFunction
         }
     }
 
+
     /// <summary>
     /// Adds additional properties to false to any object schema type.
     /// </summary>
@@ -332,14 +362,13 @@ public sealed class OpenAIFunction
     /// <param name="jsonObject">The schema object to update</param>
     private static void NormalizeAdditionalProperties(JsonObject jsonObject)
     {
-        if (!jsonObject.TryGetPropertyValue(TypeKey, out var typeValue) ||
-            (typeValue!.GetValueKind() is not JsonValueKind.String || !ObjectValue.Equals(typeValue!.GetValue<string>(), StringComparison.OrdinalIgnoreCase)) &&
-            (typeValue!.GetValueKind() is not JsonValueKind.Array || !typeValue.AsArray().Any(static x => ObjectValue.Equals(x?.GetValue<string>(), StringComparison.OrdinalIgnoreCase))))
+        if (!jsonObject.TryGetPropertyValue(TypeKey, out var typeValue) || (typeValue!.GetValueKind() is not JsonValueKind.String || !ObjectValue.Equals(typeValue!.GetValue<string>(), StringComparison.OrdinalIgnoreCase)) && (typeValue!.GetValueKind() is not JsonValueKind.Array || !typeValue.AsArray().Any(static x => ObjectValue.Equals(x?.GetValue<string>(), StringComparison.OrdinalIgnoreCase))))
         {
             return;
         }
         jsonObject[AdditionalPropertiesKey] = false;
     }
+
 
     /// <summary>
     /// Makes all properties required in the schema.
@@ -350,13 +379,13 @@ public sealed class OpenAIFunction
     /// <param name="jsonObject">The schema object to update</param>
     private static void MakeAllPropertiesRequired(JsonObject jsonObject)
     {
-        if (!jsonObject.TryGetPropertyValue(PropertiesKey, out var propertiesValue) ||
-            propertiesValue!.GetValueKind() is not JsonValueKind.Object)
+        if (!jsonObject.TryGetPropertyValue(PropertiesKey, out var propertiesValue) || propertiesValue!.GetValueKind() is not JsonValueKind.Object)
         {
             return;
         }
         jsonObject[RequiredKey] = new JsonArray(propertiesValue.AsObject().Select(static x => x.Key).Select(static x => JsonValue.Create(x)).ToArray());
     }
+
 
     private const string RequiredKey = "required";
 
@@ -378,26 +407,27 @@ public sealed class OpenAIFunction
     /// See <see href="https://platform.openai.com/docs/guides/structured-outputs#some-type-specific-keywords-are-not-yet-supported"/>.
     /// </summary>
     private static readonly HashSet<string> s_forbiddenKeywords = new([
-        "contains",
-        "default",
-        "format",
-        "maxContains",
-        "maximum",
-        "maxItems",
-        "maxLength",
-        "maxProperties",
-        "minContains",
-        "minimum",
-        "minItems",
-        "minLength",
-        "minProperties",
-        "multipleOf",
-        "nullable",
-        "pattern",
-        "patternProperties",
-        "propertyNames",
-        "unevaluatedItems",
-        "unevaluatedProperties",
-        "uniqueItems",
-    ], StringComparer.OrdinalIgnoreCase);
+            "contains",
+            "default",
+            "format",
+            "maxContains",
+            "maximum",
+            "maxItems",
+            "maxLength",
+            "maxProperties",
+            "minContains",
+            "minimum",
+            "minItems",
+            "minLength",
+            "minProperties",
+            "multipleOf",
+            "nullable",
+            "pattern",
+            "patternProperties",
+            "propertyNames",
+            "unevaluatedItems",
+            "unevaluatedProperties",
+            "uniqueItems"
+        ],
+        StringComparer.OrdinalIgnoreCase);
 }

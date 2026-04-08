@@ -17,7 +17,6 @@ namespace PgVector.ConformanceTests.TypeTests;
 public class PostgresEmbeddingTypeTests(PostgresEmbeddingTypeTests.Fixture fixture)
     : EmbeddingTypeTests<int>(fixture), IClassFixture<PostgresEmbeddingTypeTests.Fixture>
 {
-#if NET
     [ConditionalFact]
     public virtual Task ReadOnlyMemory_of_Half()
         => this.Test<ReadOnlyMemory<Half>>(
@@ -37,7 +36,6 @@ public class PostgresEmbeddingTypeTests(PostgresEmbeddingTypeTests.Fixture fixtu
         => this.Test<Half[]>(
             [(byte)1, (byte)2, (byte)3],
             new ReadOnlyMemoryEmbeddingGenerator<Half>([(byte)1, (byte)2, (byte)3]));
-#endif
 
     [ConditionalFact]
     public virtual Task BitArray()

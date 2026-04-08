@@ -37,9 +37,7 @@ public class AzureAISearchDataTypeTests(AzureAISearchDataTypeTests.Fixture fixtu
                 && p.Type != typeof(short)
                 && p.Type != typeof(decimal)
                 && p.Type != typeof(Guid)
-#if NET
                 && p.Type != typeof(TimeOnly)
-#endif
             ).ToList();
 
         public override Type[] UnsupportedDefaultTypes { get; } =
@@ -48,9 +46,7 @@ public class AzureAISearchDataTypeTests(AzureAISearchDataTypeTests.Fixture fixtu
             typeof(short),
             typeof(decimal),
             typeof(Guid),
-#if NET
             typeof(TimeOnly)
-#endif
         ];
 
         public class AzureAISearchRecord : RecordBase
@@ -66,9 +62,7 @@ public class AzureAISearchDataTypeTests(AzureAISearchDataTypeTests.Fixture fixtu
             public DateTime DateTime { get; set; }
             public DateTimeOffset DateTimeOffset { get; set; }
 
-#if NET
             public DateOnly DateOnly { get; set; }
-#endif
 
             public string[] StringArray { get; set; } = null!;
 

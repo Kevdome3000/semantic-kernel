@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -24,12 +23,12 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     /// </remarks>
     public (int Width, int Height)? Size
     {
-        get => this._size;
+        get => _size;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._size = value;
+            ThrowIfFrozen();
+            _size = value;
         }
     }
 
@@ -47,12 +46,12 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("quality")]
     public string? Quality
     {
-        get => this._quality;
+        get => _quality;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._quality = value;
+            ThrowIfFrozen();
+            _quality = value;
         }
     }
 
@@ -70,12 +69,12 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("style")]
     public string? Style
     {
-        get => this._style;
+        get => _style;
 
         set
         {
-            this.ThrowIfFrozen();
-            this._style = value;
+            ThrowIfFrozen();
+            _style = value;
         }
     }
 
@@ -91,11 +90,11 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("response_format")]
     public object? ResponseFormat
     {
-        get => this._responseFormat;
+        get => _responseFormat;
         set
         {
-            this.ThrowIfFrozen();
-            this._responseFormat = value;
+            ThrowIfFrozen();
+            _responseFormat = value;
         }
     }
 
@@ -105,18 +104,19 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     [JsonPropertyName("user")]
     public string? EndUserId
     {
-        get => this._endUserId;
+        get => _endUserId;
         set
         {
-            this.ThrowIfFrozen();
-            this._endUserId = value;
+            ThrowIfFrozen();
+            _endUserId = value;
         }
     }
+
 
     /// <inheritdoc/>
     public override void Freeze()
     {
-        if (this.IsFrozen)
+        if (IsFrozen)
         {
             return;
         }
@@ -124,16 +124,20 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
         base.Freeze();
     }
 
+
     /// <inheritdoc/>
     public override PromptExecutionSettings Clone()
     {
-        return new OpenAITextToImageExecutionSettings()
+        return new OpenAITextToImageExecutionSettings
         {
-            ModelId = this.ModelId,
-            ExtensionData = this.ExtensionData is not null ? new Dictionary<string, object>(this.ExtensionData) : null,
-            Size = this.Size
+            ModelId = ModelId,
+            ExtensionData = ExtensionData is not null
+                ? new Dictionary<string, object>(ExtensionData)
+                : null,
+            Size = Size
         };
     }
+
 
     /// <summary>
     /// Create a new settings object with the values from another settings object.
@@ -154,10 +158,12 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
 
         var json = JsonSerializer.Serialize(executionSettings);
         var openAIExecutionSettings = JsonSerializer.Deserialize<OpenAITextToImageExecutionSettings>(json, JsonOptionsCache.ReadPermissive)!;
+
         if (openAIExecutionSettings.ExtensionData?.TryGetValue("width", out var width) ?? false)
         {
             openAIExecutionSettings.Width = ((JsonElement)width).GetInt32();
         }
+
         if (openAIExecutionSettings.ExtensionData?.TryGetValue("height", out var height) ?? false)
         {
             openAIExecutionSettings.Height = ((JsonElement)height).GetInt32();
@@ -166,27 +172,28 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
         return openAIExecutionSettings!;
     }
 
+
     #region private ================================================================================
 
     [JsonPropertyName("width")]
     internal int? Width
     {
-        get => this.Size?.Width;
+        get => Size?.Width;
         set
         {
             if (!value.HasValue) { return; }
-            this.Size = (value.Value, this.Size?.Height ?? 0);
+            Size = (value.Value, Size?.Height ?? 0);
         }
     }
 
     [JsonPropertyName("height")]
     internal int? Height
     {
-        get => this.Size?.Height;
+        get => Size?.Height;
         set
         {
             if (!value.HasValue) { return; }
-            this.Size = (this.Size?.Width ?? 0, value.Value);
+            Size = (Size?.Width ?? 0, value.Value);
         }
     }
 
@@ -197,4 +204,6 @@ public sealed class OpenAITextToImageExecutionSettings : PromptExecutionSettings
     private string? _endUserId;
 
     #endregion
+
+
 }

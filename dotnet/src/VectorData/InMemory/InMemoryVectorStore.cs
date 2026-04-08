@@ -29,7 +29,6 @@ public sealed class InMemoryVectorStore : VectorStore
 
     private readonly IEmbeddingGenerator? _embeddingGenerator;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryVectorStore"/> class.
     /// </summary>
@@ -45,16 +44,11 @@ public sealed class InMemoryVectorStore : VectorStore
         };
     }
 
-
 #pragma warning disable IDE0090 // Use 'new(...)'
     /// <inheritdoc />
     [RequiresUnreferencedCode("The InMemory provider is incompatible with trimming.")]
     [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
-#if NET
     public override InMemoryCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
-#else
-    public override VectorStoreCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreCollectionDefinition? definition = null)
-#endif
     {
         if (typeof(TRecord) == typeof(Dictionary<string, object?>))
         {
@@ -78,15 +72,10 @@ public sealed class InMemoryVectorStore : VectorStore
         return collection!;
     }
 
-
     /// <inheritdoc />
     [RequiresUnreferencedCode("The InMemory provider is incompatible with trimming.")]
     [RequiresDynamicCode("The InMemory provider is incompatible with NativeAOT.")]
-#if NET
     public override InMemoryDynamicCollection GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
-#else
-    public override VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition)
-#endif
         => new(
             _internalCollections,
             _internalCollectionTypes,
@@ -99,13 +88,11 @@ public sealed class InMemoryVectorStore : VectorStore
         );
 #pragma warning restore IDE0090
 
-
     /// <inheritdoc />
     public override IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
     {
         return _internalCollections.Keys.ToAsyncEnumerable();
     }
-
 
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default)
@@ -115,7 +102,6 @@ public sealed class InMemoryVectorStore : VectorStore
             : Task.FromResult(false);
     }
 
-
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default)
     {
@@ -123,7 +109,6 @@ public sealed class InMemoryVectorStore : VectorStore
         _internalCollectionTypes.TryRemove(name, out _);
         return Task.CompletedTask;
     }
-
 
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)

@@ -1,21 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-#pragma warning disable IDE0005 // Using directive is unnecessary
-using Microsoft.SemanticKernel.Connectors.FunctionCalling;
-#pragma warning restore IDE0005 // Using directive is unnecessary
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Services;
 using OpenAI;
+#pragma warning disable IDE0005 // Using directive is unnecessary
+using Microsoft.SemanticKernel.Connectors.FunctionCalling;
+#pragma warning restore IDE0005 // Using directive is unnecessary
 
 #pragma warning disable CA2208 // Instantiate argument exceptions correctly
 
@@ -71,6 +65,7 @@ internal partial class ClientCore
     /// </summary>
     protected FunctionCallsProcessor FunctionCallsProcessor { get; set; }
 
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ClientCore"/> class.
     /// </summary>
@@ -88,9 +83,9 @@ internal partial class ClientCore
         HttpClient? httpClient = null,
         ILogger? logger = null)
     {
-        this.Logger = logger ?? NullLogger.Instance;
+        Logger = logger ?? NullLogger.Instance;
 
-        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+        FunctionCallsProcessor = new FunctionCallsProcessor(Logger);
 
         // Empty constructor will be used when inherited by a specialized Client.
         if (modelId is null
@@ -105,16 +100,17 @@ internal partial class ClientCore
 
         if (!string.IsNullOrWhiteSpace(modelId))
         {
-            this.ModelId = modelId!;
-            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+            ModelId = modelId!;
+            AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         }
 
         // Accepts the endpoint if provided, otherwise uses the default OpenAI endpoint.
-        this.Endpoint = endpoint ?? httpClient?.BaseAddress;
-        if (this.Endpoint is null)
+        Endpoint = endpoint ?? httpClient?.BaseAddress;
+
+        if (Endpoint is null)
         {
             Verify.NotNullOrWhiteSpace(apiKey); // For Public OpenAI Endpoint a key must be provided.
-            this.Endpoint = new Uri(OpenAIV1Endpoint);
+            Endpoint = new Uri(OpenAIV1Endpoint);
         }
         else if (string.IsNullOrEmpty(apiKey))
         {
@@ -122,18 +118,20 @@ internal partial class ClientCore
             apiKey = SingleSpace;
         }
 
-        this.AddAttribute(AIServiceExtensions.EndpointKey, this.Endpoint.ToString());
+        AddAttribute(AIServiceExtensions.EndpointKey, Endpoint.ToString());
 
-        var options = GetOpenAIClientOptions(httpClient, this.Endpoint);
+        var options = GetOpenAIClientOptions(httpClient, Endpoint);
+
         if (!string.IsNullOrWhiteSpace(organizationId))
         {
             options.AddPolicy(CreateRequestHeaderPolicy("OpenAI-Organization", organizationId!), PipelinePosition.PerCall);
 
-            this.AddAttribute(ClientCore.OrganizationKey, organizationId);
+            AddAttribute(OrganizationKey, organizationId);
         }
 
-        this.Client = new OpenAIClient(new ApiKeyCredential(apiKey!), options);
+        Client = new OpenAIClient(new ApiKeyCredential(apiKey!), options);
     }
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ClientCore"/> class using the specified OpenAIClient.
@@ -151,16 +149,17 @@ internal partial class ClientCore
         // Model Id may not be required when other services. i.e: File Service.
         if (modelId is not null)
         {
-            this.ModelId = modelId;
-            this.AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
+            ModelId = modelId;
+            AddAttribute(AIServiceExtensions.ModelIdKey, modelId);
         }
 
         Verify.NotNull(openAIClient);
 
-        this.Logger = logger ?? NullLogger.Instance;
-        this.Client = openAIClient;
-        this.FunctionCallsProcessor = new FunctionCallsProcessor(this.Logger);
+        Logger = logger ?? NullLogger.Instance;
+        Client = openAIClient;
+        FunctionCallsProcessor = new FunctionCallsProcessor(Logger);
     }
+
 
     /// <summary>
     /// Logs OpenAI action details.
@@ -168,11 +167,12 @@ internal partial class ClientCore
     /// <param name="callerMemberName">Caller member name. Populated automatically by runtime.</param>
     internal void LogActionDetails([CallerMemberName] string? callerMemberName = default)
     {
-        if (this.Logger!.IsEnabled(LogLevel.Information))
+        if (Logger!.IsEnabled(LogLevel.Information))
         {
-            this.Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, this.ModelId);
+            Logger.LogInformation("Action: {Action}. OpenAI Model ID: {ModelId}.", callerMemberName, ModelId);
         }
     }
+
 
     /// <summary>
     /// Allows adding attributes to the client.
@@ -183,9 +183,10 @@ internal partial class ClientCore
     {
         if (!string.IsNullOrEmpty(value))
         {
-            this.Attributes.Add(key, value);
+            Attributes.Add(key, value);
         }
     }
+
 
     /// <summary>Gets options to use for an OpenAIClient</summary>
     /// <param name="httpClient">Custom <see cref="HttpClient"/> for HTTP requests.</param>
@@ -196,7 +197,7 @@ internal partial class ClientCore
     {
         OpenAIClientOptions options = new()
         {
-            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent,
+            UserAgentApplicationId = HttpHeaderConstant.Values.UserAgent
         };
 
         options.Endpoint ??= endpoint ?? httpClient?.BaseAddress;
@@ -211,18 +212,22 @@ internal partial class ClientCore
         if (httpClient is not null)
         {
             options.Transport = new HttpClientPipelineTransport(httpClient);
-            options.RetryPolicy = new ClientRetryPolicy(maxRetries: 0); // Disable retry policy if and only if a custom HttpClient is provided.
+            options.RetryPolicy = new ClientRetryPolicy(0); // Disable retry policy if and only if a custom HttpClient is provided.
             options.NetworkTimeout = Timeout.InfiniteTimeSpan; // Disable default timeout
         }
 
         return options;
     }
 
+
     /// <summary>
     /// Gets the model identifier to use for the client.
     /// </summary>
     protected virtual string GetClientModelId()
-        => this.ModelId;
+    {
+        return ModelId;
+    }
+
 
     /// <summary>
     /// Invokes the specified request and handles exceptions.
@@ -242,6 +247,7 @@ internal partial class ClientCore
         }
     }
 
+
     /// <summary>
     /// Invokes the specified request and handles exceptions.
     /// </summary>
@@ -260,9 +266,10 @@ internal partial class ClientCore
         }
     }
 
+
     protected static GenericActionPipelinePolicy CreateRequestHeaderPolicy(string headerName, string headerValue)
     {
-        return new GenericActionPipelinePolicy((message) =>
+        return new GenericActionPipelinePolicy(message =>
         {
             if (message?.Request?.Headers?.TryGetValue(headerName, out string? _) == false)
             {

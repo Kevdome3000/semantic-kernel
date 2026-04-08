@@ -73,7 +73,6 @@ public class PropertyModelTests
 
     #endregion
 
-#if NET
     #region NRT detection via NullabilityInfoContext (POCO mapping with PropertyInfo)
 
     [Fact]
@@ -135,5 +134,4 @@ public class PropertyModelTests
 #pragma warning restore CS8618
 
     #endregion
-#endif
 }

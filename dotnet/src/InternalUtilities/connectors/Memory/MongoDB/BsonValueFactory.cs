@@ -20,9 +20,7 @@ internal static class BsonValueFactory
             null => BsonNull.Value,
             Guid v => new BsonBinaryData(v, GuidRepresentation.Standard),
             DateTimeOffset v => new BsonDateTime(v.UtcDateTime),
-#if NET
             DateOnly v => new BsonDateTime(v.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc)),
-#endif
             object[] v => new BsonArray(Array.ConvertAll(v, Create)),
             Array v => new BsonArray(v),
             IEnumerable<object> v => new BsonArray(v.Select(Create)),

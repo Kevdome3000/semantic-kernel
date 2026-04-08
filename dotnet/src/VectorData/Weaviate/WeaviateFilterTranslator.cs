@@ -14,12 +14,10 @@ namespace Microsoft.SemanticKernel.Connectors.Weaviate;
 
 #pragma warning disable MEVD9001 // Experimental: filter translation base types
 
-
 // https://weaviate.io/developers/weaviate/api/graphql/filters#filter-structure
 internal class WeaviateFilterTranslator : FilterTranslatorBase
 {
     private readonly StringBuilder _filter = new();
-
 
     internal string? Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
@@ -36,7 +34,6 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
         Translate(preprocessedExpression);
         return _filter.ToString();
     }
-
 
     private void Translate(Expression? node)
     {
@@ -114,7 +111,6 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     private void TranslateEqualityComparison(BinaryExpression binary)
     {
         if (this.TryBindProperty(binary.Left, out var property) && binary.Right is ConstantExpression { Value: var rightConstant })
@@ -131,7 +127,6 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
 
         throw new NotSupportedException("Invalid equality/comparison");
     }
-
 
     private void GenerateEqualityComparison(string propertyStorageName, object? value, ExpressionType nodeType)
     {
@@ -190,9 +185,7 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
             Type t when t == typeof(float) || t == typeof(double) || t == typeof(decimal) => "valueNumber",
             Type t when t == typeof(DateTime) => "valueDate",
             Type t when t == typeof(DateTimeOffset) => "valueDate",
-#if NET
             Type t when t == typeof(DateOnly) => "valueDate",
-#endif
 
             _ => throw new NotSupportedException($"Unsupported value type {type.FullName} in filter.")
         });
@@ -204,7 +197,6 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
 
         _filter.Append('}');
     }
-
 
     private void TranslateMethodCall(MethodCallExpression methodCall)
     {
@@ -226,7 +218,6 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
         }
     }
 
-
     private void TranslateContains(Expression source, Expression item)
     {
         // Contains over array
@@ -244,7 +235,6 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
 
         throw new NotSupportedException("Contains supported only over tag field");
     }
-
 
     /// <summary>
     /// Translates an Any() call with a Contains predicate, e.g. r.Strings.Any(s => array.Contains(s)).

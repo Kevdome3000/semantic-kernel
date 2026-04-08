@@ -6,7 +6,6 @@ using System;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
-
 /// <summary>
 /// A function to be used in the chat completion request.
 /// </summary>
@@ -51,7 +50,6 @@ internal sealed partial class MistralFunction
     [JsonIgnore]
     public string FunctionName { get; }
 
-
     /// <summary>
     /// Construct an instance of <see cref="MistralFunction"/>.
     /// </summary>
@@ -76,7 +74,6 @@ internal sealed partial class MistralFunction
         this.Parameters = parameters;
     }
 
-
     /// <summary>
     /// Construct an instance of <see cref="MistralFunction"/>.
     /// </summary>
@@ -95,7 +92,6 @@ internal sealed partial class MistralFunction
         this.Parameters = ToMistralParameters(metadata);
     }
 
-
     /// <summary>
     /// Construct an instance of <see cref="MistralFunction"/>.
     /// </summary>
@@ -112,17 +108,10 @@ internal sealed partial class MistralFunction
         this.FunctionName = functionName;
     }
 
-
     #region private
 
-#if NET
     [GeneratedRegex("^[0-9A-Za-z_-]*$")]
     private static partial Regex AsciiLettersDigitsUnderscoresRegex();
-#else
-    private static Regex AsciiLettersDigitsUnderscoresRegex() => s_asciiLettersDigitsUnderscoresRegex;
-    private static readonly Regex s_asciiLettersDigitsUnderscoresRegex = new("^[0-9A-Za-z_-]*$");
-#endif
-
 
     private static void ValidFunctionName(string name)
     {
@@ -135,7 +124,6 @@ internal sealed partial class MistralFunction
             throw new ArgumentException($"A function name can contain only ASCII letters, digits, dashes and underscores: '{name}' is not a valid name.");
         }
     }
-
 
     private static MistralParameters ToMistralParameters(KernelFunctionMetadata metadata)
     {
@@ -157,7 +145,6 @@ internal sealed partial class MistralFunction
         return parameters;
     }
 
-
     /// <summary>Gets a <see cref="KernelJsonSchema"/> for a typeless parameter with the specified description, defaulting to typeof(string)</summary>
     private static KernelJsonSchema GetDefaultSchemaForTypelessParameter(string? description)
     {
@@ -171,13 +158,11 @@ internal sealed partial class MistralFunction
         return s_stringNoDescriptionSchema;
     }
 
-
     /// <summary>
     /// Cached schema for a string without a description.
     /// </summary>
     private static readonly KernelJsonSchema s_stringNoDescriptionSchema = KernelJsonSchema.Parse("{\"type\":\"string\"}");
 
     #endregion
-
 
 }

@@ -44,10 +44,8 @@ internal static class QdrantFieldMapping
             Value.KindOneofCase.StringValue when targetType == typeof(DateTime)
                 => DateTime.Parse(payloadValue.StringValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
 
-#if NET
             Value.KindOneofCase.StringValue when targetType == typeof(DateOnly)
                 => DateOnly.Parse(payloadValue.StringValue, CultureInfo.InvariantCulture),
-#endif
 
             Value.KindOneofCase.StringValue
                 => payloadValue.StringValue,
@@ -106,17 +104,14 @@ internal static class QdrantFieldMapping
                 Type t when t == typeof(DateTime[])
                     => payloadValue.ListValue.Values.Select(v => DateTime.Parse(v.StringValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind)).ToArray(),
 
-#if NET
                 Type t when t == typeof(List<DateOnly>)
                     => payloadValue.ListValue.Values.Select(v => DateOnly.Parse(v.StringValue, CultureInfo.InvariantCulture)).ToList(),
                 Type t when t == typeof(DateOnly[])
                     => payloadValue.ListValue.Values.Select(v => DateOnly.Parse(v.StringValue, CultureInfo.InvariantCulture)).ToArray(),
-#endif
 
                 _ => throw new UnreachableException($"Unsupported collection type {targetType.Name}")
             };
     }
-
 
     /// <summary>
     /// Convert the given <paramref name="sourceValue"/> to a <see cref="Value"/> object that can be stored in Qdrant.
@@ -157,11 +152,9 @@ internal static class QdrantFieldMapping
             case DateTime dateTimeValue:
                 value.StringValue = dateTimeValue.ToString("O");
                 break;
-#if NET
             case DateOnly dateOnlyValue:
                 value.StringValue = dateOnlyValue.ToString("O");
                 break;
-#endif
             case IEnumerable<int> or IEnumerable<long> or IEnumerable<string> or IEnumerable<float> or IEnumerable<double> or IEnumerable<bool> or IEnumerable<DateTime> or IEnumerable<DateTimeOffset>:
             {
                 var listValue = sourceValue as IEnumerable;

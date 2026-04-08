@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System.Net.Http;
-
 namespace Microsoft.SemanticKernel.Plugins.OpenApi;
 
 /// <summary>
@@ -13,12 +11,7 @@ public sealed class OpenApiKernelFunctionContext
     /// <summary>
     /// Key to access the <see cref="OpenApiKernelFunctionContext"/> in the <see cref="HttpRequestMessage"/>.
     /// </summary>
-#if NET
     public static readonly HttpRequestOptionsKey<OpenApiKernelFunctionContext> KernelFunctionContextKey = new("KernelFunctionContext");
-#else
-    public static readonly string KernelFunctionContextKey = "KernelFunctionContext";
-#endif
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OpenApiKernelFunctionContext"/> class.
@@ -32,7 +25,6 @@ public sealed class OpenApiKernelFunctionContext
         Function = function;
         Arguments = arguments;
     }
-
 
     /// <summary>
     /// Gets the <see cref="Kernel"/>.

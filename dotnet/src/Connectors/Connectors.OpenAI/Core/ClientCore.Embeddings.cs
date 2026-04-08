@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ClientModel;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using OpenAI.Embeddings;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -34,12 +30,12 @@ internal partial class ClientCore
 
         if (data.Count > 0)
         {
-            var embeddingsOptions = new EmbeddingGenerationOptions()
+            var embeddingsOptions = new EmbeddingGenerationOptions
             {
                 Dimensions = dimensions
             };
 
-            ClientResult<OpenAIEmbeddingCollection> response = await RunRequestAsync(() => this.Client!.GetEmbeddingClient(targetModel).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
+            ClientResult<OpenAIEmbeddingCollection> response = await RunRequestAsync(() => Client!.GetEmbeddingClient(targetModel).GenerateEmbeddingsAsync(data, embeddingsOptions, cancellationToken)).ConfigureAwait(false);
             var embeddings = response.Value;
 
             if (embeddings.Count != data.Count)

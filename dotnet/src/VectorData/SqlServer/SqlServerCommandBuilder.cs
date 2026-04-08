@@ -196,7 +196,6 @@ internal static class SqlServerCommandBuilder
         return commands;
     }
 
-
     internal static SqlCommand DropTableIfExists(SqlConnection connection, string? schema, string tableName)
     {
         StringBuilder sb = new(50);
@@ -205,7 +204,6 @@ internal static class SqlServerCommandBuilder
 
         return connection.CreateCommand(sb);
     }
-
 
     internal static SqlCommand SelectTableName(SqlConnection connection, string? schema, string tableName)
     {
@@ -225,7 +223,6 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-
     internal static SqlCommand SelectTableNames(SqlConnection connection, string? schema)
     {
         SqlCommand command = connection.CreateCommand();
@@ -242,7 +239,6 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-
     /// <summary>
     /// Checks if the key property uses SQL Server IDENTITY (for int/bigint) as opposed to DEFAULT (for GUID).
     /// IDENTITY columns require SET IDENTITY_INSERT ON to insert explicit values.
@@ -257,7 +253,6 @@ internal static class SqlServerCommandBuilder
         var keyStoreType = Map(keyProperty).ToUpperInvariant();
         return keyStoreType is "SMALLINT" or "INT" or "BIGINT";
     }
-
 
     // Note: since keys may be auto-generated, we can't use a single multi-value MERGE statement, since that would return
     // the generated keys in undefined order (OUTPUT order is not guaranteed in MERGE).
@@ -375,7 +370,6 @@ internal static class SqlServerCommandBuilder
         return true;
     }
 
-
     internal static SqlCommand DeleteSingle(
         SqlConnection connection,
         string? schema,
@@ -396,7 +390,6 @@ internal static class SqlServerCommandBuilder
         command.CommandText = sb.ToString();
         return command;
     }
-
 
     internal static bool DeleteMany<TKey>(
         SqlCommand command,
@@ -424,7 +417,6 @@ internal static class SqlServerCommandBuilder
         return true;
     }
 
-
     internal static SqlCommand SelectSingle(
         SqlConnection sqlConnection,
         string? schema,
@@ -450,7 +442,6 @@ internal static class SqlServerCommandBuilder
         command.CommandText = sb.ToString();
         return command;
     }
-
 
     internal static bool SelectMany<TKey>(
         SqlCommand command,
@@ -482,7 +473,6 @@ internal static class SqlServerCommandBuilder
         command.CommandText = sb.ToString();
         return true;
     }
-
 
     internal static SqlCommand SelectVector<TRecord>(
         SqlConnection connection,
@@ -519,7 +509,6 @@ internal static class SqlServerCommandBuilder
                 distanceMetric,
                 sorting);
     }
-
 
     private static SqlCommand SelectVectorWithVectorDistance<TRecord>(
         SqlConnection connection,
@@ -594,7 +583,6 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-
     /// <summary>
     /// Generates a SELECT query using the VECTOR_SEARCH() function for approximate nearest neighbor search
     /// when the vector property has a vector index (e.g. DiskANN).
@@ -649,7 +637,6 @@ internal static class SqlServerCommandBuilder
         command.CommandText = sb.ToString();
         return command;
     }
-
 
     internal static SqlCommand SelectHybrid<TRecord>(
         SqlConnection connection,
@@ -844,7 +831,6 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-
     internal static SqlCommand SelectWhere<TRecord>(
         Expression<Func<TRecord, bool>> filter,
         int top,
@@ -919,7 +905,6 @@ internal static class SqlServerCommandBuilder
         return command;
     }
 
-
     internal static StringBuilder AppendParameterName(
         this StringBuilder sb,
         PropertyModel property,
@@ -956,7 +941,6 @@ internal static class SqlServerCommandBuilder
         return sb;
     }
 
-
     internal static StringBuilder AppendTableName(this StringBuilder sb, string? schema, string tableName)
     {
         // If the identifier contains a ], then escape it by doubling it.
@@ -969,7 +953,6 @@ internal static class SqlServerCommandBuilder
 
         return sb.AppendIdentifier(tableName);
     }
-
 
     /// <summary>
     /// Appends a properly quoted and escaped SQL Server identifier to the StringBuilder.
@@ -987,7 +970,6 @@ internal static class SqlServerCommandBuilder
         sb.Append(']');
         return sb;
     }
-
 
     private static StringBuilder AppendIdentifiers(
         this StringBuilder sb,
@@ -1026,7 +1008,6 @@ internal static class SqlServerCommandBuilder
         return sb;
     }
 
-
     private static StringBuilder AppendKeyParameterList<TKey>(
         this StringBuilder sb,
         IEnumerable<TKey> keys,
@@ -1051,7 +1032,6 @@ internal static class SqlServerCommandBuilder
         sb.Length--; // remove the last comma
         return sb;
     }
-
 
     private static StringBuilder AppendIndexName(this StringBuilder sb, string tableName, string columnName)
     {
@@ -1084,14 +1064,12 @@ internal static class SqlServerCommandBuilder
         }
     }
 
-
     private static SqlCommand CreateCommand(this SqlConnection connection, StringBuilder sb)
     {
         SqlCommand command = connection.CreateCommand();
         command.CommandText = sb.ToString();
         return command;
     }
-
 
     private static void AddParameter(
         this SqlCommand command,
@@ -1138,7 +1116,6 @@ internal static class SqlServerCommandBuilder
         }
     }
 
-
     private static string Map(PropertyModel property)
         => (Nullable.GetUnderlyingType(property.Type) ?? property.Type) switch
         {
@@ -1154,10 +1131,8 @@ internal static class SqlServerCommandBuilder
             Type t when t == typeof(bool) => "BIT",
             Type t when t == typeof(DateTime) => "DATETIME2",
             Type t when t == typeof(DateTimeOffset) => "DATETIMEOFFSET",
-#if NET
             Type t when t == typeof(DateOnly) => "DATE",
             Type t when t == typeof(TimeOnly) => "TIME",
-#endif
             Type t when t == typeof(decimal) => "DECIMAL(18,2)",
             Type t when t == typeof(double) => "FLOAT",
             Type t when t == typeof(float) => "REAL",
@@ -1166,7 +1141,6 @@ internal static class SqlServerCommandBuilder
 
             _ => throw new NotSupportedException($"Type {property.Type} is not supported.")
         };
-
 
     // Source: https://learn.microsoft.com/sql/t-sql/functions/vector-distance-transact-sql
     private static (string distanceMetric, string sorting) MapDistanceFunction(string name)
@@ -1183,7 +1157,6 @@ internal static class SqlServerCommandBuilder
             _ => throw new NotSupportedException($"Distance function {name} is not supported.")
         };
     }
-
 
     /// <summary>
     /// Returns whether VECTOR_SEARCH() (approximate/indexed search) should be used for the given vector property,

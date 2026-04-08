@@ -20,12 +20,10 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
         SupportsMultipleVectors = true
     };
 
-
     protected override bool SupportsKeyAutoGeneration(Type keyPropertyType)
     {
         return keyPropertyType == typeof(Guid) || keyPropertyType == typeof(int) || keyPropertyType == typeof(long);
     }
-
 
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
@@ -39,7 +37,6 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
                 $"Property '{keyProperty.ModelName}' has unsupported type '{type.Name}'. Key properties must be one of the supported types: int, long, string, Guid.");
         }
     }
-
 
     protected override void ValidateProperty(PropertyModel propertyModel, VectorStoreCollectionDefinition? definition)
     {
@@ -57,7 +54,6 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
             }
         }
     }
-
 
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
@@ -78,12 +74,10 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
             || type == typeof(bool) // BIT
             || type == typeof(DateTime) // DATETIME2
             || type == typeof(DateTimeOffset) // DATETIMEOFFSET
-#if NET
             || type == typeof(DateOnly) // DATE
                                         // We don't support mapping TimeSpan to TIME on purpose
                                         // See https://github.com/microsoft/semantic-kernel/pull/10623#discussion_r1980350721
             || type == typeof(TimeOnly) // TIME
-#endif
             || type == typeof(decimal) // DECIMAL
             || type == typeof(double) // FLOAT
             || type == typeof(float) // REAL
@@ -93,12 +87,10 @@ internal class SqlServerModelBuilder() : CollectionModelBuilder(s_modelBuildingO
             || type == typeof(List<string>); // JSON
     }
 
-
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         return IsVectorPropertyTypeValidCore(type, out supportedTypes);
     }
-
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {

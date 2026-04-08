@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.ClientModel.Primitives;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Core.Pipeline;
 

@@ -3,19 +3,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Http;
 using Microsoft.SemanticKernel.Plugins.OpenApi;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.OpenApi;
 using Microsoft.OpenApi.ApiManifest;
-using Microsoft.OpenApi.Readers;
-using Microsoft.OpenApi.Services;
+using Microsoft.OpenApi.Reader;
 using Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 
 namespace Microsoft.SemanticKernel;
@@ -173,14 +166,13 @@ public static class ApiManifestKernelExtensions
                 : DocumentLoader.LoadDocumentFromFilePathAsStream(parsedDescriptionUrl.LocalPath,
                     logger);
 
-            var documentReadResult = await new OpenApiStreamReader(new OpenApiReaderSettings
+            var documentReadResult = await OpenApiDocument.LoadAsync(openApiDocumentStream, settings: new OpenApiReaderSettings
                     {
                         BaseUrl = parsedDescriptionUrl
-                    }
-                ).ReadAsync(openApiDocumentStream, cancellationToken)
+                    }, cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
-            var openApiDocument = documentReadResult.OpenApiDocument;
-            var openApiDiagnostic = documentReadResult.OpenApiDiagnostic;
+            var openApiDocument = documentReadResult.Document;
+            var openApiDiagnostic = documentReadResult.Diagnostic;
 
             documentWalker.Walk(openApiDocument);
 
@@ -236,7 +228,7 @@ public static class ApiManifestKernelExtensions
                 continue;
             }
             var info = OpenApiDocumentParser.ExtractRestApiInfo(filteredOpenApiDocument);
-            var security = OpenApiDocumentParser.CreateRestApiOperationSecurityRequirements(filteredOpenApiDocument.SecurityRequirements);
+            var security = OpenApiDocumentParser.CreateRestApiOperationSecurityRequirements(filteredOpenApiDocument.Security);
 
             foreach (var path in filteredOpenApiDocument.Paths)
             {

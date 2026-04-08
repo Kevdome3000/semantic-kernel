@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>Provides an implementation of <see cref="IKeyedServiceProvider"/> that contains no services.</summary>

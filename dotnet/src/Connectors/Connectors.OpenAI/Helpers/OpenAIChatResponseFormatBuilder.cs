@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Text;
 using System.Text.Json;
 using OpenAI.Chat;
+using AIJsonSchemaCreateOptions = Microsoft.Extensions.AI.AIJsonSchemaCreateOptions;
+using AIJsonSchemaTransformOptions = Microsoft.Extensions.AI.AIJsonSchemaTransformOptions;
 
 namespace Microsoft.SemanticKernel.Connectors.OpenAI;
 
@@ -15,15 +16,16 @@ internal static class OpenAIChatResponseFormatBuilder
     /// <summary>
     /// <see cref="Microsoft.Extensions.AI.AIJsonSchemaCreateOptions"/> for JSON schema format for structured outputs.
     /// </summary>
-    private static readonly Microsoft.Extensions.AI.AIJsonSchemaCreateOptions s_jsonSchemaCreateOptions = new()
+    private static readonly AIJsonSchemaCreateOptions s_jsonSchemaCreateOptions = new()
     {
-        TransformOptions = new()
+        TransformOptions = new AIJsonSchemaTransformOptions
         {
             DisallowAdditionalProperties = true,
             RequireAllProperties = true,
-            MoveDefaultKeywordToDescription = true,
+            MoveDefaultKeywordToDescription = true
         }
     };
+
 
     /// <summary>
     /// Gets instance of <see cref="ChatResponseFormat"/> object for JSON schema format for structured outputs from <see cref="JsonElement"/>.
@@ -32,13 +34,17 @@ internal static class OpenAIChatResponseFormatBuilder
     {
         const string DefaultSchemaName = "JsonSchema";
 
-        if (responseFormatElement.TryGetProperty("type", out var typeProperty) &&
-            typeProperty.GetString()?.Equals("json_schema", StringComparison.Ordinal) is true &&
-            responseFormatElement.TryGetProperty("json_schema", out var jsonSchemaProperty))
+        if (responseFormatElement.TryGetProperty("type", out var typeProperty) && typeProperty.GetString()?.Equals("json_schema", StringComparison.Ordinal) is true && responseFormatElement.TryGetProperty("json_schema", out var jsonSchemaProperty))
         {
-            string schema = jsonSchemaProperty.TryGetProperty("schema", out var schemaProperty) ? schemaProperty.ToString() : throw new ArgumentException("Property 'schema' is not initialized in JSON schema response format.");
-            string? schemaName = jsonSchemaProperty.TryGetProperty("name", out var nameProperty) ? nameProperty.GetString() : DefaultSchemaName;
-            bool? isStrict = jsonSchemaProperty.TryGetProperty("strict", out var isStrictProperty) && isStrictProperty.ValueKind == JsonValueKind.True ? true : null;
+            string schema = jsonSchemaProperty.TryGetProperty("schema", out var schemaProperty)
+                ? schemaProperty.ToString()
+                : throw new ArgumentException("Property 'schema' is not initialized in JSON schema response format.");
+            string? schemaName = jsonSchemaProperty.TryGetProperty("name", out var nameProperty)
+                ? nameProperty.GetString()
+                : DefaultSchemaName;
+            bool? isStrict = jsonSchemaProperty.TryGetProperty("strict", out var isStrictProperty) && isStrictProperty.ValueKind == JsonValueKind.True
+                ? true
+                : null;
 
             BinaryData schemaBinaryData = new(Encoding.UTF8.GetBytes(schema));
 
@@ -50,12 +56,15 @@ internal static class OpenAIChatResponseFormatBuilder
             new BinaryData(Encoding.UTF8.GetBytes(responseFormatElement.ToString())));
     }
 
+
     /// <summary>
     /// Gets instance of <see cref="ChatResponseFormat"/> object for JSON schema format for structured outputs from type.
     /// </summary>
     internal static ChatResponseFormat GetJsonSchemaResponseFormat(Type formatObjectType)
     {
-        var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>) ? Nullable.GetUnderlyingType(formatObjectType)! : formatObjectType;
+        var type = formatObjectType.IsGenericType && formatObjectType.GetGenericTypeDefinition() == typeof(Nullable<>)
+            ? Nullable.GetUnderlyingType(formatObjectType)!
+            : formatObjectType;
 
         var schema = KernelJsonSchemaBuilder.Build(type, configuration: s_jsonSchemaCreateOptions);
         var schemaBinaryData = BinaryData.FromString(schema.ToString());
@@ -64,6 +73,7 @@ internal static class OpenAIChatResponseFormatBuilder
 
         return ChatResponseFormat.CreateJsonSchemaFormat(typeName, schemaBinaryData, jsonSchemaIsStrict: true);
     }
+
 
     #region private
 
@@ -87,4 +97,6 @@ internal static class OpenAIChatResponseFormatBuilder
     }
 
     #endregion
+
+
 }

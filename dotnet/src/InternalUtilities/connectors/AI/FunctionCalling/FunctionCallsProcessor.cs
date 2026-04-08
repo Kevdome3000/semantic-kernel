@@ -1,13 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -96,7 +90,7 @@ internal sealed class FunctionCallsProcessor
             return null;
         }
 
-        var configuration = behavior.GetConfiguration(new(chatHistory) { Kernel = kernel, RequestSequenceIndex = requestIndex });
+        var configuration = behavior.GetConfiguration(new FunctionChoiceBehaviorConfigurationContext(chatHistory) { Kernel = kernel, RequestSequenceIndex = requestIndex });
 
         _logger.LogFunctionChoiceBehaviorConfiguration(configuration);
 
@@ -158,7 +152,7 @@ internal sealed class FunctionCallsProcessor
 
         List<Task<FunctionResultContext>>? functionTasks =
             options.AllowConcurrentInvocation && functionCalls.Length > 1
-                ? new(functionCalls.Length)
+                ? new List<Task<FunctionResultContext>>(functionCalls.Length)
                 : null;
 
         // We must send back a result for every function call, regardless of whether we successfully executed it or not.
@@ -182,7 +176,7 @@ internal sealed class FunctionCallsProcessor
             AutoFunctionInvocationContext invocationContext =
                 new(kernel!, // Kernel cannot be null if function-call is valid
                     function,
-                    result: new FunctionResult(function) { Culture = kernel!.Culture },
+                    new FunctionResult(function) { Culture = kernel!.Culture },
                     chatHistory,
                     chatMessageContent)
                 {
@@ -302,7 +296,7 @@ internal sealed class FunctionCallsProcessor
             AutoFunctionInvocationContext invocationContext =
                 new(kernel!, // Kernel cannot be null if function-call is valid
                     function,
-                    result: new FunctionResult(function) { Culture = kernel!.Culture },
+                    new FunctionResult(function) { Culture = kernel!.Culture },
                     history,
                     chatMessageContent)
                 {
@@ -388,7 +382,7 @@ internal sealed class FunctionCallsProcessor
         try
         {
             invocationContext =
-                await this.OnAutoFunctionInvocationAsync(
+                await OnAutoFunctionInvocationAsync(
                         kernel,
                         invocationContext,
                         async context =>
@@ -402,7 +396,7 @@ internal sealed class FunctionCallsProcessor
                             // Note that we explicitly do not use executionSettings here; those pertain to the all-up operation and not necessarily to any
                             // further calls made as part of this function invocation. In particular, we must not use function calling settings naively here,
                             // as the called function could in turn telling the model about itself as a possible candidate for invocation.
-                            context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken: cancellationToken).ConfigureAwait(false);
+                            context.Result = await function.InvokeAsync(kernel, invocationContext.Arguments, cancellationToken).ConfigureAwait(false);
                         })
                     .ConfigureAwait(false);
         }

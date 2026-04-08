@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using OpenAI;
@@ -13,6 +10,8 @@ namespace Microsoft.SemanticKernel;
 [Experimental("SKEXP0010")]
 public static class OpenAIChatClientKernelBuilderExtensions
 {
+
+
     #region Chat Completion
 
     /// <summary>
@@ -45,6 +44,7 @@ public static class OpenAIChatClientKernelBuilderExtensions
         return builder;
     }
 
+
     /// <summary>
     /// Adds an OpenAI <see cref="IChatClient"/> to the <see cref="IKernelBuilder.Services"/>.
     /// </summary>
@@ -68,6 +68,7 @@ public static class OpenAIChatClientKernelBuilderExtensions
 
         return builder;
     }
+
 
     /// <summary>
     /// Adds a custom endpoint OpenAI <see cref="IChatClient"/> to the <see cref="IKernelBuilder.Services"/>.
@@ -103,4 +104,6 @@ public static class OpenAIChatClientKernelBuilderExtensions
     }
 
     #endregion
+
+
 }

@@ -45,10 +45,8 @@ internal sealed class WeaviateConstants
             new WeaviateNullableDateTimeOffsetConverter(),
             new WeaviateDateTimeConverter(),
             new WeaviateNullableDateTimeConverter(),
-#if NET
             new WeaviateDateOnlyConverter(),
             new WeaviateNullableDateOnlyConverter(),
-#endif
         }
     };
 }

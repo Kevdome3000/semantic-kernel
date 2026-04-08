@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Services;
+using Microsoft.OpenApi;
 
 namespace Microsoft.SemanticKernel.Plugins.OpenApi.Extensions;
 

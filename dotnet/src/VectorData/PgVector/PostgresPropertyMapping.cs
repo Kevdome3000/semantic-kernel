@@ -23,11 +23,9 @@ internal static class PostgresPropertyMapping
             Embedding<float> e => new Vector(e.Vector),
             float[] a => new Vector(a),
 
-#if NET
             ReadOnlyMemory<Half> m => new HalfVector(m),
             Embedding<Half> e => new HalfVector(e.Vector),
             Half[] a => new HalfVector(a),
-#endif
 
             BitArray bitArray => bitArray,
             BinaryEmbedding binaryEmbedding => binaryEmbedding.Vector,
@@ -37,7 +35,6 @@ internal static class PostgresPropertyMapping
 
             var value => throw new NotSupportedException($"Mapping for type '{value.GetType().Name}' to a vector is not supported.")
         };
-
 
     /// <summary>
     /// Gets the NpgsqlDbType for a property, taking into account any store type annotation.
@@ -62,14 +59,11 @@ internal static class PostgresPropertyMapping
             Type t when t == typeof(DateTime) && property.IsTimestampWithoutTimezone() => NpgsqlDbType.Timestamp,
             Type t when t == typeof(DateTime) => NpgsqlDbType.TimestampTz,
 
-#if NET
             Type t when t == typeof(DateOnly) => NpgsqlDbType.Date,
             Type t when t == typeof(TimeOnly) => NpgsqlDbType.Time,
-#endif
 
             _ => null
         };
-
 
     /// <summary>
     /// Maps a .NET type to a PostgreSQL type name, taking into account any store type annotation on the property.
@@ -91,10 +85,8 @@ internal static class PostgresPropertyMapping
                 Type t when t == typeof(byte[]) => "BYTEA",
                 Type t when t == typeof(DateTime) => "TIMESTAMPTZ",
                 Type t when t == typeof(DateTimeOffset) => "TIMESTAMPTZ",
-#if NET
                 Type t when t == typeof(DateOnly) => "DATE",
                 Type t when t == typeof(TimeOnly) => "TIME",
-#endif
                 Type t when t == typeof(Guid) => "UUID",
                 _ => null
             };
@@ -139,7 +131,6 @@ internal static class PostgresPropertyMapping
         return result;
     }
 
-
     /// <summary>
     /// Gets the PostgreSQL vector type name based on the dimensions of the vector property.
     /// </summary>
@@ -156,12 +147,10 @@ internal static class PostgresPropertyMapping
                 || t == typeof(float[])
                 => "VECTOR",
 
-#if NET
             Type t when t == typeof(ReadOnlyMemory<Half>)
                 || t == typeof(Embedding<Half>)
                 || t == typeof(Half[])
                 => "HALFVEC",
-#endif
 
             Type t when t == typeof(SparseVector) => "SPARSEVEC",
             Type t when t == typeof(BitArray) => "BIT",
@@ -173,12 +162,10 @@ internal static class PostgresPropertyMapping
         return ($"{pgType}({vectorProperty.Dimensions})", vectorProperty.IsNullable);
     }
 
-
     public static NpgsqlParameter GetNpgsqlParameter(object? value)
     {
         return new NpgsqlParameter { Value = value ?? DBNull.Value };
     }
-
 
     /// <summary>
     /// Returns information about indexes to create, validating that the dimensions of the vector are supported.

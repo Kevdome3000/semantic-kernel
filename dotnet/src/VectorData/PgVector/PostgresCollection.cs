@@ -56,7 +56,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     /// <summary>The default options for hybrid search.</summary>
     private static readonly HybridSearchOptions<TRecord> s_defaultHybridSearchOptions = new();
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresCollection{TKey, TRecord}"/> class.
     /// </summary>
@@ -80,7 +79,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresCollection{TKey, TRecord}"/> class.
     /// </summary>
@@ -97,7 +95,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     {
         Verify.NotNullOrWhiteSpace(connectionString);
     }
-
 
     [RequiresDynamicCode("This constructor is incompatible with NativeAOT. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead.")]
     [RequiresUnreferencedCode("This constructor is incompatible with trimming. For dynamic mapping via Dictionary<string, object?>, instantiate PostgresDynamicCollection instead.")]
@@ -119,7 +116,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             options)
     {
     }
-
 
     internal PostgresCollection(
         NpgsqlDataSource dataSource,
@@ -152,14 +148,12 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         _dataSourceArc?.IncrementReferenceCount();
     }
 
-
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
         _dataSourceArc?.Dispose();
         base.Dispose(disposing);
     }
-
 
     /// <inheritdoc/>
     public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
@@ -187,7 +181,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             });
     }
 
-
     /// <inheritdoc/>
     public override Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
@@ -195,7 +188,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             () =>
                 InternalCreateCollectionAsync(true, cancellationToken));
     }
-
 
     /// <inheritdoc/>
     public override async Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
@@ -207,13 +199,11 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         await RunOperationAsync("DeleteCollection", () => command.ExecuteNonQueryAsync()).ConfigureAwait(false);
     }
 
-
     /// <inheritdoc/>
     public override Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         return UpsertAsync([record], cancellationToken);
     }
-
 
     /// <inheritdoc/>
     public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
@@ -322,7 +312,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         }
     }
 
-
     /// <inheritdoc/>
     public override async Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
     {
@@ -358,7 +347,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
                 cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public override async IAsyncEnumerable<TRecord> GetAsync(
@@ -406,7 +394,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         }
     }
 
-
     /// <inheritdoc/>
     public override async Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
@@ -420,7 +407,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         await RunOperationAsync("Delete", () => command.ExecuteNonQueryAsync(cancellationToken)).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public override async Task DeleteAsync(IEnumerable<TKey> keys, CancellationToken cancellationToken = default)
@@ -444,7 +430,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         await RunOperationAsync("DeleteBatch", () => command.ExecuteNonQueryAsync(cancellationToken)).ConfigureAwait(false);
     }
-
 
     #region Search
 
@@ -500,7 +485,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
                 reader.GetDouble(reader.GetOrdinal(PostgresConstants.DistanceColumnName)));
         }
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<VectorSearchResult<TRecord>> HybridSearchAsync<TInput>(
@@ -559,7 +543,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
     #endregion Search
 
-
     /// <inheritdoc />
     public override async IAsyncEnumerable<TRecord> GetAsync(
         Expression<Func<TRecord, bool>> filter,
@@ -589,7 +572,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         }
     }
 
-
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
     {
@@ -606,7 +588,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
                             ? this
                             : null;
     }
-
 
     private async Task InternalCreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken = default)
     {
@@ -675,7 +656,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         }
     }
 
-
     private Task RunOperationAsync(string operationName, Func<Task> operation)
     {
         return VectorStoreErrorHandler.RunOperationAsync<NpgsqlException>(
@@ -684,7 +664,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             operation);
     }
 
-
     private Task<T> RunOperationAsync<T>(string operationName, Func<Task<T>> operation)
     {
         return VectorStoreErrorHandler.RunOperationAsync<T, NpgsqlException>(
@@ -692,7 +671,6 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             operationName,
             operation);
     }
-
 
     /// <summary>
     /// Converts a search input value to a PostgreSQL vector representation, generating embeddings if necessary.
@@ -707,12 +685,10 @@ public class PostgresCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             float[] f => new ReadOnlyMemory<float>(f),
             Embedding<float> e => e.Vector,
 
-#if NET
             // Dense float16
             ReadOnlyMemory<Half> r => r,
             Half[] f => new ReadOnlyMemory<Half>(f),
             Embedding<Half> e => e.Vector,
-#endif
 
             // Dense Binary
             BitArray b => b,

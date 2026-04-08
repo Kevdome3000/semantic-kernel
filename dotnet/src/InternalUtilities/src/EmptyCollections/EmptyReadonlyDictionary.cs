@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 #pragma warning disable IDE0009 // use this directive
 #pragma warning disable CA1716
