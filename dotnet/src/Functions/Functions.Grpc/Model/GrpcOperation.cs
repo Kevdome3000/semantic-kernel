@@ -94,12 +94,6 @@ internal sealed class GrpcOperation
     {
         return
         [
-            // Register the "address" parameter so that it's possible to override it if needed.
-            new(AddressArgumentName)
-            {
-                Description = "Address for gRPC channel to use."
-            },
-
             // Register the "payload" parameter to be used as gRPC operation request message.
             new(PayloadArgumentName)
             {

@@ -27,7 +27,7 @@ public class LocalFileSystemConnector : IFileSystemConnector
     {
         try
         {
-            return Task.FromResult<Stream>(File.Open(Environment.ExpandEnvironmentVariables(filePath), FileMode.Open, FileAccess.Read));
+            return Task.FromResult<Stream>(File.Open(filePath, FileMode.Open, FileAccess.Read));
         }
         catch (Exception e)
         {
@@ -53,7 +53,7 @@ public class LocalFileSystemConnector : IFileSystemConnector
     {
         try
         {
-            return Task.FromResult<Stream>(File.Open(Environment.ExpandEnvironmentVariables(filePath), FileMode.Open, FileAccess.ReadWrite));
+            return Task.FromResult<Stream>(File.Open(filePath, FileMode.Open, FileAccess.ReadWrite));
         }
         catch (Exception e)
         {
@@ -77,7 +77,7 @@ public class LocalFileSystemConnector : IFileSystemConnector
     {
         try
         {
-            return Task.FromResult<Stream>(File.Create(Environment.ExpandEnvironmentVariables(filePath)));
+            return Task.FromResult<Stream>(File.Create(filePath));
         }
         catch (Exception e)
         {
@@ -90,7 +90,7 @@ public class LocalFileSystemConnector : IFileSystemConnector
     {
         try
         {
-            return Task.FromResult(File.Exists(Environment.ExpandEnvironmentVariables(filePath)));
+            return Task.FromResult(File.Exists(filePath));
         }
         catch (Exception e)
         {

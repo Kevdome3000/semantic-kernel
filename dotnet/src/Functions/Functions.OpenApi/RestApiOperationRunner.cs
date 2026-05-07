@@ -257,13 +257,20 @@ internal sealed class RestApiOperationRunner
         if (_serverUrlValidationOptions.AllowedBaseUrls is { Count: > 0 } allowedBaseUrls)
         {
             bool baseUrlAllowed = false;
-            var urlString = url.AbsoluteUri;
 
             foreach (var baseUrl in allowedBaseUrls)
             {
-                var baseUrlString = baseUrl.AbsoluteUri;
+                // Use only scheme + authority + path for comparison, ignoring any query or fragment.
+                var baseUrlPath = baseUrl.GetLeftPart(UriPartial.Path);
+                var urlPath = url.GetLeftPart(UriPartial.Path);
+                var baseUrlWithSlash = baseUrlPath;
 
-                if (urlString.StartsWith(baseUrlString, StringComparison.OrdinalIgnoreCase))
+                if (!baseUrlWithSlash.EndsWith("/", StringComparison.Ordinal))
+                {
+                    baseUrlWithSlash += "/";
+                }
+                if (string.Equals(urlPath, baseUrlPath, StringComparison.OrdinalIgnoreCase) ||
+                    urlPath.StartsWith(baseUrlWithSlash, StringComparison.OrdinalIgnoreCase))
                 {
                     baseUrlAllowed = true;
                     break;

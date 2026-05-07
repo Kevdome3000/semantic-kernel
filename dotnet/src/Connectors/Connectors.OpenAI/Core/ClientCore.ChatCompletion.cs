@@ -622,6 +622,8 @@ internal partial class ClientCore
             }
         }
 
+        OpenAIPromptExecutionSettings.ApplyExtraBody(options, executionSettings);
+
         return options;
     }
 

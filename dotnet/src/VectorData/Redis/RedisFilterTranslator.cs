@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections;
 using System.Linq;
-using System;
 using System.Linq.Expressions;
 using System.Text;
 using Microsoft.Extensions.VectorData.ProviderServices;
@@ -26,10 +26,10 @@ internal class RedisFilterTranslator : FilterTranslatorBase
             return "*";
         }
 
-        var preprocessedExpression = PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
+        var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
-        Translate(preprocessedExpression);
-        return _filter.ToString();
+        this.Translate(preprocessedExpression);
+        return this._filter.ToString();
     }
 
     private void Translate(Expression? node)
@@ -38,52 +38,49 @@ internal class RedisFilterTranslator : FilterTranslatorBase
         {
             case BinaryExpression
             {
-                NodeType: ExpressionType.Equal
-                or ExpressionType.NotEqual
-                or ExpressionType.GreaterThan
-                or ExpressionType.GreaterThanOrEqual
-                or ExpressionType.LessThan
-                or ExpressionType.LessThanOrEqual
+                NodeType: ExpressionType.Equal or ExpressionType.NotEqual
+                or ExpressionType.GreaterThan or ExpressionType.GreaterThanOrEqual
+                or ExpressionType.LessThan or ExpressionType.LessThanOrEqual
             } binary:
-                TranslateEqualityComparison(binary);
+                this.TranslateEqualityComparison(binary);
                 return;
 
             case BinaryExpression { NodeType: ExpressionType.AndAlso } andAlso:
                 // https://redis.io/docs/latest/develop/interact/search-and-query/query/combined/#and
-                _filter.Append('(');
-                Translate(andAlso.Left);
-                _filter.Append(' ');
-                Translate(andAlso.Right);
-                _filter.Append(')');
+                this._filter.Append('(');
+                this.Translate(andAlso.Left);
+                this._filter.Append(' ');
+                this.Translate(andAlso.Right);
+                this._filter.Append(')');
                 return;
 
             case BinaryExpression { NodeType: ExpressionType.OrElse } orElse:
                 // https://redis.io/docs/latest/develop/interact/search-and-query/query/combined/#or
-                _filter.Append('(');
-                Translate(orElse.Left);
-                _filter.Append(" | ");
-                Translate(orElse.Right);
-                _filter.Append(')');
+                this._filter.Append('(');
+                this.Translate(orElse.Left);
+                this._filter.Append(" | ");
+                this.Translate(orElse.Right);
+                this._filter.Append(')');
                 return;
 
             case UnaryExpression { NodeType: ExpressionType.Not } not:
-                TranslateNot(not.Operand);
+                this.TranslateNot(not.Operand);
                 return;
 
             // Handle converting non-nullable to nullable; such nodes are found in e.g. r => r.Int == nullableInt
             case UnaryExpression { NodeType: ExpressionType.Convert } convert when Nullable.GetUnderlyingType(convert.Type) == convert.Operand.Type:
-                Translate(convert.Operand);
+                this.Translate(convert.Operand);
                 return;
 
             // MemberExpression is generally handled within e.g. TranslateEqual; this is used to translate direct bool inside filter (e.g. Filter => r => r.Bool)
-            case MemberExpression member when member.Type == typeof(bool) && TryBindProperty(member, out _):
+            case MemberExpression member when member.Type == typeof(bool) && this.TryBindProperty(member, out _):
             {
-                TranslateEqualityComparison(Expression.Equal(member, Expression.Constant(true)));
+                this.TranslateEqualityComparison(Expression.Equal(member, Expression.Constant(true)));
                 return;
             }
 
             case MethodCallExpression methodCall:
-                TranslateMethodCall(methodCall);
+                this.TranslateMethodCall(methodCall);
                 return;
 
             default:
@@ -100,20 +97,20 @@ internal class RedisFilterTranslator : FilterTranslatorBase
 
         bool TryProcessEqualityComparison(Expression first, Expression second)
         {
-            if (TryBindProperty(first, out var property) && second is ConstantExpression { Value: var constantValue })
+            if (this.TryBindProperty(first, out var property) && second is ConstantExpression { Value: var constantValue })
             {
                 // Numeric negation has a special syntax (!=), for the rest we nest in a NOT
                 if (binary.NodeType is ExpressionType.NotEqual && constantValue is not (int or long or float or double))
                 {
-                    TranslateNot(Expression.Equal(first, second));
+                    this.TranslateNot(Expression.Equal(first, second));
                     return true;
                 }
 
                 // Redis field names cannot be escaped in all contexts; storage names are validated during model building.
                 // https://redis.io/docs/latest/develop/interact/search-and-query/query/exact-match
-                _filter.Append('@').Append(property.StorageName);
+                this._filter.Append('@').Append(property.StorageName);
 
-                _filter.Append(
+                this._filter.Append(
                     binary.NodeType switch
                     {
                         ExpressionType.Equal when constantValue is byte or short or int or long or float or double => $" == {constantValue}",
@@ -142,9 +139,9 @@ internal class RedisFilterTranslator : FilterTranslatorBase
     private void TranslateNot(Expression expression)
     {
         // https://redis.io/docs/latest/develop/interact/search-and-query/query/combined/#not
-        _filter.Append("(-");
-        Translate(expression);
-        _filter.Append(')');
+        this._filter.Append("(-");
+        this.Translate(expression);
+        this._filter.Append(')');
     }
 
     private void TranslateMethodCall(MethodCallExpression methodCall)
@@ -153,13 +150,13 @@ internal class RedisFilterTranslator : FilterTranslatorBase
         {
             // Enumerable.Contains(), List.Contains(), MemoryExtensions.Contains()
             case var _ when TryMatchContains(methodCall, out var source, out var item):
-                TranslateContains(source, item);
+                this.TranslateContains(source, item);
                 return;
 
             // Enumerable.Any() with a Contains predicate (r => r.Strings.Any(s => array.Contains(s)))
             case { Method.Name: nameof(Enumerable.Any), Arguments: [var anySource, LambdaExpression lambda] } any
                 when any.Method.DeclaringType == typeof(Enumerable):
-                TranslateAny(anySource, lambda);
+                this.TranslateAny(anySource, lambda);
                 return;
 
             default:
@@ -170,10 +167,10 @@ internal class RedisFilterTranslator : FilterTranslatorBase
     private void TranslateContains(Expression source, Expression item)
     {
         // Contains over tag field
-        if (TryBindProperty(source, out var property) && item is ConstantExpression { Value: string stringConstant })
+        if (this.TryBindProperty(source, out var property) && item is ConstantExpression { Value: string stringConstant })
         {
             // Redis field names cannot be escaped in all contexts; storage names are validated during model building.
-            _filter
+            this._filter
                 .Append('@')
                 .Append(property.StorageName)
                 .Append(":{\"")
@@ -193,7 +190,7 @@ internal class RedisFilterTranslator : FilterTranslatorBase
     {
         // We only support the pattern: r.ArrayField.Any(x => values.Contains(x))
         // Translates to: @Field:{value1 | value2 | value3}
-        if (!TryBindProperty(source, out var property)
+        if (!this.TryBindProperty(source, out var property)
             || lambda.Body is not MethodCallExpression containsCall
             || !TryMatchContains(containsCall, out var valuesExpression, out var itemExpression))
         {
@@ -215,13 +212,12 @@ internal class RedisFilterTranslator : FilterTranslatorBase
         };
 
         // Generate: @Field:{value1 | value2 | value3}
-        _filter
+        this._filter
             .Append('@')
             .Append(property.StorageName)
             .Append(":{");
 
         var isFirst = true;
-
         foreach (var element in values)
         {
             if (element is not string stringElement)
@@ -235,18 +231,17 @@ internal class RedisFilterTranslator : FilterTranslatorBase
             }
             else
             {
-                _filter.Append(" | ");
+                this._filter.Append(" | ");
             }
 
-            _filter.Append('"').Append(SanitizeStringConstant(stringElement)).Append('"');
+            this._filter.Append('"').Append(SanitizeStringConstant(stringElement)).Append('"');
         }
 
-        _filter.Append('}');
+        this._filter.Append('}');
 
         static object?[] ExtractArrayValues(NewArrayExpression newArray)
         {
             var result = new object?[newArray.Expressions.Count];
-
             for (var i = 0; i < newArray.Expressions.Count; i++)
             {
                 if (newArray.Expressions[i] is not ConstantExpression { Value: var elementValue })
@@ -262,5 +257,9 @@ internal class RedisFilterTranslator : FilterTranslatorBase
     }
 
     private static string SanitizeStringConstant(string value)
-        => value.Replace("\"", "\\\"", StringComparison.Ordinal);
+#if NET
+        => value.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("\"", "\\\"", StringComparison.Ordinal);
+#else
+        => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
+#endif
 }

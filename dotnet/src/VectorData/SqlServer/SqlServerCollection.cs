@@ -4,16 +4,9 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Data.SqlTypes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 using System.Linq.Expressions;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.SqlServer;
@@ -41,6 +34,12 @@ public class SqlServerCollection<TKey, TRecord>
 
     /// <summary>The database schema.</summary>
     private readonly string? _schema;
+
+    /// <summary>Whether the model contains any DiskAnn vector properties, requiring Azure SQL.</summary>
+    private readonly bool _requiresAzureSql;
+
+    /// <summary>Cached result of the Azure SQL engine edition check (null = not yet checked).</summary>
+    private bool? _isAzureSql;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SqlServerCollection{TKey, TRecord}"/> class.
@@ -85,6 +84,16 @@ public class SqlServerCollection<TKey, TRecord>
 
         _mapper = new SqlServerMapper<TRecord>(_model);
 
+        // Check if any vector property uses DiskAnn, which requires Azure SQL.
+        foreach (var vp in this._model.VectorProperties)
+        {
+            if (vp.IndexKind == IndexKind.DiskAnn)
+            {
+                this._requiresAzureSql = true;
+                break;
+            }
+        }
+
         var connectionStringBuilder = new SqlConnectionStringBuilder(connectionString);
 
         _collectionMetadata = new()
@@ -128,6 +137,11 @@ public class SqlServerCollection<TKey, TRecord>
     private async Task CreateCollectionAsync(bool ifNotExists, CancellationToken cancellationToken)
     {
         using SqlConnection connection = new(_connectionString);
+
+        if (this._requiresAzureSql)
+        {
+            await this.EnsureAzureSqlForDiskAnnAsync(connection, cancellationToken).ConfigureAwait(false);
+        }
         List<SqlCommand> commands = SqlServerCommandBuilder.CreateTable(
             connection,
             _schema,
@@ -605,6 +619,11 @@ public class SqlServerCollection<TKey, TRecord>
         // Connection and command are going to be disposed by the ReadVectorSearchResultsAsync,
         // when the user is done with the results.
         SqlConnection connection = new(_connectionString);
+
+        if (vectorProperty.IndexKind == IndexKind.DiskAnn)
+        {
+            await this.EnsureAzureSqlForDiskAnnAsync(connection, cancellationToken).ConfigureAwait(false);
+        }
         SqlCommand command = SqlServerCommandBuilder.SelectVector(
             connection,
             _schema,
@@ -670,6 +689,11 @@ public class SqlServerCollection<TKey, TRecord>
         // Connection and command are going to be disposed by the ReadVectorSearchResultsAsync,
         // when the user is done with the results.
         SqlConnection connection = new(_connectionString);
+
+        if (vectorProperty.IndexKind == IndexKind.DiskAnn)
+        {
+            await this.EnsureAzureSqlForDiskAnnAsync(connection, cancellationToken).ConfigureAwait(false);
+        }
         SqlCommand command = SqlServerCommandBuilder.SelectHybrid(
             connection,
             _schema,
@@ -834,6 +858,50 @@ public class SqlServerCollection<TKey, TRecord>
             .ConfigureAwait(false))
         {
             yield return _mapper.MapFromStorageToDataModel(reader, options.IncludeVectors);
+        }
+    }
+
+    /// <summary>
+    /// Validates that the connection is to Azure SQL Database or SQL database in Microsoft Fabric,
+    /// which is required for DiskAnn vector indexes and the VECTOR_SEARCH function.
+    /// </summary>
+    private async Task EnsureAzureSqlForDiskAnnAsync(SqlConnection connection, CancellationToken cancellationToken)
+    {
+        if (this._isAzureSql is true)
+        {
+            return;
+        }
+
+        if (this._isAzureSql is false)
+        {
+            connection.Dispose();
+            throw new NotSupportedException(
+                "DiskAnn vector indexes and the VECTOR_SEARCH function require Azure SQL Database or SQL database in Microsoft Fabric. " +
+                "They are not supported on SQL Server. Use a Flat index kind with VECTOR_DISTANCE instead.");
+        }
+
+        if (connection.State != System.Data.ConnectionState.Open)
+        {
+            await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT SERVERPROPERTY('EngineEdition')";
+        var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+        var engineEdition = Convert.ToInt32(result);
+
+        // 5 = Azure SQL Database, 11 = SQL database in Microsoft Fabric
+        this._isAzureSql = engineEdition is 5 or 11;
+
+        if (!this._isAzureSql.Value)
+        {
+            // Dispose the connection before throwing; in SearchAsync/HybridSearchAsync the connection
+            // is not in a using block (it's normally disposed by ReadVectorSearchResultsAsync).
+            connection.Dispose();
+
+            throw new NotSupportedException(
+                "DiskAnn vector indexes and the VECTOR_SEARCH function require Azure SQL Database or SQL database in Microsoft Fabric. " +
+                "They are not supported on SQL Server. Use a Flat index kind with VECTOR_DISTANCE instead.");
         }
     }
 }
