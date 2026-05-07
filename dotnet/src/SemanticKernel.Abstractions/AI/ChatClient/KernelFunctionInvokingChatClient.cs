@@ -1,10 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
@@ -22,7 +17,6 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
         MaximumIterationsPerRequest = 128;
     }
 
-
     /// <summary>
     /// Invokes the auto function invocation filters.
     /// </summary>
@@ -37,7 +31,6 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
 
         return context;
     }
-
 
     /// <summary>
     /// This method will execute auto function invocation filters and function recursively.
@@ -67,7 +60,6 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
             await functionCallCallback(context).ConfigureAwait(false);
         }
     }
-
 
     /// <inheritdoc/>
     protected override async ValueTask<object?> InvokeFunctionAsync(FunctionInvocationContext context, CancellationToken cancellationToken)
@@ -116,7 +108,6 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
         return result;
     }
 
-
     public override Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         // If the autoInvoke is false, we don't call any function, just process the messages as is.
@@ -132,7 +123,6 @@ internal sealed class KernelFunctionInvokingChatClient : FunctionInvokingChatCli
 
         return base.GetResponseAsync(messages, options, cancellationToken);
     }
-
 
     public override IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {

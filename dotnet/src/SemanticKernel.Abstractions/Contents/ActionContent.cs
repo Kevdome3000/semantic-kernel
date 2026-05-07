@@ -1,6 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -26,7 +25,6 @@ public sealed class ActionContent : KernelContent
         }
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ActionContent"/> class.
     /// </summary>
@@ -38,7 +36,6 @@ public sealed class ActionContent : KernelContent
 
         _text = text;
     }
-
 
     /// <inheritdoc/>
     public override string ToString()

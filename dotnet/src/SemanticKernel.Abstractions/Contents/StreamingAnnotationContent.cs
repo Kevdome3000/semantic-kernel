@@ -1,6 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-using System;
-using System.Diagnostics.CodeAnalysis;
+﻿// Copyright (c) Microsoft.All rights reserved.
+
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -71,7 +70,6 @@ public class StreamingAnnotationContent : StreamingKernelContent
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? EndIndex { get; init; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingAnnotationContent"/> class.
     /// </summary>
@@ -88,7 +86,6 @@ public class StreamingAnnotationContent : StreamingKernelContent
         ReferenceId = referenceId;
     }
 
-
     /// <inheritdoc/>
     public override string ToString()
     {
@@ -98,7 +95,6 @@ public class StreamingAnnotationContent : StreamingKernelContent
             ? $"{Label}: {ReferenceId}"
             : ReferenceId;
     }
-
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()

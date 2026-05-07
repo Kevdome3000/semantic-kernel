@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -27,14 +25,12 @@ public abstract class FunctionChoiceBehavior
     /// </summary>
     private readonly IEnumerable<KernelFunction>? _functions;
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionChoiceBehavior"/> class.
     /// </summary>
     internal FunctionChoiceBehavior()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionChoiceBehavior"/> class.
@@ -47,7 +43,6 @@ public abstract class FunctionChoiceBehavior
     {
         _functions = functions;
     }
-
 
     /// <summary>
     /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to the AI model to call or specified ones.
@@ -67,7 +62,6 @@ public abstract class FunctionChoiceBehavior
         return new AutoFunctionChoiceBehavior(functions, autoInvoke, options);
     }
 
-
     /// <summary>
     /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to the AI model to call or specified ones.
     /// This behavior forces the model to call the provided functions. SK connectors will invoke a requested function or multiple requested functions if the model requests multiple ones in one request, while handling the first request, and stop advertising the functions for the following requests to prevent the model from repeatedly calling the same function(s).
@@ -86,7 +80,6 @@ public abstract class FunctionChoiceBehavior
         return new RequiredFunctionChoiceBehavior(functions, autoInvoke, options);
     }
 
-
     /// <summary>
     /// Gets an instance of the <see cref="FunctionChoiceBehavior"/> that provides either all of the <see cref="Kernel"/>'s plugins' functions to AI model to call or specified ones but instructs it not to call any of them.
     /// The model may use the provided function in the response it generates. E.g. the model may describe which functions it would call and with what parameter values.
@@ -103,14 +96,12 @@ public abstract class FunctionChoiceBehavior
         return new NoneFunctionChoiceBehavior(functions, options);
     }
 
-
     /// <summary>
     /// Returns the configuration used by AI connectors to determine function choice and invocation behavior.
     /// </summary>
     /// <param name="context">The context provided by AI connectors, used to determine the configuration.</param>
     /// <returns>The configuration.</returns>
     public abstract FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context);
-
 
     /// <summary>
     /// Returns functions AI connector should provide to the AI model.

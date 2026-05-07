@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.Diagnostics.CodeAnalysis;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -24,7 +21,6 @@ public class KeyPropertyModel(string modelName, Type type) : PropertyModel(model
     /// the connector needs to find and replace it with the reserved storage name.
     /// </summary>
     public string? SerializedKeyName { get; set; }
-
 
     /// <inheritdoc/>
     public override string ToString()

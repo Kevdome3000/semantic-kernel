@@ -1,4 +1,6 @@
-﻿/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
+﻿// Copyright (c) Microsoft.All rights reserved.
+
+/* Unmerged change from project 'SemanticKernel.Core(netstandard2.0)'
 Before:
 // Copyright (c) Microsoft. All rights reserved.
 After:
@@ -20,7 +22,6 @@ After:
 internal sealed partial class FunctionIdBlock : Block, ITextRendering
 */
 
-using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
@@ -95,5 +96,4 @@ internal sealed partial class FunctionIdBlock : Block, ITextRendering
 
     [GeneratedRegex("^[a-zA-Z0-9_.]*$")]
     private static partial Regex ValidContentRegex();
-
 }

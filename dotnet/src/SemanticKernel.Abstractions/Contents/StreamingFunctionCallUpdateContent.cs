@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Microsoft.SemanticKernel;
@@ -36,7 +35,6 @@ public class StreamingFunctionCallUpdateContent : StreamingKernelContent
     [Experimental("SKEXP0001")]
     public int RequestIndex { get; init; } = 0;
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="StreamingFunctionCallUpdateContent"/> class.
     /// </summary>
@@ -56,13 +54,11 @@ public class StreamingFunctionCallUpdateContent : StreamingKernelContent
         FunctionCallIndex = functionCallIndex;
     }
 
-
     /// <inheritdoc />
     public override string ToString()
     {
         return nameof(StreamingFunctionCallUpdateContent);
     }
-
 
     /// <inheritdoc />
     public override byte[] ToByteArray()

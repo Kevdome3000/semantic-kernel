@@ -1,11 +1,7 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Threading.Tasks;
-
 namespace Microsoft.SemanticKernel;
 #pragma warning disable CA1716 // Identifiers should not match keywords (Func<FunctionCallInvocationContext, Task> next)
-
 
 /// <summary>
 /// Interface for filtering actions during automatic function invocation.

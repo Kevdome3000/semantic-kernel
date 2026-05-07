@@ -160,7 +160,7 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             if (clientWrapper.Client.ClientOptions?.UseSystemTextJsonSerializerWithOptions is null)
             {
                 throw new ArgumentException(
-                    $"Property {nameof(CosmosClientOptions.UseSystemTextJsonSerializerWithOptions)} in CosmosClient.ClientOptions " + $"is required to be configured for {this.GetType().Name}.");
+                    $"Property {nameof(CosmosClientOptions.UseSystemTextJsonSerializerWithOptions)} in CosmosClient.ClientOptions " + $"is required to be configured for {GetType().Name}.");
             }
 
             options ??= CosmosNoSqlCollectionOptions.Default;
@@ -337,7 +337,7 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     {
         var (documentId, partitionKey) = GetDocumentIdAndPartitionKey(key);
 
-        return this.RunOperationAsync("DeleteItem",
+        return RunOperationAsync("DeleteItem",
             async () =>
             {
                 try
@@ -376,7 +376,7 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
 
         var (documentId, partitionKey) = GetDocumentIdAndPartitionKey(key);
 
-        var jsonObject = await this.RunOperationAsync(OperationName,
+        var jsonObject = await RunOperationAsync(OperationName,
                 async () =>
                 {
                     try
@@ -424,7 +424,7 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             yield break;
         }
 
-        var response = await this.RunOperationAsync(OperationName,
+        var response = await RunOperationAsync(OperationName,
                 () =>
                     _database
                         .GetContainer(Name)
@@ -508,7 +508,7 @@ public class CosmosNoSqlCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             throw new ArgumentException($"Key property {_model.KeyProperty.ModelName} is not initialized.");
         }
 
-        await this.RunOperationAsync(OperationName,
+        await RunOperationAsync(OperationName,
                 () =>
                     _database
                         .GetContainer(Name)

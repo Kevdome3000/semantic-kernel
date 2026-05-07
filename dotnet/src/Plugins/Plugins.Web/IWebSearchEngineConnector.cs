@@ -1,8 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel.Plugins.Web;
 
@@ -11,7 +7,6 @@ namespace Microsoft.SemanticKernel.Plugins.Web;
 /// </summary>
 public interface IWebSearchEngineConnector
 {
-
     /// <summary>
     /// Execute a web search engine search.
     /// </summary>
@@ -25,5 +20,4 @@ public interface IWebSearchEngineConnector
         int count = 1,
         int offset = 0,
         CancellationToken cancellationToken = default);
-
 }

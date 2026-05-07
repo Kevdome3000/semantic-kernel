@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System.Collections.Generic;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel;
 
@@ -17,7 +15,6 @@ public sealed class FunctionChoiceBehaviorConfiguration
     {
         Options = options;
     }
-
 
     /// <summary>
     /// Represents an AI model's decision-making strategy for calling functions.

@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Threading;
 using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
@@ -13,7 +11,6 @@ internal sealed class NpgsqlDataSourceArc(NpgsqlDataSource dataSource) : IDispos
 {
     private int _referenceCount = 1;
 
-
     public void Dispose()
     {
         if (Interlocked.Decrement(ref _referenceCount) == 0)
@@ -21,7 +18,6 @@ internal sealed class NpgsqlDataSourceArc(NpgsqlDataSource dataSource) : IDispos
             dataSource.Dispose();
         }
     }
-
 
     internal NpgsqlDataSourceArc IncrementReferenceCount()
     {

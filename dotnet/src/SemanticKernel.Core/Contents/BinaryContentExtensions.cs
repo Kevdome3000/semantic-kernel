@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.IO;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel;
 
@@ -20,7 +17,7 @@ public static class BinaryContentExtensions
     {
         if (string.IsNullOrWhiteSpace(filePath))
         {
-            throw new ArgumentException(@"File path cannot be null or empty", nameof(filePath));
+            throw new ArgumentException("File path cannot be null or empty", nameof(filePath));
         }
 
         if (!overwrite && File.Exists(filePath))

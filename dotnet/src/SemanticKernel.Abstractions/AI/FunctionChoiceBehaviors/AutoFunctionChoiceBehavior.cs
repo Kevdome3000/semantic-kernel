@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -17,7 +15,6 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// </summary>
     internal readonly bool AutoInvoke = true;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionChoiceBehavior"/> class.
     /// </summary>
@@ -25,7 +22,6 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     internal AutoFunctionChoiceBehavior()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionChoiceBehavior"/> class.
@@ -45,7 +41,6 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
         Options = options;
     }
 
-
     /// <summary>
     /// Fully qualified names of the functions to provide to AI model.
     /// If null, all <see cref="Kernel"/>'s plugins' functions are provided to the model.
@@ -61,7 +56,6 @@ public sealed class AutoFunctionChoiceBehavior : FunctionChoiceBehavior
     /// </summary>
     [JsonPropertyName("options")]
     public FunctionChoiceBehaviorOptions? Options { get; set; }
-
 
     /// <inheritdoc />
     public override FunctionChoiceBehaviorConfiguration GetConfiguration(FunctionChoiceBehaviorConfigurationContext context)

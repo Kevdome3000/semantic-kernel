@@ -1,12 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 
 namespace Microsoft.SemanticKernel.Connectors.InMemory;
@@ -53,7 +47,6 @@ public static class InMemoryVectorStoreExtensions
         await JsonSerializer.SerializeAsync(stream, recordCollection, jsonSerializerOptions).ConfigureAwait(false);
     }
 
-
     /// <summary>
     /// Deserialize a <see cref="VectorStoreCollection{TKey, TRecord}"/> to a stream as JSON.
     /// </summary>
@@ -93,7 +86,6 @@ public static class InMemoryVectorStoreExtensions
         return collection;
     }
 
-
     #region private
 
     /// <summary>Model class used when storing a <see cref="InMemoryCollection{TKey, TRecord}" />.</summary>
@@ -105,6 +97,5 @@ public static class InMemoryVectorStoreExtensions
     }
 
     #endregion
-
 
 }

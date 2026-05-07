@@ -1,10 +1,7 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 #pragma warning disable RCS1168 // Parameter name differs from base name.
 #pragma warning disable CA1725 // Parameter names should match base declaration
@@ -23,13 +20,11 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
     /// <summary>The underlying dictionary of plugins.</summary>
     private readonly Dictionary<string, KernelPlugin> _plugins;
 
-
     /// <summary>Initializes a collection of plugins.</summary>
     public KernelPluginCollection()
     {
         _plugins = new Dictionary<string, KernelPlugin>(StringComparer.OrdinalIgnoreCase);
     }
-
 
     /// <summary>Initializes a collection of plugins that contains all of the plugins from the provided collection.</summary>
     /// <param name="plugins">The initial collection of plugins to populate this collection.</param>
@@ -54,10 +49,8 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         }
     }
 
-
     /// <summary>Gets the number of plugins in the collection.</summary>
     public int Count => _plugins.Count;
-
 
     /// <summary>Adds the plugin to the plugin collection.</summary>
     /// <param name="plugin">The plugin to add.</param>
@@ -73,7 +66,6 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
 
         _plugins.Add(name, plugin);
     }
-
 
     /// <summary>Adds a collection of plugins to this plugin collection.</summary>
     /// <param name="plugins">The plugins to add.</param>
@@ -91,7 +83,6 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         }
     }
 
-
     /// <summary>Removes the specified plugin from the collection.</summary>
     /// <param name="plugin">The plugin to remove.</param>
     /// <returns>true if <paramref name="plugin"/> was in the collection and could be removed; otherwise, false.</returns>
@@ -106,7 +97,6 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
 
         return false;
     }
-
 
     /// <summary>
     ///  Adds the plugin to the collection if it does not already exist.
@@ -130,13 +120,11 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         return true;
     }
 
-
     /// <summary>Removes all plugins from the collection.</summary>
     public void Clear()
     {
         _plugins.Clear();
     }
-
 
     /// <summary>Gets an enumerable of all plugins stored in this collection.</summary>
     public IEnumerator<KernelPlugin> GetEnumerator()
@@ -144,13 +132,11 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         return _plugins.Values.GetEnumerator();
     }
 
-
     /// <summary>Gets an enumerable of all plugins stored in this collection.</summary>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
     }
-
 
     /// <summary>Gets whether the collection contains the specified plugin.</summary>
     /// <param name="plugin">The plugin.</param>
@@ -161,7 +147,6 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
 
         return _plugins.TryGetValue(plugin.Name, out KernelPlugin? existing) && plugin == existing;
     }
-
 
     /// <inheritdoc/>
     public KernelPlugin this[string name]
@@ -177,7 +162,6 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         }
     }
 
-
     /// <summary>Gets a plugin from the collection by name.</summary>
     /// <param name="name">The name of the plugin.</param>
     /// <param name="plugin">The plugin if found in the collection.</param>
@@ -187,27 +171,22 @@ public sealed class KernelPluginCollection : ICollection<KernelPlugin>, IReadOnl
         return _plugins.TryGetValue(name, out plugin);
     }
 
-
     void ICollection<KernelPlugin>.CopyTo(KernelPlugin[] array, int arrayIndex)
     {
         ((IDictionary<string, KernelPlugin>)_plugins).Values.CopyTo(array, arrayIndex);
     }
 
-
     bool ICollection<KernelPlugin>.IsReadOnly => false;
-
 
     /// <summary>Debugger type proxy for nicer interaction with the collection in a debugger.</summary>
     private sealed class TypeProxy
     {
         private readonly KernelPluginCollection _collection;
 
-
         public TypeProxy(KernelPluginCollection collection)
         {
             _collection = collection;
         }
-
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
         public KernelPlugin[] Plugins => [.. _collection._plugins.Values];

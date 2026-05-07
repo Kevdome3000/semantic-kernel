@@ -1,11 +1,7 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 
@@ -56,7 +52,8 @@ public sealed class FileIOPlugin
     /// </example>
     /// <param name="path"> Source file </param>
     /// <returns> File content </returns>
-    [KernelFunction] [Description("Read a file")]
+    [KernelFunction]
+    [Description("Read a file")]
     public async Task<string> ReadAsync([Description("Source file")] string path)
     {
         if (!IsFilePathAllowed(path))
@@ -77,7 +74,8 @@ public sealed class FileIOPlugin
     /// <param name="path">The destination file path</param>
     /// <param name="content">The file content to write</param>
     /// <returns> An awaitable task </returns>
-    [KernelFunction] [Description("Write a file")]
+    [KernelFunction]
+    [Description("Write a file")]
     public async Task WriteAsync(
         [Description("Destination file")] string path,
         [Description("File content")] string content)
@@ -120,14 +118,14 @@ public sealed class FileIOPlugin
 
         if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArgumentException(@"Invalid file path, UNC paths are not supported.", nameof(path));
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
         string? directoryPath = Path.GetDirectoryName(path);
 
         if (string.IsNullOrEmpty(directoryPath))
         {
-            throw new ArgumentException(@"Invalid file path, a fully qualified file location must be specified.", nameof(path));
+            throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(path));
         }
 
         if (File.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))

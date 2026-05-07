@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel.Data;
 

@@ -1,11 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Microsoft.SemanticKernel.TextGeneration;
@@ -37,7 +31,6 @@ public static class TextGenerationExtensions
                 cancellationToken)
             .ConfigureAwait(false)).Single();
     }
-
 
     /// <summary>
     /// Get a text generation results for the standardized prompt and settings.
@@ -79,7 +72,6 @@ public static class TextGenerationExtensions
                 cancellationToken)
             .ConfigureAwait(false);
     }
-
 
     /// <summary>
     /// Get streaming results for the standardized prompt using the specified settings.

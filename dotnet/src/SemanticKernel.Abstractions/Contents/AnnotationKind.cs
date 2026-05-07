@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -34,7 +32,6 @@ public readonly struct AnnotationKind : IEquatable<AnnotationKind>
     /// </remarks>
     public string Label { get; }
 
-
     /// <summary>
     /// Creates a new <see cref="AnnotationKind"/> instance with the provided label.
     /// </summary>
@@ -45,7 +42,6 @@ public readonly struct AnnotationKind : IEquatable<AnnotationKind>
         Verify.NotNullOrWhiteSpace(label, nameof(label));
         Label = label!;
     }
-
 
     /// <summary>
     /// Returns a value indicating whether two <see cref="AnnotationKind"/> instances are equivalent, as determined by a
@@ -59,7 +55,6 @@ public readonly struct AnnotationKind : IEquatable<AnnotationKind>
         return left.Equals(right);
     }
 
-
     /// <summary>
     /// Returns a value indicating whether two <see cref="AnnotationKind"/> instances are not equivalent, as determined by a
     /// case-insensitive comparison of their labels.
@@ -72,13 +67,11 @@ public readonly struct AnnotationKind : IEquatable<AnnotationKind>
         return !(left == right);
     }
 
-
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
         return obj is AnnotationKind otherRole && this == otherRole;
     }
-
 
     /// <inheritdoc/>
     public bool Equals(AnnotationKind other)
@@ -86,13 +79,11 @@ public readonly struct AnnotationKind : IEquatable<AnnotationKind>
         return string.Equals(Label, other.Label, StringComparison.OrdinalIgnoreCase);
     }
 
-
     /// <inheritdoc/>
     public override int GetHashCode()
     {
         return StringComparer.OrdinalIgnoreCase.GetHashCode(Label);
     }
-
 
     /// <inheritdoc/>
     public override string ToString()

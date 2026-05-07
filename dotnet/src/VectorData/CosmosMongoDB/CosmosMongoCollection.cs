@@ -147,18 +147,18 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("ListCollectionNames", () => InternalCollectionExistsAsync(cancellationToken));
+        return RunOperationAsync("ListCollectionNames", () => InternalCollectionExistsAsync(cancellationToken));
     }
 
 
     /// <inheritdoc />
     public override async Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        await this.RunOperationAsync("CreateCollection",
+        await RunOperationAsync("CreateCollection",
                 () => _mongoDatabase.CreateCollectionAsync(Name, cancellationToken: cancellationToken))
             .ConfigureAwait(false);
 
-        await this.RunOperationAsync("CreateIndexes",
+        await RunOperationAsync("CreateIndexes",
                 () => CreateIndexesAsync(Name, cancellationToken: cancellationToken))
             .ConfigureAwait(false);
     }
@@ -169,7 +169,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     {
         Verify.NotNull(key);
 
-        await this.RunOperationAsync("DeleteOne", () => _mongoCollection.DeleteOneAsync(GetFilterById(key), cancellationToken))
+        await RunOperationAsync("DeleteOne", () => _mongoCollection.DeleteOneAsync(GetFilterById(key), cancellationToken))
             .ConfigureAwait(false);
     }
 
@@ -179,7 +179,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     {
         Verify.NotNull(keys);
 
-        await this.RunOperationAsync("DeleteMany", () => _mongoCollection.DeleteManyAsync(GetFilterByIds(keys), cancellationToken))
+        await RunOperationAsync("DeleteMany", () => _mongoCollection.DeleteManyAsync(GetFilterByIds(keys), cancellationToken))
             .ConfigureAwait(false);
     }
 
@@ -187,7 +187,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("DropCollection", () => _mongoDatabase.DropCollectionAsync(Name, cancellationToken));
+        return RunOperationAsync("DropCollection", () => _mongoDatabase.DropCollectionAsync(Name, cancellationToken));
     }
 
 
@@ -334,7 +334,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
 
         var key = GetStorageKey(storageModel);
 
-        await this.RunOperationAsync(OperationName,
+        await RunOperationAsync(OperationName,
                 async () =>
                     await _mongoCollection
                         .ReplaceOneAsync(GetFilterById(key),
@@ -477,7 +477,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
         }
 
         const string OperationName = "Aggregate";
-        var cursor = await this.RunOperationAsync(
+        var cursor = await RunOperationAsync(
                 OperationName,
                 () => _mongoCollection.AggregateAsync<BsonDocument>(pipeline, cancellationToken: cancellationToken))
             .ConfigureAwait(false);
@@ -550,7 +550,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
                 }));
         }
 
-        using IAsyncCursor<BsonDocument> cursor = await this.FindAsync(
+        using IAsyncCursor<BsonDocument> cursor = await FindAsync(
                 translatedFilter,
                 top,
                 options.Skip,
@@ -601,7 +601,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
                 { "indexes", indexArray }
             };
 
-            var cursor = await this.RunOperationAsync(OperationName,
+            var cursor = await RunOperationAsync(OperationName,
                     () =>
                         _mongoDatabase.RunCommandAsync<BsonDocument>(createIndexCommand, cancellationToken: cancellationToken))
                 .ConfigureAwait(false);
@@ -636,7 +636,7 @@ public class CosmosMongoCollection<TKey, TRecord> : VectorStoreCollection<TKey, 
             ? new FindOptions<BsonDocument> { Projection = projectionDefinition, Limit = top, Skip = skip, Sort = sortDefinition }
             : new FindOptions<BsonDocument> { Limit = top, Skip = skip, Sort = sortDefinition };
 
-        var cursor = await this.RunOperationAsync(OperationName,
+        var cursor = await RunOperationAsync(OperationName,
                 () =>
                     _mongoCollection.FindAsync(filter, findOptions, cancellationToken))
             .ConfigureAwait(false);

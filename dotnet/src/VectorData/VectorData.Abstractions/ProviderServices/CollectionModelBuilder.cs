@@ -1,10 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.AI;
 
@@ -59,7 +55,6 @@ public abstract class CollectionModelBuilder
     /// </summary>
     protected Type? KeyType { get; private set; }
 
-
     /// <summary>
     /// Constructs a new <see cref="CollectionModelBuilder"/>.
     /// </summary>
@@ -67,7 +62,6 @@ public abstract class CollectionModelBuilder
     {
         Options = options;
     }
-
 
     /// <summary>
     /// Builds and returns an <see cref="CollectionModel"/> from the given <paramref name="recordType"/> and <paramref name="definition"/>.
@@ -152,7 +146,6 @@ public abstract class CollectionModelBuilder
             PropertyMap);
     }
 
-
     /// <summary>
     /// Builds and returns an <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="definition"/>.
     /// </summary>
@@ -187,7 +180,6 @@ public abstract class CollectionModelBuilder
             VectorProperties,
             PropertyMap);
     }
-
 
     /// <summary>
     /// As part of building the model, this method processes a single property, accepting both a CLR <see cref="PropertyInfo"/>
@@ -364,7 +356,6 @@ public abstract class CollectionModelBuilder
         PropertyMap.Add(propertyName, property);
     }
 
-
     private void SetPropertyStorageName(PropertyModel property, string? storageName, Type? type)
     {
         if (property is KeyPropertyModel && Options.ReservedKeyStorageName is not null)
@@ -391,7 +382,6 @@ public abstract class CollectionModelBuilder
         property.StorageName = storageName;
     }
 
-
     /// <summary>
     /// Gets the embedding types supported by this provider, in priority order.
     /// The first type whose embedding generator is compatible with the input type will be used.
@@ -401,7 +391,6 @@ public abstract class CollectionModelBuilder
     /// </remarks>
     protected virtual IReadOnlyList<EmbeddingGenerationDispatcher> EmbeddingGenerationDispatchers { get; }
         = [EmbeddingGenerationDispatcher.Create<Embedding<float>>()];
-
 
     /// <summary>
     /// Attempts to resolve the embedding type for the given vector property, iterating over <see cref="EmbeddingGenerationDispatchers"/> in priority order.
@@ -422,7 +411,6 @@ public abstract class CollectionModelBuilder
         return (null, null);
     }
 
-
     /// <summary>
     /// Resolves the embedding handler for a native vector property type, where embedding generation is only needed for search.
     /// Since the property type is already a valid native type, we only check if the generator can produce the
@@ -440,7 +428,6 @@ public abstract class CollectionModelBuilder
 
         return null;
     }
-
 
     /// <summary>
     /// Configures embedding generation for a vector property. Sets the embedding generator, resolves the embedding type,
@@ -491,14 +478,12 @@ public abstract class CollectionModelBuilder
         // But we throw later, in validation, to allow for provider customization to correct this invalid state after this step.
     }
 
-
     /// <summary>
     /// Extension hook for connectors to be able to customize the model.
     /// </summary>
     protected virtual void Customize()
     {
     }
-
 
     /// <summary>
     /// Validates the model after all properties have been processed.
@@ -546,7 +531,6 @@ public abstract class CollectionModelBuilder
                 : $"type '{type.Name}' or ";
         }
     }
-
 
     /// <summary>
     /// Validates a single property, performing validation on it.
@@ -622,7 +606,6 @@ public abstract class CollectionModelBuilder
         }
     }
 
-
     /// <summary>
     /// Configures auto-generation for the given key property.
     /// Defaults to configuring <see cref="Guid" /> key properties as auto-generated, and throwing if auto-generation is requested for
@@ -632,7 +615,6 @@ public abstract class CollectionModelBuilder
     {
         return keyPropertyType == typeof(Guid);
     }
-
 
     /// <summary>
     /// Validates the key property. The default implementation validates that the collection's generic key type (<see cref="KeyType"/>)
@@ -648,12 +630,10 @@ public abstract class CollectionModelBuilder
         }
     }
 
-
     /// <summary>
     /// Validates that the .NET type for a data property is supported by the provider.
     /// </summary>
     protected abstract bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes);
-
 
     /// <summary>
     /// Validates that the .NET type for a vector property is supported by the provider.

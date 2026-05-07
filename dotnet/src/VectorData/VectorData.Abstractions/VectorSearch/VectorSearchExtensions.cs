@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.Extensions.VectorData;
 

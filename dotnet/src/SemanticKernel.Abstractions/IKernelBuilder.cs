@@ -14,7 +14,6 @@ public interface IKernelBuilder
     IKernelBuilderPlugins Plugins { get; }
 }
 
-
 /// <summary>Provides a builder for adding plugins as singletons to a service collection.</summary>
 public interface IKernelBuilderPlugins
 {

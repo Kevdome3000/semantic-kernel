@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -200,25 +199,21 @@ internal sealed class TemplateTokenizer(ILoggerFactory? loggerFactory = null)
         return blocks;
     }
 
-
     #region private ================================================================================
 
     private readonly ILoggerFactory _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
     private readonly CodeTokenizer _codeTokenizer = new(loggerFactory);
 
-
     private static string SubStr(string text, int startIndex, int stopIndex)
     {
         return text.Substring(startIndex, stopIndex - startIndex);
     }
 
-
     private static bool IsQuote(char c)
     {
         return c is Symbols.DblQuote or Symbols.SglQuote;
     }
-
 
     private static bool CanBeEscaped(char c)
     {
@@ -226,6 +221,5 @@ internal sealed class TemplateTokenizer(ILoggerFactory? loggerFactory = null)
     }
 
     #endregion
-
 
 }

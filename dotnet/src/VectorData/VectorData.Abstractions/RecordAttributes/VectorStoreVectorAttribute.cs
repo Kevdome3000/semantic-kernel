@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -24,9 +22,8 @@ public sealed class VectorStoreVectorAttribute : Attribute
             throw new ArgumentOutOfRangeException(nameof(Dimensions), "Dimensions must be greater than zero.");
         }
 
-        this.Dimensions = Dimensions;
+        Dimensions = Dimensions;
     }
-
 
     /// <summary>
     /// Gets the number of dimensions that the vector has.

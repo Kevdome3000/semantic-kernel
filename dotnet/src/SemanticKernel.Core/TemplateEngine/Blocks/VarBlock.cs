@@ -91,5 +91,4 @@ internal sealed partial class VarBlock : Block, ITextRendering
 
     [GeneratedRegex("^[a-zA-Z0-9_]*$")]
     private static partial Regex ValidNameRegex();
-
 }

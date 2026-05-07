@@ -1,10 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -25,7 +20,6 @@ internal sealed class FunctionStore
     private readonly FunctionStoreOptions _options;
     private readonly VectorStoreCollection<object, Dictionary<string, object?>> _collection;
     private bool _isCollectionExistenceAsserted;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionStore"/> class.
@@ -71,7 +65,6 @@ internal sealed class FunctionStore
             });
     }
 
-
     /// <summary>
     /// Saves the functions to the vector store.
     /// </summary>
@@ -99,7 +92,6 @@ internal sealed class FunctionStore
         await _collection.UpsertAsync(functionRecords, cancellationToken).ConfigureAwait(false);
     }
 
-
     /// <summary>
     /// Searches for functions based on the provided context.
     /// </summary>
@@ -118,7 +110,6 @@ internal sealed class FunctionStore
 
         return results.Select(result => _functionByName[(string)result.Record["Name"]!]);
     }
-
 
     /// <summary>
     /// Get the function vectorization information, which includes the function name and the source used for vectorization.
@@ -150,7 +141,6 @@ internal sealed class FunctionStore
         return nameSourcePairs;
     }
 
-
     /// <summary>
     /// Asserts that the collection exists in the vector store.
     /// </summary>
@@ -168,20 +158,17 @@ internal sealed class FunctionStore
         }
     }
 
-
     internal readonly struct FunctionVectorizationInfo
     {
         public string Name { get; }
 
         public string VectorizationSource { get; }
 
-
         public FunctionVectorizationInfo(string name, string vectorizationSource)
         {
             Name = name;
             VectorizationSource = vectorizationSource;
         }
-
 
         public void Deconstruct(out string name, out string vectorizationSource)
         {

@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
@@ -17,7 +15,6 @@ public static class PostgresServiceCollectionExtensions
 {
     private const string DynamicCodeMessage = "This method is incompatible with NativeAOT, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
     private const string UnreferencedCodeMessage = "This method is incompatible with trimming, consult the documentation for adding collections in a way that's compatible with NativeAOT.";
-
 
     /// <summary>
     /// Register a <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, where the <see cref="NpgsqlDataSource"/> is retrieved from the dependency injection container.
@@ -51,7 +48,6 @@ public static class PostgresServiceCollectionExtensions
         return services;
     }
 
-
     /// <summary>
     /// Registers a <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
     /// </summary>
@@ -70,7 +66,6 @@ public static class PostgresServiceCollectionExtensions
             sp => options,
             lifetime);
     }
-
 
     /// <summary>
     /// Registers a keyed <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
@@ -97,7 +92,6 @@ public static class PostgresServiceCollectionExtensions
             lifetime);
     }
 
-
     /// <summary>
     /// Registers a <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
     /// </summary>
@@ -115,7 +109,6 @@ public static class PostgresServiceCollectionExtensions
             lifetime);
     }
 
-
     /// <inheritdoc cref="AddVectorStore(IServiceCollection, object?, Func{IServiceProvider, string}, Func{IServiceProvider, PostgresVectorStoreOptions?}?, ServiceLifetime)"/>
     public static IServiceCollection AddKeyedPostgresVectorStore(
         this IServiceCollection services,
@@ -130,7 +123,6 @@ public static class PostgresServiceCollectionExtensions
             optionsProvider,
             lifetime);
     }
-
 
     /// <summary>
     /// Registers a keyed <see cref="PostgresVectorStore"/> as <see cref="VectorStore"/>, with the specified connection string and service lifetime.
@@ -169,7 +161,6 @@ public static class PostgresServiceCollectionExtensions
 
         return services;
     }
-
 
     /// <summary>
     /// Register a <see cref="PostgresCollection{TKey, TRecord}"/> where the <see cref="NpgsqlDataSource"/> is retrieved from the dependency injection container.
@@ -213,7 +204,6 @@ public static class PostgresServiceCollectionExtensions
         return services;
     }
 
-
     /// <summary>
     /// Registers a <see cref="PostgresCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
@@ -237,7 +227,6 @@ public static class PostgresServiceCollectionExtensions
             sp => options,
             lifetime);
     }
-
 
     /// <summary>
     /// Registers a keyed <see cref="PostgresCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -272,7 +261,6 @@ public static class PostgresServiceCollectionExtensions
             lifetime);
     }
 
-
     /// <summary>
     /// Registers a <see cref="PostgresCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
     /// </summary>
@@ -294,7 +282,6 @@ public static class PostgresServiceCollectionExtensions
             optionsProvider,
             lifetime);
     }
-
 
     /// <summary>
     /// Registers a keyed <see cref="PostgresCollection{TKey, TRecord}"/> as <see cref="VectorStoreCollection{TKey, TRecord}"/>, with the specified connection string and service lifetime.
@@ -337,7 +324,6 @@ public static class PostgresServiceCollectionExtensions
         return services;
     }
 
-
     private static void AddAbstractions<TKey, TRecord>(IServiceCollection services, object? serviceKey, ServiceLifetime lifetime)
         where TKey : notnull
         where TRecord : class
@@ -358,7 +344,6 @@ public static class PostgresServiceCollectionExtensions
             lifetime));
     }
 
-
     private static PostgresVectorStoreOptions? GetStoreOptions(IServiceProvider sp, Func<IServiceProvider, PostgresVectorStoreOptions?>? optionsProvider)
     {
         var options = optionsProvider?.Invoke(sp);
@@ -373,7 +358,6 @@ public static class PostgresServiceCollectionExtensions
             ? options // There is nothing to change.
             : new PostgresVectorStoreOptions(options) { EmbeddingGenerator = embeddingGenerator }; // Create a brand new copy in order to avoid modifying the original options.
     }
-
 
     private static PostgresCollectionOptions? GetCollectionOptions(IServiceProvider sp, Func<IServiceProvider, PostgresCollectionOptions?>? optionsProvider)
     {

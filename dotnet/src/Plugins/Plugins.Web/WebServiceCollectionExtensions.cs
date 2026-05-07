@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 #pragma warning disable CS0618 // ITextSearch is obsolete - these extension methods provide backward compatibility
 
@@ -43,7 +43,6 @@ public static class WebServiceCollectionExtensions
         return services;
     }
 
-
     /// <summary>
     /// Register an <see cref="ITextSearch"/> instance with the specified service ID.
     /// </summary>
@@ -68,7 +67,6 @@ public static class WebServiceCollectionExtensions
 
         return services;
     }
-
 
     /// <summary>
     /// Register an <see cref="ITextSearch"/> instance with the specified service ID.
@@ -98,7 +96,6 @@ public static class WebServiceCollectionExtensions
 
         return services;
     }
-
 
     /// <summary>
     /// Register an <see cref="ITextSearch"/> instance with the specified service ID.

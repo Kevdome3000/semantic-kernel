@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -20,7 +18,6 @@ public sealed class AnyTagEqualToFilterClause : FilterClause
         FieldName = fieldName;
         Value = value;
     }
-
 
     /// <summary>
     /// Gets the name of the field with the list of values.

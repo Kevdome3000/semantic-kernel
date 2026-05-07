@@ -1,14 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 #pragma warning disable CS0618 // Obsolete ITextSearch, TextSearchOptions, TextSearchFilter, FilterClause - backward compatibility
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -18,8 +12,6 @@ namespace Microsoft.SemanticKernel.Data;
 [Experimental("SKEXP0001")]
 public static class TextSearchExtensions
 {
-
-
     #region KernelPlugin factory methods
 
     /// <summary>
@@ -42,7 +34,6 @@ public static class TextSearchExtensions
 
         return KernelPluginFactory.CreateFromFunctions(pluginName, description, [textSearch.CreateSearch()]);
     }
-
 
     /// <summary>
     /// Creates a plugin from an ITextSearch implementation.
@@ -68,7 +59,6 @@ public static class TextSearchExtensions
         return KernelPluginFactory.CreateFromFunctions(pluginName, description, [textSearch.CreateSearch(jsonSerializerOptions)]);
     }
 
-
     /// <summary>
     /// Creates a plugin from an ITextSearch implementation.
     /// </summary>
@@ -89,7 +79,6 @@ public static class TextSearchExtensions
 
         return KernelPluginFactory.CreateFromFunctions(pluginName, description, [textSearch.CreateGetTextSearchResults()]);
     }
-
 
     /// <summary>
     /// Creates a plugin from an ITextSearch implementation.
@@ -115,7 +104,6 @@ public static class TextSearchExtensions
         return KernelPluginFactory.CreateFromFunctions(pluginName, description, [textSearch.CreateGetTextSearchResults(jsonSerializerOptions)]);
     }
 
-
     /// <summary>
     /// Creates a plugin from an ITextSearch implementation.
     /// </summary>
@@ -136,7 +124,6 @@ public static class TextSearchExtensions
 
         return KernelPluginFactory.CreateFromFunctions(pluginName, description, [textSearch.CreateGetSearchResults()]);
     }
-
 
     /// <summary>
     /// Creates a plugin from an ITextSearch implementation.
@@ -163,7 +150,6 @@ public static class TextSearchExtensions
     }
 
     #endregion
-
 
     #region KernelFunction factory methods
 
@@ -212,7 +198,6 @@ public static class TextSearchExtensions
             SearchAsync,
             options);
     }
-
 
     /// <summary>
     /// Create a <see cref="KernelFunction"/> which invokes <see cref="ITextSearch.SearchAsync(string, TextSearchOptions?, CancellationToken)"/>.
@@ -264,7 +249,6 @@ public static class TextSearchExtensions
             options);
     }
 
-
     /// <summary>
     /// Create a <see cref="KernelFunction"/> which invokes <see cref="ITextSearch.GetTextSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.
     /// </summary>
@@ -309,7 +293,6 @@ public static class TextSearchExtensions
             GetTextSearchResultAsync,
             options);
     }
-
 
     /// <summary>
     /// Create a <see cref="KernelFunction"/> which invokes <see cref="ITextSearch.GetTextSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.
@@ -360,7 +343,6 @@ public static class TextSearchExtensions
             options);
     }
 
-
     /// <summary>
     /// Create a <see cref="KernelFunction"/> which invokes <see cref="ITextSearch.GetSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.
     /// </summary>
@@ -405,7 +387,6 @@ public static class TextSearchExtensions
             GetSearchResultAsync,
             options);
     }
-
 
     /// <summary>
     /// Create a <see cref="KernelFunction"/> which invokes <see cref="ITextSearch.GetSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.
@@ -456,7 +437,6 @@ public static class TextSearchExtensions
 
     #endregion
 
-
     #region private
 
     /// <summary>
@@ -475,7 +455,6 @@ public static class TextSearchExtensions
         };
     }
 
-
     /// <summary>
     /// Create the default <see cref="KernelFunctionFromMethodOptions"/> for <see cref="ITextSearch.SearchAsync(string, TextSearchOptions?, CancellationToken)"/>.
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> used for generating JSON schema for method parameters and return type.</param>
@@ -490,7 +469,6 @@ public static class TextSearchExtensions
             ReturnParameter = new KernelReturnParameterMetadata(jsonSerializerOptions) { ParameterType = typeof(KernelSearchResults<string>) }
         };
     }
-
 
     /// <summary>
     /// Create the default <see cref="KernelFunctionFromMethodOptions"/> for <see cref="ITextSearch.GetTextSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.
@@ -508,7 +486,6 @@ public static class TextSearchExtensions
         };
     }
 
-
     /// <summary>
     /// Create the default <see cref="KernelFunctionFromMethodOptions"/> for <see cref="ITextSearch.GetTextSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> used for generating JSON schema for method parameters and return type.</param>
@@ -523,7 +500,6 @@ public static class TextSearchExtensions
             ReturnParameter = new KernelReturnParameterMetadata(jsonSerializerOptions) { ParameterType = typeof(KernelSearchResults<TextSearchResult>) }
         };
     }
-
 
     /// <summary>
     /// Create the default <see cref="KernelFunctionFromMethodOptions"/> for <see cref="ITextSearch.GetSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.
@@ -541,7 +517,6 @@ public static class TextSearchExtensions
         };
     }
 
-
     /// <summary>
     /// Create the default <see cref="KernelFunctionFromMethodOptions"/> for <see cref="ITextSearch.GetSearchResultsAsync(string, TextSearchOptions?, CancellationToken)"/>.
     /// </summary>
@@ -556,7 +531,6 @@ public static class TextSearchExtensions
             ReturnParameter = new KernelReturnParameterMetadata(jsonSerializerOptions) { ParameterType = typeof(KernelSearchResults<TextSearchResult>) }
         };
     }
-
 
     /// <summary>
     /// Create a <see cref="TextSearchFilter" /> for the search based on any additional parameters included in the <see cref="KernelFunctionFromMethodOptions"/>
@@ -588,7 +562,6 @@ public static class TextSearchExtensions
         return filter;
     }
 
-
     private static IEnumerable<KernelParameterMetadata> CreateDefaultKernelParameterMetadata(JsonSerializerOptions jsonSerializerOptions)
     {
         return
@@ -598,7 +571,6 @@ public static class TextSearchExtensions
             new KernelParameterMetadata("skip", jsonSerializerOptions) { Description = "Number of results to skip", ParameterType = typeof(int), IsRequired = false, DefaultValue = 0 }
         ];
     }
-
 
     [RequiresUnreferencedCode("Uses reflection for generating JSON schema for method parameters and return type, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection for generating JSON schema for method parameters and return type, making it incompatible with AOT scenarios.")]
@@ -612,10 +584,8 @@ public static class TextSearchExtensions
         ];
     }
 
-
     private static IEnumerable<KernelParameterMetadata>? s_kernelParameterMetadata;
 
     #endregion
-
 
 }

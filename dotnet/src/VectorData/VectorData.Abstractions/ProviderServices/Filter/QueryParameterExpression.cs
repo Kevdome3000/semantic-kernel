@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices.Filter;
@@ -27,7 +25,6 @@ public class QueryParameterExpression(string name, object? value, Type type) : E
 
     /// <inheritdoc />
     public override Type Type => type;
-
 
     /// <inheritdoc />
     protected override Expression VisitChildren(ExpressionVisitor visitor)

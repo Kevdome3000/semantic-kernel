@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using Microsoft.Extensions.AI;
 
 #pragma warning disable IDE0130
@@ -35,7 +32,6 @@ public sealed class FunctionResult
         Metadata = metadata;
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="FunctionResult"/> class.
     /// </summary>
@@ -52,7 +48,6 @@ public sealed class FunctionResult
         Metadata = metadata ?? result.Metadata;
         RenderedPrompt = result.RenderedPrompt;
     }
-
 
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> whose result is represented by this instance.
@@ -82,7 +77,6 @@ public sealed class FunctionResult
     /// Gets the prompt used during function invocation if any was rendered.
     /// </summary>
     public string? RenderedPrompt { get; internal set; }
-
 
     /// <summary>
     /// Returns function result value.
@@ -220,13 +214,11 @@ public sealed class FunctionResult
         throw new InvalidCastException($"Cannot cast {Value.GetType()} to {typeof(T)}");
     }
 
-
     /// <inheritdoc/>
     public override string ToString()
     {
         return InternalTypeConverter.ConvertToString(Value, Culture) ?? string.Empty;
     }
-
 
     /// <summary>
     /// Function result object.

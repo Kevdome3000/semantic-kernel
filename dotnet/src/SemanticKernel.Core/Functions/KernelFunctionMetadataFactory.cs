@@ -1,8 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -46,9 +43,7 @@ public static class KernelFunctionMetadataFactory
         return functionMetadata.Count == 0
             ? throw new ArgumentException($"The {instanceType} instance doesn't implement any [KernelFunction]-attributed methods.")
             : functionMetadata;
-
     }
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunctionMetadata"/> enumeration for a method, specified via an <see cref="MethodInfo"/> instance.

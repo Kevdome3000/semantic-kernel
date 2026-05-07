@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
 namespace Microsoft.SemanticKernel.Data;
@@ -46,7 +44,6 @@ public sealed class TextSearchOptions<TRecord>
     /// </summary>
     public int Skip { get; init; } = 0;
 }
-
 
 /// <summary>
 /// Options which can be applied when using <see cref="ITextSearch"/>.

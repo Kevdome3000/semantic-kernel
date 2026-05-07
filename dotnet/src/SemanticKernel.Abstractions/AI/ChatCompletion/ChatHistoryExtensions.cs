@@ -1,9 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
@@ -46,7 +42,6 @@ public static class ChatHistoryExtensions
         return true;
     }
 
-
     /// <summary>
     /// Returns the reduced history using the provided reducer without mutating the source history.
     /// </summary>
@@ -63,7 +58,6 @@ public static class ChatHistoryExtensions
 
         return chatHistory;
     }
-
 
     /// <summary>
     /// Returns the reduced history using the provided reducer without mutating the source history.
@@ -82,7 +76,6 @@ public static class ChatHistoryExtensions
         return chatHistory;
     }
 
-
     /// <summary>Converts a <see cref="ChatHistory"/> to a <see cref="ChatMessage"/> list.</summary>
     /// <param name="chatHistory">The chat history to convert.</param>
     /// <returns>A list of <see cref="ChatMessage"/> objects.</returns>
@@ -90,7 +83,6 @@ public static class ChatHistoryExtensions
     {
         return chatHistory.Select(m => m.ToChatMessage()).ToList();
     }
-
 
     internal static void SetChatMessageHandlers(this ChatHistory chatHistory, IList<ChatMessage> messages)
     {

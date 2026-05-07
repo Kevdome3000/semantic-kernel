@@ -1,12 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Embeddings;
 
@@ -25,7 +18,6 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     private readonly IEmbeddingGenerator<string, Embedding<float>>? _embeddingGenerator;
     private readonly IMemoryStore _storage;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="SemanticTextMemory"/> class.
     /// </summary>
@@ -40,7 +32,6 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         _storage = storage;
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="SemanticTextMemory"/> class.
     /// </summary>
@@ -53,7 +44,6 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         _embeddingGenerator = embeddingGenerator;
         _storage = storage;
     }
-
 
     /// <inheritdoc/>
     public async Task<string> SaveInformationAsync(
@@ -81,7 +71,6 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         return await _storage.UpsertAsync(collection, data, cancellationToken).ConfigureAwait(false);
     }
 
-
     /// <inheritdoc/>
     public async Task<string> SaveReferenceAsync(
         string collection,
@@ -108,7 +97,6 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         return await _storage.UpsertAsync(collection, data, cancellationToken).ConfigureAwait(false);
     }
 
-
     /// <inheritdoc/>
     public async Task<MemoryQueryResult?> GetAsync(
         string collection,
@@ -128,7 +116,6 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         return MemoryQueryResult.FromMemoryRecord(record, 1);
     }
 
-
     /// <inheritdoc/>
     public async Task RemoveAsync(
         string collection,
@@ -138,7 +125,6 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
     {
         await _storage.RemoveAsync(collection, key, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<MemoryQueryResult> SearchAsync(
@@ -169,13 +155,11 @@ public sealed class SemanticTextMemory : ISemanticTextMemory
         }
     }
 
-
     /// <inheritdoc/>
     public async Task<IList<string>> GetCollectionsAsync(Kernel? kernel = null, CancellationToken cancellationToken = default)
     {
         return await _storage.GetCollectionsAsync(cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
     }
-
 
     private async Task<ReadOnlyMemory<float>> GenerateEmbeddingAsync(string text, Kernel? kernel, CancellationToken cancellationToken)
     {

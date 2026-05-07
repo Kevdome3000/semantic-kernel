@@ -1,9 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Services;
 
@@ -20,7 +16,6 @@ internal sealed class ChatClientAIService : IAIService, IChatClient
     /// Storage for AI service attributes.
     /// </summary>
     internal Dictionary<string, object?> _internalAttributes { get; } = [];
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatClientAIService"/> class.
@@ -39,7 +34,6 @@ internal sealed class ChatClientAIService : IAIService, IChatClient
         _internalAttributes[nameof(metadata.ProviderUri)] = metadata.ProviderUri;
     }
 
-
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object?> Attributes => _internalAttributes;
 
@@ -49,20 +43,17 @@ internal sealed class ChatClientAIService : IAIService, IChatClient
     {
     }
 
-
     /// <inheritdoc />
     public Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
     {
         return _chatClient.GetResponseAsync(messages, options, cancellationToken);
     }
 
-
     /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)
     {
         return _chatClient.GetService(serviceType, serviceKey);
     }
-
 
     /// <inheritdoc />
     public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)

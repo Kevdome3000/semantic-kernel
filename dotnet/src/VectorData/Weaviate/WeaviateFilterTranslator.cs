@@ -29,7 +29,7 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
             return null;
         }
 
-        var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
+        var preprocessedExpression = PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
         Translate(preprocessedExpression);
         return _filter.ToString();
@@ -83,8 +83,8 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
                         return;
 
                     // Not over bool field (r => !r.Bool)
-                    case var negated when negated.Type == typeof(bool) && this.TryBindProperty(negated, out var property):
-                        this.GenerateEqualityComparison(property.StorageName, false, ExpressionType.Equal);
+                    case var negated when negated.Type == typeof(bool) && TryBindProperty(negated, out var property):
+                        GenerateEqualityComparison(property.StorageName, false, ExpressionType.Equal);
                         return;
 
                     default:
@@ -98,8 +98,8 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
                 return;
 
             // Special handling for bool constant as the filter expression (r => r.Bool)
-            case Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property):
-                this.GenerateEqualityComparison(property.StorageName, true, ExpressionType.Equal);
+            case Expression when node.Type == typeof(bool) && TryBindProperty(node, out var property):
+                GenerateEqualityComparison(property.StorageName, true, ExpressionType.Equal);
                 return;
 
             case MethodCallExpression methodCall:
@@ -113,13 +113,13 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
 
     private void TranslateEqualityComparison(BinaryExpression binary)
     {
-        if (this.TryBindProperty(binary.Left, out var property) && binary.Right is ConstantExpression { Value: var rightConstant })
+        if (TryBindProperty(binary.Left, out var property) && binary.Right is ConstantExpression { Value: var rightConstant })
         {
             GenerateEqualityComparison(property.StorageName, rightConstant, binary.NodeType);
             return;
         }
 
-        if (this.TryBindProperty(binary.Right, out property) && binary.Left is ConstantExpression { Value: var leftConstant })
+        if (TryBindProperty(binary.Right, out property) && binary.Left is ConstantExpression { Value: var leftConstant })
         {
             GenerateEqualityComparison(property.StorageName, leftConstant, binary.NodeType);
             return;
@@ -222,7 +222,7 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
     {
         // Contains over array
         // { path: ["stringArrayPropName"], operator: ContainsAny, valueText: ["foo"] }
-        if (this.TryBindProperty(source, out var property) && item is ConstantExpression { Value: string stringConstant })
+        if (TryBindProperty(source, out var property) && item is ConstantExpression { Value: string stringConstant })
         {
             _filter
                 .Append("{ path: [\"")
@@ -244,7 +244,7 @@ internal class WeaviateFilterTranslator : FilterTranslatorBase
     {
         // We only support the pattern: r.ArrayField.Any(x => values.Contains(x))
         // Translates to: { path: ["Field"], operator: ContainsAny, valueText: ["value1", "value2"] }
-        if (!this.TryBindProperty(source, out var property)
+        if (!TryBindProperty(source, out var property)
             || lambda.Body is not MethodCallExpression containsCall
             || !TryMatchContains(containsCall, out var valuesExpression, out var itemExpression))
         {

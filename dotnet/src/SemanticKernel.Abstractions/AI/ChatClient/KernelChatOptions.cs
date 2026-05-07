@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel;
@@ -27,7 +27,6 @@ internal class KernelChatOptions : ChatOptions
         Kernel = kernel;
     }
 
-
     [JsonIgnore]
     public ChatMessageContent? ChatMessageContent { get; internal set; }
 
@@ -36,7 +35,6 @@ internal class KernelChatOptions : ChatOptions
 
     [JsonIgnore]
     public PromptExecutionSettings? ExecutionSettings { get; internal set; }
-
 
     public override ChatOptions Clone()
     {

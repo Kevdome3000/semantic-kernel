@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Threading;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -10,7 +8,6 @@ namespace Microsoft.SemanticKernel;
 public sealed class PromptRenderContext
 {
     private string? _renderedPrompt;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderContext"/> class.
@@ -28,7 +25,6 @@ public sealed class PromptRenderContext
         Function = function;
         Arguments = arguments;
     }
-
 
     /// <summary>
     /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.

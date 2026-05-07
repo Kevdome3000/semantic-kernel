@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Web;
 using System.Xml;
 
@@ -69,7 +65,6 @@ internal static class XmlPromptParser
 
         return result is not null;
     }
-
 
     /// <summary>
     /// Gets an instance of <see cref="PromptNode"/> from <see cref="XmlNode"/> and child nodes recursively.

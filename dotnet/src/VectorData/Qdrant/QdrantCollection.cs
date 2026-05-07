@@ -156,7 +156,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync(
+        return RunOperationAsync(
             "CollectionExists",
             () => _qdrantClient.CollectionExistsAsync(Name, cancellationToken));
     }
@@ -270,7 +270,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("DeleteCollection",
+        return RunOperationAsync("DeleteCollection",
             async () =>
             {
                 try
@@ -298,7 +298,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     {
         Verify.NotNull(key);
 
-        var retrievedPoints = await this.GetAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var retrievedPoints = await GetAsync([key], options, cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
         return retrievedPoints.FirstOrDefault();
     }
 
@@ -355,7 +355,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         }
 
         // Retrieve data points.
-        var retrievedPoints = await this.RunOperationAsync(
+        var retrievedPoints = await RunOperationAsync(
                 OperationName,
                 () => _qdrantClient.RetrieveAsync(Name,
                     pointsIds,
@@ -380,7 +380,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     {
         Verify.NotNull(key);
 
-        return this.RunOperationAsync(
+        return RunOperationAsync(
             DeleteName,
             () => key switch
             {
@@ -473,7 +473,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             return Task.CompletedTask;
         }
 
-        return this.RunOperationAsync(
+        return RunOperationAsync(
             DeleteName,
             () => keyList switch
             {
@@ -499,7 +499,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
     {
         Verify.NotNull(record);
 
-        await this.UpsertAsync([record], cancellationToken).ConfigureAwait(false);
+        await UpsertAsync([record], cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -568,7 +568,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         }
 
         // Upsert.
-        await this.RunOperationAsync(
+        await RunOperationAsync(
                 UpsertName,
                 () => _qdrantClient.UpsertAsync(Name,
                     pointStructs,
@@ -610,7 +610,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         var query = new Query { Nearest = new VectorInput(vectorArray) };
 
         // Execute Search.
-        var points = await this.RunOperationAsync(
+        var points = await RunOperationAsync(
                 "Query",
                 () => _qdrantClient.QueryAsync(
                     Name,
@@ -709,7 +709,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
             };
         }
 
-        var scrollResponse = await this.RunOperationAsync(
+        var scrollResponse = await RunOperationAsync(
                 "Scroll",
                 () => _qdrantClient.ScrollAsync(
                     Name,
@@ -797,7 +797,7 @@ public class QdrantCollection<TKey, TRecord> : VectorStoreCollection<TKey, TReco
         };
 
         // Execute Search.
-        var points = await this.RunOperationAsync(
+        var points = await RunOperationAsync(
                 "Query",
                 () => _qdrantClient.QueryAsync(
                     Name,

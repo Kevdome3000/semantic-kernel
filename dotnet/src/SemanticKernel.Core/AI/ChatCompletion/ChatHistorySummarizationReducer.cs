@@ -1,10 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -63,7 +57,6 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
     /// </remarks>
     public bool UseSingleSummary { get; init; } = true;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatHistorySummarizationReducer"/> class.
     /// </summary>
@@ -84,7 +77,6 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         _targetCount = targetCount;
         _thresholdCount = thresholdCount ?? 0;
     }
-
 
     /// <inheritdoc/>
     public async Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> chatHistory, CancellationToken cancellationToken = default)
@@ -163,14 +155,12 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
         }
     }
 
-
     /// <inheritdoc/>
     public override bool Equals(object? obj)
     {
         ChatHistorySummarizationReducer? other = obj as ChatHistorySummarizationReducer;
         return other != null && _thresholdCount == other._thresholdCount && _targetCount == other._targetCount && UseSingleSummary == other.UseSingleSummary && string.Equals(SummarizationInstructions, other.SummarizationInstructions, StringComparison.Ordinal);
     }
-
 
     /// <inheritdoc/>
     public override int GetHashCode()
@@ -181,7 +171,6 @@ public class ChatHistorySummarizationReducer : IChatHistoryReducer
             SummarizationInstructions,
             UseSingleSummary);
     }
-
 
     private readonly IChatCompletionService _service;
     private readonly int _thresholdCount;

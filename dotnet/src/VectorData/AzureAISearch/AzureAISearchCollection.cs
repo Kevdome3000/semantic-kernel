@@ -219,7 +219,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync<Response>(
+        return RunOperationAsync<Response>(
             "DeleteIndex",
             async () =>
             {
@@ -291,7 +291,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         var stringKey = GetStringKey(key);
 
         // Remove record.
-        return this.RunOperationAsync(
+        return RunOperationAsync(
             "DeleteDocuments",
             () => _searchClient.DeleteDocumentsAsync(_model.KeyProperty.StorageName,
                 [stringKey],
@@ -315,7 +315,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             : keys.Select(GetStringKey);
 
         // Remove records.
-        return this.RunOperationAsync(
+        return RunOperationAsync(
             "DeleteDocuments",
             () => _searchClient.DeleteDocumentsAsync(_model.KeyProperty.StorageName,
                 stringKeys,
@@ -333,7 +333,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
         var innerOptions = new IndexDocumentsOptions { ThrowOnAnyError = true };
 
         // Upsert record.
-        await this.MapToStorageModelAndUploadDocumentAsync([record], innerOptions, cancellationToken).ConfigureAwait(false);
+        await MapToStorageModelAndUploadDocumentAsync([record], innerOptions, cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -578,7 +578,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
 
         var stringKey = GetStringKey(key);
 
-        var jsonObject = await this.RunOperationAsync(
+        var jsonObject = await RunOperationAsync(
                 OperationName,
                 () => GetDocumentWithNotFoundHandlingAsync<JsonObject>(_searchClient,
                     stringKey,
@@ -611,7 +611,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
     {
         const string OperationName = "Search";
 
-        var jsonObjectResults = await this.RunOperationAsync(
+        var jsonObjectResults = await RunOperationAsync(
                 OperationName,
                 () => _searchClient.SearchAsync<JsonObject>(searchText, searchOptions, cancellationToken))
             .ConfigureAwait(false);
@@ -654,7 +654,7 @@ public class AzureAISearchCollection<TKey, TRecord> : VectorStoreCollection<TKey
             jsonObjects.Add(_mappper!.MapFromDataToStorageModel(record, recordIndex++, generatedEmbeddings));
         }
 
-        return await this.RunOperationAsync(
+        return await RunOperationAsync(
                 OperationName,
                 () => _searchClient.UploadDocumentsAsync<JsonObject>(jsonObjects, innerOptions, cancellationToken))
             .ConfigureAwait(false);

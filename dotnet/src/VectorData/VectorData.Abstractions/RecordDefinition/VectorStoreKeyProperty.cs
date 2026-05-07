@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -21,7 +19,6 @@ public sealed class VectorStoreKeyProperty : VectorStoreProperty
         : base(name, type)
     {
     }
-
 
     /// <summary>
     /// Gets or sets whether this key property's value is auto-generated or not.

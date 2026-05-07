@@ -1,8 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -32,7 +29,6 @@ internal sealed partial class AbstractionsJsonContext : JsonSerializerContext
     /// <summary>Gets the <see cref="JsonSerializerOptions"/> singleton used as the default in JSON serialization operations.</summary>
     private static readonly JsonSerializerOptions s_defaultToolJsonOptions = CreateDefaultToolJsonOptions();
 
-
     /// <summary>Gets JSON type information for the specified type.</summary>
     /// <remarks>
     /// This first tries to get the type information from <paramref name="firstOptions"/>,
@@ -44,7 +40,6 @@ internal sealed partial class AbstractionsJsonContext : JsonSerializerContext
             ? info
             : s_defaultToolJsonOptions.GetTypeInfo(type);
     }
-
 
     /// <summary>Gets JSON type information for the specified type.</summary>
     /// <remarks>
@@ -60,7 +55,6 @@ internal sealed partial class AbstractionsJsonContext : JsonSerializerContext
 
         return s_defaultToolJsonOptions.TryGetTypeInfo(type, out jsonTypeInfo);
     }
-
 
     /// <summary>Creates the default <see cref="JsonSerializerOptions"/> to use for serialization-related operations.</summary>
     [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "DefaultJsonTypeInfoResolver is only used when reflection-based serialization is enabled")]

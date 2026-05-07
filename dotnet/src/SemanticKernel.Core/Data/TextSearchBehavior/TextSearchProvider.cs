@@ -1,16 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 #pragma warning disable CS0618 // ITextSearch is obsolete - this class provides backward compatibility
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -30,7 +24,6 @@ public sealed class TextSearchProvider : AIContextProvider
     private readonly ITextSearch _textSearch;
     private readonly ILogger<TextSearchProvider>? _logger;
     private readonly AIFunction[] _aIFunctions;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TextSearchProvider"/> class.
@@ -56,12 +49,10 @@ public sealed class TextSearchProvider : AIContextProvider
         ];
     }
 
-
     /// <summary>
     /// Gets the options that have been configured for this component.
     /// </summary>
     public TextSearchProviderOptions Options { get; }
-
 
     /// <inheritdoc/>
     public override async Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
@@ -94,7 +85,6 @@ public sealed class TextSearchProvider : AIContextProvider
         return new AIContext { Instructions = formatted };
     }
 
-
     /// <summary>
     /// Plugin method to search the database on demand.
     /// </summary>
@@ -113,7 +103,6 @@ public sealed class TextSearchProvider : AIContextProvider
 
         return formatted;
     }
-
 
     /// <summary>
     /// Format the results showing the content with source link and name for each result.
@@ -158,7 +147,6 @@ public sealed class TextSearchProvider : AIContextProvider
         return sb.ToString();
     }
 }
-
 
 [JsonSourceGenerationOptions(JsonSerializerDefaults.General,
     UseStringEnumConverter = false,

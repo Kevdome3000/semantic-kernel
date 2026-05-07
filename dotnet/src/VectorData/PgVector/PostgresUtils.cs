@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.VectorData;
 using Npgsql;
 using static Microsoft.Extensions.VectorData.VectorStoreErrorHandler;
@@ -37,7 +35,6 @@ internal static class PostgresUtils
         }
     }
 
-
     /// <summary>
     /// Wraps an <see cref="IAsyncEnumerable{T}"/> in an <see cref="IAsyncEnumerable{T}"/> that will throw a <see cref="VectorStoreException"/>
     /// if an exception is thrown while iterating over the original enumerator.
@@ -64,7 +61,6 @@ internal static class PostgresUtils
             yield return item;
         }
     }
-
 
     internal static NpgsqlDataSource CreateDataSource(string connectionString)
     {

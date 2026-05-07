@@ -1,8 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
 
@@ -21,7 +18,6 @@ internal static class FunctionStoreLoggingExtensions
                 string.Join(", ", vectorizationInfo.Select(info => $"\"Function: {info.Name}, VectorizationSource: {info.VectorizationSource}\"")));
         }
     }
-
 
     internal static void LogFunctionsSearchResults(
         this ILogger logger,

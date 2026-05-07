@@ -1,11 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Services;
 
@@ -16,7 +10,6 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
 {
     /// <summary>The wrapped <see cref="IChatCompletionService"/>.</summary>
     private readonly IChatCompletionService _chatCompletionService;
-
 
     /// <summary>Initializes the <see cref="ChatCompletionServiceChatClient"/> for <paramref name="chatCompletionService"/>.</summary>
     internal ChatCompletionServiceChatClient(IChatCompletionService chatCompletionService)
@@ -33,10 +26,8 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
             chatCompletionService.GetModelId());
     }
 
-
     /// <inheritdoc />
     public ChatClientMetadata Metadata { get; }
-
 
     /// <inheritdoc />
     public async Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, CancellationToken cancellationToken = default)
@@ -71,7 +62,6 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         return chatResponse;
     }
 
-
     /// <inheritdoc />
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -88,13 +78,11 @@ internal sealed class ChatCompletionServiceChatClient : IChatClient
         }
     }
 
-
     /// <inheritdoc />
     public void Dispose()
     {
         (_chatCompletionService as IDisposable)?.Dispose();
     }
-
 
     /// <inheritdoc />
     public object? GetService(Type serviceType, object? serviceKey = null)

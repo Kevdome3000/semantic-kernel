@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Microsoft.SemanticKernel.Data;
@@ -23,7 +21,6 @@ internal sealed class TextSearchResultPropertyReader
     /// <summary>The <see cref="PropertyInfo"/> of the link property.</summary>
     private readonly PropertyInfo? _linkProperty;
 
-
     /// <summary>
     /// Create a new instance of <see cref="TextSearchResultPropertyReader"/>.
     /// </summary>
@@ -38,7 +35,6 @@ internal sealed class TextSearchResultPropertyReader
         _linkProperty = LinkProperty;
     }
 
-
     /// <summary>
     /// Get the name property value of the data model.
     /// </summary>
@@ -47,7 +43,6 @@ internal sealed class TextSearchResultPropertyReader
     {
         return _nameProperty?.GetValue(dataModel)?.ToString();
     }
-
 
     /// <summary>
     /// Get the value property value of the data model.
@@ -58,7 +53,6 @@ internal sealed class TextSearchResultPropertyReader
         return _valueProperty?.GetValue(dataModel)?.ToString();
     }
 
-
     /// <summary>
     /// Get the link property value of the data model.
     /// </summary>
@@ -67,7 +61,6 @@ internal sealed class TextSearchResultPropertyReader
     {
         return _linkProperty?.GetValue(dataModel)?.ToString();
     }
-
 
     /// <summary>
     /// Find the properties with <see cref="TextSearchResultNameAttribute"/>, <see cref="TextSearchResultValueAttribute"/> and <see cref="TextSearchResultLinkAttribute"/> attributes

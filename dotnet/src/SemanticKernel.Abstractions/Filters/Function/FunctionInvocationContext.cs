@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Threading;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -31,7 +29,6 @@ public class FunctionInvocationContext
         Arguments = arguments;
         Result = result;
     }
-
 
     /// <summary>
     /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.

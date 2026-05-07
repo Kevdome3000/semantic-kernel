@@ -1,6 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Text;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -13,7 +12,6 @@ namespace Microsoft.SemanticKernel.Plugins.Document.OpenXml;
 /// </summary>
 internal static class WordprocessingDocumentEx
 {
-
     internal static void Initialize(this WordprocessingDocument wordprocessingDocument)
     {
         // Add a main document part.
@@ -23,7 +21,6 @@ internal static class WordprocessingDocumentEx
         mainPart.Document = new DocumentFormat.OpenXml.Wordprocessing.Document();
         mainPart.Document.AppendChild(new Body());
     }
-
 
     internal static string ReadText(this WordprocessingDocument wordprocessingDocument)
     {
@@ -45,7 +42,6 @@ internal static class WordprocessingDocumentEx
         return sb.ToString();
     }
 
-
     internal static void AppendText(this WordprocessingDocument wordprocessingDocument, string text)
     {
         if (text is null)
@@ -60,5 +56,4 @@ internal static class WordprocessingDocumentEx
         Run run = para.AppendChild(new Run());
         run.AppendChild(new DocumentFormat.OpenXml.Wordprocessing.Text(text));
     }
-
 }

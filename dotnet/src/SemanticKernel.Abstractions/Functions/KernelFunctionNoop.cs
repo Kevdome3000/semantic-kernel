@@ -1,11 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel;
 
@@ -29,7 +22,6 @@ internal sealed class KernelFunctionNoop : KernelFunction
     {
     }
 
-
     /// <inheritdoc/>
     public override KernelFunction Clone(string? pluginName = null)
     {
@@ -37,13 +29,11 @@ internal sealed class KernelFunctionNoop : KernelFunction
         return new KernelFunctionNoop(executionSettings);
     }
 
-
     /// <inheritdoc/>
     protected override ValueTask<FunctionResult> InvokeCoreAsync(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)
     {
         return new ValueTask<FunctionResult>(new FunctionResult(this));
     }
-
 
     /// <inheritdoc/>
     protected override IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(Kernel kernel, KernelArguments arguments, CancellationToken cancellationToken)

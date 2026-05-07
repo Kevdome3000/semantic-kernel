@@ -1,11 +1,6 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
 
@@ -43,7 +38,6 @@ public sealed class FunctionCallContent : KernelContent
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Exception? Exception { get; init; }
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionCallContent"/> class.
     /// </summary>
@@ -65,7 +59,6 @@ public sealed class FunctionCallContent : KernelContent
         PluginName = pluginName;
         Arguments = arguments;
     }
-
 
     /// <summary>
     /// Invokes the function represented by the function call content type.
@@ -92,7 +85,6 @@ public sealed class FunctionCallContent : KernelContent
 
         throw new KeyNotFoundException($"The plugin collection does not contain a plugin and/or function with the specified names. Plugin name - '{PluginName}', function name - '{FunctionName}'.");
     }
-
 
     /// <summary>
     /// Returns list of function calls provided via <see cref="ChatMessageContent.Items"/> collection.

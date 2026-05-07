@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.Diagnostics.CodeAnalysis;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel;
 
@@ -31,7 +28,6 @@ public readonly struct FunctionChoice : IEquatable<FunctionChoice>
     /// </summary>
     public string Label { get; }
 
-
     /// <summary>
     /// Creates a new FunctionChoice instance with the provided label.
     /// </summary>
@@ -41,7 +37,6 @@ public readonly struct FunctionChoice : IEquatable<FunctionChoice>
         Verify.NotNullOrWhiteSpace(label, nameof(label));
         Label = label!;
     }
-
 
     /// <summary>
     /// Returns a value indicating whether two FunctionChoice instances are equivalent, as determined by a
@@ -55,7 +50,6 @@ public readonly struct FunctionChoice : IEquatable<FunctionChoice>
         return left.Equals(right);
     }
 
-
     /// <summary>
     /// Returns a value indicating whether two FunctionChoice instances are not equivalent, as determined by a
     /// case-insensitive comparison of their labels.
@@ -68,13 +62,11 @@ public readonly struct FunctionChoice : IEquatable<FunctionChoice>
         return !(left == right);
     }
 
-
     /// <inheritdoc/>
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
         return obj is FunctionChoice other && this == other;
     }
-
 
     /// <inheritdoc/>
     public bool Equals(FunctionChoice other)
@@ -82,13 +74,11 @@ public readonly struct FunctionChoice : IEquatable<FunctionChoice>
         return string.Equals(Label, other.Label, StringComparison.OrdinalIgnoreCase);
     }
 
-
     /// <inheritdoc/>
     public override int GetHashCode()
     {
         return StringComparer.OrdinalIgnoreCase.GetHashCode(Label);
     }
-
 
     /// <inheritdoc/>
     public override string ToString()

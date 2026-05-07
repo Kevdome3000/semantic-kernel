@@ -1,15 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
@@ -42,7 +35,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     /// <summary>The model for this collection.</summary>
     private readonly CollectionModel _model;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryCollection{TKey,TRecord}"/> class.
     /// </summary>
@@ -65,7 +57,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryCollection{TKey,TRecord}"/> class.
     /// </summary>
@@ -85,7 +76,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         _internalCollections = internalCollection;
         _internalCollectionTypes = internalCollectionTypes;
     }
-
 
     internal InMemoryCollection(
         ConcurrentDictionary<string, ConcurrentDictionary<object, object>>? internalCollection,
@@ -113,10 +103,8 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         };
     }
 
-
     /// <inheritdoc />
     public override string Name { get; }
-
 
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
@@ -125,7 +113,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             ? Task.FromResult(true)
             : Task.FromResult(false);
     }
-
 
     /// <inheritdoc />
     public override Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default)
@@ -139,7 +126,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         return Task.CompletedTask;
     }
 
-
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
@@ -147,7 +133,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         _internalCollectionTypes.TryRemove(Name, out _);
         return Task.CompletedTask;
     }
-
 
     /// <inheritdoc />
     public override Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = null, CancellationToken cancellationToken = default)
@@ -167,7 +152,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         return Task.FromResult<TRecord?>(default);
     }
 
-
     /// <inheritdoc />
     public override Task DeleteAsync(TKey key, CancellationToken cancellationToken = default)
     {
@@ -177,13 +161,11 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         return Task.CompletedTask;
     }
 
-
     /// <inheritdoc />
     public override Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
         return UpsertAsync([record], cancellationToken);
     }
-
 
     /// <inheritdoc />
     public override async Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default)
@@ -271,7 +253,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             recordIndex++;
         }
     }
-
 
     #region Search
 
@@ -374,7 +355,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
     #endregion Search
 
-
     /// <inheritdoc />
     public override object? GetService(Type serviceType, object? serviceKey = null)
     {
@@ -391,7 +371,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
                             ? this
                             : null;
     }
-
 
     /// <inheritdoc />
     public override IAsyncEnumerable<TRecord> GetAsync(
@@ -443,7 +422,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             .ToAsyncEnumerable();
     }
 
-
     /// <summary>
     /// Get the collection dictionary from the internal storage, throws if it does not exist.
     /// </summary>
@@ -457,7 +435,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
 
         return collectionDictionary;
     }
-
 
     /// <summary>
     /// Updates the collection dictionary with any matches values from the provided dictionary.
@@ -476,7 +453,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
         }
     }
 
-
     /// <summary>
     /// The user provides a filter expression accepting a Record, but we internally store it wrapped in an InMemoryVectorRecordWrapper.
     /// This method converts a filter expression accepting a Record to one accepting an InMemoryVectorRecordWrapper.
@@ -491,7 +467,6 @@ public class InMemoryCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
             new ParameterReplacer(recordFilter.Parameters.Single(), replacement).Visit(recordFilter.Body),
             wrapperParameter);
     }
-
 
     private sealed class ParameterReplacer(ParameterExpression originalRecordParameter, Expression replacementExpression) : ExpressionVisitor
     {

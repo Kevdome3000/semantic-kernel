@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -28,7 +25,8 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// The binary content.
     /// </summary>
-    [JsonIgnore] [Obsolete("Use Data instead")]
+    [JsonIgnore]
+    [Obsolete("Use Data instead")]
     public ReadOnlyMemory<byte>? Content => Data;
 
     /// <summary>
@@ -54,7 +52,8 @@ public class BinaryContent : KernelContent
     /// <summary>
     /// Gets the byte array data of the content.
     /// </summary>
-    [JsonPropertyOrder(100)] [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] // Ensuring Data Uri is serialized last for better visibility of other properties.
+    [JsonPropertyOrder(100)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] // Ensuring Data Uri is serialized last for better visibility of other properties.
     public ReadOnlyMemory<byte>? Data
     {
         get => GetData();
@@ -70,7 +69,6 @@ public class BinaryContent : KernelContent
         => _data is not null
             || _dataUri is not null;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class with no content.
     /// </summary>
@@ -82,7 +80,6 @@ public class BinaryContent : KernelContent
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class referring to an external uri.
     /// </summary>
@@ -90,7 +87,6 @@ public class BinaryContent : KernelContent
     {
         Uri = uri;
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class for a UriData or Uri referred content.
@@ -103,7 +99,6 @@ public class BinaryContent : KernelContent
     {
         DataUri = dataUri;
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BinaryContent"/> class from a byte array.
@@ -118,13 +113,12 @@ public class BinaryContent : KernelContent
 
         if (data.IsEmpty)
         {
-            throw new ArgumentException(@"Data cannot be empty", nameof(data));
+            throw new ArgumentException("Data cannot be empty", nameof(data));
         }
 
         MimeType = mimeType;
         Data = data;
     }
-
 
     #region Private
 
@@ -142,7 +136,6 @@ public class BinaryContent : KernelContent
         _referencedUri = uri;
     }
 
-
     /// <summary>
     /// Gets the Uri of the content.
     /// </summary>
@@ -151,7 +144,6 @@ public class BinaryContent : KernelContent
     {
         return _referencedUri;
     }
-
 
     /// <summary>
     /// Sets the DataUri of the content.
@@ -197,7 +189,6 @@ public class BinaryContent : KernelContent
         _data = null;
     }
 
-
     private void UpdateDataUriParametersToMetadata(DataUriParser.DataUri parsedDataUri)
     {
         if (parsedDataUri.Parameters.Count == 0)
@@ -230,7 +221,6 @@ public class BinaryContent : KernelContent
         Metadata = newMetadata;
     }
 
-
     private string GetDataUriParametersFromMetadata()
     {
         var metadata = Metadata;
@@ -253,7 +243,6 @@ public class BinaryContent : KernelContent
         return parameters.ToString();
     }
 
-
     /// <summary>
     /// Sets the byte array data content.
     /// </summary>
@@ -265,7 +254,6 @@ public class BinaryContent : KernelContent
         _data = data;
     }
 
-
     /// <summary>
     /// Gets the byte array data content.
     /// </summary>
@@ -274,7 +262,6 @@ public class BinaryContent : KernelContent
     {
         return GetCachedByteArrayContent();
     }
-
 
     /// <summary>
     /// Gets the DataUri of the content.
@@ -302,7 +289,6 @@ public class BinaryContent : KernelContent
         return GetCachedUriDataFromByteArray(GetCachedByteArrayContent());
     }
 
-
     private string? GetCachedUriDataFromByteArray(ReadOnlyMemory<byte>? cachedByteArray)
     {
         if (cachedByteArray is null)
@@ -321,7 +307,6 @@ public class BinaryContent : KernelContent
 
         return _dataUri;
     }
-
 
     private ReadOnlyMemory<byte>? GetCachedByteArrayContent()
     {
@@ -344,6 +329,5 @@ public class BinaryContent : KernelContent
     }
 
     #endregion
-
 
 }

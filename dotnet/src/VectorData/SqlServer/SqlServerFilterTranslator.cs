@@ -51,10 +51,10 @@ internal sealed class SqlServerFilterTranslator : SqlFilterTranslator
                 _sql.Append('\'').Append(dateTimeOffset.ToString("o")).Append('\'');
                 return;
             case DateOnly dateOnly:
-                this._sql.Append('\'').Append(dateOnly.ToString("o")).Append('\'');
+                _sql.Append('\'').Append(dateOnly.ToString("o")).Append('\'');
                 return;
             case TimeOnly timeOnly:
-                this._sql.AppendFormat(timeOnly.Ticks % 10000000 == 0
+                _sql.AppendFormat(timeOnly.Ticks % 10000000 == 0
                     ? string.Format(CultureInfo.InvariantCulture, @"'{0:HH\:mm\:ss}'", value)
                     : string.Format(CultureInfo.InvariantCulture, @"'{0:HH\:mm\:ss\.FFFFFFF}'", value));
                 return;

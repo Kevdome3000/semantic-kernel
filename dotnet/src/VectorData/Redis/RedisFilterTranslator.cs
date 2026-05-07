@@ -26,7 +26,7 @@ internal class RedisFilterTranslator : FilterTranslatorBase
             return "*";
         }
 
-        var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
+        var preprocessedExpression = PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
         Translate(preprocessedExpression);
         return _filter.ToString();
@@ -76,7 +76,7 @@ internal class RedisFilterTranslator : FilterTranslatorBase
                 return;
 
             // MemberExpression is generally handled within e.g. TranslateEqual; this is used to translate direct bool inside filter (e.g. Filter => r => r.Bool)
-            case MemberExpression member when member.Type == typeof(bool) && this.TryBindProperty(member, out _):
+            case MemberExpression member when member.Type == typeof(bool) && TryBindProperty(member, out _):
             {
                 TranslateEqualityComparison(Expression.Equal(member, Expression.Constant(true)));
                 return;
@@ -100,7 +100,7 @@ internal class RedisFilterTranslator : FilterTranslatorBase
 
         bool TryProcessEqualityComparison(Expression first, Expression second)
         {
-            if (this.TryBindProperty(first, out var property) && second is ConstantExpression { Value: var constantValue })
+            if (TryBindProperty(first, out var property) && second is ConstantExpression { Value: var constantValue })
             {
                 // Numeric negation has a special syntax (!=), for the rest we nest in a NOT
                 if (binary.NodeType is ExpressionType.NotEqual && constantValue is not (int or long or float or double))
@@ -170,7 +170,7 @@ internal class RedisFilterTranslator : FilterTranslatorBase
     private void TranslateContains(Expression source, Expression item)
     {
         // Contains over tag field
-        if (this.TryBindProperty(source, out var property) && item is ConstantExpression { Value: string stringConstant })
+        if (TryBindProperty(source, out var property) && item is ConstantExpression { Value: string stringConstant })
         {
             // Redis field names cannot be escaped in all contexts; storage names are validated during model building.
             _filter
@@ -193,7 +193,7 @@ internal class RedisFilterTranslator : FilterTranslatorBase
     {
         // We only support the pattern: r.ArrayField.Any(x => values.Contains(x))
         // Translates to: @Field:{value1 | value2 | value3}
-        if (!this.TryBindProperty(source, out var property)
+        if (!TryBindProperty(source, out var property)
             || lambda.Body is not MethodCallExpression containsCall
             || !TryMatchContains(containsCall, out var valuesExpression, out var itemExpression))
         {

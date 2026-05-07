@@ -1,5 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-using System.Collections.Generic;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel.Data;
 

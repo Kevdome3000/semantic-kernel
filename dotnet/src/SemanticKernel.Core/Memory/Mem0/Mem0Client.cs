@@ -1,13 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -21,14 +16,12 @@ internal sealed class Mem0Client
 
     private readonly HttpClient _httpClient;
 
-
     public Mem0Client(HttpClient httpClient)
     {
         Verify.NotNull(httpClient);
 
         _httpClient = httpClient;
     }
-
 
     public async Task<IEnumerable<string>> SearchAsync(
         string? applicationId,
@@ -64,7 +57,6 @@ internal sealed class Mem0Client
         var searchResponseItems = JsonSerializer.Deserialize<SearchResponseItem[]>(response, Mem0SourceGenerationContext.Default.SearchResponseItemArray);
         return searchResponseItems?.Select(item => item.Memory) ?? [];
     }
-
 
     public async Task CreateMemoryAsync(
         string? applicationId,
@@ -105,7 +97,6 @@ internal sealed class Mem0Client
         responseMessage.EnsureSuccessStatusCode();
     }
 
-
     public async Task ClearMemoryAsync(
         string? applicationId,
         string? agentId,
@@ -128,7 +119,6 @@ internal sealed class Mem0Client
         responseMessage.EnsureSuccessStatusCode();
     }
 
-
     internal sealed class CreateMemoryRequest
     {
         [JsonPropertyName("app_id")]
@@ -147,7 +137,6 @@ internal sealed class Mem0Client
         public CreateMemoryMessage[] Messages { get; set; } = [];
     }
 
-
     internal sealed class CreateMemoryMessage
     {
         [JsonPropertyName("content")]
@@ -156,7 +145,6 @@ internal sealed class Mem0Client
         [JsonPropertyName("role")]
         public string Role { get; set; } = string.Empty;
     }
-
 
     internal sealed class SearchRequest
     {
@@ -175,7 +163,6 @@ internal sealed class Mem0Client
         [JsonPropertyName("query")]
         public string Query { get; set; } = string.Empty;
     }
-
 
     internal sealed class SearchResponseItem
     {
@@ -213,7 +200,6 @@ internal sealed class Mem0Client
         public string RunId { get; set; } = string.Empty;
     }
 }
-
 
 [JsonSourceGenerationOptions(JsonSerializerDefaults.General,
     UseStringEnumConverter = false,

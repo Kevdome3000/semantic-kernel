@@ -1,6 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Numerics.Tensors;
 using Microsoft.Extensions.VectorData;
 
@@ -36,7 +35,6 @@ internal static class InMemoryCollectionSearchMapping
         }
     }
 
-
     /// <summary>
     /// Indicates whether result ordering should be descending or ascending, to get most similar results at the top, based on the distance function.
     /// </summary>
@@ -58,7 +56,6 @@ internal static class InMemoryCollectionSearchMapping
                 throw new NotSupportedException($"The distance function '{distanceFunction}' is not supported by the InMemory connector.");
         }
     }
-
 
     /// <summary>
     /// Converts the provided score into the correct result depending on the distance function.

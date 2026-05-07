@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Services;
 
 namespace Microsoft.SemanticKernel.TextGeneration;
@@ -26,7 +22,6 @@ public interface ITextGenerationService : IAIService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Get streaming results for the prompt using the specified execution settings.

@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -18,7 +16,6 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
 {
     private JsonSerializerOptions? _jsonSerializerOptions;
 
-
     /// <summary>
     /// Constructs a new <see cref="CollectionJsonModelBuilder"/>.
     /// </summary>
@@ -26,7 +23,6 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
         : base(options)
     {
     }
-
 
     /// <summary>
     /// Builds and returns a <see cref="CollectionModel"/> from the given <paramref name="recordType"/> and <paramref name="definition"/>.
@@ -48,7 +44,6 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
             defaultEmbeddingGenerator);
     }
 
-
     /// <summary>
     /// Builds and returns a <see cref="CollectionModel"/> for dynamic mapping scenarios from the given <paramref name="definition"/>.
     /// </summary>
@@ -61,7 +56,6 @@ public abstract class CollectionJsonModelBuilder : CollectionModelBuilder
 
         return BuildDynamic(definition, defaultEmbeddingGenerator);
     }
-
 
     /// <inheritdoc/>
     protected override void Customize()

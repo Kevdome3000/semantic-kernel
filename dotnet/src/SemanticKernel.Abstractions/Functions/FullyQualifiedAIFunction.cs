@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using Microsoft.Extensions.AI;
 
@@ -17,7 +17,6 @@ public abstract class FullyQualifiedAIFunction : AIFunction
     {
         Metadata = metadata;
     }
-
 
     /// <summary>
     /// Gets the metadata describing the function.

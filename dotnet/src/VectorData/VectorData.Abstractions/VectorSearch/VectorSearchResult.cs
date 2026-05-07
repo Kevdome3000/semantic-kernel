@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -18,7 +18,6 @@ public sealed class VectorSearchResult<TRecord>
         Record = record;
         Score = score;
     }
-
 
     /// <summary>
     /// Gets the record that was found by the search.

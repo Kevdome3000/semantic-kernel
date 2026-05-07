@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -16,7 +14,6 @@ public sealed class AggregatorPromptTemplateFactory : IPromptTemplateFactory
 {
     private readonly IPromptTemplateFactory?[] _promptTemplateFactories;
 
-
     /// <summary>Initializes the instance.</summary>
     /// <param name="promptTemplateFactories">Ordered <see cref="IPromptTemplateFactory"/> instances to aggregate.</param>
     public AggregatorPromptTemplateFactory(params IPromptTemplateFactory[] promptTemplateFactories)
@@ -30,7 +27,6 @@ public sealed class AggregatorPromptTemplateFactory : IPromptTemplateFactory
 
         _promptTemplateFactories = promptTemplateFactories;
     }
-
 
     /// <inheritdoc/>
     public bool TryCreate(PromptTemplateConfig templateConfig, [NotNullWhen(true)] out IPromptTemplate? result)

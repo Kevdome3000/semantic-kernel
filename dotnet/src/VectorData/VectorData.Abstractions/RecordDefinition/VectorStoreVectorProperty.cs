@@ -1,6 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -16,7 +15,6 @@ public class VectorStoreVectorProperty : VectorStoreProperty
 {
     private int _dimensions;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreVectorProperty"/> class.
     /// </summary>
@@ -27,7 +25,6 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     {
         Dimensions = dimensions;
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreVectorProperty"/> class.
@@ -40,7 +37,6 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     {
         Dimensions = dimensions;
     }
-
 
     /// <summary>
     /// Gets or sets the default embedding generator to use for this property.
@@ -95,7 +91,6 @@ public class VectorStoreVectorProperty : VectorStoreProperty
     /// Gets or sets the desired embedding type (for example, <c>Embedding&lt;Half&gt;</c>) for cases where the default (typically <c>Embedding&lt;float&gt;</c>) isn't suitable.
     /// </summary>
     public Type? EmbeddingType { get; set; }
-
 
     internal virtual VectorPropertyModel CreatePropertyModel()
     {

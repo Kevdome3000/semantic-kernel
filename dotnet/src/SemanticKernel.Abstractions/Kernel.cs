@@ -1,14 +1,8 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -45,7 +39,6 @@ public sealed class Kernel
 
     /// <summary>The collection of automatic function invocation filters, initialized via the constructor or lazily-initialized on first access via <see cref="Plugins"/>.</summary>
     private NonNullCollection<IAutoFunctionInvocationFilter>? _autoFunctionInvocationFilters;
-
 
     /// <summary>
     /// Initializes a new instance of <see cref="Kernel"/>.
@@ -86,14 +79,12 @@ public sealed class Kernel
         AddFilters();
     }
 
-
     /// <summary>Creates a builder for constructing <see cref="Kernel"/> instances.</summary>
     /// <returns>A new <see cref="IKernelBuilder"/> instance.</returns>
     public static IKernelBuilder CreateBuilder()
     {
         return new KernelBuilder();
     }
-
 
     /// <summary>
     /// Clone the <see cref="Kernel"/> object to create a new instance that may be mutated without affecting the current instance.
@@ -141,7 +132,6 @@ public sealed class Kernel
             _culture = _culture
         };
     }
-
 
     /// <summary>
     /// Gets the collection of plugins available through the kernel.
@@ -218,7 +208,6 @@ public sealed class Kernel
     public IDictionary<string, object?> Data =>
         _data ?? Interlocked.CompareExchange(ref _data, [], null) ?? _data;
 
-
     #region GetServices
 
     /// <summary>Gets a required service from the <see cref="Services"/> provider.</summary>
@@ -270,7 +259,6 @@ public sealed class Kernel
         return service;
     }
 
-
     /// <summary>Gets all services of the specified type.</summary>
     /// <typeparam name="T">Specifies the type of the services to retrieve.</typeparam>
     /// <returns>An enumerable of all instances of the specified service that are registered.</returns>
@@ -298,7 +286,6 @@ public sealed class Kernel
     }
 
     #endregion
-
 
     #region Filters
 
@@ -329,7 +316,6 @@ public sealed class Kernel
         }
     }
 
-
     internal async Task<FunctionInvocationContext> OnFunctionInvocationAsync(
         KernelFunction function,
         KernelArguments arguments,
@@ -352,7 +338,6 @@ public sealed class Kernel
 
         return context;
     }
-
 
     /// <summary>
     /// This method will execute filters and kernel function recursively.
@@ -383,7 +368,6 @@ public sealed class Kernel
         }
     }
 
-
     internal async Task<PromptRenderContext> OnPromptRenderAsync(
         KernelFunction function,
         KernelArguments arguments,
@@ -404,7 +388,6 @@ public sealed class Kernel
 
         return context;
     }
-
 
     /// <summary>
     /// This method will execute prompt filters and prompt rendering recursively.
@@ -437,7 +420,6 @@ public sealed class Kernel
 
     #endregion
 
-
     #region InvokeAsync
 
     /// <summary>
@@ -462,7 +444,6 @@ public sealed class Kernel
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
 
-
     /// <summary>
     /// Invoke the <see cref="IKernelFunction"/> with the specified arguments.
     /// </summary>
@@ -479,7 +460,6 @@ public sealed class Kernel
 
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
-
 
     /// <summary>
     /// Invokes a function from <see cref="Kernel.Plugins"/> using the specified arguments.
@@ -509,7 +489,6 @@ public sealed class Kernel
         return function.InvokeAsync(this, arguments, cancellationToken);
     }
 
-
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
@@ -534,7 +513,6 @@ public sealed class Kernel
 
         return result.GetValue<TResult>();
     }
-
 
     /// <summary>
     /// Invokes a function from <see cref="Plugins"/> using the specified arguments.
@@ -570,7 +548,6 @@ public sealed class Kernel
 
     #endregion
 
-
     #region InvokeStreamingAsync
 
     /// <summary>
@@ -595,7 +572,6 @@ public sealed class Kernel
         return function.InvokeStreamingAsync<StreamingKernelContent>(this, arguments, cancellationToken);
     }
 
-
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -624,7 +600,6 @@ public sealed class Kernel
         return function.InvokeStreamingAsync<StreamingKernelContent>(this, arguments, cancellationToken);
     }
 
-
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -646,7 +621,6 @@ public sealed class Kernel
 
         return function.InvokeStreamingAsync<T>(this, arguments, cancellationToken);
     }
-
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
@@ -678,7 +652,6 @@ public sealed class Kernel
 
     #endregion
 
-
     #region Private
 
     private static bool IsNotEmpty<T>(IEnumerable<T> enumerable)
@@ -687,7 +660,6 @@ public sealed class Kernel
     }
 
     #endregion
-
 
     #region Obsolete
 
@@ -722,6 +694,5 @@ public sealed class Kernel
 #pragma warning disable CS0067 // The event is never used
 
     #endregion
-
 
 }

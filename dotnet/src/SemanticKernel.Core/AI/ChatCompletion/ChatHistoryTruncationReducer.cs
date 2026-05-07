@@ -1,10 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -38,7 +32,6 @@ public class ChatHistoryTruncationReducer : IChatHistoryReducer
         _thresholdCount = thresholdCount ?? 0;
     }
 
-
     /// <inheritdoc/>
     public Task<IEnumerable<ChatMessageContent>?> ReduceAsync(IReadOnlyList<ChatMessageContent> chatHistory, CancellationToken cancellationToken = default)
     {
@@ -58,7 +51,6 @@ public class ChatHistoryTruncationReducer : IChatHistoryReducer
         return Task.FromResult(truncatedHistory);
     }
 
-
     /// <inheritdoc/>
     public override bool Equals(object? obj)
     {
@@ -67,16 +59,13 @@ public class ChatHistoryTruncationReducer : IChatHistoryReducer
         return other != null && _thresholdCount == other._thresholdCount && _targetCount == other._targetCount;
     }
 
-
     /// <inheritdoc/>
     public override int GetHashCode()
     {
         return HashCode.Combine(nameof(ChatHistoryTruncationReducer), _thresholdCount, _targetCount);
     }
 
-
     private readonly int _thresholdCount;
 
     private readonly int _targetCount;
-
 }

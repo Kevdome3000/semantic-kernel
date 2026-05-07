@@ -1,12 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
@@ -48,7 +42,6 @@ public sealed class ContextualFunctionProvider : AIContextProvider
     private readonly ConcurrentQueue<ChatMessage> _recentMessages = [];
     private readonly ContextualFunctionProviderOptions _options;
     private bool _areFunctionsVectorized;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ContextualFunctionProvider"/> class.
@@ -92,7 +85,6 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         );
     }
 
-
     /// <inheritdoc />
     public override async Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
@@ -115,7 +107,6 @@ public sealed class ContextualFunctionProvider : AIContextProvider
         return new AIContext { AIFunctions = [.. functions] };
     }
 
-
     /// <inheritdoc/>
     public override Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
@@ -130,7 +121,6 @@ public sealed class ContextualFunctionProvider : AIContextProvider
 
         return Task.CompletedTask;
     }
-
 
     /// <summary>
     /// Builds the context from chat messages.

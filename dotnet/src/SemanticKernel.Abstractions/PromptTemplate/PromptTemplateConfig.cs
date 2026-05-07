@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -37,14 +34,12 @@ public sealed class PromptTemplateConfig
     /// <summary>Lazily-initialized execution settings. The key is the service ID, or <see cref="PromptExecutionSettings.DefaultServiceId"/> for the default execution settings.</summary>
     private Dictionary<string, PromptExecutionSettings>? _executionSettings;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class.
     /// </summary>
     public PromptTemplateConfig()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateConfig"/> class using the specified prompt template string.
@@ -55,7 +50,6 @@ public sealed class PromptTemplateConfig
     {
         Template = template;
     }
-
 
     /// <summary>
     /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
@@ -70,7 +64,6 @@ public sealed class PromptTemplateConfig
     {
         return FromJsonInternal(json, null);
     }
-
 
     /// <summary>
     /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
@@ -87,7 +80,6 @@ public sealed class PromptTemplateConfig
     {
         return FromJsonInternal(json, jsonSerializerOptions);
     }
-
 
     /// <summary>
     /// Gets or sets the function name to use by default when creating prompt functions using this configuration.
@@ -180,7 +172,7 @@ public sealed class PromptTemplateConfig
                     // Ensures that if a service id is provided it must match the key in the dictionary.
                     if (!string.IsNullOrWhiteSpace(kv.Value.ServiceId) && kv.Key != kv.Value.ServiceId)
                     {
-                        throw new ArgumentException($@"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(ExecutionSettings));
+                        throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(ExecutionSettings));
                     }
                 }
             }
@@ -211,7 +203,6 @@ public sealed class PromptTemplateConfig
         ? settings
         : null;
 
-
     /// <summary>
     /// Adds the specified <see cref="PromptExecutionSettings"/> to the <see cref="ExecutionSettings"/> dictionary.
     /// </summary>
@@ -227,18 +218,16 @@ public sealed class PromptTemplateConfig
 
         if (!string.IsNullOrWhiteSpace(serviceId) && !string.IsNullOrWhiteSpace(settings.ServiceId))
         {
-            throw new ArgumentException($@"Service id must not be passed when '{nameof(settings.ServiceId)}' is already provided in execution settings.", nameof(serviceId));
+            throw new ArgumentException($"Service id must not be passed when '{nameof(settings.ServiceId)}' is already provided in execution settings.", nameof(serviceId));
         }
 
         var key = serviceId ?? settings.ServiceId ?? PromptExecutionSettings.DefaultServiceId;
 
         if (ExecutionSettings.ContainsKey(key))
         {
-            throw new ArgumentException($@"Execution settings for service id '{key}' already exists.", nameof(serviceId));
+            throw new ArgumentException($"Execution settings for service id '{key}' already exists.", nameof(serviceId));
         }
-
     }
-
 
     /// <summary>
     /// Converts the <see cref="InputVariable"/> collection into a collection of <see cref="KernelParameterMetadata"/>.
@@ -272,7 +261,6 @@ public sealed class PromptTemplateConfig
 
         return result;
     }
-
 
     /// <summary>
     /// Converts the <see cref="InputVariable"/> collection into a collection of <see cref="KernelParameterMetadata"/>.
@@ -309,7 +297,6 @@ public sealed class PromptTemplateConfig
         return result;
     }
 
-
     /// <summary>
     /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
     /// </summary>
@@ -326,7 +313,6 @@ public sealed class PromptTemplateConfig
             : null;
     }
 
-
     /// <summary>
     /// Converts any <see cref="OutputVariable"/> into a <see cref="KernelReturnParameterMetadata"/>.
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate and parse JSON schema.</param>"
@@ -341,7 +327,6 @@ public sealed class PromptTemplateConfig
             }
             : null;
     }
-
 
     /// <summary>
     /// Creates a <see cref="PromptTemplateConfig"/> from the specified JSON.
@@ -374,7 +359,7 @@ public sealed class PromptTemplateConfig
 
             if (config is null)
             {
-                throw new ArgumentException($@"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json));
+                throw new ArgumentException($"Unable to deserialize {nameof(PromptTemplateConfig)} from the specified JSON.", nameof(json));
             }
 
             // Prevent the default value from being any type other than a string.

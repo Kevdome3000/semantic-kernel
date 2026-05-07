@@ -1,6 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Text;
@@ -14,7 +13,6 @@ public sealed class KernelJsonSchema
     /// <summary>The schema stored as a string.</summary>
     private string? _schemaAsString;
 
-
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
     /// <param name="jsonSchema">The JSON Schema as a string.</param>
     /// <returns>A parsed <see cref="KernelJsonSchema"/>, or null if <paramref name="jsonSchema"/> is null or empty.</returns>
@@ -24,7 +22,6 @@ public sealed class KernelJsonSchema
             ? new KernelJsonSchema(JsonElement.Parse(jsonSchema))
             : null;
     }
-
 
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
     /// <param name="jsonSchema">The JSON Schema as a string.</param>
@@ -36,7 +33,6 @@ public sealed class KernelJsonSchema
         return new KernelJsonSchema(JsonElement.Parse(jsonSchema));
     }
 
-
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
     /// <param name="jsonSchema">The JSON Schema as a sequence of UTF16 chars.</param>
     /// <returns>A parsed <see cref="KernelJsonSchema"/>.</returns>
@@ -46,7 +42,6 @@ public sealed class KernelJsonSchema
         return new KernelJsonSchema(JsonElement.Parse(jsonSchema));
     }
 
-
     /// <summary>Parses a JSON Schema for a parameter type.</summary>
     /// <param name="utf8JsonSchema">The JSON Schema as a sequence of UTF8 bytes.</param>
     /// <returns>A parsed <see cref="KernelJsonSchema"/>.</returns>
@@ -55,7 +50,6 @@ public sealed class KernelJsonSchema
     {
         return new KernelJsonSchema(JsonElement.Parse(utf8JsonSchema));
     }
-
 
     /// <summary>Initializes a new instance from the specified <see cref="JsonElement"/>.</summary>
     /// <param name="jsonSchema">The schema to be stored.</param>
@@ -68,17 +62,14 @@ public sealed class KernelJsonSchema
         RootElement = jsonSchema;
     }
 
-
     /// <summary>Gets a <see cref="JsonElement"/> representing the root element of the schema.</summary>
     public JsonElement RootElement { get; }
-
 
     /// <summary>Gets the JSON Schema as a string.</summary>
     public override string ToString()
     {
         return _schemaAsString ??= JsonSerializer.Serialize(RootElement, JsonElementJsonSerializerContext.MaxDepth_128.JsonElement);
     }
-
 
     /// <summary>Converter for reading/writing the schema.</summary>
     public sealed class JsonConverter : JsonConverter<KernelJsonSchema>
@@ -88,7 +79,6 @@ public sealed class KernelJsonSchema
         {
             return new KernelJsonSchema(JsonElement.ParseValue(ref reader));
         }
-
 
         /// <inheritdoc/>
         public override void Write(Utf8JsonWriter writer, KernelJsonSchema value, JsonSerializerOptions options)

@@ -1,9 +1,7 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 #pragma warning disable SYSLIB1006 // Multiple logging methods cannot use the same event id within a class
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Extensions.Logging;
@@ -29,7 +27,6 @@ internal static partial class KernelFunctionLogMessages
         string? pluginName,
         string functionName);
 
-
     /// <summary>
     /// Logs arguments of a <see cref="KernelFunction"/>.
     /// The action provides the benefit of caching the template parsing result for better performance.
@@ -41,7 +38,6 @@ internal static partial class KernelFunctionLogMessages
             0,
             "Function {PluginName}-{FunctionName} arguments: {Arguments}");
 
-
     [RequiresUnreferencedCode("Uses reflection to serialize function arguments, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to serialize the function arguments, making it incompatible with AOT scenarios.")]
     public static void LogFunctionArguments(
@@ -52,7 +48,6 @@ internal static partial class KernelFunctionLogMessages
     {
         logger.LogFunctionArgumentsInternal(pluginName, functionName, arguments);
     }
-
 
     /// <summary>
     /// Logs arguments of a <see cref="KernelFunction"/>.
@@ -71,7 +66,6 @@ internal static partial class KernelFunctionLogMessages
             arguments,
             jsonSerializerOptions);
     }
-
 
     /// <summary>
     /// Logs arguments of a <see cref="KernelFunction"/>.
@@ -118,7 +112,6 @@ internal static partial class KernelFunctionLogMessages
         }
     }
 
-
     /// <summary>
     /// Logs successful invocation of a <see cref="KernelFunction"/>.
     /// </summary>
@@ -127,7 +120,6 @@ internal static partial class KernelFunctionLogMessages
         Level = LogLevel.Information,
         Message = "Function {PluginName}-{FunctionName} succeeded.")]
     public static partial void LogFunctionInvokedSuccess(this ILogger logger, string? pluginName, string functionName);
-
 
     /// <summary>
     /// Logs result of a <see cref="KernelFunction"/>.
@@ -140,7 +132,6 @@ internal static partial class KernelFunctionLogMessages
             0,
             "Function {PluginName}-{FunctionName} result: {ResultValue}");
 
-
     [RequiresUnreferencedCode("Uses reflection to serialize function result, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to serialize the function result, making it incompatible with AOT scenarios.")]
     public static void LogFunctionResultValue(
@@ -151,7 +142,6 @@ internal static partial class KernelFunctionLogMessages
     {
         logger.LogFunctionResultValueInternal(pluginName, functionName, resultValue);
     }
-
 
     /// <summary>
     /// Logs result of a <see cref="KernelFunction"/>.
@@ -172,7 +162,6 @@ internal static partial class KernelFunctionLogMessages
             resultValue,
             jsonSerializerOptions);
     }
-
 
     [SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "By design. See comment below.")]
     [RequiresUnreferencedCode("Uses reflection, if no JOSs are supplied, to serialize function arguments, making it incompatible with AOT scenarios.")]
@@ -230,7 +219,6 @@ internal static partial class KernelFunctionLogMessages
         }
     }
 
-
     /// <summary>
     /// Logs <see cref="KernelFunction"/> error.
     /// </summary>
@@ -245,7 +233,6 @@ internal static partial class KernelFunctionLogMessages
         Exception exception,
         string message);
 
-
     /// <summary>
     /// Logs <see cref="KernelFunction"/> complete.
     /// </summary>
@@ -259,7 +246,6 @@ internal static partial class KernelFunctionLogMessages
         string functionName,
         double duration);
 
-
     /// <summary>
     /// Logs streaming invocation of a <see cref="KernelFunction"/>.
     /// </summary>
@@ -271,7 +257,6 @@ internal static partial class KernelFunctionLogMessages
         this ILogger logger,
         string? pluginName,
         string functionName);
-
 
     /// <summary>
     /// Logs <see cref="KernelFunction"/> streaming complete.

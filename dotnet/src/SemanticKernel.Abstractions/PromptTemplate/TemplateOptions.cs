@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel;
 
@@ -56,13 +56,11 @@ public class TemplateOptions
     /// </remarks>
     public bool Strict { get; set; } = true;
 
-
     #region private
 
     private string? _format;
     private string? _parser;
 
     #endregion
-
 
 }

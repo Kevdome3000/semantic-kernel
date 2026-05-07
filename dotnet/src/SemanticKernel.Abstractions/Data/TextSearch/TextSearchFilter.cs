@@ -1,8 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.VectorData;
 
 #pragma warning disable CS0618 // FilterClause is obsolete - TextSearchFilter itself is obsolete and references FilterClause
@@ -26,7 +23,6 @@ public sealed class TextSearchFilter
     /// </summary>
     public IEnumerable<FilterClause> FilterClauses => _filterClauses;
 
-
     /// <summary>
     /// Add a equality clause to the filter options.
     /// </summary>
@@ -39,12 +35,10 @@ public sealed class TextSearchFilter
         return this;
     }
 
-
     #region private
 
     private readonly List<FilterClause> _filterClauses = [];
 
     #endregion
-
 
 }

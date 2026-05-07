@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
 using System.Text;
 
 namespace Microsoft.SemanticKernel;
@@ -14,7 +13,6 @@ public sealed class StreamingMethodContent : StreamingKernelContent
     /// Gets the result of the function invocation.
     /// </summary>
     public object Content { get; }
-
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()
@@ -30,13 +28,11 @@ public sealed class StreamingMethodContent : StreamingKernelContent
             : [];
     }
 
-
     /// <inheritdoc/>
     public override string ToString()
     {
         return Content.ToString() ?? string.Empty;
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingMethodContent"/> class.

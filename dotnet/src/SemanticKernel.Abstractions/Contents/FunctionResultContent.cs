@@ -34,7 +34,6 @@ public sealed class FunctionResultContent : KernelContent
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Result { get; }
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionResultContent"/> class.
     /// </summary>
@@ -55,7 +54,6 @@ public sealed class FunctionResultContent : KernelContent
         Result = result;
     }
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionCallContent"/> class.
     /// </summary>
@@ -69,7 +67,6 @@ public sealed class FunctionResultContent : KernelContent
         Result = result;
     }
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionCallContent"/> class.
     /// </summary>
@@ -80,7 +77,6 @@ public sealed class FunctionResultContent : KernelContent
     {
         InnerContent = result;
     }
-
 
     /// <summary>
     /// Creates <see cref="ChatMessageContent"/> and adds the current instance of the class to the <see cref="ChatMessageContent.Items"/> collection.

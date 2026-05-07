@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using Microsoft.Extensions.VectorData;
 
@@ -11,7 +11,6 @@ public sealed class PostgresCollectionOptions : VectorStoreCollectionOptions
 {
     internal static readonly PostgresCollectionOptions Default = new();
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresCollectionOptions"/> class.
     /// </summary>
@@ -19,12 +18,10 @@ public sealed class PostgresCollectionOptions : VectorStoreCollectionOptions
     {
     }
 
-
     internal PostgresCollectionOptions(PostgresCollectionOptions? source) : base(source)
     {
         Schema = source?.Schema;
     }
-
 
     /// <summary>
     /// Gets or sets the database schema.

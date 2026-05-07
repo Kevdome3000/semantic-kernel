@@ -1,14 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
@@ -17,7 +11,6 @@ namespace Microsoft.SemanticKernel.ChatCompletion;
 internal sealed class AIFunctionKernelFunction : KernelFunction
 {
     private readonly AIFunction _aiFunction;
-
 
     public AIFunctionKernelFunction(AIFunction aiFunction) :
         base(
@@ -36,7 +29,6 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
         _aiFunction = aiFunction;
     }
 
-
     private AIFunctionKernelFunction(AIFunctionKernelFunction other, string? pluginName) :
         base(other.Name,
             pluginName,
@@ -48,7 +40,6 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
         _aiFunction = other._aiFunction;
     }
 
-
     public override KernelFunction Clone(string? pluginName = null)
     {
         // Should allow null but not empty or whitespace
@@ -59,7 +50,6 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
 
         return new AIFunctionKernelFunction(this, pluginName);
     }
-
 
     protected override async ValueTask<FunctionResult> InvokeCoreAsync(
         Kernel kernel,
@@ -75,7 +65,6 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
         return new FunctionResult(this, result);
     }
 
-
     protected override async IAsyncEnumerable<TResult> InvokeStreamingCoreAsync<TResult>(
         Kernel kernel,
         KernelArguments arguments,
@@ -84,7 +73,6 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
         object? result = await _aiFunction.InvokeAsync(new AIFunctionArguments(arguments), cancellationToken).ConfigureAwait(false);
         yield return (TResult)result!;
     }
-
 
     private static IReadOnlyList<KernelParameterMetadata> MapParameterMetadata(AIFunction aiFunction)
     {
@@ -124,7 +112,6 @@ internal sealed class AIFunctionKernelFunction : KernelFunction
 
         return kernelParams;
     }
-
 
     /// <summary>
     /// Gets the names of the required parameters from the AI function's JSON schema.

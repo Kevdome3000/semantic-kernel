@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
@@ -52,7 +47,6 @@ public static class ChatCompletionServiceExtensions
             cancellationToken);
     }
 
-
     /// <summary>
     /// Get a single chat message content for the prompt and settings.
     /// </summary>
@@ -76,7 +70,6 @@ public static class ChatCompletionServiceExtensions
             .ConfigureAwait(false)).Single();
     }
 
-
     /// <summary>
     /// Get a single chat message content for the chat history and settings provided.
     /// </summary>
@@ -99,7 +92,6 @@ public static class ChatCompletionServiceExtensions
                 cancellationToken)
             .ConfigureAwait(false)).Single();
     }
-
 
     /// <summary>
     /// Get streaming chat message contents for the chat history provided using the specified settings.
@@ -136,7 +128,6 @@ public static class ChatCompletionServiceExtensions
             kernel,
             cancellationToken);
     }
-
 
     /// <summary>Creates an <see cref="IChatClient"/> for the specified <see cref="IChatCompletionService"/>.</summary>
     /// <param name="service">The chat completion service to be represented as a chat client.</param>

@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using AudioContent = Microsoft.SemanticKernel.AudioContent;
@@ -73,7 +70,6 @@ internal static class ChatMessageExtensions
                 .FirstOrDefault(fcc => fcc is not null);
         }
     }
-
 
     /// <summary>Converts a list of <see cref="ChatMessage"/> to a <see cref="ChatHistory"/>.</summary>
     internal static ChatHistory ToChatHistory(this IEnumerable<ChatMessage> chatMessages)

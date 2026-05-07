@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using static Microsoft.SemanticKernel.KernelParameterMetadata;
 
@@ -34,7 +32,6 @@ public sealed class KernelReturnParameterMetadata
     /// <summary>The empty instance</summary>
     private static KernelReturnParameterMetadata? s_empty;
 
-
     /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/>.</summary>
     [RequiresUnreferencedCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
     [RequiresDynamicCode("Uses reflection to generate schema, making it incompatible with AOT scenarios.")]
@@ -42,14 +39,12 @@ public sealed class KernelReturnParameterMetadata
     {
     }
 
-
     /// <summary>Initializes the <see cref="KernelReturnParameterMetadata"/>.</summary>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
     public KernelReturnParameterMetadata(JsonSerializerOptions jsonSerializerOptions)
     {
         _jsonSerializerOptions = jsonSerializerOptions;
     }
-
 
     /// <summary>Initializes a <see cref="KernelReturnParameterMetadata"/> as a copy of another <see cref="KernelReturnParameterMetadata"/>.</summary>
     [RequiresUnreferencedCode("Uses reflection, if no JSOs are available in the metadata, to generate the schema, making it incompatible with AOT scenarios.")]
@@ -62,7 +57,6 @@ public sealed class KernelReturnParameterMetadata
         _jsonSerializerOptions = metadata._jsonSerializerOptions;
     }
 
-
     /// <summary>Initializes a <see cref="KernelReturnParameterMetadata"/> as a copy of another <see cref="KernelReturnParameterMetadata"/>.</summary>
     /// <param name="metadata">The metadata to copy.</param>
     /// <param name="jsonSerializerOptions">The <see cref="JsonSerializerOptions"/> to generate JSON schema.</param>
@@ -73,7 +67,6 @@ public sealed class KernelReturnParameterMetadata
         _schema = metadata._schema;
         _jsonSerializerOptions = jsonSerializerOptions;
     }
-
 
     /// <summary>Gets a description of the return parameter, suitable for use in describing the purpose to a model.</summary>
     [AllowNull]

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -16,7 +16,6 @@ public interface ITextSearchResultMapper
     TextSearchResult MapFromResultToTextSearchResult(object result);
 }
 
-
 /// <summary>
 /// Delegate to map from an <see cref="object"/> which represents a result value associated with a <see cref="ITextSearch" /> implementation
 /// to a a <see cref="TextSearchResult" /> instance.
@@ -24,7 +23,6 @@ public interface ITextSearchResultMapper
 /// <param name="result">The result value to map.</param>
 /// <returns>A <see cref="TextSearchResult" /> instance.</returns>
 public delegate TextSearchResult MapFromResultToTextSearchResult(object result);
-
 
 /// <summary>
 /// Default implementation of <see cref="ITextSearchResultMapper" /> that use the <see cref="MapFromResultToTextSearchResult" /> delegate.

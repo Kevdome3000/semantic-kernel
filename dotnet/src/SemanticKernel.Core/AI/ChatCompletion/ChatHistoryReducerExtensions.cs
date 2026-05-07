@@ -1,8 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel.ChatCompletion;
 
@@ -56,7 +52,6 @@ internal static class ChatHistoryReducerExtensions
         }
     }
 
-
     /// <summary>
     /// Identify the index of the first message that is not a summary message, as indicated by
     /// the presence of the specified metadata key.
@@ -77,7 +72,6 @@ internal static class ChatHistoryReducerExtensions
 
         return chatHistory.Count;
     }
-
 
     /// <summary>
     /// Identify the index of the first message at or beyond the specified targetCount that

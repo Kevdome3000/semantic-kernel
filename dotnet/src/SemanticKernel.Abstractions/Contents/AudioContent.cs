@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Text.Json.Serialization;
 
 #pragma warning disable CA1054 // URI-like parameters should not be strings
@@ -20,7 +19,6 @@ public class AudioContent : BinaryContent
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
     /// </summary>
@@ -29,7 +27,6 @@ public class AudioContent : BinaryContent
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.
     /// </summary>
@@ -37,7 +34,6 @@ public class AudioContent : BinaryContent
     public AudioContent(string dataUri) : base(dataUri)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioContent"/> class.

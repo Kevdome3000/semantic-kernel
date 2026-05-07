@@ -1,14 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel.Plugins.Document.FileSystem;
 
 #pragma warning disable CA1031 // Exceptions are caught and returned in a task
-
 
 /// <summary>
 /// Connector for local filesystem
@@ -41,7 +35,6 @@ public class LocalFileSystemConnector : IFileSystemConnector
         }
     }
 
-
     /// <summary>
     /// Get a writeable stream to a file.
     /// </summary>
@@ -68,7 +61,6 @@ public class LocalFileSystemConnector : IFileSystemConnector
         }
     }
 
-
     /// <summary>
     /// Get a writeable stream to a file.
     /// </summary>
@@ -92,7 +84,6 @@ public class LocalFileSystemConnector : IFileSystemConnector
             return Task.FromException<Stream>(e);
         }
     }
-
 
     /// <inheritdoc/>
     public Task<bool> FileExistsAsync(string filePath, CancellationToken cancellationToken = default)

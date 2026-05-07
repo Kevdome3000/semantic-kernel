@@ -1,12 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -51,7 +44,6 @@ public sealed class Mem0Provider : AIContextProvider
     private readonly Mem0Client _mem0Client;
     private readonly ILogger<Mem0Provider>? _logger;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="Mem0Provider"/> class.
     /// </summary>
@@ -74,7 +66,7 @@ public sealed class Mem0Provider : AIContextProvider
 
         if (string.IsNullOrWhiteSpace(httpClient.BaseAddress?.AbsolutePath))
         {
-            throw new ArgumentException(@"The BaseAddress of the provided httpClient parameter must be set.", nameof(httpClient));
+            throw new ArgumentException("The BaseAddress of the provided httpClient parameter must be set.", nameof(httpClient));
         }
 
         _applicationId = options?.ApplicationId;
@@ -88,7 +80,6 @@ public sealed class Mem0Provider : AIContextProvider
         _mem0Client = new Mem0Client(httpClient);
     }
 
-
     /// <inheritdoc/>
     public override Task ConversationCreatedAsync(string? conversationId, CancellationToken cancellationToken = default)
     {
@@ -97,7 +88,6 @@ public sealed class Mem0Provider : AIContextProvider
         _perOperationThreadId ??= conversationId;
         return Task.CompletedTask;
     }
-
 
     /// <inheritdoc/>
     public override async Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
@@ -131,7 +121,6 @@ public sealed class Mem0Provider : AIContextProvider
                 .ConfigureAwait(false);
         }
     }
-
 
     /// <inheritdoc/>
     public override async Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
@@ -172,7 +161,6 @@ public sealed class Mem0Provider : AIContextProvider
         return context;
     }
 
-
     /// <summary>
     /// Plugin method to clear memories for the current agent/thread/user.
     /// </summary>
@@ -187,7 +175,6 @@ public sealed class Mem0Provider : AIContextProvider
                 : _threadId,
             _userId);
     }
-
 
     /// <summary>
     /// Validate that we are not receiving a new thread id when the component has already received one before.

@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using Npgsql;
 
 namespace Microsoft.SemanticKernel.Connectors.PgVector;
@@ -34,7 +32,6 @@ public sealed class PostgresDynamicCollection : PostgresCollection<object, Dicti
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresCollection{TKey, TRecord}"/> class.
     /// </summary>
@@ -48,7 +45,6 @@ public sealed class PostgresDynamicCollection : PostgresCollection<object, Dicti
             options)
     {
     }
-
 
     internal PostgresDynamicCollection(
         NpgsqlDataSource dataSource,

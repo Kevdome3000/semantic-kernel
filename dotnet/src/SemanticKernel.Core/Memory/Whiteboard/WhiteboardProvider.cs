@@ -1,15 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
@@ -42,7 +36,6 @@ public sealed class WhiteboardProvider : AIContextProvider
     private ChatMessage? _messageBeingProcessed;
     private Task _updateWhiteboardTask = Task.CompletedTask;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="WhiteboardProvider"/> class.
     /// </summary>
@@ -61,12 +54,10 @@ public sealed class WhiteboardProvider : AIContextProvider
         _logger = loggerFactory?.CreateLogger<WhiteboardProvider>();
     }
 
-
     /// <summary>
     /// Gets the current whiteboard content.
     /// </summary>
     public IReadOnlyList<string> CurrentWhiteboardContent => _currentWhiteboardContent;
-
 
     /// <inheritdoc/>
     public override async Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
@@ -100,7 +91,6 @@ public sealed class WhiteboardProvider : AIContextProvider
         }
     }
 
-
     /// <inheritdoc/>
     public override Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
     {
@@ -127,7 +117,6 @@ public sealed class WhiteboardProvider : AIContextProvider
         });
     }
 
-
     /// <summary>
     /// Wait for all messages to be processed and the whiteboard to be up to date.
     /// </summary>
@@ -139,7 +128,6 @@ public sealed class WhiteboardProvider : AIContextProvider
             await _updateWhiteboardTask.ConfigureAwait(false);
         }
     }
-
 
     private async Task UpdateWhiteboardAsync(ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
@@ -186,7 +174,6 @@ public sealed class WhiteboardProvider : AIContextProvider
             result);
     }
 
-
     private string FormatPromptTemplate(string inputMessagesJson, string currentWhiteboardJson, int maxWhiteboardMessages)
     {
         var sb = new StringBuilder(_maintenancePrompt);
@@ -195,7 +182,6 @@ public sealed class WhiteboardProvider : AIContextProvider
         sb.Replace("{{$maxWhiteboardMessages}}", maxWhiteboardMessages.ToString());
         return sb.ToString();
     }
-
 
     /// <summary>
     /// Gets the prompt template to use for maintaining the whiteboard.
@@ -310,7 +296,6 @@ public sealed class WhiteboardProvider : AIContextProvider
         New Whiteboard:
         """;
 
-
     /// <summary>
     /// A simple message class that contains just the most basic msessage information
     /// that is required to pass to the LLM.
@@ -322,7 +307,6 @@ public sealed class WhiteboardProvider : AIContextProvider
         public string Text { get; set; } = string.Empty;
     }
 
-
     /// <summary>
     /// Represents the response from the LLM when updating the whiteboard.
     /// </summary>
@@ -332,7 +316,6 @@ public sealed class WhiteboardProvider : AIContextProvider
         public List<string> NewWhiteboard { get; set; } = [];
     }
 }
-
 
 /// <summary>
 /// Source generated json serializer for <see cref="WhiteboardProvider"/>.

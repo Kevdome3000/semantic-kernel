@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,7 +27,6 @@ public static class AIServiceExtensions
     /// </summary>
     public static string ApiVersionKey => "ApiVersion";
 
-
     /// <summary>
     /// Gets the model identifier from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.
     /// </summary>
@@ -40,7 +36,6 @@ public static class AIServiceExtensions
     {
         return service.GetAttribute(ModelIdKey);
     }
-
 
     /// <summary>
     /// Gets the endpoint from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>.
@@ -52,7 +47,6 @@ public static class AIServiceExtensions
         return service.GetAttribute(EndpointKey);
     }
 
-
     /// <summary>
     /// Gets the API version from <paramref name="service"/>'s <see cref="IAIService.Attributes"/>
     /// </summary>
@@ -62,7 +56,6 @@ public static class AIServiceExtensions
     {
         return service.GetAttribute(ApiVersionKey);
     }
-
 
     /// <summary>
     /// Gets the specified attribute.
@@ -75,7 +68,6 @@ public static class AIServiceExtensions
             ? value as string
             : null;
     }
-
 
     /// <summary>
     /// Resolves an <see cref="IAIService"/> and associated <see cref="PromptExecutionSettings"/> from the specified
@@ -134,7 +126,6 @@ public static class AIServiceExtensions
 
         throw new KernelException(message.ToString());
     }
-
 
     /// <summary>
     /// Resolves an <see cref="IAIService"/> and associated <see cref="PromptExecutionSettings"/> from the specified

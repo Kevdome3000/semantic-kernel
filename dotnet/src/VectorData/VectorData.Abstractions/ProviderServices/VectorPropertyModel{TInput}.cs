@@ -1,12 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
@@ -22,7 +16,6 @@ public sealed class VectorPropertyModel<TInput>(string modelName) : VectorProper
             || base.CanGenerateEmbedding<TEmbedding>(embeddingGenerator);
     }
 
-
     /// <inheritdoc />
     public override Type? ResolveEmbeddingType<TEmbedding>(IEmbeddingGenerator embeddingGenerator, Type? userRequestedEmbeddingType)
     {
@@ -35,7 +28,6 @@ public sealed class VectorPropertyModel<TInput>(string modelName) : VectorProper
             _ => null
         };
     }
-
 
     /// <inheritdoc />
     internal override async Task<IReadOnlyList<Embedding>> GenerateEmbeddingsCoreAsync<TEmbedding>(IEnumerable<object?> values, CancellationToken cancellationToken)
@@ -60,7 +52,6 @@ public sealed class VectorPropertyModel<TInput>(string modelName) : VectorProper
         }
     }
 
-
     /// <inheritdoc />
     internal override async Task<Embedding> GenerateEmbeddingCoreAsync<TEmbedding>(object? value, CancellationToken cancellationToken)
     {
@@ -72,7 +63,6 @@ public sealed class VectorPropertyModel<TInput>(string modelName) : VectorProper
         // Fall through to base class which checks for string and DataContent input types.
         return await base.GenerateEmbeddingCoreAsync<TEmbedding>(value, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public override Type[] GetSupportedInputTypes()

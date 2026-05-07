@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -22,7 +18,6 @@ public sealed class FunctionCallContentBuilder
     private Dictionary<string, StringBuilder>? _functionArgumentBuildersByIndex;
     private readonly JsonSerializerOptions? _jsonSerializerOptions;
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionCallContentBuilder"/> class.
     /// </summary>
@@ -31,7 +26,6 @@ public sealed class FunctionCallContentBuilder
     public FunctionCallContentBuilder()
     {
     }
-
 
     /// <summary>
     /// Creates a new instance of the <see cref="FunctionCallContentBuilder"/> class.
@@ -42,7 +36,6 @@ public sealed class FunctionCallContentBuilder
     {
         _jsonSerializerOptions = jsonSerializerOptions;
     }
-
 
     /// <summary>
     /// Extracts function call updates from the content and track them for later building.
@@ -60,7 +53,6 @@ public sealed class FunctionCallContentBuilder
                 ref _functionArgumentBuildersByIndex);
         }
     }
-
 
     /// <summary>
     /// Builds a list of <see cref="FunctionCallContent"/> out of function call updates tracked by the <see cref="Append"/> method.
@@ -116,7 +108,6 @@ public sealed class FunctionCallContentBuilder
         return functionCalls ?? [];
     }
 
-
     /// <summary>
     /// Gets function arguments for a given function call index.
     /// </summary>
@@ -171,7 +162,6 @@ public sealed class FunctionCallContentBuilder
 
         return (arguments, exception);
     }
-
 
     /// <summary>
     /// Tracks streaming function call update contents.

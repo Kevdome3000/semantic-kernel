@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System.Diagnostics.CodeAnalysis;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel.Memory;
 
@@ -16,7 +14,7 @@ public sealed class WhiteboardProviderOptions
     /// Defaults to 10 if not specified.
     /// </value>
     public int? MaxWhiteboardMessages { get; set; }
-    
+
     /// <summary>
     /// Gets or sets the maximum number of whiteboard entries to maintain.
     /// Must be greater than 0. Default is 10.

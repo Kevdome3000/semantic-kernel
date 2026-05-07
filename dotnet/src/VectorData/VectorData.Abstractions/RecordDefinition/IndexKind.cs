@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -12,7 +12,6 @@ namespace Microsoft.Extensions.VectorData;
 /// </remarks>
 public static class IndexKind
 {
-
     /// <summary>
     /// Specifies the Hierarchical Navigable Small World, which performs an approximate nearest neighbor (ANN) search.
     /// </summary>

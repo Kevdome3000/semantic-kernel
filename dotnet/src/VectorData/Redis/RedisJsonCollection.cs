@@ -219,7 +219,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
     {
         try
         {
-            await this.RunOperationAsync("FT.DROPINDEX",
+            await RunOperationAsync("FT.DROPINDEX",
                     () => _database.FT().DropIndexAsync(Name))
                 .ConfigureAwait(false);
         }
@@ -253,7 +253,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
         }
 
         // Get the Redis value.
-        var redisResult = await this.RunOperationAsync(
+        var redisResult = await RunOperationAsync(
                 "GET",
                 () => options?.IncludeVectors is true
                     ? _database
@@ -315,7 +315,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
         }
 
         // Get the list of Redis results.
-        var redisResults = await this.RunOperationAsync(
+        var redisResults = await RunOperationAsync(
                 "MGET",
                 () => _database
                     .JSON()
@@ -358,7 +358,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
         var maybePrefixedKey = PrefixKeyIfNeeded(stringKey);
 
         // Remove.
-        return this.RunOperationAsync(
+        return RunOperationAsync(
             "DEL",
             () => _database
                 .JSON()
@@ -388,7 +388,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
 
         // Upsert.
         var maybePrefixedKey = PrefixKeyIfNeeded(redisJsonRecord.Key);
-        await this.RunOperationAsync(
+        await RunOperationAsync(
                 "SET",
                 () => _database
                     .JSON()
@@ -436,7 +436,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
 
         // Upsert.
         var keyPathValues = redisRecords.Select(x => new KeyPathValue(x.maybePrefixedKey, "$", x.serializedRecord)).ToArray();
-        await this.RunOperationAsync(
+        await RunOperationAsync(
                 "MSET",
                 () => _database
                     .JSON()
@@ -495,7 +495,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
             _model,
             vectorProperty,
             null);
-        var results = await this.RunOperationAsync(
+        var results = await RunOperationAsync(
                 "FT.SEARCH",
                 () => _database
                     .FT()
@@ -570,7 +570,7 @@ public class RedisJsonCollection<TKey, TRecord> : VectorStoreCollection<TKey, TR
             options ??= new(),
             _model);
 
-        var results = await this.RunOperationAsync(
+        var results = await RunOperationAsync(
                 "FT.SEARCH",
                 () => _database
                     .FT()

@@ -1,10 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
@@ -25,25 +20,21 @@ public abstract class EmbeddingGenerationDispatcher
     /// </summary>
     public abstract Type EmbeddingType { get; }
 
-
     /// <summary>
     /// Attempts to resolve the embedding type for the given <paramref name="vectorProperty"/>, using the given <paramref name="embeddingGenerator"/>.
     /// </summary>
     /// <returns>The resolved embedding type, or <see langword="null"/> if the generator does not support this embedding type.</returns>
     public abstract Type? ResolveEmbeddingType(VectorPropertyModel vectorProperty, IEmbeddingGenerator embeddingGenerator, Type? userRequestedEmbeddingType);
 
-
     /// <summary>
     /// Generates embeddings of this type from the given <paramref name="values"/>, using the embedding generator configured on the <paramref name="vectorProperty"/>.
     /// </summary>
     public abstract Task<IReadOnlyList<Embedding>> GenerateEmbeddingsAsync(VectorPropertyModel vectorProperty, IEnumerable<object?> values, CancellationToken cancellationToken);
 
-
     /// <summary>
     /// Generates a single embedding of this type from the given <paramref name="value"/>, using the embedding generator configured on the <paramref name="vectorProperty"/>.
     /// </summary>
     public abstract Task<Embedding> GenerateEmbeddingAsync(VectorPropertyModel vectorProperty, object? value, CancellationToken cancellationToken);
-
 
     /// <summary>
     /// Checks whether the given <paramref name="embeddingGenerator"/> can produce embeddings of this type for any of the input types
@@ -52,7 +43,6 @@ public abstract class EmbeddingGenerationDispatcher
     /// is only needed for search and the input type is not known at model-build time.
     /// </summary>
     public abstract bool CanGenerateEmbedding(VectorPropertyModel vectorProperty, IEmbeddingGenerator embeddingGenerator);
-
 
     /// <summary>
     /// Creates a new <see cref="EmbeddingGenerationDispatcher"/> for the given <typeparamref name="TEmbedding"/> type.
@@ -63,7 +53,6 @@ public abstract class EmbeddingGenerationDispatcher
         return new EmbeddingGenerationDispatcher<TEmbedding>();
     }
 }
-
 
 /// <summary>
 /// A <see cref="EmbeddingGenerationDispatcher"/> implementation for a specific <typeparamref name="TEmbedding"/> type.
@@ -76,13 +65,11 @@ public sealed class EmbeddingGenerationDispatcher<TEmbedding> : EmbeddingGenerat
     /// <inheritdoc />
     public override Type EmbeddingType => typeof(TEmbedding);
 
-
     /// <inheritdoc />
     public override Type? ResolveEmbeddingType(VectorPropertyModel vectorProperty, IEmbeddingGenerator embeddingGenerator, Type? userRequestedEmbeddingType)
     {
         return vectorProperty.ResolveEmbeddingType<TEmbedding>(embeddingGenerator, userRequestedEmbeddingType);
     }
-
 
     /// <inheritdoc />
     public override bool CanGenerateEmbedding(VectorPropertyModel vectorProperty, IEmbeddingGenerator embeddingGenerator)
@@ -90,13 +77,11 @@ public sealed class EmbeddingGenerationDispatcher<TEmbedding> : EmbeddingGenerat
         return vectorProperty.CanGenerateEmbedding<TEmbedding>(embeddingGenerator);
     }
 
-
     /// <inheritdoc />
     public override Task<IReadOnlyList<Embedding>> GenerateEmbeddingsAsync(VectorPropertyModel vectorProperty, IEnumerable<object?> values, CancellationToken cancellationToken)
     {
         return vectorProperty.GenerateEmbeddingsCoreAsync<TEmbedding>(values, cancellationToken);
     }
-
 
     /// <inheritdoc />
     public override Task<Embedding> GenerateEmbeddingAsync(VectorPropertyModel vectorProperty, object? value, CancellationToken cancellationToken)

@@ -24,7 +24,6 @@ internal abstract class Block
     /// </summary>
     private protected ILogger Logger { get; }
 
-
     /// <summary>
     /// Base constructor. Prevent external instantiation.
     /// </summary>
@@ -35,7 +34,6 @@ internal abstract class Block
         Content = content ?? string.Empty;
         Logger = loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance;
     }
-
 
     /// <summary>
     /// Check if the block content is valid.

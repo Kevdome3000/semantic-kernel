@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -62,7 +59,7 @@ public class ChatMessageContent : KernelContent
                         Encoding,
                         Metadata
                     )
-                    { MimeType = MimeType });
+                { MimeType = MimeType });
             }
         }
     }
@@ -119,7 +116,6 @@ public class ChatMessageContent : KernelContent
     [JsonIgnore]
     public object? Source { get; set; }
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
@@ -128,7 +124,6 @@ public class ChatMessageContent : KernelContent
     {
         _encoding = Encoding.UTF8;
     }
-
 
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
@@ -153,7 +148,6 @@ public class ChatMessageContent : KernelContent
         Content = content;
     }
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="ChatMessageContent"/> class
     /// </summary>
@@ -177,13 +171,11 @@ public class ChatMessageContent : KernelContent
         _items = items;
     }
 
-
     /// <inheritdoc/>
     public override string ToString()
     {
         return Content ?? string.Empty;
     }
-
 
     private ChatMessageContentItemCollection? _items;
 

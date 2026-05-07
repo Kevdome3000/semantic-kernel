@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Agents;
@@ -19,7 +17,7 @@ public class AnnotationContent : KernelContent
     [Obsolete("Use `ReferenceId` property instead.")]
     public string? FileId => ReferenceId;
 
-    //init => this.ReferenceId = value ?? string.Empty;
+    //init => ReferenceId = value ?? string.Empty;
     /// <summary>
     /// The citation label in the associated response.
     /// </summary>
@@ -65,7 +63,6 @@ public class AnnotationContent : KernelContent
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? EndIndex { get; init; }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AnnotationContent"/> class.

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using Microsoft.SemanticKernel.Data;
 using Microsoft.SemanticKernel.Plugins.Web.Bing;
@@ -31,7 +31,6 @@ public static class WebKernelBuilderExtensions
         return builder;
     }
 
-
     /// <summary>
     /// Register an <see cref="ITextSearch"/> instance with the specified service ID.
     /// </summary>
@@ -49,7 +48,6 @@ public static class WebKernelBuilderExtensions
 
         return builder;
     }
-
 
     /// <summary>
     /// Register an <see cref="ITextSearch"/> instance with the specified service ID.
@@ -74,7 +72,6 @@ public static class WebKernelBuilderExtensions
 
         return builder;
     }
-
 
     /// <summary>
     /// Register an <see cref="ITextSearch"/> instance with the specified service ID.

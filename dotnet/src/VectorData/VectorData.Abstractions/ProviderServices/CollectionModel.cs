@@ -1,13 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -55,7 +50,6 @@ public sealed class CollectionModel
     /// </summary>
     public bool EmbeddingGenerationRequired { get; }
 
-
     internal CollectionModel(
         Type recordType,
         Func<object> recordFactory,
@@ -76,7 +70,6 @@ public sealed class CollectionModel
         EmbeddingGenerationRequired = vectorProperties.Any(p => p.EmbeddingType != p.Type);
     }
 
-
     /// <summary>
     /// Returns the single key property in the model, and throws if there are multiple key properties.
     /// </summary>
@@ -87,7 +80,6 @@ public sealed class CollectionModel
     /// Suitable for connectors where validation is in place for single vectors only (<see cref="CollectionModelBuildingOptions.SupportsMultipleVectors"/>).
     /// </summary>
     public VectorPropertyModel VectorProperty => _singleVectorProperty ??= VectorProperties.Single();
-
 
     /// <summary>
     /// Instantiates a new record of the specified type.
@@ -102,7 +94,6 @@ public sealed class CollectionModel
 
         return (TRecord)_recordFactory();
     }
-
 
     /// <summary>
     /// Gets the vector property with the provided name if a name is provided, and falls back
@@ -137,7 +128,6 @@ public sealed class CollectionModel
 
         return _singleVectorProperty;
     }
-
 
     /// <summary>
     /// Gets the text data property with the provided name that has full text search indexing enabled, or falls back
@@ -184,7 +174,6 @@ public sealed class CollectionModel
         return _singleFullTextSearchProperty;
     }
 
-
     /// <summary>
     /// Gets the data or key property selected by the provided expression.
     /// </summary>
@@ -194,7 +183,6 @@ public sealed class CollectionModel
     {
         return GetMatchingProperty<TRecord, PropertyModel>(expression, true);
     }
-
 
     private TProperty GetMatchingProperty<TRecord, TProperty>(Expression<Func<TRecord, object?>> expression, bool data)
         where TProperty : PropertyModel

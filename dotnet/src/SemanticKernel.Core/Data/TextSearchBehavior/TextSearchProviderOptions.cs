@@ -1,8 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -98,7 +94,6 @@ public sealed class TextSearchProviderOptions
     /// </para>
     /// </remarks>
     public Func<List<TextSearchResult>, string>? ContextFormatter { get; init; }
-
 
     /// <summary>
     /// Choices for controlling the behavior of the <see cref="TextSearchProvider"/>.

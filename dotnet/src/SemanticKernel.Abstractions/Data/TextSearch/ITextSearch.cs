@@ -1,9 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -25,7 +20,6 @@ public interface ITextSearch<TRecord>
         TextSearchOptions<TRecord>? searchOptions = null,
         CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Perform a search for content related to the specified query and return <see cref="TextSearchResult"/> values representing the search results.
     /// </summary>
@@ -36,7 +30,6 @@ public interface ITextSearch<TRecord>
         string query,
         TextSearchOptions<TRecord>? searchOptions = null,
         CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Perform a search for content related to the specified query and return strongly-typed <typeparamref name="TRecord"/> values representing the search results.
@@ -49,7 +42,6 @@ public interface ITextSearch<TRecord>
         TextSearchOptions<TRecord>? searchOptions = null,
         CancellationToken cancellationToken = default);
 }
-
 
 /// <summary>
 /// Interface for text based search queries for use with Semantic Kernel prompts and automatic function calling.
@@ -69,7 +61,6 @@ public interface ITextSearch
         TextSearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Perform a search for content related to the specified query and return <see cref="TextSearchResult"/> values representing the search results.
     /// </summary>
@@ -80,7 +71,6 @@ public interface ITextSearch
         string query,
         TextSearchOptions? searchOptions = null,
         CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Perform a search for content related to the specified query and return <see cref="object"/> values representing the search results.

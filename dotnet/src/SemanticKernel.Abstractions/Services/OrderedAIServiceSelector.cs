@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -17,7 +13,6 @@ namespace Microsoft.SemanticKernel.Services;
 internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IChatClientSelector
 {
     public static OrderedAIServiceSelector Instance { get; } = new();
-
 
     /// <inheritdoc/>
     [Experimental("SKEXP0001")]
@@ -35,7 +30,6 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IChatClient
             out serviceSettings);
     }
 
-
     /// <inheritdoc/>
     public bool TrySelectAIService<T>(
         Kernel kernel,
@@ -50,7 +44,6 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IChatClient
             out service,
             out serviceSettings);
     }
-
 
     private bool TrySelect<T>(
         Kernel kernel,
@@ -147,7 +140,6 @@ internal sealed class OrderedAIServiceSelector : IAIServiceSelector, IChatClient
                 kernel.Services.GetService<T>();
         }
     }
-
 
     private T? GetServiceByModelId<T>(Kernel kernel, string modelId) where T : class
     {

@@ -208,7 +208,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
     {
         try
         {
-            await this.RunOperationAsync("FT.DROPINDEX",
+            await RunOperationAsync("FT.DROPINDEX",
                     () => _database.FT().DropIndexAsync(Name))
                 .ConfigureAwait(false);
         }
@@ -251,7 +251,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
 
         if (includeVectors)
         {
-            retrievedHashEntries = await this.RunOperationAsync(
+            retrievedHashEntries = await RunOperationAsync(
                     operationName,
                     () => _database.HashGetAllAsync(maybePrefixedKey))
                 .ConfigureAwait(false);
@@ -259,7 +259,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         else
         {
             var fieldKeys = _dataStoragePropertyNameRedisValues;
-            var retrievedValues = await this.RunOperationAsync(
+            var retrievedValues = await RunOperationAsync(
                     operationName,
                     () => _database.HashGetAsync(maybePrefixedKey, fieldKeys))
                 .ConfigureAwait(false);
@@ -286,7 +286,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         var maybePrefixedKey = PrefixKeyIfNeeded(stringKey);
 
         // Remove.
-        return this.RunOperationAsync(
+        return RunOperationAsync(
             "DEL",
             () => _database
                 .KeyDeleteAsync(maybePrefixedKey));
@@ -348,7 +348,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
         // Upsert.
         var maybePrefixedKey = PrefixKeyIfNeeded(redisHashSetRecord.Key);
 
-        await this.RunOperationAsync(
+        await RunOperationAsync(
                 "HSET",
                 () => _database
                     .HashSetAsync(
@@ -411,7 +411,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             _model,
             vectorProperty,
             selectFields);
-        var results = await this.RunOperationAsync(
+        var results = await RunOperationAsync(
                 "FT.SEARCH",
                 () => _database
                     .FT()
@@ -490,7 +490,7 @@ public class RedisHashSetCollection<TKey, TRecord> : VectorStoreCollection<TKey,
             options,
             _model);
 
-        var results = await this.RunOperationAsync(
+        var results = await RunOperationAsync(
                 "FT.SEARCH",
                 () => _database
                     .FT()

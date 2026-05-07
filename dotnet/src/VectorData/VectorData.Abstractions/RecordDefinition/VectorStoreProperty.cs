@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -29,7 +26,6 @@ public abstract class VectorStoreProperty
         Type = type;
     }
 
-
     private protected VectorStoreProperty(VectorStoreProperty source)
     {
         Name = source.Name;
@@ -39,7 +35,6 @@ public abstract class VectorStoreProperty
             ? new Dictionary<string, object?>(source.ProviderAnnotations)
             : null;
     }
-
 
     /// <summary>
     /// Gets or sets the name of the property on the data model.

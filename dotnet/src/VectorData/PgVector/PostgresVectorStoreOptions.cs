@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using Microsoft.Extensions.AI;
 
@@ -11,7 +11,6 @@ public sealed class PostgresVectorStoreOptions
 {
     internal static readonly PostgresVectorStoreOptions Default = new();
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PostgresVectorStoreOptions"/> class.
     /// </summary>
@@ -19,13 +18,11 @@ public sealed class PostgresVectorStoreOptions
     {
     }
 
-
     internal PostgresVectorStoreOptions(PostgresVectorStoreOptions? source)
     {
         Schema = source?.Schema;
         EmbeddingGenerator = source?.EmbeddingGenerator;
     }
-
 
     /// <summary>
     /// Gets or sets the database schema.

@@ -1,10 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel;
 
@@ -30,7 +24,6 @@ public static class AggregateAIContextProviderExtensions
     {
         return aggregateAIContextProvider.MessageAddingAsync(conversationId, newMessage.ToChatMessage(), cancellationToken);
     }
-
 
     /// <summary>
     /// Called just before the Model/Agent/etc. is invoked

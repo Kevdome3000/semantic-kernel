@@ -1,8 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Text;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
@@ -12,7 +10,6 @@ namespace Microsoft.SemanticKernel.Plugins.Core;
 /// </summary>
 public class ConversationSummaryPlugin
 {
-
     /// <summary>
     /// The max tokens to process in a single prompt function call.
     /// </summary>
@@ -23,7 +20,6 @@ public class ConversationSummaryPlugin
     private readonly KernelFunction _conversationActionItemsFunction;
 
     private readonly KernelFunction _conversationTopicsFunction;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConversationSummaryPlugin"/> class.
@@ -56,13 +52,13 @@ public class ConversationSummaryPlugin
             executionSettings: settings);
     }
 
-
     /// <summary>
     /// Given a long conversation transcript, summarize the conversation.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    [KernelFunction] [Description("Given a long conversation transcript, summarize the conversation.")]
+    [KernelFunction]
+    [Description("Given a long conversation transcript, summarize the conversation.")]
     public Task<string> SummarizeConversationAsync(
         [Description("A long conversation transcript.")]
         string input,
@@ -71,13 +67,13 @@ public class ConversationSummaryPlugin
         return ProcessAsync(_summarizeConversationFunction, input, kernel);
     }
 
-
     /// <summary>
     /// Given a long conversation transcript, identify action items.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    [KernelFunction] [Description("Given a long conversation transcript, identify action items.")]
+    [KernelFunction]
+    [Description("Given a long conversation transcript, identify action items.")]
     public Task<string> GetConversationActionItemsAsync(
         [Description("A long conversation transcript.")]
         string input,
@@ -86,13 +82,13 @@ public class ConversationSummaryPlugin
         return ProcessAsync(_conversationActionItemsFunction, input, kernel);
     }
 
-
     /// <summary>
     /// Given a long conversation transcript, identify topics.
     /// </summary>
     /// <param name="input">A long conversation transcript.</param>
     /// <param name="kernel">The <see cref="Kernel"/> containing services, plugins, and other state for use throughout the operation.</param>
-    [KernelFunction] [Description("Given a long conversation transcript, identify topics worth remembering.")]
+    [KernelFunction]
+    [Description("Given a long conversation transcript, identify topics worth remembering.")]
     public Task<string> GetConversationTopicsAsync(
         [Description("A long conversation transcript.")]
         string input,
@@ -100,7 +96,6 @@ public class ConversationSummaryPlugin
     {
         return ProcessAsync(_conversationTopicsFunction, input, kernel);
     }
-
 
     private static async Task<string> ProcessAsync(KernelFunction func, string input, Kernel kernel)
     {
@@ -119,5 +114,4 @@ public class ConversationSummaryPlugin
 
         return string.Join("\n", results);
     }
-
 }

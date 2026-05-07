@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -47,9 +45,7 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
         NamedArg = 4
     }
 
-
     private readonly ILoggerFactory _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
-
 
     /// <summary>
     /// Tokenize a code block, without checking for syntax errors
@@ -314,30 +310,25 @@ internal sealed class CodeTokenizer(ILoggerFactory? loggerFactory = null)
         return blocks;
     }
 
-
     private static bool IsVarPrefix(char c)
     {
         return c == Symbols.VarPrefix;
     }
-
 
     private static bool IsBlankSpace(char c)
     {
         return c is Symbols.Space or Symbols.NewLine or Symbols.CarriageReturn or Symbols.Tab;
     }
 
-
     private static bool IsQuote(char c)
     {
         return c is Symbols.DblQuote or Symbols.SglQuote;
     }
 
-
     private static bool CanBeEscaped(char c)
     {
         return c is Symbols.DblQuote or Symbols.SglQuote or Symbols.EscapeChar;
     }
-
 
     [SuppressMessage("Design",
         "CA1031:Modify to catch a more specific allowed exception type, or rethrow exception",

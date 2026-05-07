@@ -151,7 +151,7 @@ public class MongoCollection<TKey, TRecord> : MEVD.VectorStoreCollection<TKey, T
     /// <inheritdoc />
     public override Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("ListCollectionNames", () => InternalCollectionExistsAsync(cancellationToken));
+        return RunOperationAsync("ListCollectionNames", () => InternalCollectionExistsAsync(cancellationToken));
     }
 
 
@@ -160,11 +160,11 @@ public class MongoCollection<TKey, TRecord> : MEVD.VectorStoreCollection<TKey, T
     {
         // The IMongoDatabase.CreateCollectionAsync "Creates a new collection if not already available".
         // So for EnsureCollectionExistsAsync, we don't perform an additional check.
-        await this.RunOperationAsync("CreateCollection",
+        await RunOperationAsync("CreateCollection",
                 () => _mongoDatabase.CreateCollectionAsync(Name, cancellationToken: cancellationToken))
             .ConfigureAwait(false);
 
-        await this.RunOperationWithRetryAsync(
+        await RunOperationWithRetryAsync(
                 "CreateIndexes",
                 _maxRetries,
                 _delayInMilliseconds,
@@ -179,7 +179,7 @@ public class MongoCollection<TKey, TRecord> : MEVD.VectorStoreCollection<TKey, T
     {
         Verify.NotNull(key);
 
-        await this.RunOperationAsync("DeleteOne", () => _mongoCollection.DeleteOneAsync(GetFilterById(key), cancellationToken))
+        await RunOperationAsync("DeleteOne", () => _mongoCollection.DeleteOneAsync(GetFilterById(key), cancellationToken))
             .ConfigureAwait(false);
     }
 
@@ -189,7 +189,7 @@ public class MongoCollection<TKey, TRecord> : MEVD.VectorStoreCollection<TKey, T
     {
         Verify.NotNull(keys);
 
-        await this.RunOperationAsync("DeleteMany", () => _mongoCollection.DeleteManyAsync(GetFilterByIds(keys), cancellationToken))
+        await RunOperationAsync("DeleteMany", () => _mongoCollection.DeleteManyAsync(GetFilterByIds(keys), cancellationToken))
             .ConfigureAwait(false);
     }
 
@@ -197,7 +197,7 @@ public class MongoCollection<TKey, TRecord> : MEVD.VectorStoreCollection<TKey, T
     /// <inheritdoc />
     public override Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default)
     {
-        return this.RunOperationAsync("DropCollection", () => _mongoDatabase.DropCollectionAsync(Name, cancellationToken));
+        return RunOperationAsync("DropCollection", () => _mongoDatabase.DropCollectionAsync(Name, cancellationToken));
     }
 
 
@@ -344,7 +344,7 @@ public class MongoCollection<TKey, TRecord> : MEVD.VectorStoreCollection<TKey, T
 
         var key = GetStorageKey(storageModel);
 
-        await this.RunOperationAsync(OperationName,
+        await RunOperationAsync(OperationName,
                 async () =>
                     await _mongoCollection
                         .ReplaceOneAsync(GetFilterById(key),
@@ -465,7 +465,7 @@ public class MongoCollection<TKey, TRecord> : MEVD.VectorStoreCollection<TKey, T
         }
 
         const string OperationName = "Aggregate";
-        using var cursor = await this.RunOperationWithRetryAsync(
+        using var cursor = await RunOperationWithRetryAsync(
                 OperationName,
                 _maxRetries,
                 _delayInMilliseconds,
@@ -474,7 +474,7 @@ public class MongoCollection<TKey, TRecord> : MEVD.VectorStoreCollection<TKey, T
             .ConfigureAwait(false);
 
         using var errorHandlingAsyncCursor = new ErrorHandlingAsyncCursor<BsonDocument>(cursor, _collectionMetadata, OperationName);
-        var mappedResults = this.EnumerateAndMapSearchResultsAsync(errorHandlingAsyncCursor,
+        var mappedResults = EnumerateAndMapSearchResultsAsync(errorHandlingAsyncCursor,
             options.Skip,
             options.IncludeVectors,
             cancellationToken);
@@ -544,7 +544,7 @@ public class MongoCollection<TKey, TRecord> : MEVD.VectorStoreCollection<TKey, T
                 }));
         }
 
-        using IAsyncCursor<BsonDocument> cursor = await this.FindAsync(
+        using IAsyncCursor<BsonDocument> cursor = await FindAsync(
                 translatedFilter,
                 top,
                 options.Skip,
@@ -614,7 +614,7 @@ public class MongoCollection<TKey, TRecord> : MEVD.VectorStoreCollection<TKey, T
             pipeline.Add(MongoCollectionSearchMapping.GetScoreThresholdMatchQuery(ScorePropertyName, options.ScoreThreshold.Value));
         }
 
-        var results = await this.RunOperationWithRetryAsync(
+        var results = await RunOperationWithRetryAsync(
                 "KeywordVectorizedHybridSearch",
                 _maxRetries,
                 _delayInMilliseconds,
@@ -755,7 +755,7 @@ public class MongoCollection<TKey, TRecord> : MEVD.VectorStoreCollection<TKey, T
             ? new FindOptions<BsonDocument> { Projection = projectionDefinition, Limit = top, Skip = skip, Sort = sortDefinition }
             : new FindOptions<BsonDocument> { Limit = top, Skip = skip, Sort = sortDefinition };
 
-        var cursor = await this.RunOperationAsync(OperationName,
+        var cursor = await RunOperationAsync(OperationName,
                 () =>
                     _mongoCollection.FindAsync(filter, findOptions, cancellationToken))
             .ConfigureAwait(false);

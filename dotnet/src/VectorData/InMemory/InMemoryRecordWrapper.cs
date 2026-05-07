@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.InMemory;
@@ -13,14 +11,12 @@ internal readonly struct InMemoryRecordWrapper<TRecord>
         Record = record;
     }
 
-
     [JsonConstructor]
     public InMemoryRecordWrapper(TRecord record, Dictionary<string, ReadOnlyMemory<float>> embeddingGeneratedVectors)
     {
         Record = record;
         EmbeddingGeneratedVectors = embeddingGeneratedVectors;
     }
-
 
     public TRecord Record { get; }
     public Dictionary<string, ReadOnlyMemory<float>> EmbeddingGeneratedVectors { get; } = [];

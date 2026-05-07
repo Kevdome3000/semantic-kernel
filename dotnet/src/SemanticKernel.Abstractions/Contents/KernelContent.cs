@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.Agents;
 
@@ -52,14 +51,12 @@ public abstract class KernelContent
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyDictionary<string, object?>? Metadata { get; set; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelContent"/> class.
     /// </summary>
     protected KernelContent()
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelContent"/> class.

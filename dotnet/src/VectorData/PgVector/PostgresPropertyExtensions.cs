@@ -1,6 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using Microsoft.Extensions.VectorData;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -13,7 +12,6 @@ public static class PostgresPropertyExtensions
 {
     private const string FullTextSearchLanguageKey = "Postgres:FullTextSearchLanguage";
     private const string StoreTypeKey = "Postgres:StoreType";
-
 
     #region Full-text search language
 
@@ -36,7 +34,6 @@ public static class PostgresPropertyExtensions
         return property;
     }
 
-
     /// <summary>
     /// Gets the PostgreSQL full-text search language configured for a data property.
     /// </summary>
@@ -48,7 +45,6 @@ public static class PostgresPropertyExtensions
             ? value as string
             : null;
     }
-
 
     /// <summary>
     /// Gets the PostgreSQL full-text search language configured for a data property model.
@@ -63,7 +59,6 @@ public static class PostgresPropertyExtensions
     }
 
     #endregion Full-text search language
-
 
     #region Store type
 
@@ -104,7 +99,6 @@ public static class PostgresPropertyExtensions
         return property;
     }
 
-
     /// <summary>
     /// Gets the PostgreSQL store type configured for a property.
     /// </summary>
@@ -117,7 +111,6 @@ public static class PostgresPropertyExtensions
             : null;
     }
 
-
     /// <summary>
     /// Gets whether the property model has been configured with a <c>timestamp</c> (without time zone) store type.
     /// </summary>
@@ -128,7 +121,6 @@ public static class PostgresPropertyExtensions
             && IsTimestampStoreType(storeType);
     }
 
-
     private static bool IsTimestampStoreType(string storeType)
     {
         return string.Equals(storeType, "timestamp", StringComparison.OrdinalIgnoreCase)
@@ -136,6 +128,5 @@ public static class PostgresPropertyExtensions
     }
 
     #endregion Store type
-
 
 }

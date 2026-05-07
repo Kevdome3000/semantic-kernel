@@ -17,7 +17,6 @@ internal sealed class PromptRenderingResult
 
     public FunctionResult? FunctionResult { get; set; }
 
-
     public PromptRenderingResult(IAIService aiService, string renderedPrompt)
     {
         AIService = aiService;

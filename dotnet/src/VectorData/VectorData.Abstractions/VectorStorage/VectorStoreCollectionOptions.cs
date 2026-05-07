@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using Microsoft.Extensions.AI;
 
@@ -14,7 +14,6 @@ public abstract class VectorStoreCollectionOptions
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="VectorStoreCollectionOptions"/> class.
     /// </summary>
@@ -23,7 +22,6 @@ public abstract class VectorStoreCollectionOptions
         Definition = source?.Definition;
         EmbeddingGenerator = source?.EmbeddingGenerator;
     }
-
 
     /// <summary>
     /// Gets or sets an optional record definition that defines the schema of the record type.

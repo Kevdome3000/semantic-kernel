@@ -20,7 +20,7 @@ internal class CosmosMongoFilterTranslator : FilterTranslatorBase
 {
     internal BsonDocument Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
-        var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
+        var preprocessedExpression = PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
         return Translate(preprocessedExpression);
     }
@@ -50,8 +50,8 @@ internal class CosmosMongoFilterTranslator : FilterTranslatorBase
                 => Translate(convert.Operand),
 
             // Special handling for bool constant as the filter expression (r => r.Bool)
-            Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)
-                => this.GenerateEqualityComparison(property, value: true, ExpressionType.Equal),
+            Expression when node.Type == typeof(bool) && TryBindProperty(node, out var property)
+                => GenerateEqualityComparison(property, value: true, ExpressionType.Equal),
             // Handle true literal (r => true), which is useful for fetching all records
             ConstantExpression { Value: true }
                 => [],
@@ -65,9 +65,9 @@ internal class CosmosMongoFilterTranslator : FilterTranslatorBase
 
     private BsonDocument TranslateEqualityComparison(BinaryExpression binary)
     {
-        return this.TryBindProperty(binary.Left, out var property) && binary.Right is ConstantExpression { Value: var rightConstant }
+        return TryBindProperty(binary.Left, out var property) && binary.Right is ConstantExpression { Value: var rightConstant }
             ? GenerateEqualityComparison(property, rightConstant, binary.NodeType)
-            : this.TryBindProperty(binary.Right, out property) && binary.Left is ConstantExpression { Value: var leftConstant }
+            : TryBindProperty(binary.Right, out property) && binary.Left is ConstantExpression { Value: var leftConstant }
                 ? GenerateEqualityComparison(property, leftConstant, binary.NodeType)
                 : throw new NotSupportedException("Invalid equality/comparison");
     }
@@ -151,8 +151,8 @@ internal class CosmosMongoFilterTranslator : FilterTranslatorBase
                         binary.Right));
 
             // Not over bool field (r => !r.Bool)
-            case var negated when negated.Type == typeof(bool) && this.TryBindProperty(negated, out var property):
-                return this.GenerateEqualityComparison(property, false, ExpressionType.Equal);
+            case var negated when negated.Type == typeof(bool) && TryBindProperty(negated, out var property):
+                return GenerateEqualityComparison(property, false, ExpressionType.Equal);
         }
 
         var operand = Translate(not.Operand);
@@ -185,7 +185,7 @@ internal class CosmosMongoFilterTranslator : FilterTranslatorBase
         switch (source)
         {
             // Contains over array column (r => r.Strings.Contains("foo"))
-            case var _ when this.TryBindProperty(source, out _):
+            case var _ when TryBindProperty(source, out _):
                 throw new NotSupportedException("MongoDB does not support Contains within array fields ($elemMatch) in vector search pre-filters");
 
             // Contains over inline enumerable
@@ -214,7 +214,7 @@ internal class CosmosMongoFilterTranslator : FilterTranslatorBase
 
         BsonDocument ProcessInlineEnumerable(IEnumerable elements, Expression item)
         {
-            if (!this.TryBindProperty(item, out var property))
+            if (!TryBindProperty(item, out var property))
             {
                 throw new NotSupportedException("Unsupported item type in Contains");
             }

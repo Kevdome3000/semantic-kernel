@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -17,7 +15,6 @@ internal class InMemoryModelBuilder() : CollectionModelBuilder(ValidationOptions
         SupportsMultipleVectors = true
     };
 
-
     protected override void ValidateKeyProperty(KeyPropertyModel keyProperty)
     {
         base.ValidateKeyProperty(keyProperty);
@@ -30,7 +27,6 @@ internal class InMemoryModelBuilder() : CollectionModelBuilder(ValidationOptions
         }
     }
 
-
     protected override bool IsDataPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         supportedTypes = "";
@@ -39,12 +35,10 @@ internal class InMemoryModelBuilder() : CollectionModelBuilder(ValidationOptions
         return true;
     }
 
-
     protected override bool IsVectorPropertyTypeValid(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {
         return IsVectorPropertyTypeValidCore(type, out supportedTypes);
     }
-
 
     internal static bool IsVectorPropertyTypeValidCore(Type type, [NotNullWhen(false)] out string? supportedTypes)
     {

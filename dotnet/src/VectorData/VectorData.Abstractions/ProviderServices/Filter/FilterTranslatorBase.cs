@@ -1,9 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -126,10 +122,10 @@ public abstract class FilterTranslatorBase
 
             // Dictionary lookup for weakly-typed dynamic binding (e.g. r => r["SomeInt"] == 8)
             MethodCallExpression
-                {
-                    Method: { Name: "get_Item", DeclaringType: var declaringType },
-                    Arguments: [ConstantExpression { Value: string keyName }]
-                } methodCall when methodCall.Object == RecordParameter && declaringType == typeof(Dictionary<string, object?>)
+            {
+                Method: { Name: "get_Item", DeclaringType: var declaringType },
+                Arguments: [ConstantExpression { Value: string keyName }]
+            } methodCall when methodCall.Object == RecordParameter && declaringType == typeof(Dictionary<string, object?>)
                 => keyName,
 
             _ => null
@@ -195,12 +191,12 @@ public abstract class FilterTranslatorBase
             // recreates the UnaryExpression with a different operand type (QueryParameterExpression).
             // Handle this case by checking if the target type is Span<T> or ReadOnlySpan<T>.
             UnaryExpression
-                {
-                    NodeType: ExpressionType.Convert,
-                    Method: null,
-                    Type: { IsGenericType: true } targetType,
-                    Operand: var operand
-                } when targetType.GetGenericTypeDefinition() is var gtd
+            {
+                NodeType: ExpressionType.Convert,
+                Method: null,
+                Type: { IsGenericType: true } targetType,
+                Operand: var operand
+            } when targetType.GetGenericTypeDefinition() is var gtd
                 && (gtd == typeof(Span<>) || gtd == typeof(ReadOnlySpan<>))
                 => (operand, targetType),
 
@@ -267,7 +263,7 @@ public abstract class FilterTranslatorBase
             // _ = await collection.SearchAsync(vector, top: 3, new() { Filter = r => r.Int == x });
             //
             // This also covers member variables:
-            // _ = await collection.SearchAsync(vector, top: 3, new() { Filter = r => r.Int == this._x });
+            // _ = await collection.SearchAsync(vector, top: 3, new() { Filter = r => r.Int == _x });
             // ... as "this" here is represented by a ConstantExpression node in the tree.
             //
             // Some databases - mostly relational ones - support out-of-band parameters which can be referenced via placeholders
@@ -292,7 +288,7 @@ public abstract class FilterTranslatorBase
                     baseValue = null;
                     break;
 
-                // Member constant over something that has already been parameterized (i.e. nested member access, e.g. r=> r.Int == this.SomeWrapper.Something)
+                // Member constant over something that has already been parameterized (i.e. nested member access, e.g. r=> r.Int == SomeWrapper.Something)
                 case QueryParameterExpression p:
                     baseValue = p.Value;
 

@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -22,7 +19,6 @@ public abstract class CancelKernelEventArgs : KernelEventArgs
         base(function, arguments, metadata)
     {
     }
-
 
     /// <summary>
     /// Gets or sets a value indicating whether the operation associated with

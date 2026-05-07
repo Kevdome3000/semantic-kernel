@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -20,7 +18,6 @@ public class KernelException : Exception
     {
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelException"/> class with a specified error message.
     /// </summary>
@@ -28,7 +25,6 @@ public class KernelException : Exception
     public KernelException(string? message) : base(message)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelException"/> class with a specified error message and a reference to the inner exception that is the cause of this exception.

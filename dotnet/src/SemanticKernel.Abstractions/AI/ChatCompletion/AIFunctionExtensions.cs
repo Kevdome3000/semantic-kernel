@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -24,7 +22,6 @@ public static class AIFunctionExtensions
             ? kf
             : new AIFunctionKernelFunction(aiFunction);
     }
-
 
     /// <summary>
     /// Invokes the <see cref="AIFunction"/> providing a <see cref="Kernel"/> and returns its result.

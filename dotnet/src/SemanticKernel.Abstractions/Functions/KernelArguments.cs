@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
 
@@ -22,7 +19,6 @@ public class KernelArguments : AIFunctionArguments
 {
     private IReadOnlyDictionary<string, PromptExecutionSettings>? _executionSettings;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
     /// </summary>
@@ -31,7 +27,6 @@ public class KernelArguments : AIFunctionArguments
         : base(StringComparer.OrdinalIgnoreCase)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
@@ -43,7 +38,6 @@ public class KernelArguments : AIFunctionArguments
             : [executionSettings])
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class with the specified AI execution settings.
@@ -77,7 +71,6 @@ public class KernelArguments : AIFunctionArguments
         ExecutionSettings = newExecutionSettings;
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelArguments"/> class that contains elements copied from the specified <see cref="IDictionary{TKey, TValue}"/>.
     /// </summary>
@@ -92,7 +85,6 @@ public class KernelArguments : AIFunctionArguments
     {
         ExecutionSettings = executionSettings ?? (source as KernelArguments)?.ExecutionSettings;
     }
-
 
     /// <summary>
     /// Gets or sets the prompt execution settings.
@@ -110,14 +102,13 @@ public class KernelArguments : AIFunctionArguments
             {
                 foreach (KeyValuePair<string, PromptExecutionSettings> kv in value!.Where(kv => !string.IsNullOrWhiteSpace(kv.Value.ServiceId) && kv.Key != kv.Value.ServiceId))
                 {
-                    throw new ArgumentException($@"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(ExecutionSettings));
+                    throw new ArgumentException($"Service id '{kv.Value.ServiceId}' must match the key '{kv.Key}'.", nameof(ExecutionSettings));
                 }
             }
 
             _executionSettings = value;
         }
     }
-
 
     /// <summary>Determines whether the <see cref="KernelArguments"/> contains an argument with the specified name.</summary>
     /// <param name="name">The name of the argument to locate.</param>
@@ -128,7 +119,6 @@ public class KernelArguments : AIFunctionArguments
         Verify.NotNull(name);
         return ContainsKey(name);
     }
-
 
     /// <summary>Gets an <see cref="ICollection{String}"/> of all of the arguments names.</summary>
     public ICollection<string> Names => Keys;

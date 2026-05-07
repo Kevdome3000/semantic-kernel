@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-
 #pragma warning disable RCS1194 // Implement exception constructors.
 
 namespace Microsoft.SemanticKernel;
@@ -35,7 +33,6 @@ public sealed class KernelFunctionCanceledException : OperationCanceledException
         Arguments = arguments;
         FunctionResult = functionResult;
     }
-
 
     /// <summary>Gets the <see cref="Kernel"/> that was passed to the invocation of <see cref="Function"/>.</summary>
     public Kernel Kernel { get; }

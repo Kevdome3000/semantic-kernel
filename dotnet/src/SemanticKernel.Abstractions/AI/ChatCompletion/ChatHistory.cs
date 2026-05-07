@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Text;
 
 #pragma warning disable CA1033 // Interface methods should be callable by child types
@@ -26,7 +24,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     private Action<int, int>? _overrideRemoveRange;
     private Action<IEnumerable<ChatMessageContent>>? _overrideAddRange;
 
-
     /// <summary>Initializes an empty history.</summary>
     /// <summary>
     /// Creates a new instance of the <see cref="ChatHistory"/> class
@@ -35,7 +32,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         _messages = [];
     }
-
 
     // This allows observation of the chat history changes by-reference  reflecting in an
     // internal IEnumerable<Microsoft.Extensions.AI.ChatMessage> when used from IChatClients
@@ -58,7 +54,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         _overrideAddRange = overrideAddRange;
     }
 
-
     internal void ClearOverrides()
     {
         _overrideAdd = null;
@@ -69,7 +64,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         _overrideRemoveRange = null;
         _overrideAddRange = null;
     }
-
 
     /// <summary>
     /// Creates a new instance of the <see cref="ChatHistory"/> with a first message in the provided <see cref="AuthorRole"/>.
@@ -84,7 +78,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         _messages = [new ChatMessageContent(role, message)];
     }
 
-
     /// <summary>
     /// Creates a new instance of the <see cref="ChatHistory"/> class with a system message.
     /// </summary>
@@ -93,7 +86,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         : this(systemMessage, AuthorRole.System)
     {
     }
-
 
     /// <summary>Initializes the history will all of the specified messages.</summary>
     /// <param name="messages">The messages to copy into the history.</param>
@@ -104,10 +96,8 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         _messages = new List<ChatMessageContent>(messages);
     }
 
-
     /// <summary>Gets the number of messages in the history.</summary>
     public virtual int Count => _messages.Count;
-
 
     /// <summary>
     /// <param name="authorRole">Role of the message author</param>
@@ -129,7 +119,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
             metadata));
     }
 
-
     /// <summary>
     /// <param name="authorRole">Role of the message author</param>
     /// <param name="contentItems">Instance of <see cref="ChatMessageContentItemCollection"/> with content items</param>
@@ -150,7 +139,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
             metadata));
     }
 
-
     /// <summary>
     /// Add a user message to the chat history
     /// </summary>
@@ -159,7 +147,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         AddMessage(AuthorRole.User, content);
     }
-
 
     /// <summary>
     /// Add a user message to the chat history
@@ -170,7 +157,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         AddMessage(AuthorRole.User, contentItems);
     }
 
-
     /// <summary>
     /// Add an assistant message to the chat history
     /// </summary>
@@ -179,7 +165,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         AddMessage(AuthorRole.Assistant, content);
     }
-
 
     /// <summary>
     /// Add a system message to the chat history
@@ -190,7 +175,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         AddMessage(AuthorRole.System, content);
     }
 
-
     /// <summary>
     /// Add a developer message to the chat history
     /// </summary>
@@ -199,7 +183,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
     {
         AddMessage(AuthorRole.Developer, content);
     }
-
 
     /// <summary>Adds a message to the history.</summary>
     /// <param name="item">The message to add.</param>
@@ -211,7 +194,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         _overrideAdd?.Invoke(item);
     }
 
-
     /// <summary>Adds the messages to the history.</summary>
     /// <param name="items">The collection whose messages should be added to the history.</param>
     /// <exception cref="ArgumentNullException"><paramref name="items"/> is null.</exception>
@@ -221,7 +203,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         _messages.AddRange(items);
         _overrideAddRange?.Invoke(items);
     }
-
 
     /// <summary>Inserts a message into the history at the specified index.</summary>
     /// <param name="index">The index at which the item should be inserted.</param>
@@ -233,7 +214,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         _messages.Insert(index, item);
         _overrideInsert?.Invoke(index, item);
     }
-
 
     /// <summary>
     /// Copies all of the messages in the history to an array, starting at the specified destination array index.
@@ -248,14 +228,12 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         _messages.CopyTo(array, arrayIndex);
     }
 
-
     /// <summary>Removes all messages from the history.</summary>
     public virtual void Clear()
     {
         _messages.Clear();
         _overrideClear?.Invoke();
     }
-
 
     /// <summary>Gets or sets the message at the specified index in the history.</summary>
     /// <param name="index">The index of the message to get or set.</param>
@@ -272,7 +250,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         }
     }
 
-
     /// <summary>Determines whether a message is in the history.</summary>
     /// <param name="item">The message to locate.</param>
     /// <returns>true if the message is found in the history; otherwise, false.</returns>
@@ -283,7 +260,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
 
         return _messages.Contains(item);
     }
-
 
     /// <summary>Searches for the specified message and returns the index of the first occurrence.</summary>
     /// <param name="item">The message to locate.</param>
@@ -296,7 +272,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         return _messages.IndexOf(item);
     }
 
-
     /// <summary>Removes the message at the specified index from the history.</summary>
     /// <param name="index">The index of the message to remove.</param>
     /// <exception cref="ArgumentOutOfRangeException">The <paramref name="index"/> was not valid for this history.</exception>
@@ -305,7 +280,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         _messages.RemoveAt(index);
         _overrideRemoveAt?.Invoke(index);
     }
-
 
     /// <summary>Removes the first occurrence of the specified message from the history.</summary>
     /// <param name="item">The message to remove from the history.</param>
@@ -318,7 +292,6 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         _overrideRemove?.Invoke(item);
         return result;
     }
-
 
     /// <summary>
     /// Removes a range of messages from the history.
@@ -334,17 +307,14 @@ public class ChatHistory : IList<ChatMessageContent>, IReadOnlyList<ChatMessageC
         _overrideRemoveRange?.Invoke(index, count);
     }
 
-
     /// <inheritdoc/>
     bool ICollection<ChatMessageContent>.IsReadOnly => false;
-
 
     /// <inheritdoc/>
     IEnumerator<ChatMessageContent> IEnumerable<ChatMessageContent>.GetEnumerator()
     {
         return _messages.GetEnumerator();
     }
-
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator()

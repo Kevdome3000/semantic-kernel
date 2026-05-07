@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.ComponentModel;
 using System.Globalization;
 
@@ -16,7 +15,6 @@ public class RestApiOperationResponseConverter : TypeConverter
     {
         return destinationType == typeof(string) || base.CanConvertTo(context, destinationType);
     }
-
 
     /// <inheritdoc/>
     public override object? ConvertTo(

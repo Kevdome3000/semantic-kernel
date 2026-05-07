@@ -1,9 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel;
@@ -15,7 +11,6 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
 {
     /// <summary>The collection of functions associated with this plugin.</summary>
     private readonly Dictionary<string, KernelFunction> _functions;
-
 
     /// <summary>Initializes the new plugin from the provided name, description, and function collection.</summary>
     /// <param name="name">The name for the plugin.</param>
@@ -41,10 +36,8 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
         }
     }
 
-
     /// <inheritdoc/>
     public override int FunctionCount => _functions.Count;
-
 
     /// <inheritdoc/>
     public override bool TryGetFunction(string name, [NotNullWhen(true)] out KernelFunction? function)
@@ -68,7 +61,6 @@ internal sealed class DefaultKernelPlugin : KernelPlugin
 
         return function is not null;
     }
-
 
     /// <inheritdoc/>
     public override IEnumerator<KernelFunction> GetEnumerator()

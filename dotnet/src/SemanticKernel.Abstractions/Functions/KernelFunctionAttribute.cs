@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SemanticKernel;
@@ -86,14 +84,12 @@ public sealed class KernelFunctionAttribute : Attribute
     {
     }
 
-
     /// <summary>Initializes the attribute.</summary>
     /// <param name="name">The name to use for the function.</param>
     public KernelFunctionAttribute(string? name)
     {
         Name = name;
     }
-
 
     /// <summary>Gets the function's name.</summary>
     /// <remarks>If null, a name will based on the name of the attributed method will be used.</remarks>

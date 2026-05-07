@@ -20,7 +20,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
 
     internal (string WhereClause, Dictionary<string, object?> Parameters) Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
-        var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions { SupportsParameterization = true });
+        var preprocessedExpression = PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions { SupportsParameterization = true });
 
         Translate(preprocessedExpression);
 
@@ -91,7 +91,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
 
     private void TranslateConstant(ConstantExpression constant)
     {
-        this.TranslateConstant(constant.Value);
+        TranslateConstant(constant.Value);
     }
 
     private void TranslateConstant(object? value)
@@ -147,7 +147,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
                 return;
 
             case DateOnly v:
-                this._sql
+                _sql
                     .Append('"')
                     .Append(v.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
                     .Append('"');
@@ -165,7 +165,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
                         _sql.Append(',');
                     }
 
-                    this.TranslateConstant(element);
+                    TranslateConstant(element);
                 }
 
                 _sql.Append(']');
@@ -182,7 +182,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
 
     private void TranslateMember(MemberExpression memberExpression)
     {
-        if (this.TryBindProperty(memberExpression, out var property))
+        if (TryBindProperty(memberExpression, out var property))
         {
             GeneratePropertyAccess(property);
             return;
@@ -211,7 +211,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
     private void TranslateMethodCall(MethodCallExpression methodCall)
     {
         // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
-        if (this.TryBindProperty(methodCall, out var property))
+        if (TryBindProperty(methodCall, out var property))
         {
             GeneratePropertyAccess(property);
             return;
@@ -252,7 +252,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
     {
         // We only support the pattern: r.ArrayField.Any(x => values.Contains(x))
         // Translates to: EXISTS(SELECT VALUE t FROM t IN c["Field"] WHERE ARRAY_CONTAINS(@values, t))
-        if (!this.TryBindProperty(source, out var property)
+        if (!TryBindProperty(source, out var property)
             || lambda.Body is not MethodCallExpression containsCall
             || !TryMatchContains(containsCall, out var valuesExpression, out var itemExpression))
         {
@@ -284,7 +284,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
                     };
                 }
 
-                this.GenerateAnyContains(property, values);
+                GenerateAnyContains(property, values);
                 return;
             }
 
@@ -295,7 +295,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
 
             // Constant array: shouldn't normally happen, but handle it
             case ConstantExpression { Value: var value }:
-                this.GenerateAnyContains(property, value);
+                GenerateAnyContains(property, value);
                 return;
 
             default:
@@ -350,7 +350,7 @@ internal class CosmosNoSqlFilterTranslator : FilterTranslatorBase
                 return;
 
             // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
-            case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
+            case ExpressionType.Convert when TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
                 GeneratePropertyAccess(property);
                 return;
 

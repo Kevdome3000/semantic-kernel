@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System.Diagnostics.CodeAnalysis;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel.Data;
 
@@ -20,7 +18,6 @@ public sealed class TextSearchStoreSourceRetrievalRequest
         SourceId = sourceId;
         SourceLink = sourceLink;
     }
-
 
     /// <summary>
     /// Gets or sets the source ID of the document to retrieve.

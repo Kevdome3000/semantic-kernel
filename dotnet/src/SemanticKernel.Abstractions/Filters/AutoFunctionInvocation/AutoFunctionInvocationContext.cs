@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -16,7 +12,6 @@ namespace Microsoft.SemanticKernel;
 public class AutoFunctionInvocationContext : Extensions.AI.FunctionInvocationContext
 {
     private ChatHistory? _chatHistory;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class from an existing <see cref="Microsoft.Extensions.AI.FunctionInvocationContext"/>.
@@ -38,7 +33,6 @@ public class AutoFunctionInvocationContext : Extensions.AI.FunctionInvocationCon
         AIFunction = aiFunction;
         Result = new FunctionResult(kernelFunction) { Culture = autoInvocationChatOptions.Kernel.Culture };
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AutoFunctionInvocationContext"/> class.
@@ -72,7 +66,6 @@ public class AutoFunctionInvocationContext : Extensions.AI.FunctionInvocationCon
         base.Function = function;
         Result = result;
     }
-
 
     /// <summary>
     /// The <see cref="System.Threading.CancellationToken"/> to monitor for cancellation requests.
@@ -194,7 +187,6 @@ public class AutoFunctionInvocationContext : Extensions.AI.FunctionInvocationCon
         set => base.Function = value;
     }
 
-
     private static bool IsSameSchema(KernelFunction kernelFunction, AIFunction aiFunction)
     {
         // Compares the schemas, should be similar.
@@ -207,7 +199,6 @@ public class AutoFunctionInvocationContext : Extensions.AI.FunctionInvocationCon
         // return kernelFunction.UnderlyingMethod == aiFunction.UnderlyingMethod;
     }
 
-
     /// <summary>
     /// Mutable IEnumerable of chat message as chat history.
     /// </summary>
@@ -215,12 +206,10 @@ public class AutoFunctionInvocationContext : Extensions.AI.FunctionInvocationCon
     {
         private readonly List<ChatMessage> _messages;
 
-
         internal ChatMessageHistory(IEnumerable<ChatMessage> messages) : base(messages.ToChatHistory())
         {
             _messages = new List<ChatMessage>(messages);
         }
-
 
         public override void Add(ChatMessageContent item)
         {
@@ -228,13 +217,11 @@ public class AutoFunctionInvocationContext : Extensions.AI.FunctionInvocationCon
             _messages.Add(item.ToChatMessage());
         }
 
-
         public override void Clear()
         {
             base.Clear();
             _messages.Clear();
         }
-
 
         public override bool Remove(ChatMessageContent item)
         {
@@ -251,20 +238,17 @@ public class AutoFunctionInvocationContext : Extensions.AI.FunctionInvocationCon
             return true;
         }
 
-
         public override void Insert(int index, ChatMessageContent item)
         {
             base.Insert(index, item);
             _messages.Insert(index, item.ToChatMessage());
         }
 
-
         public override void RemoveAt(int index)
         {
             _messages.RemoveAt(index);
             base.RemoveAt(index);
         }
-
 
         public override ChatMessageContent this[int index]
         {
@@ -276,13 +260,11 @@ public class AutoFunctionInvocationContext : Extensions.AI.FunctionInvocationCon
             }
         }
 
-
         public override void RemoveRange(int index, int count)
         {
             _messages.RemoveRange(index, count);
             base.RemoveRange(index, count);
         }
-
 
         public override void CopyTo(ChatMessageContent[] array, int arrayIndex)
         {
@@ -292,18 +274,15 @@ public class AutoFunctionInvocationContext : Extensions.AI.FunctionInvocationCon
             }
         }
 
-
         public override bool Contains(ChatMessageContent item)
         {
             return base.Contains(item);
         }
 
-
         public override int IndexOf(ChatMessageContent item)
         {
             return base.IndexOf(item);
         }
-
 
         public override void AddRange(IEnumerable<ChatMessageContent> items)
         {
@@ -311,9 +290,7 @@ public class AutoFunctionInvocationContext : Extensions.AI.FunctionInvocationCon
             _messages.AddRange(items.Select(i => i.ToChatMessage()));
         }
 
-
         public override int Count => _messages.Count;
-
 
         // Explicit implementation of IEnumerable<ChatMessageContent>.GetEnumerator()
         IEnumerator<ChatMessageContent> IEnumerable<ChatMessageContent>.GetEnumerator()
@@ -324,14 +301,12 @@ public class AutoFunctionInvocationContext : Extensions.AI.FunctionInvocationCon
             }
         }
 
-
         // Explicit implementation of non-generic IEnumerable.GetEnumerator()
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable<ChatMessageContent>)this).GetEnumerator();
         }
     }
-
 
     /// <summary>Destructor to clear the chat history overrides.</summary>
     ~AutoFunctionInvocationContext()

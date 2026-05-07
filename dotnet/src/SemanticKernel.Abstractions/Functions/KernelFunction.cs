@@ -1,20 +1,13 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -111,7 +104,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     [JsonIgnore]
     public IReadOnlyDictionary<string, PromptExecutionSettings>? ExecutionSettings { get; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
     /// </summary>
@@ -139,7 +131,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             executionSettings)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -169,7 +160,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             executionSettings)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -219,10 +209,8 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         }
     }
 
-
     /// <inheritdoc/>
     public override JsonElement JsonSchema => _jsonSchema;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="KernelFunction"/> class.
@@ -275,13 +263,11 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         _jsonSerializerOptions = jsonSerializerOptions;
     }
 
-
     /// <inheritdoc/>
     public override JsonSerializerOptions JsonSerializerOptions => _jsonSerializerOptions ?? base.JsonSerializerOptions;
 
     /// <inheritdoc/>
     public override MethodInfo? UnderlyingMethod => _underlyingMethod;
-
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
@@ -371,7 +357,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         }
     }
 
-
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
@@ -392,7 +377,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         return result.GetValue<TResult>();
     }
 
-
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -411,7 +395,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     {
         return InvokeStreamingAsync<StreamingKernelContent>(kernel, arguments, cancellationToken);
     }
-
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
@@ -553,7 +536,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         }
     }
 
-
     /// <summary>
     /// Creates a new <see cref="KernelFunction"/> object that is a copy of the current instance
     /// but the <see cref="KernelFunctionMetadata"/> has the plugin name set.
@@ -565,7 +547,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     /// </remarks>
     public abstract KernelFunction Clone(string? pluginName = null);
 
-
     /// <inheritdoc/>
     public override string ToString()
     {
@@ -573,7 +554,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             ? Name
             : $"{PluginName}.{Name}";
     }
-
 
     /// <summary>Creates an <see cref="AIFunction"/> for this <see cref="KernelFunction"/>.</summary>
     /// <param name="kernel">
@@ -587,7 +567,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         return new KernelAIFunction(this, kernel);
     }
 
-
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/>.
     /// </summary>
@@ -599,7 +578,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken);
-
 
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> using the <see cref="AIFunction"/> interface.
@@ -634,7 +612,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             : null;
     }
 
-
     /// <summary>
     /// Invokes the <see cref="KernelFunction"/> and streams its results.
     /// </summary>
@@ -646,7 +623,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         Kernel kernel,
         KernelArguments arguments,
         CancellationToken cancellationToken);
-
 
     #region Private
 
@@ -692,7 +668,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         }
     }
 
-
     private void BuildFunctionSchema()
     {
         KernelFunctionSchemaModel schemaModel = new()
@@ -713,7 +688,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
 
         _jsonSchema = JsonSerializer.SerializeToElement(schemaModel, AbstractionsJsonContext.Default.KernelFunctionSchemaModel);
     }
-
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
@@ -736,7 +710,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         }
     }
 
-
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     private void LogFunctionResult(
@@ -757,7 +730,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             logger.LogFunctionResultValue(pluginName, functionName, functionResult);
         }
     }
-
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
@@ -811,7 +783,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         }
     }
 
-
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "The warning is shown and should be addressed at the function creation site; there is no need to show it again at the function invocation sites.")]
     private Activity? SetFunctionResultTag(Activity? activity, FunctionResult result, JsonSerializerOptions? jsonSerializerOptions = null)
@@ -854,9 +825,7 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         }
     }
 
-
     private JsonElement _jsonSchema;
-
 
     /// <summary>An <see cref="AIFunction"/> wrapper around a <see cref="KernelFunction"/>.</summary>
     [Obsolete("Use the kernel function directly or for similar behavior use Clone(Kernel) method instead.")]
@@ -865,7 +834,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
         private static readonly JsonElement s_defaultSchema = JsonElement.Parse("{}");
         private readonly KernelFunction _kernelFunction;
         private readonly Kernel? _kernel;
-
 
         public KernelAIFunction(KernelFunction kernelFunction, Kernel? kernel)
         {
@@ -878,12 +846,10 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
             JsonSchema = BuildFunctionSchema(kernelFunction);
         }
 
-
         public override string Name { get; }
         public override JsonElement JsonSchema { get; }
         public override string Description => _kernelFunction.Description;
         public override JsonSerializerOptions JsonSerializerOptions => _kernelFunction.JsonSerializerOptions ?? base.JsonSerializerOptions;
-
 
         protected override async ValueTask<object?> InvokeCoreAsync(
             AIFunctionArguments? arguments = null,
@@ -908,7 +874,6 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
                 : null;
         }
 
-
         private static JsonElement BuildFunctionSchema(KernelFunction function)
         {
             KernelFunctionSchemaModel schemaModel = new()
@@ -932,6 +897,5 @@ public abstract class KernelFunction : FullyQualifiedAIFunction, IKernelFunction
     }
 
     #endregion
-
 
 }

@@ -1,10 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -38,7 +32,6 @@ public abstract class VectorStore : IDisposable
         where TKey : notnull
         where TRecord : class;
 
-
     /// <summary>
     /// Gets a collection from the vector store, using dynamic mapping; the record type is represented as a <see cref="Dictionary{TKey, TValue}"/>.
     /// </summary>
@@ -47,14 +40,12 @@ public abstract class VectorStore : IDisposable
     /// <returns>A new <see cref="VectorStoreCollection{TKey, TRecord}"/> instance for managing the records in the collection.</returns>
     public abstract VectorStoreCollection<object, Dictionary<string, object?>> GetDynamicCollection(string name, VectorStoreCollectionDefinition definition);
 
-
     /// <summary>
     /// Retrieves the names of all the collections in the vector store.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>The list of names of all the collections in the vector store.</returns>
     public abstract IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Checks if the collection exists in the vector store.
@@ -64,7 +55,6 @@ public abstract class VectorStore : IDisposable
     /// <returns><see langword="true"/> if the collection exists, <see langword="false"/> otherwise.</returns>
     public abstract Task<bool> CollectionExistsAsync(string name, CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Deletes the collection from the vector store.
     /// </summary>
@@ -72,7 +62,6 @@ public abstract class VectorStore : IDisposable
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> that completes when the collection has been deleted.</returns>
     public abstract Task EnsureCollectionDeletedAsync(string name, CancellationToken cancellationToken = default);
-
 
     /// <summary>Asks the <see cref="VectorStore"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
     /// <param name="serviceType">The type of object being requested.</param>
@@ -86,7 +75,6 @@ public abstract class VectorStore : IDisposable
     /// </remarks>
     public abstract object? GetService(Type serviceType, object? serviceKey = null);
 
-
     /// <summary>
     /// Disposes the <see cref="VectorStore"/> and releases any resources it holds.
     /// </summary>
@@ -94,7 +82,6 @@ public abstract class VectorStore : IDisposable
     protected virtual void Dispose(bool disposing)
     {
     }
-
 
     /// <inheritdoc/>
     public void Dispose()

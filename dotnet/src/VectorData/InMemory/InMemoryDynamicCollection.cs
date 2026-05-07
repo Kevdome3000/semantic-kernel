@@ -1,9 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SemanticKernel.Connectors.InMemory;
 
@@ -32,7 +29,6 @@ public sealed class InMemoryDynamicCollection : InMemoryCollection<object, Dicti
             options)
     {
     }
-
 
     internal InMemoryDynamicCollection(
         ConcurrentDictionary<string, ConcurrentDictionary<object, object>> internalCollection,

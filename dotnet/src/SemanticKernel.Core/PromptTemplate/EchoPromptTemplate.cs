@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System.Threading;
-using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel;
 
@@ -12,7 +9,6 @@ internal sealed class EchoPromptTemplate : IPromptTemplate
 {
     private readonly PromptTemplateConfig _promptConfig;
     private readonly Task<string> _renderResult;
-
 
     /// <summary>
     /// Constructor for <see cref="EchoPromptTemplate"/>.
@@ -26,7 +22,6 @@ internal sealed class EchoPromptTemplate : IPromptTemplate
         _promptConfig = promptConfig;
         _renderResult = Task.FromResult(_promptConfig.Template);
     }
-
 
     /// <inheritdoc/>
     public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)

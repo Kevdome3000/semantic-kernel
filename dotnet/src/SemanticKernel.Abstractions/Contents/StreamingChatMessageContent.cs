@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -110,7 +108,6 @@ public class StreamingChatMessageContent : StreamingKernelContent
         }
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="StreamingChatMessageContent"/> class.
     /// </summary>
@@ -140,20 +137,17 @@ public class StreamingChatMessageContent : StreamingKernelContent
         _encoding = encoding ?? Encoding.UTF8;
     }
 
-
     /// <inheritdoc/>
     public override string ToString()
     {
         return Content ?? string.Empty;
     }
 
-
     /// <inheritdoc/>
     public override byte[] ToByteArray()
     {
         return Encoding.GetBytes(ToString());
     }
-
 
     private StreamingKernelContentItemCollection? _items;
 

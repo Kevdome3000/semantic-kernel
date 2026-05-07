@@ -1,13 +1,8 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -49,7 +44,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         _safeBlocks = new HashSet<string>(promptConfig.InputVariables.Where(iv => allowDangerouslySetContent || iv.AllowDangerouslySetContent).Select(iv => iv.Name));
     }
 
-
     /// <inheritdoc/>
     public Task<string> RenderAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default)
     {
@@ -61,7 +55,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
             cancellationToken);
     }
 
-
     #region private
 
     private readonly ILogger _logger;
@@ -71,7 +64,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     private readonly bool _allowDangerouslySetContent;
 
     private readonly HashSet<string> _safeBlocks;
-
 
     /// <summary>
     /// Given a prompt template string, extract all the blocks (text, variables, function calls)
@@ -93,7 +85,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         return blocks;
     }
-
 
     /// <summary>
     /// Given a list of blocks render each block and compose the final result.
@@ -144,7 +135,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         return result.ToString();
     }
-
 
     /// <summary>
     /// Augments <paramref name="config"/>'s <see cref="PromptTemplateConfig.InputVariables"/> with any variables
@@ -205,7 +195,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
         }
     }
 
-
     private static bool ShouldEncodeTags(bool disableTagEncoding, HashSet<string> safeBlocks, Block block)
     {
         if (block is VarBlock varBlock)
@@ -215,7 +204,6 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
 
         return !disableTagEncoding && block is not TextBlock;
     }
-
 
     private static string? ConvertToString(object? value, CultureInfo? culture = null)
     {
@@ -227,6 +215,5 @@ internal sealed class KernelPromptTemplate : IPromptTemplate
     }
 
     #endregion
-
 
 }

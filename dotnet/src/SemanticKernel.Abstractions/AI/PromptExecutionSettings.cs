@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -124,7 +122,6 @@ public class PromptExecutionSettings
     [JsonIgnore]
     public bool IsFrozen { get; protected set; }
 
-
     /// <summary>
     /// Makes the current <see cref="PromptExecutionSettings"/> unmodifiable and sets its IsFrozen property to true.
     /// </summary>
@@ -143,7 +140,6 @@ public class PromptExecutionSettings
         }
     }
 
-
     /// <summary>
     /// Creates a new <see cref="PromptExecutionSettings"/> object that is a copy of the current instance.
     /// </summary>
@@ -159,7 +155,6 @@ public class PromptExecutionSettings
         };
     }
 
-
     /// <summary>
     /// Throws an <see cref="InvalidOperationException"/> if the <see cref="PromptExecutionSettings"/> are frozen.
     /// </summary>
@@ -172,7 +167,6 @@ public class PromptExecutionSettings
         }
     }
 
-
     /// <summary>
     /// When some specialized <see cref="ChatHistory"/> is used, this method can be overridden to prepare the chat history before the request is sent based on the
     /// current settings configuration
@@ -183,7 +177,6 @@ public class PromptExecutionSettings
     {
         return chatHistory;
     }
-
 
     /// <summary>
     /// This method is intended to be used only by the <see cref="ChatClientChatCompletionService"/> for applying any pre-request transformation to the chat history
@@ -196,7 +189,6 @@ public class PromptExecutionSettings
         return PrepareChatHistoryForRequest(chatHistory);
     }
 
-
     #region private ================================================================================
 
     private string? _modelId;
@@ -207,6 +199,5 @@ public class PromptExecutionSettings
     private FunctionChoiceBehavior? _functionChoiceBehavior;
 
     #endregion
-
 
 }

@@ -272,7 +272,7 @@ public class WeaviateCollection<TKey, TRecord> : VectorStoreCollection<TKey, TRe
     /// <inheritdoc />
     public override Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default)
     {
-        return this.UpsertAsync([record], cancellationToken);
+        return UpsertAsync([record], cancellationToken);
     }
 
 

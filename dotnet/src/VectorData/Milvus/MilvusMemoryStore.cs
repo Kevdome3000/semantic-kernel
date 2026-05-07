@@ -418,7 +418,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        await foreach (MemoryRecord record in this.GetBatchAsync(collectionName,
+        await foreach (MemoryRecord record in GetBatchAsync(collectionName,
                 [key],
                 withEmbedding,
                 cancellationToken)

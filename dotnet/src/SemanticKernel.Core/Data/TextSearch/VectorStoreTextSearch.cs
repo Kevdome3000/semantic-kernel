@@ -1,14 +1,7 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel.Embeddings;
@@ -53,7 +46,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     {
     }
 
-
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
     /// provided <see cref="IVectorSearchable{TRecord}"/> for performing searches and
@@ -82,7 +74,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 #pragma warning restore CS0618
 
 #pragma warning disable CS0618 // Obsolete ITextEmbeddingGenerationService constructors
-
 
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
@@ -114,7 +105,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     {
     }
 
-
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
     /// provided <see cref="IVectorSearchable{TRecord}"/> for performing searches and
@@ -143,9 +133,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         _resultMapper = resultMapper ?? CreateTextSearchResultMapper();
     }
 
-
 #pragma warning restore CS0618
-
 
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
@@ -168,7 +156,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             options)
     {
     }
-
 
     /// <summary>
     /// Create an instance of the <see cref="VectorStoreTextSearch{TRecord}"/> with the
@@ -193,9 +180,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         _resultMapper = resultMapper ?? CreateTextSearchResultMapper();
     }
 
-
 #pragma warning disable CS0618 // Obsolete ITextSearch, TextSearchOptions
-
 
     #region Legacy ITextSearch Implementation
 
@@ -207,7 +192,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         return Task.FromResult(new KernelSearchResults<string>(GetResultsAsStringAsync(searchResponse, cancellationToken)));
     }
 
-
     /// <inheritdoc/>
     public Task<KernelSearchResults<TextSearchResult>> GetTextSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
     {
@@ -215,7 +199,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
         return Task.FromResult(new KernelSearchResults<TextSearchResult>(GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken)));
     }
-
 
     /// <inheritdoc/>
     public Task<KernelSearchResults<object>> GetSearchResultsAsync(string query, TextSearchOptions? searchOptions = null, CancellationToken cancellationToken = default)
@@ -227,9 +210,7 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
     #endregion
 
-
 #pragma warning restore CS0618
-
 
     /// <inheritdoc/>
     Task<KernelSearchResults<string>> ITextSearch<TRecord>.SearchAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
@@ -239,7 +220,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         return Task.FromResult(new KernelSearchResults<string>(GetResultsAsStringAsync(searchResponse, cancellationToken)));
     }
 
-
     /// <inheritdoc/>
     Task<KernelSearchResults<TextSearchResult>> ITextSearch<TRecord>.GetTextSearchResultsAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
     {
@@ -248,7 +228,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         return Task.FromResult(new KernelSearchResults<TextSearchResult>(GetResultsAsTextSearchResultAsync(searchResponse, cancellationToken)));
     }
 
-
     /// <inheritdoc/>
     Task<KernelSearchResults<TRecord>> ITextSearch<TRecord>.GetSearchResultsAsync(string query, TextSearchOptions<TRecord>? searchOptions, CancellationToken cancellationToken)
     {
@@ -256,7 +235,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 
         return Task.FromResult(new KernelSearchResults<TRecord>(GetResultsAsTRecordAsync(searchResponse, cancellationToken)));
     }
-
 
     #region private
 
@@ -268,7 +246,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     private readonly ITextSearchStringMapper _stringMapper;
     private readonly ITextSearchResultMapper _resultMapper;
     private readonly Lazy<TextSearchResultPropertyReader> _propertyReader;
-
 
     /// <summary>
     /// Result mapper which converts a TRecord to a <see cref="TextSearchResult"/>.
@@ -294,7 +271,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         });
     }
 
-
     /// <summary>
     /// Result mapper which converts a TRecord to a <see cref="string"/>.
     /// </summary>
@@ -311,7 +287,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             return (string?)value ?? throw new InvalidOperationException("Value property cannot be null.");
         });
     }
-
 
 #pragma warning disable CS0618 // Obsolete TextSearchOptions, FilterClause
     /// <summary>
@@ -345,7 +320,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
     }
 #pragma warning restore CS0618
 
-
     /// <summary>
     /// Execute a vector search and return the results using modern LINQ filtering.
     /// </summary>
@@ -370,7 +344,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             yield return result;
         }
     }
-
 
     /// <summary>
     /// Core vector search execution logic.
@@ -415,7 +388,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         }
     }
 
-
     /// <summary>
     /// Return the search results as instances of TRecord.
     /// </summary>
@@ -438,7 +410,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             }
         }
     }
-
 
     /// <summary>
     /// Return the search results as strongly-typed <typeparamref name="TRecord"/> instances.
@@ -463,7 +434,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         }
     }
 
-
     /// <summary>
     /// Return the search results as instances of <see cref="TextSearchResult"/>.
     /// </summary>
@@ -487,7 +457,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
         }
     }
 
-
     /// <summary>
     /// Return the search results as instances of <see cref="TextSearchResult"/>.
     /// </summary>
@@ -510,7 +479,6 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
             }
         }
     }
-
 
 #pragma warning disable CS0618 // Obsolete FilterClause, EqualToFilterClause
     /// <summary>
@@ -573,6 +541,5 @@ public sealed class VectorStoreTextSearch<[DynamicallyAccessedMembers(Dynamicall
 #pragma warning restore CS0618
 
     #endregion
-
 
 }

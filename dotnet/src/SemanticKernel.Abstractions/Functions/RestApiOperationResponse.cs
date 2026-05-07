@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
@@ -55,7 +53,6 @@ public sealed class RestApiOperationResponse
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IDictionary<string, object?>? Data { get; set; }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="RestApiOperationResponse"/> class.
     /// </summary>
@@ -68,7 +65,6 @@ public sealed class RestApiOperationResponse
         ContentType = contentType;
         ExpectedSchema = expectedSchema;
     }
-
 
     /// <inheritdoc/>
     public override string ToString()

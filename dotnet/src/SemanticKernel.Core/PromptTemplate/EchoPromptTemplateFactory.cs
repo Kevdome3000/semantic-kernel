@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -13,7 +11,6 @@ public sealed class EchoPromptTemplateFactory : IPromptTemplateFactory
     /// Singleton instance of <see cref="EchoPromptTemplateFactory"/>.
     /// </summary>
     public static EchoPromptTemplateFactory Instance { get; } = new();
-
 
     /// <inheritdoc/>
     public bool TryCreate(PromptTemplateConfig templateConfig, [NotNullWhen(true)] out IPromptTemplate? result)

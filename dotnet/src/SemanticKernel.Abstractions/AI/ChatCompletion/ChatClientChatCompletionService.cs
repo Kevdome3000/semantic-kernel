@@ -1,12 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel.Services;
 
@@ -17,7 +11,6 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
 {
     /// <summary>The wrapped <see cref="IChatClient"/>.</summary>
     private readonly IChatClient _chatClient;
-
 
     /// <summary>Initializes the <see cref="ChatClientChatCompletionService"/> for <paramref name="chatClient"/>.</summary>
     internal ChatClientChatCompletionService(IChatClient chatClient, IServiceProvider? serviceProvider)
@@ -44,10 +37,8 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
         }
     }
 
-
     /// <inheritdoc/>
     public IReadOnlyDictionary<string, object?> Attributes { get; }
-
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<ChatMessageContent>> GetChatMessageContentsAsync(
@@ -86,7 +77,6 @@ internal sealed class ChatClientChatCompletionService : IChatCompletionService
 
         return [];
     }
-
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<StreamingChatMessageContent> GetStreamingChatMessageContentsAsync(

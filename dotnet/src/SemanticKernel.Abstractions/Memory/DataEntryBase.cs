@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -21,7 +20,6 @@ public class DataEntryBase
         Key = key ?? string.Empty;
         Timestamp = timestamp;
     }
-
 
     /// <summary>
     /// Gets the key of the data.

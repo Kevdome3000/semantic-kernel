@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
@@ -17,8 +13,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class KernelFunctionFactory
 {
-
-
     #region FromMethod
 
     /// <summary>
@@ -50,7 +44,6 @@ public static class KernelFunctionFactory
             loggerFactory);
     }
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
     /// </summary>
@@ -81,7 +74,6 @@ public static class KernelFunctionFactory
             loggerFactory);
     }
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
     /// </summary>
@@ -96,7 +88,6 @@ public static class KernelFunctionFactory
     {
         return CreateFromMethod(method.Method, method.Target, options);
     }
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via a delegate.
@@ -116,7 +107,6 @@ public static class KernelFunctionFactory
             options);
     }
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
@@ -148,7 +138,6 @@ public static class KernelFunctionFactory
             returnParameter,
             loggerFactory);
     }
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -183,7 +172,6 @@ public static class KernelFunctionFactory
             loggerFactory);
     }
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
     /// and an optional target object if the method is an instance method.
@@ -201,7 +189,6 @@ public static class KernelFunctionFactory
     {
         return KernelFunctionFromMethod.Create(method, target, options);
     }
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a method, specified via an <see cref="MethodInfo"/> instance
@@ -225,7 +212,6 @@ public static class KernelFunctionFactory
     }
 
     #endregion
-
 
     #region FromPrompt
 
@@ -266,7 +252,6 @@ public static class KernelFunctionFactory
             loggerFactory: loggerFactory);
     }
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template.
     /// </summary>
@@ -302,7 +287,6 @@ public static class KernelFunctionFactory
             loggerFactory: loggerFactory);
     }
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
     /// </summary>
@@ -322,7 +306,6 @@ public static class KernelFunctionFactory
     {
         return KernelFunctionFromPrompt.Create(promptConfig, promptTemplateFactory, loggerFactory);
     }
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template configuration.
@@ -347,7 +330,6 @@ public static class KernelFunctionFactory
             loggerFactory);
     }
 
-
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template and prompt template configuration.
     /// </summary>
@@ -364,7 +346,6 @@ public static class KernelFunctionFactory
     {
         return KernelFunctionFromPrompt.Create(promptTemplate, promptConfig, loggerFactory);
     }
-
 
     /// <summary>
     /// Creates a <see cref="KernelFunction"/> instance for a prompt specified via a prompt template and prompt template configuration.
@@ -387,7 +368,6 @@ public static class KernelFunctionFactory
     }
 
     #endregion
-
 
     /// <summary>
     /// Wraps the specified settings into a dictionary with the default service ID as the key.

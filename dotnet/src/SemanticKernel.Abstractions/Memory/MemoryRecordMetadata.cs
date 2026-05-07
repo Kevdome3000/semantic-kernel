@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -54,7 +53,6 @@ public class MemoryRecordMetadata : ICloneable
     [JsonPropertyName("additional_metadata")]
     public string AdditionalMetadata { get; }
 
-
     /// <summary>
     /// Constructor.
     /// </summary>
@@ -81,7 +79,6 @@ public class MemoryRecordMetadata : ICloneable
         Description = description;
         AdditionalMetadata = additionalMetadata;
     }
-
 
     /// <summary>
     /// Creates a shallow copy of <see cref="MemoryRecordMetadata"/>.

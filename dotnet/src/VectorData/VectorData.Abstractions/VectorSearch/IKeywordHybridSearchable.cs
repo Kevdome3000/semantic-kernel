@@ -1,9 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.Extensions.VectorData;
@@ -59,7 +56,6 @@ public interface IKeywordHybridSearchable<TRecord>
         HybridSearchOptions<TRecord>? options = default,
         CancellationToken cancellationToken = default)
         where TInput : notnull;
-
 
     /// <summary>Asks the <see cref="IKeywordHybridSearchable{TRecord}"/> for an object of the specified type <paramref name="serviceType"/>.</summary>
     /// <param name="serviceType">The type of object being requested.</param>

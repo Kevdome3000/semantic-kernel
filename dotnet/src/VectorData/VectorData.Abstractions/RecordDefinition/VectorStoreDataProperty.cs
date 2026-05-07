@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -21,7 +19,6 @@ public sealed class VectorStoreDataProperty : VectorStoreProperty
         : base(name, type)
     {
     }
-
 
     /// <summary>
     /// Gets or sets a value indicating whether this data property is indexed.

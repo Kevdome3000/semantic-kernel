@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
@@ -26,7 +25,6 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     /// VarBlock associated with this named argument.
     /// </summary>
     internal VarBlock? VarBlock { get; }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NamedArgBlock"/> class.
@@ -57,7 +55,6 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         }
     }
 
-
     /// <summary>
     /// Attempts to extract the name and value of a named argument block from a string
     /// </summary>
@@ -86,7 +83,6 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         return false;
     }
 
-
     /// <summary>
     /// Gets the rendered value of the function argument. If the value is a <see cref="ValBlock"/>, the value stays the same.
     /// If the value is a <see cref="VarBlock"/>, the value of the variable is determined by the arguments passed in.
@@ -112,13 +108,11 @@ internal sealed class NamedArgBlock : Block, ITextRendering
         return string.Empty;
     }
 
-
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
         return Content;
     }
-
 
     /// <summary>
     /// Returns whether the named arg block has valid syntax.
@@ -181,13 +175,11 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     }
 #pragma warning restore CA2254
 
-
     #region private ================================================================================
 
     private readonly VarBlock _argNameAsVarBlock;
 
     private readonly ValBlock? _valBlock;
-
 
     private static string? TrimWhitespace(string? text)
     {
@@ -205,7 +197,6 @@ internal sealed class NamedArgBlock : Block, ITextRendering
             _ => null
         };
     }
-
 
     private static string[] GetTrimmedParts(string? text)
     {
@@ -231,6 +222,5 @@ internal sealed class NamedArgBlock : Block, ITextRendering
     }
 
     #endregion
-
 
 }

@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -12,7 +9,6 @@ namespace Microsoft.SemanticKernel;
 public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
 {
     private string _renderedPrompt;
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptRenderedEventArgs"/> class.
@@ -25,7 +21,6 @@ public sealed class PromptRenderedEventArgs : CancelKernelEventArgs
     {
         RenderedPrompt = renderedPrompt;
     }
-
 
     /// <summary>Gets or sets the rendered prompt.</summary>
     /// <remarks>

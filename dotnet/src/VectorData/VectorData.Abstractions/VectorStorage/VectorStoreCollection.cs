@@ -1,11 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 
 namespace Microsoft.Extensions.VectorData;
@@ -29,14 +24,12 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// </summary>
     public abstract string Name { get; }
 
-
     /// <summary>
     /// Checks if the collection exists in the vector store.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns><see langword="true"/> if the collection exists, <see langword="false"/> otherwise.</returns>
     public abstract Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Creates this collection in the vector store if it doesn't already exist.
@@ -45,14 +38,12 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <returns>A <see cref="Task"/> that completes when the collection has been created.</returns>
     public abstract Task EnsureCollectionExistsAsync(CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Deletes the collection from the vector store if it exists.
     /// </summary>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>A <see cref="Task"/> that completes when the collection has been deleted.</returns>
     public abstract Task EnsureCollectionDeletedAsync(CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Gets a record from the vector store. Does not guarantee that the collection exists.
@@ -64,7 +55,6 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <returns>The record if found, otherwise null.</returns>
     /// <exception cref="VectorStoreException">The command fails to execute for any reason.</exception>
     public abstract Task<TRecord?> GetAsync(TKey key, RecordRetrievalOptions? options = default, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Gets a batch of records from the vector store. Does not guarantee that the collection exists.
@@ -101,7 +91,6 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
         }
     }
 
-
     /// <summary>
     /// Deletes a record from the vector store. Does not guarantee that the collection exists.
     /// </summary>
@@ -110,7 +99,6 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <returns>The unique identifier for the record.</returns>
     /// <exception cref="VectorStoreException">The command fails to execute for any reason other than that the record does not exist.</exception>
     public abstract Task DeleteAsync(TKey key, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Deletes a batch of records from the vector store. Does not guarantee that the collection exists.
@@ -139,7 +127,6 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
         }
     }
 
-
     /// <summary>
     /// Upserts a record into the vector store. Does not guarantee that the collection exists.
     ///     If the record already exists, it is updated.
@@ -149,7 +136,6 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
     /// <exception cref="VectorStoreException">The command fails to execute for any reason.</exception>
     public abstract Task UpsertAsync(TRecord record, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Upserts a batch of records into the vector store. Does not guarantee that the collection exists.
@@ -176,7 +162,6 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     /// <exception cref="VectorStoreException">The command fails to execute for any reason.</exception>
     public abstract Task UpsertAsync(IEnumerable<TRecord> records, CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Gets matching records from the vector store. Does not guarantee that the collection exists.
     /// </summary>
@@ -192,7 +177,6 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
         FilteredRecordRetrievalOptions<TRecord>? options = null,
         CancellationToken cancellationToken = default);
 
-
     /// <inheritdoc />
     public abstract IAsyncEnumerable<VectorSearchResult<TRecord>> SearchAsync<TInput>(
         TInput searchValue,
@@ -201,10 +185,8 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
         CancellationToken cancellationToken = default)
         where TInput : notnull;
 
-
     /// <inheritdoc />
     public abstract object? GetService(Type serviceType, object? serviceKey = null);
-
 
     /// <summary>
     /// Disposes the <see cref="VectorStoreCollection{TKey, TRecord}"/> and releases any resources it holds.
@@ -213,7 +195,6 @@ public abstract class VectorStoreCollection<TKey, TRecord> : IVectorSearchable<T
     protected virtual void Dispose(bool disposing)
     {
     }
-
 
     /// <inheritdoc/>
     public void Dispose()

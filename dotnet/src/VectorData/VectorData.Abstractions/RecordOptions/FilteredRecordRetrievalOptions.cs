@@ -1,9 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Threading;
 
 namespace Microsoft.Extensions.VectorData;
 
@@ -46,7 +43,6 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
     /// </summary>
     public bool IncludeVectors { get; set; }
 
-
     /// <summary>
     /// Represents a builder for sorting.
     /// </summary>
@@ -60,7 +56,6 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
         /// </summary>
         /// <remarks>This property is intended to be consumed by the connectors to retrieve the configuration.</remarks>
         public IReadOnlyList<SortInfo> Values => _values;
-
 
         /// <summary>
         /// Creates an ascending sort.
@@ -76,7 +71,6 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
             return this;
         }
 
-
         /// <summary>
         /// Creates a descending sort.
         /// </summary>
@@ -91,7 +85,6 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
             return this;
         }
 
-
         /// <summary>
         /// Provides a way to define property ordering.
         /// </summary>
@@ -103,7 +96,6 @@ public sealed class FilteredRecordRetrievalOptions<TRecord>
                 PropertySelector = propertySelector;
                 Ascending = isAscending;
             }
-
 
             /// <summary>
             /// Gets the expression to select the property to sort by.

@@ -1,10 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 
 internal static class PromptFunctionConstants
 {
-
     internal const string SummarizeConversationDefinition =
         @"BEGIN CONTENT TO SUMMARIZE:
 {{$INPUT}}
@@ -114,5 +113,4 @@ BEGIN SUMMARY:
                                                             {{$INPUT}}
                                                             [Output]
                                                             """;
-
 }

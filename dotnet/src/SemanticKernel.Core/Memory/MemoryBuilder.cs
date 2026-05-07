@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Embeddings;
@@ -10,7 +7,6 @@ using Microsoft.SemanticKernel.Embeddings;
 namespace Microsoft.SemanticKernel.Memory;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-
 
 /// <summary>
 /// A builder for Memory plugin.
@@ -26,7 +22,6 @@ public sealed class MemoryBuilder
 
     private ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
 
-
     /// <summary>
     /// Build a new instance of <see cref="ISemanticTextMemory"/> using the settings passed so far.
     /// </summary>
@@ -39,7 +34,6 @@ public sealed class MemoryBuilder
 
         return new SemanticTextMemory(memoryStore, embeddingGeneration);
     }
-
 
     /// <summary>
     /// Add a logger factory.
@@ -54,7 +48,6 @@ public sealed class MemoryBuilder
         return this;
     }
 
-
     /// <summary>
     /// Add an HttpClient.
     /// </summary>
@@ -67,7 +60,6 @@ public sealed class MemoryBuilder
 
         return this;
     }
-
 
     /// <summary>
     /// Add memory store.
@@ -82,7 +74,6 @@ public sealed class MemoryBuilder
         return this;
     }
 
-
     /// <summary>
     /// Add memory store factory.
     /// </summary>
@@ -95,7 +86,6 @@ public sealed class MemoryBuilder
 
         return this;
     }
-
 
     /// <summary>
     /// Add memory store factory.
@@ -110,7 +100,6 @@ public sealed class MemoryBuilder
         return this;
     }
 
-
     /// <summary>
     /// Add text embedding generation.
     /// </summary>
@@ -123,7 +112,6 @@ public sealed class MemoryBuilder
 
         return this;
     }
-
 
     /// <summary>
     /// Add text embedding generation.

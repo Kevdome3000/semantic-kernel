@@ -1,7 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>
@@ -23,13 +21,11 @@ public sealed class FunctionInvokedEventArgs : CancelKernelEventArgs
         ResultValue = result.Value;
     }
 
-
     /// <summary>Gets the result of the function's invocation.</summary>
     public FunctionResult Result { get; }
 
     /// <summary>Gets the raw result of the function's invocation.</summary>
     internal object? ResultValue { get; private set; }
-
 
     /// <summary>Sets an object to use as the overridden new result for the function's invocation.</summary>
     /// <param name="value">The value to use as the new result of the function's invocation.</param>

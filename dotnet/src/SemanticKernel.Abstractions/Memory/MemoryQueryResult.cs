@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Memory;
@@ -26,7 +25,6 @@ public class MemoryQueryResult
     /// </summary>
     public ReadOnlyMemory<float>? Embedding { get; }
 
-
     /// <summary>
     /// Create a new instance of MemoryQueryResult
     /// </summary>
@@ -46,7 +44,6 @@ public class MemoryQueryResult
         Relevance = relevance;
         Embedding = embedding;
     }
-
 
     /// <summary>
     /// Creates instance of <see cref="MemoryQueryResult"/> based on <see cref="MemoryRecord"/> and search relevance.

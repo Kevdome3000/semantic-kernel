@@ -1,22 +1,15 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -816,7 +809,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
                 // Otherwise, fail.
                 throw new KernelException($"Missing service for function parameter '{parameter.Name}'",
-                    new ArgumentException(@"Missing service for function parameter", parameter.Name));
+                    new ArgumentException("Missing service for function parameter", parameter.Name));
             }, null);
         }
 
@@ -847,7 +840,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
             // 3. Otherwise, fail.
             throw new KernelException($"Missing argument for function parameter '{name}'",
-                new ArgumentException(@"Missing argument for function parameter", name));
+                new ArgumentException("Missing argument for function parameter", name));
 
             object? Process(object? value)
             {
@@ -992,7 +985,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
                         return new FunctionResult(function);
                     }
-                );
+            );
         }
 
         if (returnType == typeof(ValueTask))
@@ -1003,7 +996,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
                         return new FunctionResult(function);
                     }
-                );
+            );
         }
 
         // string (which is special as no marshaling is required), either synchronous (string) or asynchronous (Task<string> / ValueTask<string>)
@@ -1016,7 +1009,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
                         return new ValueTask<FunctionResult>(new FunctionResult(function, resultString, kernel.Culture));
                     }
-                );
+            );
         }
 
         if (returnType == typeof(Task<string>))
@@ -1027,7 +1020,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
                         return new FunctionResult(function, resultString, kernel.Culture);
                     }
-                );
+            );
         }
 
         if (returnType == typeof(ValueTask<string>))
@@ -1038,7 +1031,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
                         return new FunctionResult(function, resultString, kernel.Culture);
                     }
-                );
+            );
         }
 
         if (returnType == typeof(FunctionResult))
@@ -1049,7 +1042,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
                         return new ValueTask<FunctionResult>(functionResult ?? new FunctionResult(function));
                     }
-                );
+            );
         }
 
         if (returnType == typeof(Task<FunctionResult>))
@@ -1060,7 +1053,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
                         return functionResult;
                     }
-                );
+            );
         }
 
         if (returnType == typeof(ValueTask<FunctionResult>))
@@ -1071,7 +1064,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
                         return functionResult;
                     }
-                );
+            );
         }
 
         // Asynchronous return types
@@ -1088,7 +1081,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
                             return new FunctionResult(function, taskResult, kernel.Culture);
                         }
-                    );
+                );
             }
 
             // ValueTask<T>
@@ -1103,7 +1096,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
                             return new FunctionResult(function, taskResult, kernel.Culture);
                         }
-                    );
+                );
             }
 
             // IAsyncEnumerable<T>
@@ -1125,7 +1118,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
 
                                 return new ValueTask<FunctionResult>(new FunctionResult(function));
                             }
-                        );
+                    );
                 }
             }
         }
@@ -1135,7 +1128,7 @@ internal sealed partial class KernelFunctionFromMethod : KernelFunction
                 {
                     return new ValueTask<FunctionResult>(new FunctionResult(function, result, kernel.Culture));
                 }
-            );
+        );
 
         // Throws an exception if a result is found to be null unexpectedly
         static object ThrowIfNullResult(object? result)

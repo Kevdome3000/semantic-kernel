@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-
 namespace Microsoft.SemanticKernel;
 
 /// <summary>Provides an <see cref="EventArgs"/> for operations related to <see cref="Kernel"/>-based operations.</summary>
@@ -24,7 +21,6 @@ public abstract class KernelEventArgs : EventArgs
         Arguments = arguments;
         Metadata = metadata;
     }
-
 
     /// <summary>
     /// Gets the <see cref="KernelFunction"/> with which this event is associated.

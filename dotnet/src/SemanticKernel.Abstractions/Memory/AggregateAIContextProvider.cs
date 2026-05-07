@@ -1,11 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,7 +18,6 @@ public sealed class AggregateAIContextProvider : AIContextProvider
     /// </summary>
     public IReadOnlyList<AIContextProvider> Providers => _providers;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="AggregateAIContextProvider"/> class with the specified <see cref="AIContextProvider"/> objects.
     /// </summary>
@@ -34,7 +27,6 @@ public sealed class AggregateAIContextProvider : AIContextProvider
         _providers.AddRange(aiContextProviders ?? []);
     }
 
-
     /// <summary>
     /// Adds a new <see cref="AIContextProvider"/> objects.
     /// </summary>
@@ -43,7 +35,6 @@ public sealed class AggregateAIContextProvider : AIContextProvider
     {
         _providers.Add(aiContextProvider);
     }
-
 
     /// <summary>
     /// Adds all <see cref="AIContextProvider"/> objects registered on the provided dependency injection service provider.
@@ -57,13 +48,11 @@ public sealed class AggregateAIContextProvider : AIContextProvider
         }
     }
 
-
     /// <inheritdoc />
     public override async Task ConversationCreatedAsync(string? conversationId, CancellationToken cancellationToken = default)
     {
         await Task.WhenAll(Providers.Select(x => x.ConversationCreatedAsync(conversationId, cancellationToken)).ToList()).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public override async Task ConversationDeletingAsync(string? conversationId, CancellationToken cancellationToken = default)
@@ -71,13 +60,11 @@ public sealed class AggregateAIContextProvider : AIContextProvider
         await Task.WhenAll(Providers.Select(x => x.ConversationDeletingAsync(conversationId, cancellationToken)).ToList()).ConfigureAwait(false);
     }
 
-
     /// <inheritdoc />
     public override async Task MessageAddingAsync(string? conversationId, ChatMessage newMessage, CancellationToken cancellationToken = default)
     {
         await Task.WhenAll(Providers.Select(x => x.MessageAddingAsync(conversationId, newMessage, cancellationToken)).ToList()).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public override async Task<AIContext> ModelInvokingAsync(ICollection<ChatMessage> newMessages, CancellationToken cancellationToken = default)
@@ -93,13 +80,11 @@ public sealed class AggregateAIContextProvider : AIContextProvider
         return combinedContext;
     }
 
-
     /// <inheritdoc />
     public override async Task SuspendingAsync(string? conversationId, CancellationToken cancellationToken = default)
     {
         await Task.WhenAll(Providers.Select(x => x.SuspendingAsync(conversationId, cancellationToken))).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public override async Task ResumingAsync(string? conversationId, CancellationToken cancellationToken = default)

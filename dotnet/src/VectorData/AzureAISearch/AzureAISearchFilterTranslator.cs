@@ -18,7 +18,7 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
 
     internal string Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
-        var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
+        var preprocessedExpression = PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
         Translate(preprocessedExpression);
 
@@ -145,7 +145,7 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
 
     private void TranslateMember(MemberExpression memberExpression)
     {
-        if (this.TryBindProperty(memberExpression, out var property))
+        if (TryBindProperty(memberExpression, out var property))
         {
             // OData identifiers cannot be escaped; storage names are validated during model building.
             _filter.Append(property.StorageName);
@@ -158,7 +158,7 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
     private void TranslateMethodCall(MethodCallExpression methodCall)
     {
         // Dictionary access for dynamic mapping (r => r["SomeString"] == "foo")
-        if (this.TryBindProperty(methodCall, out var property))
+        if (TryBindProperty(methodCall, out var property))
         {
             // OData identifiers cannot be escaped; storage names are validated during model building.
             _filter.Append(property.StorageName);
@@ -188,7 +188,7 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
         switch (source)
         {
             // Contains over array field (r => r.Strings.Contains("foo"))
-            case var _ when this.TryBindProperty(source, out _):
+            case var _ when TryBindProperty(source, out _):
                 Translate(source);
                 _filter.Append("/any(t: t eq ");
                 Translate(item);
@@ -200,7 +200,7 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
                 var elements = ExtractArrayValues(newArray);
                 _filter.Append("search.in(");
                 Translate(item);
-                this.GenerateSearchInValues(elements);
+                GenerateSearchInValues(elements);
                 return;
 
             case ConstantExpression { Value: IEnumerable enumerable and not string }:
@@ -222,7 +222,7 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
     {
         // We only support the pattern: r.ArrayField.Any(x => values.Contains(x))
         // Translates to: Field/any(t: search.in(t, 'value1, value2, value3'))
-        if (!this.TryBindProperty(source, out var property)
+        if (!TryBindProperty(source, out var property)
             || lambda.Body is not MethodCallExpression { Method.Name: "Contains" } containsCall
             || !TryMatchContains(containsCall, out var valuesExpression, out var itemExpression))
         {
@@ -367,7 +367,7 @@ internal class AzureAISearchFilterTranslator : FilterTranslatorBase
                 return;
 
             // Handle convert over member access, for dynamic dictionary access (r => (int)r["SomeInt"] == 8)
-            case ExpressionType.Convert when this.TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
+            case ExpressionType.Convert when TryBindProperty(unary.Operand, out var property) && unary.Type == property.Type:
                 // OData identifiers cannot be escaped; storage names are validated during model building.
                 _filter.Append(property.StorageName);
                 return;

@@ -1,6 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -27,7 +26,6 @@ public sealed class StreamingActionContent : StreamingKernelContent
         }
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ActionContent"/> class.
     /// </summary>
@@ -40,13 +38,11 @@ public sealed class StreamingActionContent : StreamingKernelContent
         _text = text;
     }
 
-
     /// <inheritdoc/>
     public override string ToString()
     {
         return Text;
     }
-
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()

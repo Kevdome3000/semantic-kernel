@@ -1,6 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel;
@@ -23,7 +22,6 @@ public sealed class ReasoningContent : KernelContent
         init => _text = value;
     }
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ReasoningContent"/> class.
     /// </summary>
@@ -33,7 +31,6 @@ public sealed class ReasoningContent : KernelContent
     {
         _text = text;
     }
-
 
     /// <inheritdoc/>
     public override string ToString()

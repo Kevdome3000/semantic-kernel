@@ -1,12 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel.Http;
 
@@ -32,14 +26,12 @@ public sealed class HttpPlugin
 {
     private readonly HttpClient _client;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpPlugin"/> class.
     /// </summary>
     public HttpPlugin() : this(null)
     {
     }
-
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpPlugin"/> class.
@@ -53,7 +45,6 @@ public sealed class HttpPlugin
     {
         _client = client ?? HttpClientProvider.GetHttpClient();
     }
-
 
     /// <summary>
     /// List of allowed domains to send requests to.
@@ -70,14 +61,14 @@ public sealed class HttpPlugin
             : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
 
-
     /// <summary>
     /// Sends an HTTP GET request to the specified URI and returns the response body as a string.
     /// </summary>
     /// <param name="uri">URI of the request</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [KernelFunction] [Description("Makes a GET request to a uri")]
+    [KernelFunction]
+    [Description("Makes a GET request to a uri")]
     public Task<string> GetAsync(
         [Description("The URI of the request")]
         string uri,
@@ -89,7 +80,6 @@ public sealed class HttpPlugin
             cancellationToken);
     }
 
-
     /// <summary>
     /// Sends an HTTP POST request to the specified URI and returns the response body as a string.
     /// </summary>
@@ -97,7 +87,8 @@ public sealed class HttpPlugin
     /// <param name="body">The body of the request</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [KernelFunction] [Description("Makes a POST request to a uri")]
+    [KernelFunction]
+    [Description("Makes a POST request to a uri")]
     public Task<string> PostAsync(
         [Description("The URI of the request")]
         string uri,
@@ -111,7 +102,6 @@ public sealed class HttpPlugin
             cancellationToken);
     }
 
-
     /// <summary>
     /// Sends an HTTP PUT request to the specified URI and returns the response body as a string.
     /// </summary>
@@ -119,7 +109,8 @@ public sealed class HttpPlugin
     /// <param name="body">The body of the request</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [KernelFunction] [Description("Makes a PUT request to a uri")]
+    [KernelFunction]
+    [Description("Makes a PUT request to a uri")]
     public Task<string> PutAsync(
         [Description("The URI of the request")]
         string uri,
@@ -133,14 +124,14 @@ public sealed class HttpPlugin
             cancellationToken);
     }
 
-
     /// <summary>
     /// Sends an HTTP DELETE request to the specified URI and returns the response body as a string.
     /// </summary>
     /// <param name="uri">URI of the request</param>
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>The response body as a string.</returns>
-    [KernelFunction] [Description("Makes a DELETE request to a uri")]
+    [KernelFunction]
+    [Description("Makes a DELETE request to a uri")]
     public Task<string> DeleteAsync(
         [Description("The URI of the request")]
         string uri,
@@ -152,11 +143,9 @@ public sealed class HttpPlugin
             cancellationToken);
     }
 
-
     #region private
 
     private HashSet<string>? _allowedDomains = [];
-
 
     /// <summary>
     /// If a list of allowed domains has been provided, the host of the provided uri is checked
@@ -170,7 +159,6 @@ public sealed class HttpPlugin
             && _allowedDomains.Count > 0
             && _allowedDomains.Contains(uri.Host);
     }
-
 
     /// <summary>Sends an HTTP request and returns the response content as a string.</summary>
     /// <param name="uriStr">The URI of the request.</param>
@@ -198,6 +186,5 @@ public sealed class HttpPlugin
     }
 
     #endregion
-
 
 }

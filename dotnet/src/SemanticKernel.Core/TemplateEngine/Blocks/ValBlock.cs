@@ -15,7 +15,6 @@ internal sealed class ValBlock : Block, ITextRendering
     // Content, excluding start/end quote chars
     private readonly string _value = string.Empty;
 
-
     /// <summary>
     /// Create an instance
     /// </summary>
@@ -34,7 +33,6 @@ internal sealed class ValBlock : Block, ITextRendering
         _last = Content[Content.Length - 1];
         _value = Content.Substring(1, Content.Length - 2);
     }
-
 
 #pragma warning disable CA2254 // error strings are used also internally, not just for logging
     // ReSharper disable TemplateIsNotCompileTimeConstantProblem
@@ -62,13 +60,11 @@ internal sealed class ValBlock : Block, ITextRendering
     }
 #pragma warning restore CA2254
 
-
     /// <inheritdoc/>
     public object? Render(KernelArguments? arguments)
     {
         return _value;
     }
-
 
     public static bool HasValPrefix(string? text)
     {

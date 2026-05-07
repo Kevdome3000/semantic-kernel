@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using Microsoft.SemanticKernel.ChatCompletion;
 
@@ -17,7 +17,6 @@ public sealed class FunctionChoiceBehaviorConfigurationContext
     {
         ChatHistory = chatHistory;
     }
-
 
     /// <summary>
     /// History of the current chat session.

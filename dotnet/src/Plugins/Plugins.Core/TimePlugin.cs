@@ -1,6 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.ComponentModel;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
@@ -21,13 +20,13 @@ public sealed class TimePlugin
     /// {{time.date}} => Sunday, 12 January, 2031
     /// </example>
     /// <returns> The current date </returns>
-    [KernelFunction] [Description("Get the current date")]
+    [KernelFunction]
+    [Description("Get the current date")]
     public string Date(IFormatProvider? formatProvider = null)
     {
         // Example: Sunday, 12 January, 2025
         return DateTimeOffset.Now.ToString("D", formatProvider);
     }
-
 
     /// <summary>
     /// Get the current date
@@ -36,13 +35,13 @@ public sealed class TimePlugin
     /// {{time.today}} => Sunday, 12 January, 2031
     /// </example>
     /// <returns> The current date </returns>
-    [KernelFunction] [Description("Get the current date")]
+    [KernelFunction]
+    [Description("Get the current date")]
     public string Today(IFormatProvider? formatProvider = null)
     {
         // Example: Sunday, 12 January, 2025
         return Date(formatProvider);
     }
-
 
     /// <summary>
     /// Get the current date and time in the local time zone"
@@ -51,13 +50,13 @@ public sealed class TimePlugin
     /// {{time.now}} => Sunday, January 12, 2025 9:15 PM
     /// </example>
     /// <returns> The current date and time in the local time zone </returns>
-    [KernelFunction] [Description("Get the current date and time in the local time zone")]
+    [KernelFunction]
+    [Description("Get the current date and time in the local time zone")]
     public string Now(IFormatProvider? formatProvider = null)
     {
         // Sunday, January 12, 2025 9:15 PM
         return DateTimeOffset.Now.ToString("f", formatProvider);
     }
-
 
     /// <summary>
     /// Get the current UTC date and time
@@ -66,13 +65,13 @@ public sealed class TimePlugin
     /// {{time.utcNow}} => Sunday, January 13, 2025 5:15 AM
     /// </example>
     /// <returns> The current UTC date and time </returns>
-    [KernelFunction] [Description("Get the current UTC date and time")]
+    [KernelFunction]
+    [Description("Get the current UTC date and time")]
     public string UtcNow(IFormatProvider? formatProvider = null)
     {
         // Sunday, January 13, 2025 5:15 AM
         return DateTimeOffset.UtcNow.ToString("f", formatProvider);
     }
-
 
     /// <summary>
     /// Get the current time
@@ -81,13 +80,13 @@ public sealed class TimePlugin
     /// {{time.time}} => 09:15:07 PM
     /// </example>
     /// <returns> The current time </returns>
-    [KernelFunction] [Description("Get the current time")]
+    [KernelFunction]
+    [Description("Get the current time")]
     public string Time(IFormatProvider? formatProvider = null)
     {
         // Example: 09:15:07 PM
         return DateTimeOffset.Now.ToString("hh:mm:ss tt", formatProvider);
     }
-
 
     /// <summary>
     /// Get the current year
@@ -96,13 +95,13 @@ public sealed class TimePlugin
     /// {{time.year}} => 2025
     /// </example>
     /// <returns> The current year </returns>
-    [KernelFunction] [Description("Get the current year")]
+    [KernelFunction]
+    [Description("Get the current year")]
     public string Year(IFormatProvider? formatProvider = null)
     {
         // Example: 2025
         return DateTimeOffset.Now.ToString("yyyy", formatProvider);
     }
-
 
     /// <summary>
     /// Get the current month name
@@ -111,13 +110,13 @@ public sealed class TimePlugin
     /// {time.month}} => January
     /// </example>
     /// <returns> The current month name </returns>
-    [KernelFunction] [Description("Get the current month name")]
+    [KernelFunction]
+    [Description("Get the current month name")]
     public string Month(IFormatProvider? formatProvider = null)
     {
         // Example: January
         return DateTimeOffset.Now.ToString("MMMM", formatProvider);
     }
-
 
     /// <summary>
     /// Get the current month number
@@ -126,13 +125,13 @@ public sealed class TimePlugin
     /// {{time.monthNumber}} => 01
     /// </example>
     /// <returns> The current month number </returns>
-    [KernelFunction] [Description("Get the current month number")]
+    [KernelFunction]
+    [Description("Get the current month number")]
     public string MonthNumber(IFormatProvider? formatProvider = null)
     {
         // Example: 01
         return DateTimeOffset.Now.ToString("MM", formatProvider);
     }
-
 
     /// <summary>
     /// Get the current day of the month
@@ -141,13 +140,13 @@ public sealed class TimePlugin
     /// {{time.day}} => 12
     /// </example>
     /// <returns> The current day of the month </returns>
-    [KernelFunction] [Description("Get the current day of the month")]
+    [KernelFunction]
+    [Description("Get the current day of the month")]
     public string Day(IFormatProvider? formatProvider = null)
     {
         // Example: 12
         return DateTimeOffset.Now.ToString("dd", formatProvider);
     }
-
 
     /// <summary>
     /// Get the date a provided number of days in the past
@@ -160,7 +159,6 @@ public sealed class TimePlugin
         return DateTimeOffset.Now.AddDays(-input).ToString("D", formatProvider);
     }
 
-
     /// <summary>
     /// Get the current day of the week
     /// </summary>
@@ -168,13 +166,13 @@ public sealed class TimePlugin
     /// {{time.dayOfWeek}} => Sunday
     /// </example>
     /// <returns> The current day of the week </returns>
-    [KernelFunction] [Description("Get the current day of the week")]
+    [KernelFunction]
+    [Description("Get the current day of the week")]
     public string DayOfWeek(IFormatProvider? formatProvider = null)
     {
         // Example: Sunday
         return DateTimeOffset.Now.ToString("dddd", formatProvider);
     }
-
 
     /// <summary>
     /// Get the current clock hour
@@ -183,13 +181,13 @@ public sealed class TimePlugin
     /// {{time.hour}} => 9 PM
     /// </example>
     /// <returns> The current clock hour </returns>
-    [KernelFunction] [Description("Get the current clock hour")]
+    [KernelFunction]
+    [Description("Get the current clock hour")]
     public string Hour(IFormatProvider? formatProvider = null)
     {
         // Example: 9 PM
         return DateTimeOffset.Now.ToString("h tt", formatProvider);
     }
-
 
     /// <summary>
     /// Get the current clock 24-hour number
@@ -198,13 +196,13 @@ public sealed class TimePlugin
     /// {{time.hourNumber}} => 21
     /// </example>
     /// <returns> The current clock 24-hour number </returns>
-    [KernelFunction] [Description("Get the current clock 24-hour number")]
+    [KernelFunction]
+    [Description("Get the current clock 24-hour number")]
     public string HourNumber(IFormatProvider? formatProvider = null)
     {
         // Example: 21
         return DateTimeOffset.Now.ToString("HH", formatProvider);
     }
-
 
     /// <summary>
     /// Get the date of the previous day matching the supplied day name
@@ -236,7 +234,6 @@ public sealed class TimePlugin
         return dateTime.ToString("D", formatProvider);
     }
 
-
     /// <summary>
     /// Get the minutes on the current hour
     /// </summary>
@@ -244,13 +241,13 @@ public sealed class TimePlugin
     /// {{time.minute}} => 15
     /// </example>
     /// <returns> The minutes on the current hour </returns>
-    [KernelFunction] [Description("Get the minutes on the current hour")]
+    [KernelFunction]
+    [Description("Get the minutes on the current hour")]
     public string Minute(IFormatProvider? formatProvider = null)
     {
         // Example: 15
         return DateTimeOffset.Now.ToString("mm", formatProvider);
     }
-
 
     /// <summary>
     /// Get the seconds on the current minute
@@ -259,13 +256,13 @@ public sealed class TimePlugin
     /// {{time.second}} => 7
     /// </example>
     /// <returns> The seconds on the current minute </returns>
-    [KernelFunction] [Description("Get the seconds on the current minute")]
+    [KernelFunction]
+    [Description("Get the seconds on the current minute")]
     public string Second(IFormatProvider? formatProvider = null)
     {
         // Example: 07
         return DateTimeOffset.Now.ToString("ss", formatProvider);
     }
-
 
     /// <summary>
     /// Get the local time zone offset from UTC
@@ -274,13 +271,13 @@ public sealed class TimePlugin
     /// {{time.timeZoneOffset}} => -08:00
     /// </example>
     /// <returns> The local time zone offset from UTC </returns>
-    [KernelFunction] [Description("Get the local time zone offset from UTC")]
+    [KernelFunction]
+    [Description("Get the local time zone offset from UTC")]
     public string TimeZoneOffset(IFormatProvider? formatProvider = null)
     {
         // Example: -08:00
         return DateTimeOffset.Now.ToString("%K", formatProvider);
     }
-
 
     /// <summary>
     /// Get the local time zone name
@@ -292,7 +289,8 @@ public sealed class TimePlugin
     /// Note: this is the "current" timezone and it can change over the year, e.g. from PST to PDT
     /// </remark>
     /// <returns> The local time zone name </returns>
-    [KernelFunction] [Description("Get the local time zone name")]
+    [KernelFunction]
+    [Description("Get the local time zone name")]
     public string TimeZoneName()
     {
         // Example: PST

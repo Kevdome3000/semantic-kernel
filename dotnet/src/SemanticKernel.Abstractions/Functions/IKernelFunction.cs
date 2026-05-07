@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel;
 
@@ -49,7 +46,6 @@ public interface IKernelFunction
     /// </remarks>
     MethodInfo? UnderlyingMethod { get; }
 
-
     /// <summary>
     /// Invokes a <see cref="IKernelFunction"/> asynchronously with the specified arguments.
     /// </summary>
@@ -58,7 +54,6 @@ public interface IKernelFunction
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A <see cref="Task{FunctionResult}"/> representing the asynchronous operation.</returns>
     Task<FunctionResult> InvokeAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Invokes the kernel function asynchronously.
@@ -69,7 +64,6 @@ public interface IKernelFunction
     /// <returns>A task representing the asynchronous operation. The task will complete with a FunctionResult object.</returns>
     Task<TResult?> InvokeAsync<TResult>(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default);
 
-
     /// <summary>
     /// Asynchronously invokes the streaming kernel function with the provided arguments and returns an asynchronous enumerable of <see cref="StreamingKernelContent"/>.
     /// </summary>
@@ -78,7 +72,6 @@ public interface IKernelFunction
     /// <param name="cancellationToken">A cancellation token to cancel the operation. Default is <see cref="CancellationToken.None"/>.</param>
     /// <returns>An asynchronous enumerable of <see cref="StreamingKernelContent"/>.</returns>
     IAsyncEnumerable<StreamingKernelContent> InvokeStreamingAsync(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Invoke a streaming kernel function asynchronously.
@@ -89,7 +82,6 @@ public interface IKernelFunction
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>An <see cref="IAsyncEnumerable{T}"/> representing the streaming content produced by the function.</returns>
     IAsyncEnumerable<TResult> InvokeStreamingAsync<TResult>(Kernel kernel, KernelArguments? arguments = null, CancellationToken cancellationToken = default);
-
 
     /// <summary>
     /// Creates a new instance of the <see cref="KernelFunction"/> class with the specified plugin name.

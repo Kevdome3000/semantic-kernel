@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-
-using System;
-using System.Diagnostics.CodeAnalysis;
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
 
@@ -27,7 +24,6 @@ public class DataPropertyModel(string modelName, Type type) : PropertyModel(mode
     /// The default is <see langword="false" />.
     /// </value>
     public bool IsFullTextIndexed { get; set; }
-
 
     /// <inheritdoc/>
     public override string ToString()

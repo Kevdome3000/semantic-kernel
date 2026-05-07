@@ -23,7 +23,7 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
 {
     internal Filter Translate(LambdaExpression lambdaExpression, CollectionModel model)
     {
-        var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
+        var preprocessedExpression = PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
         return Translate(preprocessedExpression);
     }
@@ -50,8 +50,8 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
                 => Translate(convert.Operand),
 
             // Special handling for bool constant as the filter expression (r => r.Bool)
-            Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)
-                => this.GenerateEqual(property.StorageName, value: true),
+            Expression when node.Type == typeof(bool) && TryBindProperty(node, out var property)
+                => GenerateEqual(property.StorageName, value: true),
             // Handle true literal (r => true), which is useful for fetching all records
             ConstantExpression { Value: true } => new Filter(),
 
@@ -63,9 +63,9 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
 
     private Filter TranslateEqual(Expression left, Expression right, bool negated = false)
     {
-        return this.TryBindProperty(left, out var property) && right is ConstantExpression { Value: var rightConstant }
+        return TryBindProperty(left, out var property) && right is ConstantExpression { Value: var rightConstant }
             ? GenerateEqual(property.StorageName, rightConstant, negated)
-            : this.TryBindProperty(right, out property) && left is ConstantExpression { Value: var leftConstant }
+            : TryBindProperty(right, out property) && left is ConstantExpression { Value: var leftConstant }
                 ? GenerateEqual(property.StorageName, leftConstant, negated)
                 : throw new NotSupportedException("Invalid equality/comparison");
     }
@@ -118,7 +118,7 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
 
         bool TryProcessComparison(Expression first, Expression second, [NotNullWhen(true)] out Filter? result)
         {
-            if (this.TryBindProperty(first, out var property) && second is ConstantExpression { Value: var constantValue })
+            if (TryBindProperty(first, out var property) && second is ConstantExpression { Value: var constantValue })
             {
                 result = new Filter();
                 result.Must.Add(new Condition
@@ -333,7 +333,7 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
         switch (source)
         {
             // Contains over field enumerable
-            case var _ when this.TryBindProperty(source, out _):
+            case var _ when TryBindProperty(source, out _):
                 // Oddly, in Qdrant, tag list contains is handled using a Match condition, just like equality.
                 return TranslateEqual(source, item);
 
@@ -362,7 +362,7 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
 
         Filter ProcessInlineEnumerable(IEnumerable elements, Expression item)
         {
-            if (!this.TryBindProperty(item, out var property))
+            if (!TryBindProperty(item, out var property))
             {
                 throw new NotSupportedException("Unsupported item type in Contains");
             }
@@ -406,7 +406,7 @@ internal class QdrantFilterTranslator : FilterTranslatorBase
     private Filter TranslateAny(Expression source, LambdaExpression lambda)
     {
         // We only support the pattern: r.ArrayField.Any(x => values.Contains(x))
-        if (!this.TryBindProperty(source, out var property)
+        if (!TryBindProperty(source, out var property)
             || lambda.Body is not MethodCallExpression containsCall
             || !TryMatchContains(containsCall, out var valuesExpression, out var itemExpression))
         {

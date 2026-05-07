@@ -1,7 +1,5 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Text;
@@ -35,7 +33,6 @@ internal static class PostgresSqlBuilder
         command.Parameters.Add(new NpgsqlParameter { Value = tableName });
     }
 
-
     internal static void BuildGetTablesCommand(NpgsqlCommand command, string? schema)
     {
         Debug.Assert(command.Parameters.Count == 0);
@@ -48,7 +45,6 @@ internal static class PostgresSqlBuilder
 
         command.Parameters.Add(new NpgsqlParameter { Value = schema ?? "public" });
     }
-
 
     internal static string BuildCreateTableSql(
         string schema,
@@ -130,7 +126,6 @@ internal static class PostgresSqlBuilder
 
         return createTableCommand.ToString();
     }
-
 
     /// <inheritdoc />
     internal static string BuildCreateIndexSql(
@@ -215,7 +210,6 @@ internal static class PostgresSqlBuilder
         return sql.ToString();
     }
 
-
     /// <inheritdoc />
     internal static void BuildDropTableCommand(NpgsqlCommand command, string? schema, string tableName)
     {
@@ -223,7 +217,6 @@ internal static class PostgresSqlBuilder
         sql.Append("DROP TABLE IF EXISTS ").AppendTableName(schema, tableName);
         command.CommandText = sql.ToString();
     }
-
 
     /// <inheritdoc />
     internal static bool BuildUpsertCommand<TKey>(
@@ -390,7 +383,6 @@ internal static class PostgresSqlBuilder
         }
     }
 
-
     /// <inheritdoc />
     internal static void BuildGetCommand<TKey>(
         NpgsqlCommand command,
@@ -425,7 +417,6 @@ internal static class PostgresSqlBuilder
         Debug.Assert(command.Parameters.Count == 0);
         command.Parameters.Add(new NpgsqlParameter { Value = key });
     }
-
 
     /// <inheritdoc />
     internal static void BuildGetBatchCommand<TKey>(
@@ -476,7 +467,6 @@ internal static class PostgresSqlBuilder
         });
     }
 
-
     /// <inheritdoc />
     internal static void BuildDeleteCommand<TKey>(
         NpgsqlCommand command,
@@ -497,7 +487,6 @@ internal static class PostgresSqlBuilder
         Debug.Assert(command.Parameters.Count == 0);
         command.Parameters.Add(new NpgsqlParameter { Value = key });
     }
-
 
     /// <inheritdoc />
     internal static void BuildDeleteBatchCommand<TKey>(
@@ -530,7 +519,6 @@ internal static class PostgresSqlBuilder
         command.Parameters.Add(new NpgsqlParameter { Value = keys, NpgsqlDbType = NpgsqlDbType.Array | keyType.Value });
     }
 
-
     /// <summary>
     /// Appends a properly quoted and escaped PostgreSQL identifier to the StringBuilder.
     /// In PostgreSQL, identifiers are quoted with double quotes, and embedded double quotes are escaped by doubling them.
@@ -542,7 +530,6 @@ internal static class PostgresSqlBuilder
         return sb.Append('"').Append(identifier.Replace("\"", "\"\"")).Append('"');
     }
 
-
     /// <summary>
     /// Appends a properly quoted and escaped PostgreSQL string literal to the StringBuilder.
     /// In PostgreSQL, string literals are quoted with single quotes, and embedded single quotes are escaped by doubling them.
@@ -551,7 +538,6 @@ internal static class PostgresSqlBuilder
     {
         return sb.Append('\'').Append(value.Replace("'", "''")).Append('\'');
     }
-
 
     /// <summary>
     /// Gets the PostgreSQL distance operator for the specified distance function.
@@ -569,7 +555,6 @@ internal static class PostgresSqlBuilder
         };
     }
 
-
     /// <summary>
     /// Generates filter clause from the provided filter, returning condition and parameters.
     /// </summary>
@@ -583,7 +568,6 @@ internal static class PostgresSqlBuilder
             : (Clause: string.Empty, Parameters: new List<object>());
     }
 
-
     /// <summary>
     /// Generates filter condition (without WHERE keyword) from the provided filter.
     /// </summary>
@@ -596,7 +580,6 @@ internal static class PostgresSqlBuilder
             ? TranslateFilterCondition(model, filter, startParamIndex)
             : (Condition: string.Empty, Parameters: new List<object>());
     }
-
 
     /// <inheritdoc />
     internal static void BuildGetNearestMatchCommand<TRecord>(
@@ -744,7 +727,6 @@ internal static class PostgresSqlBuilder
         }
     }
 
-
     internal static void BuildSelectWhereCommand<TRecord>(
         NpgsqlCommand command,
         string? schema,
@@ -817,7 +799,6 @@ internal static class PostgresSqlBuilder
         }
     }
 
-
     private static (string Clause, List<object> Parameters) TranslateFilterWhereClause(CollectionModel model, LambdaExpression filter, int startParamIndex)
     {
         var (condition, parameters) = TranslateFilterCondition(model, filter, startParamIndex);
@@ -826,14 +807,12 @@ internal static class PostgresSqlBuilder
             : $"WHERE {condition}", parameters);
     }
 
-
     private static (string Condition, List<object> Parameters) TranslateFilterCondition(CollectionModel model, LambdaExpression filter, int startParamIndex)
     {
         PostgresFilterTranslator translator = new(model, filter, startParamIndex);
         translator.Translate(false);
         return (translator.Clause.ToString(), translator.ParameterValues);
     }
-
 
     /// <summary>
     /// Appends a schema-qualified table name. If schema is null or empty, omits the schema prefix.
@@ -847,7 +826,6 @@ internal static class PostgresSqlBuilder
 
         return sb.AppendIdentifier(tableName);
     }
-
 
     /// <summary>
     /// Builds a hybrid search command that combines vector similarity search with full-text keyword search using RRF (Reciprocal Rank Fusion).

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
@@ -24,7 +24,6 @@ public class VectorStoreVectorProperty<TInput> : VectorStoreVectorProperty
         : base(propertyName, typeof(TInput), dimensions)
     {
     }
-
 
     internal override VectorPropertyModel CreatePropertyModel()
     {

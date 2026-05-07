@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -22,7 +21,6 @@ public class StreamingTextContent : StreamingKernelContent
     /// </summary>
     [JsonIgnore]
     public Encoding Encoding { get; set; }
-
 
     /// <summary>
     /// Create a new instance of the <see cref="StreamingTextContent"/> class.
@@ -49,13 +47,11 @@ public class StreamingTextContent : StreamingKernelContent
         Encoding = encoding ?? Encoding.UTF8;
     }
 
-
     /// <inheritdoc/>
     public override string ToString()
     {
         return Text ?? string.Empty;
     }
-
 
     /// <inheritdoc/>
     public override byte[] ToByteArray()

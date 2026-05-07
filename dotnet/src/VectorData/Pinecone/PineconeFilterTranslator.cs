@@ -30,7 +30,7 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
             return null;
         }
 
-        var preprocessedExpression = this.PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
+        var preprocessedExpression = PreprocessFilter(lambdaExpression, model, new FilterPreprocessingOptions());
 
         return Translate(preprocessedExpression);
     }
@@ -60,7 +60,7 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
                 => Translate(convert.Operand),
 
             // Special handling for bool constant as the filter expression (r => r.Bool)
-            Expression when node.Type == typeof(bool) && this.TryBindProperty(node, out var property)
+            Expression when node.Type == typeof(bool) && TryBindProperty(node, out var property)
                 => GenerateEqualityComparison(property, true, ExpressionType.Equal),
 
             MethodCallExpression methodCall => TranslateMethodCall(methodCall),
@@ -72,9 +72,9 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
 
     private Metadata TranslateEqualityComparison(BinaryExpression binary)
     {
-        return this.TryBindProperty(binary.Left, out var property) && binary.Right is ConstantExpression { Value: var rightConstant }
+        return TryBindProperty(binary.Left, out var property) && binary.Right is ConstantExpression { Value: var rightConstant }
             ? GenerateEqualityComparison(property, rightConstant, binary.NodeType)
-            : this.TryBindProperty(binary.Right, out property) && binary.Left is ConstantExpression { Value: var leftConstant }
+            : TryBindProperty(binary.Right, out property) && binary.Left is ConstantExpression { Value: var leftConstant }
                 ? GenerateEqualityComparison(property, leftConstant, binary.NodeType)
                 : throw new NotSupportedException("Invalid equality/comparison");
     }
@@ -154,7 +154,7 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
                         binary.Right));
 
             // Not over bool field (Filter => r => !r.Bool)
-            case Expression when not.Operand.Type == typeof(bool) && this.TryBindProperty(not.Operand, out var property):
+            case Expression when not.Operand.Type == typeof(bool) && TryBindProperty(not.Operand, out var property):
                 return GenerateEqualityComparison(property, false, ExpressionType.Equal);
         }
 
@@ -191,7 +191,7 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
         switch (source)
         {
             // Contains over array column (r => r.Strings.Contains("foo"))
-            case var _ when this.TryBindProperty(source, out _):
+            case var _ when TryBindProperty(source, out _):
                 throw new NotSupportedException("Pinecone does not support Contains within array fields ($elemMatch) in vector search pre-filters");
 
             // Contains over inline enumerable
@@ -219,7 +219,7 @@ internal class PineconeFilterTranslator : FilterTranslatorBase
 
         Metadata ProcessInlineEnumerable(IEnumerable elements, Expression item)
         {
-            if (!this.TryBindProperty(item, out var property))
+            if (!TryBindProperty(item, out var property))
             {
                 throw new NotSupportedException("Unsupported item type in Contains");
             }

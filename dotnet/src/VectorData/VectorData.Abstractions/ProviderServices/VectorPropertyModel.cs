@@ -1,12 +1,6 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.AI;
 
 namespace Microsoft.Extensions.VectorData.ProviderServices;
@@ -87,7 +81,6 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     /// </remarks>
     public EmbeddingGenerationDispatcher? EmbeddingGenerationDispatcher { get; set; }
 
-
     /// <summary>
     /// Checks whether the given <paramref name="embeddingGenerator" /> can produce embeddings of type <typeparamref name="TEmbedding" />
     /// for any input type known to this property model. The base implementation checks for <see cref="string"/> and <see cref="DataContent"/>;
@@ -100,7 +93,6 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
         return embeddingGenerator is IEmbeddingGenerator<string, TEmbedding>
             || embeddingGenerator is IEmbeddingGenerator<DataContent, TEmbedding>;
     }
-
 
     /// <summary>
     /// Checks whether the <see cref="EmbeddingGenerator"/> configured on this property supports the given embedding type.
@@ -127,7 +119,6 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
         };
     }
 
-
     /// <summary>
     /// Generates embeddings for the given <paramref name="values"/>, using the configured <see cref="EmbeddingGenerationDispatcher"/>.
     /// </summary>
@@ -139,7 +130,6 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
             : dispatcher.GenerateEmbeddingsAsync(this, values, cancellationToken);
     }
 
-
     /// <summary>
     /// Generates a single embedding for the given <paramref name="value"/>, using the configured <see cref="EmbeddingGenerationDispatcher"/>.
     /// </summary>
@@ -150,7 +140,6 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
             ? throw new InvalidOperationException($"No embedding generation is configured for property '{ModelName}'.")
             : dispatcher.GenerateEmbeddingAsync(this, value, cancellationToken);
     }
-
 
     /// <summary>
     /// Core method to generate a batch of embeddings. Called by <see cref="EmbeddingGenerationDispatcher{TEmbedding}"/> with the correct type parameter.
@@ -185,7 +174,6 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
         };
     }
 
-
     /// <summary>
     /// Core method to generate a single embedding. Called by <see cref="EmbeddingGenerationDispatcher{TEmbedding}"/> with the correct type parameter.
     /// </summary>
@@ -207,7 +195,6 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
         };
     }
 
-
     /// <summary>
     /// Returns the types of input that this property model supports.
     /// </summary>
@@ -215,7 +202,6 @@ public class VectorPropertyModel(string modelName, Type type) : PropertyModel(mo
     {
         return [typeof(string), typeof(DataContent)];
     }
-
 
     /// <inheritdoc/>
     public override string ToString()
