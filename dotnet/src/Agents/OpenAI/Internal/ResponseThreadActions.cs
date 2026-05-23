@@ -97,7 +97,7 @@ internal static class ResponseThreadActions
                         false,
                         cancellationToken)
                     .ConfigureAwait(false);
-            var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, fr.Result?.ToString() ?? string.Empty)).ToList();
+            var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, GetFunctionResultAsString(fr.Result))).ToList();
 
             // If store is enabled we only need to send the function output items
             if (agent.StoreEnabled)
@@ -279,7 +279,7 @@ internal static class ResponseThreadActions
                         true,
                         cancellationToken)
                     .ConfigureAwait(false);
-            var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, fr.Result?.ToString() ?? string.Empty)).ToList();
+            var functionOutputItems = functionResults.Select(fr => ResponseItem.CreateFunctionCallOutputItem(fr.CallId, GetFunctionResultAsString(fr.Result))).ToList();
 
             // If store is enabled we only need to send the function output items
             if (agent.StoreEnabled)
@@ -332,6 +332,21 @@ internal static class ResponseThreadActions
         }
     }
 
+    /// <summary>
+    /// Processes a function result and returns a string representation.
+    /// The OpenAI Responses API does not support multimodal tool results, so ImageContent returns an error message.
+    /// </summary>
+    internal static string GetFunctionResultAsString(object? result)
+    {
+        var processed = FunctionCallsProcessor.ProcessFunctionResult(result ?? string.Empty);
+
+        if (processed is ImageContent)
+        {
+            return FunctionCallsProcessor.ImageContentNotSupportedErrorMessage;
+        }
+
+        return (string?)processed ?? string.Empty;
+    }
 
     /// <summary>POCO representing function calling info.</summary>
     /// <remarks>Used to concatenation information for a single function call from across multiple streaming updates.</remarks>

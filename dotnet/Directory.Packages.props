@@ -50,10 +50,10 @@
     <PackageVersion Include="JsonSchema.Net" Version="9.2.1" />
     <PackageVersion Include="JsonSchema.Net.Generation" Version="7.2.0" />
     <PackageVersion Include="Markdig" Version="1.2.0" />
-    <PackageVersion Include="Microsoft.Agents.AI.Abstractions" Version="1.0.0-preview.251009.1" />
-    <PackageVersion Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-preview.251009.1" />
-    <PackageVersion Include="Microsoft.Agents.AI.AzureAI" Version="1.0.0-preview.251009.1" />
-    <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="1.0.0-preview.251009.1" />
+    <PackageVersion Include="Microsoft.Agents.AI.Abstractions" Version="1.0.0" />
+    <PackageVersion Include="Microsoft.Agents.AI.Foundry" Version="1.0.0" />
+    <PackageVersion Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0" />
+    <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="1.0.0" />
     <PackageVersion Include="Microsoft.Agents.CopilotStudio.Client" Version="1.4.83" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.5" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
@@ -173,6 +173,7 @@
     <PackageVersion Include="DuckDB.NET.Data.Full" Version="1.2.0" />
     <PackageVersion Include="DuckDB.NET.Data" Version="1.1.3" />
     <PackageVersion Include="MongoDB.Driver" Version="3.7.1" />
+    <PackageVersion Include="SharpCompress" Version="0.48.0" /><!-- Vulnerability fix: GHSA-6c8g-7p36-r338; transitively pinned via MongoDB.Driver -->
     <PackageVersion Include="Snappier" Version="1.3.1" />
     <!-- Vulnerability fix: GHSA-pggp-6c3x-2xmx; transitively pinned via MongoDB.Driver -->
     <PackageVersion Include="Microsoft.Graph" Version="5.105.0" />

@@ -1,19 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Microsoft.SemanticKernel.Connectors.Google.Core;
-
 using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
+namespace Microsoft.SemanticKernel.Connectors.Google.Core;
 
 /// <summary>
 /// Union field data can be only one of properties in class GeminiPart
 /// </summary>
 internal sealed class GeminiPart : IJsonOnDeserialized
 {
-
     /// <summary>
     /// Gets or sets the text data.
     /// </summary>
@@ -49,7 +47,6 @@ internal sealed class GeminiPart : IJsonOnDeserialized
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public FunctionResponsePart? FunctionResponse { get; set; }
 
-
     /// <summary>
     /// Gets or sets a value indicating whether this part contains thinking content.
     /// </summary>
@@ -77,23 +74,12 @@ internal sealed class GeminiPart : IJsonOnDeserialized
     /// </summary>
     public bool IsValid()
     {
-        return (this.Text is not null
-                ? 1
-                : 0) +
-            (this.InlineData is not null
-                ? 1
-                : 0) +
-            (this.FileData is not null
-                ? 1
-                : 0) +
-            (this.FunctionCall is not null
-                ? 1
-                : 0) +
-            (this.FunctionResponse is not null
-                ? 1
-                : 0) == 1;
+        return (this.Text is not null ? 1 : 0) +
+            (this.InlineData is not null ? 1 : 0) +
+            (this.FileData is not null ? 1 : 0) +
+            (this.FunctionCall is not null ? 1 : 0) +
+            (this.FunctionResponse is not null ? 1 : 0) == 1;
     }
-
 
     /// <inheritdoc />
     public void OnDeserialized()
@@ -105,13 +91,11 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         }
     }
 
-
     /// <summary>
     /// Inline media bytes like image or video data.
     /// </summary>
     internal sealed class InlineDataPart
     {
-
         /// <summary>
         /// The IANA standard MIME type of the source data.
         /// </summary>
@@ -128,16 +112,13 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         [JsonPropertyName("data")]
         [JsonRequired]
         public string InlineData { get; set; } = null!;
-
     }
-
 
     /// <summary>
     /// File media bytes like image or video data.
     /// </summary>
     internal sealed class FileDataPart
     {
-
         /// <summary>
         /// The IANA standard MIME type of the source data.
         /// </summary>
@@ -155,9 +136,7 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         [JsonPropertyName("fileUri")]
         [JsonRequired]
         public Uri FileUri { get; set; } = null!;
-
     }
-
 
     /// <summary>
     /// A predicted FunctionCall returned from the model that contains a
@@ -165,7 +144,6 @@ internal sealed class GeminiPart : IJsonOnDeserialized
     /// </summary>
     internal sealed class FunctionCallPart
     {
-
         /// <summary>
         /// Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
         /// </summary>
@@ -180,15 +158,12 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonNode? Arguments { get; set; }
 
-
         /// <inheritdoc />
         public override string ToString()
         {
             return $"FunctionName={this.FunctionName}, Arguments={this.Arguments}";
         }
-
     }
-
 
     /// <summary>
     /// The result output of a FunctionCall that contains a string representing the FunctionDeclaration.name and
@@ -196,7 +171,6 @@ internal sealed class GeminiPart : IJsonOnDeserialized
     /// </summary>
     internal sealed class FunctionResponsePart
     {
-
         /// <summary>
         /// Required. The name of the function to call. Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 63.
         /// </summary>
@@ -211,21 +185,23 @@ internal sealed class GeminiPart : IJsonOnDeserialized
         [JsonRequired]
         public FunctionResponseEntity Response { get; set; } = null!;
 
+        /// <summary>
+        /// Optional. Nested parts for multimodal function responses (Gemini 3+ only).
+        /// Contains inlineData with image/binary data as part of tool results.
+        /// </summary>
+        [JsonPropertyName("parts")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public FunctionResponsePartContent[]? Parts { get; set; }
 
         internal sealed class FunctionResponseEntity
         {
-
             [JsonConstructor]
-            public FunctionResponseEntity()
-            {
-            }
-
+            public FunctionResponseEntity() { }
 
             public FunctionResponseEntity(object? response)
             {
                 this.Arguments = JsonSerializer.SerializeToNode(response) ?? new JsonObject();
             }
-
 
             /// <summary>
             /// Required. The function response in JSON object format.
@@ -233,9 +209,17 @@ internal sealed class GeminiPart : IJsonOnDeserialized
             [JsonPropertyName("content")]
             [JsonRequired]
             public JsonNode Arguments { get; set; } = null!;
-
         }
 
+        /// <summary>
+        /// Represents a part within a Gemini function response (for multimodal content).
+        /// Used in Gemini 3+ to include images/binary data as part of tool results.
+        /// </summary>
+        internal sealed class FunctionResponsePartContent
+        {
+            [JsonPropertyName("inlineData")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public InlineDataPart? InlineData { get; set; }
+        }
     }
-
 }
