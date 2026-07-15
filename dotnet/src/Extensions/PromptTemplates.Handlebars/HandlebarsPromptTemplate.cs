@@ -1,9 +1,6 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Helpers;

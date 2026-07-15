@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.All rights reserved.
 
-using System;
 using HandlebarsDotNet;
 using HandlebarsDotNet.Helpers.Enums;
 using HandlebarsDotNet.Helpers.Options;

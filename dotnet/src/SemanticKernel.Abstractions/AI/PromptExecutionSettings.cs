@@ -203,7 +203,7 @@ public class PromptExecutionSettings
     /// the protected <see cref="PrepareChatOptionsForRequest"/> publicly.
     /// </summary>
     /// <param name="options">Target <see cref="ChatOptions"/> to prepare.</param>
-    internal void ChatClientPrepareChatOptionsForRequest(ChatOptions options) => this.PrepareChatOptionsForRequest(options);
+    internal void ChatClientPrepareChatOptionsForRequest(ChatOptions options) => PrepareChatOptionsForRequest(options);
 
     #region private ================================================================================
 

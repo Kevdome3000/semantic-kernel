@@ -1,10 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Google.Apis.CustomSearchAPI.v1;
 using Google.Apis.Services;
 using Microsoft.Extensions.Logging;
