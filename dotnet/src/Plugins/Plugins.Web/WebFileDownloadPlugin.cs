@@ -1,7 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Http;
@@ -23,6 +29,9 @@ namespace Microsoft.SemanticKernel.Plugins.Web;
 /// values only. Unrestricted configuration may allow unintended downloads to
 /// local paths.
 /// </para>
+/// <para>
+/// The default HTTP client does not follow redirects to prevent bypassing the allow-list.
+/// </para>
 /// </remarks>
 public sealed class WebFileDownloadPlugin
 {
@@ -36,7 +45,7 @@ public sealed class WebFileDownloadPlugin
     /// </summary>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public WebFileDownloadPlugin(ILoggerFactory? loggerFactory = null) :
-        this(HttpClientProvider.GetHttpClient(), loggerFactory)
+        this(HttpClientProvider.GetNonRedirectingHttpClient(), loggerFactory)
     {
     }
 
@@ -45,10 +54,13 @@ public sealed class WebFileDownloadPlugin
     /// </summary>
     /// <param name="httpClient">The HTTP client to use for making requests.</param>
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
+    /// <remarks>
+    /// When providing a custom client, configure it with <c>AllowAutoRedirect = false</c> to preserve the <see cref="AllowedDomains"/> guarantee.
+    /// </remarks>
     public WebFileDownloadPlugin(HttpClient httpClient, ILoggerFactory? loggerFactory = null)
     {
-        _httpClient = httpClient;
-        _logger = loggerFactory?.CreateLogger(typeof(WebFileDownloadPlugin)) ?? NullLogger.Instance;
+        this._httpClient = httpClient;
+        this._logger = loggerFactory?.CreateLogger(typeof(WebFileDownloadPlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -57,13 +69,12 @@ public sealed class WebFileDownloadPlugin
     /// <remarks>
     /// Defaults to an empty collection (no domains allowed). Must be explicitly populated
     /// with trusted domains before any downloads will succeed.
+    /// HTTP redirects are not followed to prevent bypassing the allow-list.
     /// </remarks>
     public IEnumerable<string>? AllowedDomains
     {
-        get => _allowedDomains;
-        set => _allowedDomains = value is null
-            ? null
-            : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+        get => this._allowedDomains;
+        set => this._allowedDomains = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -76,10 +87,8 @@ public sealed class WebFileDownloadPlugin
     /// </remarks>
     public IEnumerable<string>? AllowedFolders
     {
-        get => _allowedFolders;
-        set => _allowedFolders = value is null
-            ? null
-            : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+        get => this._allowedFolders;
+        set => this._allowedFolders = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -106,67 +115,69 @@ public sealed class WebFileDownloadPlugin
     /// <param name="cancellationToken">The token to use to request cancellation.</param>
     /// <returns>Task.</returns>
     /// <exception cref="KeyNotFoundException">Thrown when the location where to download the file is not provided</exception>
-    [KernelFunction] [Description("Downloads a file to local storage")]
+    [KernelFunction, Description("Downloads a file to local storage")]
     public async Task DownloadToFileAsync(
-        [Description("URL of file to download")]
-        Uri url,
-        [Description("Path where to save file locally")]
-        string filePath,
+        [Description("URL of file to download")] Uri url,
+        [Description("Path where to save file locally")] string filePath,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug($"{nameof(DownloadToFileAsync)} got called");
-        _logger.LogDebug("Sending GET request for {0}", url);
+        this._logger.LogDebug($"{nameof(this.DownloadToFileAsync)} got called");
+        this._logger.LogDebug("Sending GET request for {0}", url);
 
-        if (!IsUriAllowed(url))
+        if (!this.IsUriAllowed(url))
         {
             throw new InvalidOperationException("Downloading from the provided location is not allowed.");
         }
 
-        var expandedFilePath = Path.GetFullPath(Environment.ExpandEnvironmentVariables(filePath));
-
-        if (!IsFilePathAllowed(expandedFilePath))
+        var expandedFilePath = CanonicalizePath(filePath);
+        if (!this.IsFilePathAllowed(expandedFilePath))
         {
             throw new InvalidOperationException("Downloading to the provided location is not allowed.");
         }
 
-        if (DisableFileOverwrite && File.Exists(expandedFilePath))
+        if (this.DisableFileOverwrite && File.Exists(expandedFilePath))
         {
             throw new InvalidOperationException("Overwriting existing files is disabled.");
         }
 
         using HttpRequestMessage request = new(HttpMethod.Get, url);
 
-        using HttpResponseMessage response = await _httpClient.SendWithSuccessCheckAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await this._httpClient.SendWithSuccessCheckAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
         // Check the content length if provided
-        if (response.Content.Headers.ContentLength.HasValue && response.Content.Headers.ContentLength.Value > MaximumDownloadSize)
+        if (response.Content.Headers.ContentLength.HasValue && response.Content.Headers.ContentLength.Value > this.MaximumDownloadSize)
         {
-            throw new InvalidOperationException($"The file size exceeds the maximum allowed size of {MaximumDownloadSize} bytes.");
+            throw new InvalidOperationException($"The file size exceeds the maximum allowed size of {this.MaximumDownloadSize} bytes.");
         }
 
-        _logger.LogDebug("Response received: {0}", response.StatusCode);
+        this._logger.LogDebug("Response received: {0}", response.StatusCode);
 
-        var fileMode = DisableFileOverwrite
-            ? FileMode.CreateNew
-            : FileMode.Create;
+        var fileMode = this.DisableFileOverwrite ? FileMode.CreateNew : FileMode.Create;
 
         using Stream source = await response.Content.ReadAsStreamAndTranslateExceptionAsync(cancellationToken).ConfigureAwait(false);
         using FileStream destination = new(expandedFilePath, fileMode);
 
         int bufferSize = 81920;
         byte[] buffer = ArrayPool<byte>.Shared.Rent(81920);
-
         try
         {
             long totalBytesWritten = 0;
             int bytesRead;
+#if NET
             while ((bytesRead = await source.ReadAsync(buffer.AsMemory(0, bufferSize), cancellationToken).ConfigureAwait(false)) != 0)
+#else
+            while ((bytesRead = await source.ReadAsync(buffer, 0, bufferSize, cancellationToken).ConfigureAwait(false)) != 0)
+#endif
             {
-                if (totalBytesWritten + bytesRead > MaximumDownloadSize)
+                if (totalBytesWritten + bytesRead > this.MaximumDownloadSize)
                 {
-                    throw new InvalidOperationException($"The file size exceeds the maximum allowed size of {MaximumDownloadSize} bytes.");
+                    throw new InvalidOperationException($"The file size exceeds the maximum allowed size of {this.MaximumDownloadSize} bytes.");
                 }
+#if NET
                 await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
+#else
+                await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+#endif
                 totalBytesWritten += bytesRead;
             }
         }
@@ -177,7 +188,6 @@ public sealed class WebFileDownloadPlugin
     }
 
     #region private
-
     private readonly ILogger _logger;
     private readonly HttpClient _httpClient;
     private HashSet<string>? _allowedDomains = [];
@@ -191,10 +201,43 @@ public sealed class WebFileDownloadPlugin
     {
         Verify.NotNull(uri);
 
-        return _allowedDomains is not null
-            && _allowedDomains.Count > 0
-            && _allowedDomains.Contains(uri.Host);
+        return this._allowedDomains is not null
+            && this._allowedDomains.Count > 0
+            && this._allowedDomains.Contains(uri.Host);
     }
+
+    private static string CanonicalizePath(string path)
+    {
+        Verify.NotNullOrWhiteSpace(path);
+
+        if (IsUncOrExtendedPath(path))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        var expanded = Environment.ExpandEnvironmentVariables(path);
+        if (IsUncOrExtendedPath(expanded))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        // Resolve the full path first (a pure string operation that does not touch the
+        // filesystem). A relative path can still resolve to a UNC path here, for example
+        // when the current directory is a UNC share, so re-check before GetSafeFullPath
+        // probes the filesystem while resolving symbolic links.
+        var fullPath = Path.GetFullPath(expanded);
+        if (IsUncOrExtendedPath(fullPath))
+        {
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
+        }
+
+        return PathUtilities.GetSafeFullPath(fullPath);
+    }
+
+    private static bool IsUncOrExtendedPath(string path) =>
+        path.Length >= 2 &&
+        (path[0] is '/' or '\\') &&
+        (path[1] is '/' or '\\');
 
     /// <summary>
     /// If a list of allowed folder has been provided, the folder of the provided filePath is checked
@@ -205,7 +248,7 @@ public sealed class WebFileDownloadPlugin
     {
         Verify.NotNullOrWhiteSpace(path);
 
-        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(path))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
@@ -223,25 +266,24 @@ public sealed class WebFileDownloadPlugin
             throw new UnauthorizedAccessException($"File is read-only: {path}");
         }
 
-        if (_allowedFolders is null || _allowedFolders.Count == 0)
+        if (this._allowedFolders is null || this._allowedFolders.Count == 0)
         {
             return false;
         }
 
-        var canonicalDir = Path.GetFullPath(directoryPath);
+        var canonicalDir = PathUtilities.GetSafeFullPath(directoryPath);
 
-        foreach (var allowedFolder in _allowedFolders)
+        foreach (var allowedFolder in this._allowedFolders)
         {
-            var canonicalAllowed = Path.GetFullPath(allowedFolder);
+            var canonicalAllowed = PathUtilities.GetSafeFullPath(allowedFolder);
             var separator = Path.DirectorySeparatorChar.ToString();
-
-            if (!canonicalAllowed.EndsWith(separator, StringComparison.OrdinalIgnoreCase))
+            if (!canonicalAllowed.EndsWith(separator, PathUtilities.PathComparison))
             {
                 canonicalAllowed += separator;
             }
 
-            if (canonicalDir.StartsWith(canonicalAllowed, StringComparison.OrdinalIgnoreCase)
-                || (canonicalDir + separator).Equals(canonicalAllowed, StringComparison.OrdinalIgnoreCase))
+            if (canonicalDir.StartsWith(canonicalAllowed, PathUtilities.PathComparison)
+                || (canonicalDir + separator).Equals(canonicalAllowed, PathUtilities.PathComparison))
             {
                 return true;
             }
@@ -249,7 +291,5 @@ public sealed class WebFileDownloadPlugin
 
         return false;
     }
-
     #endregion
-
 }

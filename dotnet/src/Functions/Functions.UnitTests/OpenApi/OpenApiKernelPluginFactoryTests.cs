@@ -30,23 +30,32 @@ public sealed class OpenApiKernelPluginFactoryTests
     /// </summary>
     private readonly Stream _openApiDocument;
 
-
     /// <summary>
     /// Creates an instance of a <see cref="OpenApiKernelExtensionsTests"/> class.
     /// </summary>
     public OpenApiKernelPluginFactoryTests()
     {
-        _executionParameters = new OpenApiFunctionExecutionParameters { EnableDynamicPayload = false };
+        this._executionParameters = new OpenApiFunctionExecutionParameters()
+        {
+            EnableDynamicPayload = false,
+            ServerUrlValidationOptions = new RestApiOperationServerUrlValidationOptions
+            {
+                AllowedBaseUrls =
+                [
+                    new Uri("https://my-key-vault.vault.azure.net"),
+                    new Uri("https://server-override.com")
+                ]
+            }
+        };
 
-        _openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
+        this._openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV2_0.json");
     }
-
 
     [Fact]
     public async Task ItCanIncludeOpenApiOperationParameterTypesIntoFunctionParametersViewAsync()
     {
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", _openApiDocument, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters);
 
         // Assert
         var setSecretFunction = plugin["SetSecret"];
@@ -67,7 +76,6 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Equal("object", payloadParameter.Schema!.RootElement.GetProperty("type").GetString());
     }
 
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -81,18 +89,17 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         if (removeServersProperty)
         {
-            openApiDocument = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument,
-                doc =>
-                {
-                    doc.Remove("servers");
-                });
+            openApiDocument = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument, (doc) =>
+            {
+                doc.Remove("servers");
+            });
         }
 
         using var messageHandlerStub = new HttpMessageHandlerStub(openApiDocument);
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        _executionParameters.HttpClient = httpClient;
-        _executionParameters.ServerUrlOverride = new Uri(ServerUrlOverride);
+        this._executionParameters.HttpClient = httpClient;
+        this._executionParameters.ServerUrlOverride = new Uri(ServerUrlOverride);
 
         var arguments = new KernelArguments
         {
@@ -105,7 +112,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         var kernel = new Kernel();
 
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", new Uri(DocumentUri), _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", new Uri(DocumentUri), this._executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
@@ -116,7 +123,6 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.NotNull(messageHandlerStub.RequestUri);
         Assert.StartsWith(ServerUrlOverride, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
-
 
     [Theory]
     [InlineData("documentV2_0.json")]
@@ -132,7 +138,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         using var messageHandlerStub = new HttpMessageHandlerStub(openApiDocument);
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        _executionParameters.HttpClient = httpClient;
+        this._executionParameters.HttpClient = httpClient;
 
         var arguments = new KernelArguments
         {
@@ -145,7 +151,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         var kernel = new Kernel();
 
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", new Uri(DocumentUri), _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", new Uri(DocumentUri), this._executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
@@ -156,7 +162,6 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.NotNull(messageHandlerStub.RequestUri);
         Assert.StartsWith(ServerUrlFromDocument, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
-
 
     [Theory]
     [InlineData("http://localhost:3001/openapi.json", "http://localhost:3001/", "documentV2_0.json")]
@@ -169,18 +174,23 @@ public sealed class OpenApiKernelPluginFactoryTests
         // Arrange
         var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentFileName);
 
-        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument,
-            doc =>
-            {
-                doc.Remove("servers");
-                doc.Remove("host");
-                doc.Remove("schemes");
-            });
+        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument, (doc) =>
+        {
+            doc.Remove("servers");
+            doc.Remove("host");
+            doc.Remove("schemes");
+        });
 
         using var messageHandlerStub = new HttpMessageHandlerStub(content);
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        _executionParameters.HttpClient = httpClient;
+        this._executionParameters.HttpClient = httpClient;
+        // Permit the test scenario URLs (including http://localhost:3001/) under the
+        // secure-by-default SSRF policy by explicitly allowlisting the expected base.
+        this._executionParameters.ServerUrlValidationOptions = new RestApiOperationServerUrlValidationOptions
+        {
+            AllowedBaseUrls = [new Uri(expectedServerUrl)]
+        };
 
         var arguments = new KernelArguments
         {
@@ -193,7 +203,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         var kernel = new Kernel();
 
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", new Uri(documentUri), _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", new Uri(documentUri), this._executionParameters);
         var setSecretFunction = plugin["SetSecret"];
 
         messageHandlerStub.ResetResponse();
@@ -205,7 +215,6 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.StartsWith(expectedServerUrl, messageHandlerStub.RequestUri.AbsoluteUri, StringComparison.Ordinal);
     }
 
-
     [Fact]
     public async Task ItShouldRespectRunAsyncCancellationTokenOnExecutionAsync()
     {
@@ -215,17 +224,14 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        _executionParameters.HttpClient = httpClient;
+        this._executionParameters.HttpClient = httpClient;
 
         var fakePlugin = new FakePlugin();
 
-        using var registerCancellationToken = new CancellationTokenSource();
-        using var executeCancellationToken = new CancellationTokenSource();
+        using var registerCancellationToken = new System.Threading.CancellationTokenSource();
+        using var executeCancellationToken = new System.Threading.CancellationTokenSource();
 
-        var openApiPlugins = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin",
-            _openApiDocument,
-            _executionParameters,
-            registerCancellationToken.Token);
+        var openApiPlugins = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters, registerCancellationToken.Token);
 
         var kernel = new Kernel();
 
@@ -249,26 +255,23 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Equal("fake-content", response.Content);
     }
 
-
     [Fact]
     public async Task ItShouldSanitizeOperationNameAsync()
     {
         // Arrange
         var openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV3_0.json");
 
-        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument,
-            doc =>
-            {
-                doc["paths"]!["/secrets/{secret-name}"]!["get"]!["operationId"] = "issues/create-mile.stone";
-            });
+        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument, (doc) =>
+        {
+            doc["paths"]!["/secrets/{secret-name}"]!["get"]!["operationId"] = "issues/create-mile.stone";
+        });
 
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", content, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", content, this._executionParameters);
 
         // Assert
         Assert.True(plugin.TryGetFunction("IssuesCreatemilestone", out var _));
     }
-
 
     [Fact]
     public async Task ItCanIncludeOpenApiDeleteAndPatchOperationsAsync()
@@ -277,7 +280,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         var openApiDocument = ResourcePluginsProvider.LoadFromResource("repair-service.json");
 
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("repairServicePlugin", openApiDocument, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("repairServicePlugin", openApiDocument, this._executionParameters);
 
         // Assert
         Assert.NotNull(plugin);
@@ -286,7 +289,6 @@ public sealed class OpenApiKernelPluginFactoryTests
         AssertPayloadParameters(plugin, "updateRepair");
         AssertPayloadParameters(plugin, "deleteRepair");
     }
-
 
     [Theory]
     [InlineData("documentV2_0.json")]
@@ -298,7 +300,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentFileName);
 
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, this._executionParameters);
 
         // Assert Metadata Keys and Values
         Assert.True(plugin.TryGetFunction("OpenApiExtensions", out var function));
@@ -341,12 +343,11 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Contains("x-object-extension", nonNullOperationExtensions.Keys);
     }
 
-
     [Fact]
     public async Task ItShouldFreezeOperationMetadataAsync()
     {
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", _openApiDocument, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters);
 
         // Assert
         Assert.True(plugin.TryGetFunction("SetSecret", out var function));
@@ -358,27 +359,24 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Throws<InvalidOperationException>(() => secretNameParameter.ArgumentName = "a new value");
     }
 
-
     [Fact]
     public async Task ItShouldHandleEmptyOperationNameAsync()
     {
         // Arrange
         var openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV3_0.json");
 
-        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument,
-            doc =>
-            {
-                doc["paths"]!["/secrets/{secret-name}"]!["get"]!["operationId"] = "";
-            });
+        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument, (doc) =>
+        {
+            doc["paths"]!["/secrets/{secret-name}"]!["get"]!["operationId"] = "";
+        });
 
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", content, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", content, this._executionParameters);
 
         // Assert
         Assert.Equal(8, plugin.Count());
         Assert.True(plugin.TryGetFunction("GetSecretsSecretname", out var _));
     }
-
 
     [Fact]
     public async Task ItShouldHandleNullOperationNameAsync()
@@ -386,20 +384,18 @@ public sealed class OpenApiKernelPluginFactoryTests
         // Arrange
         var openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV3_0.json");
 
-        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument,
-            doc =>
-            {
-                doc["paths"]!["/secrets/{secret-name}"]!["get"]!.AsObject().Remove("operationId");
-            });
+        using var content = OpenApiTestHelper.ModifyOpenApiDocument(openApiDocument, (doc) =>
+        {
+            doc["paths"]!["/secrets/{secret-name}"]!["get"]!.AsObject().Remove("operationId");
+        });
 
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", content, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", content, this._executionParameters);
 
         // Assert
         Assert.Equal(8, plugin.Count());
         Assert.True(plugin.TryGetFunction("GetSecretsSecretname", out var _));
     }
-
 
     [Theory]
     [InlineData("string_parameter", typeof(string))]
@@ -413,9 +409,9 @@ public sealed class OpenApiKernelPluginFactoryTests
     public async Task ItShouldMapPropertiesOfPrimitiveDataTypeToKernelParameterMetadataAsync(string name, Type type)
     {
         // Arrange & Act
-        _executionParameters.EnableDynamicPayload = true;
+        this._executionParameters.EnableDynamicPayload = true;
 
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", _openApiDocument, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters);
 
         var parametersMetadata = plugin["TestParameterDataTypes"].Metadata.Parameters;
 
@@ -425,12 +421,11 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Equal(type, parameterMetadata.ParameterType);
     }
 
-
     [Fact]
     public async Task ItShouldMapPropertiesOfObjectDataTypeToKernelParameterMetadataAsync()
     {
         // Arrange & Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", _openApiDocument, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters);
 
         var parametersMetadata = plugin["TestParameterDataTypes"].Metadata.Parameters;
 
@@ -440,20 +435,19 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Equal(typeof(object), parameterMetadata.ParameterType);
     }
 
-
     [Fact]
     public async Task ItShouldUseCustomHttpResponseContentReaderAsync()
     {
         // Arrange
-        using var messageHandlerStub = new HttpMessageHandlerStub(_openApiDocument);
+        using var messageHandlerStub = new HttpMessageHandlerStub(this._openApiDocument);
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        _executionParameters.HttpResponseContentReader = async (context, cancellationToken) => await context.Response.Content.ReadAsStreamAsync(cancellationToken);
-        _executionParameters.HttpClient = httpClient;
+        this._executionParameters.HttpResponseContentReader = async (context, cancellationToken) => await context.Response.Content.ReadAsStreamAsync(cancellationToken);
+        this._executionParameters.HttpClient = httpClient;
 
         var kernel = new Kernel();
 
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", new Uri("http://localhost:3001/openapi.json"), _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", new Uri("http://localhost:3001/openapi.json"), this._executionParameters);
 
         messageHandlerStub.ResetResponse();
 
@@ -474,7 +468,6 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.IsAssignableFrom<Stream>(response.Content);
     }
 
-
     [Theory]
     [MemberData(nameof(GenerateSecurityMemberData))]
     public async Task ItAddSecurityMetadataToOperationAsync(string documentFileName, IDictionary<string, string[]> securityTypeMap)
@@ -483,7 +476,7 @@ public sealed class OpenApiKernelPluginFactoryTests
         var openApiDocument = ResourcePluginsProvider.LoadFromResource(documentFileName);
 
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, this._executionParameters);
 
         // Assert Security Metadata Keys and Values
         foreach (var function in plugin)
@@ -497,7 +490,6 @@ public sealed class OpenApiKernelPluginFactoryTests
             Assert.NotNull(operation);
             Assert.NotNull(operation.SecurityRequirements);
             Assert.Equal(securityTypes.Length, operation.SecurityRequirements?.Count);
-
             foreach (var securityType in securityTypes)
             {
                 Assert.Contains(operation.SecurityRequirements!, sr => sr.Keys.Any(k => k.SecuritySchemeType == securityType));
@@ -505,12 +497,11 @@ public sealed class OpenApiKernelPluginFactoryTests
         }
     }
 
-
     [Fact]
     public void ItCreatesPluginFromOpenApiSpecificationModel()
     {
         // Arrange
-        var info = new RestApiInfo { Description = "api-description", Title = "api-title", Version = "7.0" };
+        var info = new RestApiInfo() { Description = "api-description", Title = "api-title", Version = "7.0" };
 
         var securityRequirements = new List<RestApiSecurityRequirement>
         {
@@ -519,22 +510,22 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         var operations = new List<RestApiOperation>
         {
-            new(
-                "operation1",
-                [],
-                "path",
-                HttpMethod.Get,
-                "operation-description",
-                [],
-                new Dictionary<string, RestApiExpectedResponse>(),
-                [],
-                null)
+            new (
+                id: "operation1",
+                servers: [],
+                path: "path",
+                method: HttpMethod.Get,
+                description: "operation-description",
+                parameters: [],
+                responses: new Dictionary<string, RestApiExpectedResponse>(),
+                securityRequirements: [],
+                payload: null)
         };
 
         var specification = new RestApiSpecification(info, securityRequirements, operations);
 
         // Act
-        var plugin = OpenApiKernelPluginFactory.CreateFromOpenApi("fakePlugin", specification, _executionParameters);
+        var plugin = OpenApiKernelPluginFactory.CreateFromOpenApi("fakePlugin", specification, this._executionParameters);
 
         // Assert
         Assert.Single(plugin);
@@ -547,7 +538,6 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Same(operations[0], function.Metadata.AdditionalProperties["operation"]);
     }
 
-
     [Fact]
     public async Task ItShouldResolveArgumentsByParameterNamesAsync()
     {
@@ -555,8 +545,8 @@ public sealed class OpenApiKernelPluginFactoryTests
         using var messageHandlerStub = new HttpMessageHandlerStub();
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        _executionParameters.EnableDynamicPayload = true;
-        _executionParameters.HttpClient = httpClient;
+        this._executionParameters.EnableDynamicPayload = true;
+        this._executionParameters.HttpClient = httpClient;
 
         var arguments = new KernelArguments
         {
@@ -570,7 +560,7 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         var openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV3_0.json");
 
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, this._executionParameters);
 
         // Act
         var result = await kernel.InvokeAsync(plugin["TestParameterNamesSanitization"], arguments);
@@ -591,7 +581,6 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         Assert.Equal(23.4f, deserializedPayload["float?parameter"]!.GetValue<float>());
     }
-
 
     [Fact]
     public async Task ItShouldResolveArgumentsBySanitizedParameterNamesAsync()
@@ -600,22 +589,22 @@ public sealed class OpenApiKernelPluginFactoryTests
         using var messageHandlerStub = new HttpMessageHandlerStub();
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        _executionParameters.EnableDynamicPayload = true;
-        _executionParameters.HttpClient = httpClient;
+        this._executionParameters.EnableDynamicPayload = true;
+        this._executionParameters.HttpClient = httpClient;
 
         var arguments = new KernelArguments
         {
-            ["string_parameter"] = "fake-secret-name", // Original parameter name - string-parameter
-            ["boolean_parameter"] = true, // Original parameter name - boolean@parameter
-            ["integer_parameter"] = 6, // Original parameter name - integer+parameter
-            ["float_parameter"] = 23.4f // Original parameter name - float?parameter
+            ["string_parameter"] = "fake-secret-name",  // Original parameter name - string-parameter
+            ["boolean_parameter"] = true,               // Original parameter name - boolean@parameter
+            ["integer_parameter"] = 6,                  // Original parameter name - integer+parameter
+            ["float_parameter"] = 23.4f                 // Original parameter name - float?parameter
         };
 
         var kernel = new Kernel();
 
         var openApiDocument = ResourcePluginsProvider.LoadFromResource("documentV3_0.json");
 
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, this._executionParameters);
 
         // Act
         var result = await kernel.InvokeAsync(plugin["TestParameterNamesSanitization"], arguments);
@@ -636,7 +625,6 @@ public sealed class OpenApiKernelPluginFactoryTests
 
         Assert.Equal(23.4f, deserializedPayload["float?parameter"]!.GetValue<float>());
     }
-
 
     [Fact]
     public async Task ItShouldPropagateRestApiOperationResponseFactoryToRunnerAsync()
@@ -654,10 +642,10 @@ public sealed class OpenApiKernelPluginFactoryTests
         using var messageHandlerStub = new HttpMessageHandlerStub();
         using var httpClient = new HttpClient(messageHandlerStub, false);
 
-        _executionParameters.HttpClient = httpClient;
-        _executionParameters.RestApiOperationResponseFactory = RestApiOperationResponseFactory;
+        this._executionParameters.HttpClient = httpClient;
+        this._executionParameters.RestApiOperationResponseFactory = RestApiOperationResponseFactory;
 
-        var openApiPlugins = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", _openApiDocument, _executionParameters);
+        var openApiPlugins = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters);
 
         var kernel = new Kernel();
 
@@ -674,17 +662,16 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.True(restApiOperationResponseFactoryIsInvoked);
     }
 
-
     [Fact]
     public async Task ItCanImportSpecifiedOperationsAsync()
     {
         // Arrange
         string[] operationsToInclude = ["GetSecret", "SetSecret"];
 
-        _executionParameters.OperationSelectionPredicate = context => operationsToInclude.Contains(context.Id);
+        this._executionParameters.OperationSelectionPredicate = (context) => operationsToInclude.Contains(context.Id);
 
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", _openApiDocument, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters);
 
         // Assert
         Assert.Equal(2, plugin.Count());
@@ -692,15 +679,14 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Contains(plugin, p => p.Name == "SetSecret");
     }
 
-
     [Fact]
     public async Task ItCanFilterOutSpecifiedOperationsAsync()
     {
         // Arrange
-        _executionParameters.OperationsToExclude = ["GetSecret", "SetSecret"];
+        this._executionParameters.OperationsToExclude = ["GetSecret", "SetSecret"];
 
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", _openApiDocument, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters);
 
         // Assert
         Assert.True(plugin.Any());
@@ -708,41 +694,31 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.DoesNotContain(plugin, p => p.Name == "SetSecret");
     }
 
-
     /// <summary>
     /// Generate theory data for ItAddSecurityMetadataToOperationAsync
     /// </summary>
-    public static TheoryData<string, IDictionary<string, string[]>> GenerateSecurityMemberData()
-    {
-        return new TheoryData<string, IDictionary<string, string[]>>
+    public static TheoryData<string, IDictionary<string, string[]>> GenerateSecurityMemberData() =>
+        new()
         {
-            {
-                "no-securityV3_0.json", new Dictionary<string, string[]>
+            { "no-securityV3_0.json", new Dictionary<string, string[]>
                 {
                     { "NoSecurity", Array.Empty<string>() },
                     { "Security", new[] { "ApiKey" } },
                     { "SecurityAndScope", new[] { "ApiKey" } }
-                }
-            },
-            {
-                "apikey-securityV3_0.json", new Dictionary<string, string[]>
+                }},
+            { "apikey-securityV3_0.json", new Dictionary<string, string[]>
                 {
                     { "NoSecurity", Array.Empty<string>() },
                     { "Security", new[] { "ApiKey" } },
                     { "SecurityAndScope", new[] { "ApiKey" } }
-                }
-            },
-            {
-                "oauth-securityV3_0.json", new Dictionary<string, string[]>
+                }},
+            { "oauth-securityV3_0.json", new Dictionary<string, string[]>
                 {
                     { "NoSecurity", Array.Empty<string>() },
                     { "Security", new[] { "OAuth2" } },
                     { "SecurityAndScope", new[] { "OAuth2" } }
-                }
-            }
+                }}
         };
-    }
-
 
     [Fact]
     public async Task ItShouldCreateFunctionWithMultipartFormDataAsync()
@@ -751,18 +727,17 @@ public sealed class OpenApiKernelPluginFactoryTests
         var openApiDocument = ResourcePluginsProvider.LoadFromResource("multipart-form-data.json");
 
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", openApiDocument, this._executionParameters);
 
         // Assert
         Assert.False(plugin.TryGetFunction("createItem", out var _));
     }
 
-
     [Fact]
     public async Task ItCanAddPropertyDescriptionToSchemaAsync()
     {
         // Act
-        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", _openApiDocument, _executionParameters);
+        var plugin = await OpenApiKernelPluginFactory.CreateFromOpenApiAsync("fakePlugin", this._openApiDocument, this._executionParameters);
 
         // Assert
         var setSecretFunction = plugin["SetSecret"];
@@ -779,13 +754,11 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Equal("The name of the secret", description.GetString());
     }
 
-
     [Fact]
     public void Dispose()
     {
-        _openApiDocument.Dispose();
+        this._openApiDocument.Dispose();
     }
-
 
     #region private ================================================================================
 
@@ -798,20 +771,16 @@ public sealed class OpenApiKernelPluginFactoryTests
         Assert.Equal("content_type", function.Metadata.Parameters[1].Name);
     }
 
-
     private sealed class FakePlugin
     {
         public string? ParameterValueFakeMethodCalledWith { get; private set; }
 
-
         [KernelFunction]
         public void DoFakeAction(string parameter)
         {
-            ParameterValueFakeMethodCalledWith = parameter;
+            this.ParameterValueFakeMethodCalledWith = parameter;
         }
     }
 
     #endregion
-
-
 }

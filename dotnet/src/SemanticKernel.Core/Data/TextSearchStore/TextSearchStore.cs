@@ -195,12 +195,7 @@ public sealed partial class TextSearchStore<TKey> : ITextSearch, IDisposable
         IEnumerable<TextRagStorageDocument<TKey>> searchResult = await SearchInternalAsync(query, searchOptions, cancellationToken).ConfigureAwait(false);
 
         IEnumerable<TextSearchResult> results = searchResult.Select(x => new TextSearchResult(x.Text ?? string.Empty) { Name = x.SourceName, Link = x.SourceLink });
-        return new KernelSearchResults<TextSearchResult>(searchResult.Select(x =>
-                new TextSearchResult(x.Text ?? string.Empty)
-                {
-                    Name = x.SourceName,
-                    Link = x.SourceLink
-                })
+        return new KernelSearchResults<TextSearchResult>(results
             .ToAsyncEnumerable());
     }
 

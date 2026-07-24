@@ -1,7 +1,11 @@
-﻿// Copyright (c) Microsoft.All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Runtime.InteropServices;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel.Plugins.Document.FileSystem;
@@ -56,9 +60,9 @@ public sealed class DocumentPlugin
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> to use for logging. If null, no logging will be performed.</param>
     public DocumentPlugin(IDocumentConnector documentConnector, IFileSystemConnector fileSystemConnector, ILoggerFactory? loggerFactory = null)
     {
-        _documentConnector = documentConnector ?? throw new ArgumentNullException(nameof(documentConnector));
-        _fileSystemConnector = fileSystemConnector ?? throw new ArgumentNullException(nameof(fileSystemConnector));
-        _logger = loggerFactory?.CreateLogger(typeof(DocumentPlugin)) ?? NullLogger.Instance;
+        this._documentConnector = documentConnector ?? throw new ArgumentNullException(nameof(documentConnector));
+        this._fileSystemConnector = fileSystemConnector ?? throw new ArgumentNullException(nameof(fileSystemConnector));
+        this._logger = loggerFactory?.CreateLogger(typeof(DocumentPlugin)) ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -71,40 +75,35 @@ public sealed class DocumentPlugin
     /// </remarks>
     public IEnumerable<string>? AllowedDirectories
     {
-        get => _allowedDirectories;
-        set => _allowedDirectories = value is null
-            ? null
-            : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+        get => this._allowedDirectories;
+        set => this._allowedDirectories = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
     /// Read all text from a document, using the filePath argument as the file path.
     /// </summary>
-    [KernelFunction]
-    [Description("Read all text from a document")]
+    [KernelFunction, Description("Read all text from a document")]
     public async Task<string> ReadTextAsync(
-        [Description("Path to the file to read")]
-        string filePath,
+        [Description("Path to the file to read")] string filePath,
         CancellationToken cancellationToken = default)
     {
         var canonicalPath = CanonicalizePath(filePath);
 
-        _logger.LogDebug("Reading text from {0}", canonicalPath);
+        this._logger.LogDebug("Reading text from {0}", canonicalPath);
 
-        if (!IsFilePathAllowed(canonicalPath))
+        if (!this.IsFilePathAllowed(canonicalPath))
         {
             throw new InvalidOperationException("Reading from the provided location is not allowed.");
         }
 
-        using var stream = await _fileSystemConnector.GetFileContentStreamAsync(canonicalPath, cancellationToken).ConfigureAwait(false);
-        return _documentConnector.ReadText(stream);
+        using var stream = await this._fileSystemConnector.GetFileContentStreamAsync(canonicalPath, cancellationToken).ConfigureAwait(false);
+        return this._documentConnector.ReadText(stream);
     }
 
     /// <summary>
     /// Append the text specified by the text argument to a document. If the document doesn't exist, it will be created.
     /// </summary>
-    [KernelFunction]
-    [Description("Append text to a document. If the document doesn't exist, it will be created.")]
+    [KernelFunction, Description("Append text to a document. If the document doesn't exist, it will be created.")]
     public async Task AppendTextAsync(
         [Description("Text to append")] string text,
         [Description("Destination file path")] string filePath,
@@ -112,31 +111,30 @@ public sealed class DocumentPlugin
     {
         var canonicalPath = CanonicalizePath(filePath);
 
-        if (!IsFilePathAllowed(canonicalPath))
+        if (!this.IsFilePathAllowed(canonicalPath))
         {
             throw new InvalidOperationException("Writing to the provided location is not allowed.");
         }
 
         // If the document already exists, open it. If not, create it.
-        if (await _fileSystemConnector.FileExistsAsync(canonicalPath, cancellationToken).ConfigureAwait(false))
+        if (await this._fileSystemConnector.FileExistsAsync(canonicalPath, cancellationToken).ConfigureAwait(false))
         {
-            _logger.LogDebug("Writing text to file {0}", canonicalPath);
-            using Stream stream = await _fileSystemConnector.GetWriteableFileStreamAsync(canonicalPath, cancellationToken).ConfigureAwait(false);
-            _documentConnector.AppendText(stream, text);
+            this._logger.LogDebug("Writing text to file {0}", canonicalPath);
+            using Stream stream = await this._fileSystemConnector.GetWriteableFileStreamAsync(canonicalPath, cancellationToken).ConfigureAwait(false);
+            this._documentConnector.AppendText(stream, text);
         }
         else
         {
-            _logger.LogDebug("File does not exist. Creating file at {0}", canonicalPath);
-            using Stream stream = await _fileSystemConnector.CreateFileAsync(canonicalPath, cancellationToken).ConfigureAwait(false);
-            _documentConnector.Initialize(stream);
+            this._logger.LogDebug("File does not exist. Creating file at {0}", canonicalPath);
+            using Stream stream = await this._fileSystemConnector.CreateFileAsync(canonicalPath, cancellationToken).ConfigureAwait(false);
+            this._documentConnector.Initialize(stream);
 
-            _logger.LogDebug("Writing text to {0}", canonicalPath);
-            _documentConnector.AppendText(stream, text);
+            this._logger.LogDebug("Writing text to {0}", canonicalPath);
+            this._documentConnector.AppendText(stream, text);
         }
     }
 
     #region private
-
     private HashSet<string>? _allowedDirectories = [];
 
     /// <summary>
@@ -147,7 +145,7 @@ public sealed class DocumentPlugin
     {
         Verify.NotNullOrWhiteSpace(path);
 
-        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(path))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
@@ -158,19 +156,19 @@ public sealed class DocumentPlugin
 
         // Re-check after expansion: an env var could have expanded to a UNC
         // or extended-path prefix (e.g., %NETSHARE% → \\server\share).
-        if (expanded.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(expanded))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        return Path.GetFullPath(expanded);
+        return PathUtilities.GetSafeFullPath(expanded);
     }
 
-    // Use case-insensitive comparison on Windows (case-insensitive FS), case-sensitive on Linux/macOS.
-    private static readonly StringComparison s_pathComparison =
-        RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
+    private static bool IsUncOrExtendedPath(string path)
+    {
+        return path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("//", StringComparison.OrdinalIgnoreCase);
+    }
 
     /// <summary>
     /// Checks whether a canonicalized file path falls within one of the allowed directories.
@@ -185,23 +183,22 @@ public sealed class DocumentPlugin
             throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(canonicalPath));
         }
 
-        if (_allowedDirectories is null || _allowedDirectories.Count == 0)
+        if (this._allowedDirectories is null || this._allowedDirectories.Count == 0)
         {
             return false;
         }
 
-        foreach (var allowedDirectory in _allowedDirectories)
+        foreach (var allowedDirectory in this._allowedDirectories)
         {
-            var canonicalAllowed = Path.GetFullPath(allowedDirectory);
+            var canonicalAllowed = PathUtilities.GetSafeFullPath(allowedDirectory);
             var separator = Path.DirectorySeparatorChar.ToString();
-
-            if (!canonicalAllowed.EndsWith(separator, s_pathComparison))
+            if (!canonicalAllowed.EndsWith(separator, PathUtilities.PathComparison))
             {
                 canonicalAllowed += separator;
             }
 
-            if (directoryPath.StartsWith(canonicalAllowed, s_pathComparison)
-                || (directoryPath + separator).Equals(canonicalAllowed, s_pathComparison))
+            if (directoryPath.StartsWith(canonicalAllowed, PathUtilities.PathComparison)
+                || (directoryPath + separator).Equals(canonicalAllowed, PathUtilities.PathComparison))
             {
                 return true;
             }
@@ -209,7 +206,5 @@ public sealed class DocumentPlugin
 
         return false;
     }
-
     #endregion
-
 }

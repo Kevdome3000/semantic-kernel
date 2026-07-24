@@ -1,7 +1,11 @@
-﻿// Copyright (c) Microsoft.All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Microsoft.SemanticKernel.Plugins.Core;
 
@@ -30,10 +34,8 @@ public sealed class FileIOPlugin
     /// </remarks>
     public IEnumerable<string>? AllowedFolders
     {
-        get => _allowedFolders;
-        set => _allowedFolders = value is null
-            ? null
-            : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
+        get => this._allowedFolders;
+        set => this._allowedFolders = value is null ? null : new HashSet<string>(value, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -52,16 +54,15 @@ public sealed class FileIOPlugin
     /// </example>
     /// <param name="path"> Source file </param>
     /// <returns> File content </returns>
-    [KernelFunction]
-    [Description("Read a file")]
+    [KernelFunction, Description("Read a file")]
     public async Task<string> ReadAsync([Description("Source file")] string path)
     {
-        if (!IsFilePathAllowed(path))
+        if (!this.TryGetAllowedFilePath(path, out var canonicalPath))
         {
             throw new InvalidOperationException("Reading from the provided location is not allowed.");
         }
 
-        using var reader = File.OpenText(path);
+        using var reader = File.OpenText(canonicalPath);
         return await reader.ReadToEndAsync().ConfigureAwait(false);
     }
 
@@ -74,37 +75,32 @@ public sealed class FileIOPlugin
     /// <param name="path">The destination file path</param>
     /// <param name="content">The file content to write</param>
     /// <returns> An awaitable task </returns>
-    [KernelFunction]
-    [Description("Write a file")]
+    [KernelFunction, Description("Write a file")]
     public async Task WriteAsync(
         [Description("Destination file")] string path,
         [Description("File content")] string content)
     {
-        if (!IsFilePathAllowed(path))
+        if (!this.TryGetAllowedFilePath(path, out var canonicalPath))
         {
             throw new InvalidOperationException("Writing to the provided location is not allowed.");
         }
 
-        if (DisableFileOverwrite && File.Exists(path))
+        if (this.DisableFileOverwrite && File.Exists(canonicalPath))
         {
             throw new InvalidOperationException("Overwriting existing files is disabled.");
         }
 
         byte[] text = Encoding.UTF8.GetBytes(content);
-        var fileMode = DisableFileOverwrite
-            ? FileMode.CreateNew
-            : FileMode.Create;
-        using var writer = new FileStream(path,
-            fileMode,
-            FileAccess.Write,
-            FileShare.None);
+        var fileMode = this.DisableFileOverwrite ? FileMode.CreateNew : FileMode.Create;
+        using var writer = new FileStream(canonicalPath, fileMode, FileAccess.Write, FileShare.None);
         await writer.WriteAsync(text
-            )
-            .ConfigureAwait(false);
+#if !NET
+            , 0, text.Length
+#endif
+            ).ConfigureAwait(false);
     }
 
     #region private
-
     private HashSet<string>? _allowedFolders = [];
 
     /// <summary>
@@ -112,11 +108,12 @@ public sealed class FileIOPlugin
     /// to verify it is in the allowed folder list. Paths are canonicalized before comparison.
     /// Subdirectories of allowed folders are also permitted.
     /// </summary>
-    private bool IsFilePathAllowed(string path)
+    private bool TryGetAllowedFilePath(string path, out string canonicalPath)
     {
         Verify.NotNullOrWhiteSpace(path);
+        canonicalPath = string.Empty;
 
-        if (path.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
+        if (IsUncOrExtendedPath(path))
         {
             throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
@@ -128,31 +125,46 @@ public sealed class FileIOPlugin
             throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(path));
         }
 
-        if (File.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))
+        // Resolve the full path first (a pure string operation that does not touch the
+        // filesystem). A relative path can still resolve to a UNC path here, for example
+        // when the current directory is a UNC share, so re-check before GetSafeFullPath
+        // probes the filesystem while resolving symbolic links.
+        canonicalPath = Path.GetFullPath(path);
+        if (IsUncOrExtendedPath(canonicalPath))
         {
-            // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.
-            throw new UnauthorizedAccessException($"File is read-only: {path}");
+            throw new ArgumentException("Invalid file path, UNC paths are not supported.", nameof(path));
         }
 
-        if (_allowedFolders is null || _allowedFolders.Count == 0)
+        canonicalPath = PathUtilities.GetSafeFullPath(canonicalPath);
+
+        if (File.Exists(canonicalPath) && File.GetAttributes(canonicalPath).HasFlag(FileAttributes.ReadOnly))
+        {
+            // Most environments will throw this with OpenWrite, but running inside docker on Linux will not.
+            throw new UnauthorizedAccessException($"File is read-only: {canonicalPath}");
+        }
+
+        if (this._allowedFolders is null || this._allowedFolders.Count == 0)
         {
             return false;
         }
 
-        var canonicalDir = Path.GetFullPath(directoryPath);
-
-        foreach (var allowedFolder in _allowedFolders)
+        var canonicalDir = Path.GetDirectoryName(canonicalPath);
+        if (string.IsNullOrEmpty(canonicalDir))
         {
-            var canonicalAllowed = Path.GetFullPath(allowedFolder);
-            var separator = Path.DirectorySeparatorChar.ToString();
+            throw new ArgumentException("Invalid file path, a fully qualified file location must be specified.", nameof(path));
+        }
 
-            if (!canonicalAllowed.EndsWith(separator, StringComparison.OrdinalIgnoreCase))
+        foreach (var allowedFolder in this._allowedFolders)
+        {
+            var canonicalAllowed = PathUtilities.GetSafeFullPath(allowedFolder);
+            var separator = Path.DirectorySeparatorChar.ToString();
+            if (!canonicalAllowed.EndsWith(separator, PathUtilities.PathComparison))
             {
                 canonicalAllowed += separator;
             }
 
-            if (canonicalDir.StartsWith(canonicalAllowed, StringComparison.OrdinalIgnoreCase)
-                || (canonicalDir + separator).Equals(canonicalAllowed, StringComparison.OrdinalIgnoreCase))
+            if (canonicalDir.StartsWith(canonicalAllowed, PathUtilities.PathComparison)
+                || (canonicalDir + separator).Equals(canonicalAllowed, PathUtilities.PathComparison))
             {
                 return true;
             }
@@ -161,6 +173,9 @@ public sealed class FileIOPlugin
         return false;
     }
 
+    private static bool IsUncOrExtendedPath(string path) =>
+        path.Length >= 2 &&
+        (path[0] is '/' or '\\') &&
+        (path[1] is '/' or '\\');
     #endregion
-
 }

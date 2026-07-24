@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.VectorData.ProviderServices;
-using System.Collections.Generic;
-using System.Text.Json.Nodes;
-using System.Text.Json;
-using System;
-using System.Diagnostics;
 using MEAI = Microsoft.Extensions.AI;
 
 namespace Microsoft.SemanticKernel.Connectors.CosmosNoSql;
@@ -22,39 +22,35 @@ internal sealed class CosmosNoSqlMapper<TRecord> : ICosmosNoSqlMapper<TRecord>
     private readonly KeyPropertyModel _keyProperty;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
-
     public CosmosNoSqlMapper(CollectionModel model, JsonSerializerOptions? jsonSerializerOptions)
     {
-        _model = model;
-        _keyProperty = model.KeyProperty;
+        this._model = model;
+        this._keyProperty = model.KeyProperty;
 
         // Add byte array converters to serialize byte[] and ReadOnlyMemory<byte> as JSON arrays of numbers
         // instead of base64-encoded strings, which is required for Cosmos DB vector operations.
         var newOptions = new JsonSerializerOptions(jsonSerializerOptions ?? JsonSerializerOptions.Default);
         newOptions.Converters.Add(new ByteArrayJsonConverter());
         newOptions.Converters.Add(new ReadOnlyMemoryByteJsonConverter());
-        _jsonSerializerOptions = newOptions;
+        this._jsonSerializerOptions = newOptions;
     }
-
 
     public JsonObject MapFromDataToStorageModel(TRecord dataModel, int recordIndex, IReadOnlyList<MEAI.Embedding>?[]? generatedEmbeddings)
     {
-        var jsonObject = JsonSerializer.SerializeToNode(dataModel, _jsonSerializerOptions)!.AsObject();
+        var jsonObject = JsonSerializer.SerializeToNode(dataModel, this._jsonSerializerOptions)!.AsObject();
 
         // The key property in Azure CosmosDB NoSQL is always named 'id'.
         // But the external JSON serializer used just above isn't aware of that, and will produce a JSON object with another name, taking into
-        // account e.g. naming policies. SerializedKeyName gets populated in the model builder - containing that name - once VectorStoreModelBuildingOptions.ReservedKeyPropertyName is set
-        RenameJsonProperty(jsonObject, _keyProperty.SerializedKeyName!, CosmosNoSqlConstants.ReservedKeyPropertyName);
+        // account e.g. naming policies. TemporaryStorageName gets populated in the model builder - containing that name - once VectorStoreModelBuildingOptions.ReservedKeyPropertyName is set
+        RenameJsonProperty(jsonObject, this._keyProperty.TemporaryStorageName!, CosmosNoSqlConstants.ReservedKeyPropertyName);
 
         // Go over the vector properties; inject any generated embeddings to overwrite the JSON serialized above.
         // Also, for Embedding<T> properties we also need to overwrite with a simple array (since Embedding<T> gets serialized as a complex object).
-        for (var i = 0; i < _model.VectorProperties.Count; i++)
+        for (var i = 0; i < this._model.VectorProperties.Count; i++)
         {
-            var property = _model.VectorProperties[i];
+            var property = this._model.VectorProperties[i];
 
-            Embedding? embedding = generatedEmbeddings?[i]?[recordIndex] is Embedding ge
-                ? ge
-                : null;
+            Embedding? embedding = generatedEmbeddings?[i]?[recordIndex] is Embedding ge ? ge : null;
 
             if (embedding is null)
             {
@@ -117,13 +113,12 @@ internal sealed class CosmosNoSqlMapper<TRecord> : ICosmosNoSqlMapper<TRecord>
         return jsonObject;
     }
 
-
     public TRecord MapFromStorageToDataModel(JsonObject storageModel, bool includeVectors)
     {
         // See above comment.
-        RenameJsonProperty(storageModel, CosmosNoSqlConstants.ReservedKeyPropertyName, _keyProperty.SerializedKeyName!);
+        RenameJsonProperty(storageModel, CosmosNoSqlConstants.ReservedKeyPropertyName, this._keyProperty.TemporaryStorageName!);
 
-        foreach (var vectorProperty in _model.VectorProperties)
+        foreach (var vectorProperty in this._model.VectorProperties)
         {
             if (!includeVectors)
             {
@@ -133,7 +128,6 @@ internal sealed class CosmosNoSqlMapper<TRecord> : ICosmosNoSqlMapper<TRecord>
             }
 
             var arrayNode = storageModel[vectorProperty.StorageName];
-
             if (arrayNode is null)
             {
                 continue;
@@ -154,9 +148,8 @@ internal sealed class CosmosNoSqlMapper<TRecord> : ICosmosNoSqlMapper<TRecord>
             // the custom converters (for byte) and default converters (for others) handle deserialization correctly.
         }
 
-        return storageModel.Deserialize<TRecord>(_jsonSerializerOptions)!;
+        return storageModel.Deserialize<TRecord>(this._jsonSerializerOptions)!;
     }
-
 
     #region private
 
@@ -173,6 +166,4 @@ internal sealed class CosmosNoSqlMapper<TRecord> : ICosmosNoSqlMapper<TRecord>
     }
 
     #endregion
-
-
 }

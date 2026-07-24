@@ -23,6 +23,7 @@ public static class TextSearchKernelBuilderExtensions
         ITextSearchResultMapper? resultMapper = null,
         VectorStoreTextSearchOptions? options = null,
         string? serviceId = default)
+        where TRecord : class
     {
         builder.Services.AddVectorStoreTextSearch<TRecord>(stringMapper,
             resultMapper,

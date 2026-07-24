@@ -27,7 +27,7 @@ public class PromptyFunction(ITestOutputHelper output) : BaseTest(output)
                                 authors:
                                   - ????
                                 model:
-                                  api: chat
+              apiType: chat
                                 ---
                                 system:
                                 You are a helpful assistant who knows all about cities in the USA
@@ -59,7 +59,7 @@ public class PromptyFunction(ITestOutputHelper output) : BaseTest(output)
                                  authors:
                                    - ????
                                  model:
-                                   api: chat
+              apiType: chat
                                  ---
                                  system:
                                  You are an AI agent for the Contoso Outdoors products retailer. As the agent, you answer questions briefly, succinctly, 
@@ -125,7 +125,7 @@ public class PromptyFunction(ITestOutputHelper output) : BaseTest(output)
                                  authors:
                                    - ????
                                  model:
-                                   api: chat
+              apiType: chat
                                  ---
                                  What is Seattle?
                                  """;
