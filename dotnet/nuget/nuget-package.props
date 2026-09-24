@@ -64,7 +64,10 @@
         <None Include="$(RepoRoot)/dotnet/nuget/NUGET.md" Link="NUGET.md" Pack="true" PackagePath="."/>
     </ItemGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <!-- ChanceAI fork: never pack on build. ChanceAI consumes this fork by ProjectReference only, and
+         packing a Release build also runs package validation against the upstream NuGet baseline,
+         which this fork intentionally breaks (net10.0-only, reshaped APIs). -->
+    <PropertyGroup>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     </PropertyGroup>
 </Project>
