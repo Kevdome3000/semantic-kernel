@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-namespace Plugins;
-
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Plugins.Grpc;
 
+namespace Plugins;
 
 // This example shows how to use gRPC plugins.
 public class ImportPluginFromGrpc(ITestOutputHelper output) : BaseTest(output)
 {
-
-    [Fact(Skip = "Setup crendentials")]
+    [Fact(Skip = "Setup credentials")]
     public async Task RunAsync()
     {
         Kernel kernel = new();
@@ -32,5 +30,4 @@ public class ImportPluginFromGrpc(ITestOutputHelper output) : BaseTest(output)
 
         Console.WriteLine($"Plugin response: {result.GetValue<string>()}");
     }
-
 }

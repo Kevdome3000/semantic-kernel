@@ -152,7 +152,7 @@ public sealed class WhiteboardProvider : AIContextProvider
         var inputMessagesJson = JsonSerializer.Serialize(basicMessages, WhiteboardProviderSourceGenerationContext.Default.IEnumerableBasicMessage);
         var currentWhiteboardJson = JsonSerializer.Serialize(_currentWhiteboardContent, WhiteboardProviderSourceGenerationContext.Default.ListString);
 
-        // Inovke the LLM to extract the latest information from the input messages and update the whiteboard.
+        // Invoke the LLM to extract the latest information from the input messages and update the whiteboard.
         var result = await _chatClient.GetResponseAsync(
                 FormatPromptTemplate(inputMessagesJson, currentWhiteboardJson, _maxWhiteboardMessages),
                 new ChatOptions

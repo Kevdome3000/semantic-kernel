@@ -46,7 +46,6 @@ public class DocumentPluginTests
         documentConnectorMock.VerifyAll();
     }
 
-
     [Fact]
     public async Task AppendTextAsyncFileExistsSucceedsAsync()
     {
@@ -81,7 +80,6 @@ public class DocumentPluginTests
         fileSystemConnectorMock.VerifyAll();
         documentConnectorMock.VerifyAll();
     }
-
 
     [Fact]
     public async Task AppendTextAsyncFileDoesNotExistSucceedsAsync()
@@ -120,7 +118,6 @@ public class DocumentPluginTests
         documentConnectorMock.VerifyAll();
     }
 
-
     [Fact]
     public async Task AppendTextAsyncNoFilePathFailsAsync()
     {
@@ -134,13 +131,12 @@ public class DocumentPluginTests
 
         // Act/Assert
         await Assert.ThrowsAnyAsync<ArgumentException>(() =>
-            target.AppendTextAsync(anyText, null!));
+           target.AppendTextAsync(anyText, null!));
 
         // Assert
         fileSystemConnectorMock.Verify(mock => mock.GetWriteableFileStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
         documentConnectorMock.Verify(mock => mock.AppendText(It.IsAny<Stream>(), It.IsAny<string>()), Times.Never());
     }
-
 
     [Fact]
     public async Task ItDeniesAllPathsWithDefaultConfigAsync()
@@ -157,16 +153,12 @@ public class DocumentPluginTests
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.AppendTextAsync("text", filePath));
     }
 
-
     [Fact]
     public async Task ItDeniesPathTraversalAsync()
     {
         // Arrange
         var folderPath = Path.Combine(Path.GetTempPath(), "allowed-folder");
-        var traversalPath = Path.Combine(folderPath,
-            "..",
-            "outside-folder",
-            "secret.docx");
+        var traversalPath = Path.Combine(folderPath, "..", "outside-folder", "secret.docx");
 
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         var documentConnectorMock = new Mock<IDocumentConnector>();
@@ -179,7 +171,6 @@ public class DocumentPluginTests
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.ReadTextAsync(traversalPath));
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.AppendTextAsync("text", traversalPath));
     }
-
 
     [Fact]
     public async Task ItDeniesUncPathsAsync()
@@ -201,6 +192,77 @@ public class DocumentPluginTests
         await Assert.ThrowsAnyAsync<Exception>(async () => await target.AppendTextAsync("text", "//UNC/server/folder/file.docx"));
     }
 
+    [Theory]
+    [InlineData("\\\\UNC\\server\\folder\\file.docx")]
+    [InlineData("//UNC/server/folder/file.docx")]
+    [InlineData("/\\UNC\\server\\folder\\file.docx")]
+    [InlineData("\\/UNC/server/folder/file.docx")]
+    [InlineData("\\\\?\\UNC\\server\\folder\\file.docx")]
+    [InlineData("\\\\.\\UNC\\server\\folder\\file.docx")]
+    public async Task ItRejectsUncOrExtendedPathsOnReadAsync(string path)
+    {
+        // Arrange
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>(MockBehavior.Strict);
+        var documentConnectorMock = new Mock<IDocumentConnector>(MockBehavior.Strict);
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [Path.GetTempPath()]
+        };
+
+        // Act & Assert — rejected before any filesystem access
+        await Assert.ThrowsAsync<ArgumentException>(async () => await target.ReadTextAsync(path));
+    }
+
+    [Theory]
+    [InlineData("\\\\UNC\\server\\folder\\file.docx")]
+    [InlineData("//UNC/server/folder/file.docx")]
+    [InlineData("/\\UNC\\server\\folder\\file.docx")]
+    [InlineData("\\/UNC/server/folder/file.docx")]
+    [InlineData("\\\\?\\UNC\\server\\folder\\file.docx")]
+    [InlineData("\\\\.\\UNC\\server\\folder\\file.docx")]
+    public async Task ItRejectsUncOrExtendedPathsOnAppendAsync(string path)
+    {
+        // Arrange
+        var fileSystemConnectorMock = new Mock<IFileSystemConnector>(MockBehavior.Strict);
+        var documentConnectorMock = new Mock<IDocumentConnector>(MockBehavior.Strict);
+        var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+        {
+            AllowedDirectories = [Path.GetTempPath()]
+        };
+
+        // Act & Assert — rejected before any filesystem access
+        await Assert.ThrowsAsync<ArgumentException>(async () => await target.AppendTextAsync("text", path));
+    }
+
+    [Theory]
+    [InlineData("/\\evil-server\\share")]
+    [InlineData("\\/evil-server/share")]
+    public async Task ItDeniesMixedSeparatorUncPathsIntroducedViaEnvVarExpansionAsync(string envVarValue)
+    {
+        // Arrange — env var that expands to a mixed-separator UNC path
+        var envVarName = "SK_TEST_MIXUNC_" + Guid.NewGuid().ToString("N")[..8];
+
+        try
+        {
+            Environment.SetEnvironmentVariable(envVarName, envVarValue);
+            var maliciousPath = $"%{envVarName}%{Path.DirectorySeparatorChar}secret.docx";
+
+            var fileSystemConnectorMock = new Mock<IFileSystemConnector>(MockBehavior.Strict);
+            var documentConnectorMock = new Mock<IDocumentConnector>(MockBehavior.Strict);
+            var target = new DocumentPlugin(documentConnectorMock.Object, fileSystemConnectorMock.Object)
+            {
+                AllowedDirectories = [Path.GetTempPath()]
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(async () => await target.ReadTextAsync(maliciousPath));
+            await Assert.ThrowsAsync<ArgumentException>(async () => await target.AppendTextAsync("text", maliciousPath));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(envVarName, null);
+        }
+    }
 
     [Fact]
     public async Task ItDeniesDisallowedFoldersAsync()
@@ -221,16 +283,12 @@ public class DocumentPluginTests
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await target.AppendTextAsync("text", disallowedPath));
     }
 
-
     [Fact]
     public async Task ItAllowsSubdirectoriesOfAllowedFoldersAsync()
     {
         // Arrange
         var allowedFolder = Path.GetTempPath();
-        var subDirPath = Path.Combine(allowedFolder,
-            "subdir",
-            "nested",
-            "file.docx");
+        var subDirPath = Path.Combine(allowedFolder, "subdir", "nested", "file.docx");
 
         var fileSystemConnectorMock = new Mock<IFileSystemConnector>();
         fileSystemConnectorMock
@@ -253,7 +311,6 @@ public class DocumentPluginTests
         // Assert
         Assert.Equal("content", result);
     }
-
 
     [Fact]
     public async Task ItDeniesRelativePathsAsync()

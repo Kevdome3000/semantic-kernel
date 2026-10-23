@@ -26,6 +26,7 @@ from mcp.shared.session import RequestResponder
 
 from semantic_kernel import Kernel
 from semantic_kernel.connectors.ai.chat_completion_client_base import ChatCompletionClientBase
+from semantic_kernel.const import DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR
 from semantic_kernel.contents.audio_content import AudioContent
 from semantic_kernel.contents.binary_content import BinaryContent
 from semantic_kernel.contents.chat_history import ChatHistory
@@ -278,6 +279,7 @@ class MCPPluginBase:
         self.sampling_auto_approve = sampling_auto_approve
         self._sampling_auto_approved_warning_logged = False
         self._mcp_reserved_attribute_names: set[str] | None = None
+        self._mcp_registered_names: dict[str, tuple[str, str]] = {}
         self._current_task: asyncio.Task | None = None
         self._stop_event: asyncio.Event | None = None
 
@@ -538,6 +540,27 @@ class MCPPluginBase:
         )
         return True
 
+    def _is_mcp_local_name_taken(self, item_type: str, remote_name: str, local_name: str) -> bool:
+        """Check whether a normalized name is already bound to a different MCP tool or prompt.
+
+        Normalization is not injective, so distinct remote names can collapse into the same local
+        name. Tools and prompts share one attribute namespace, so registering a collision would
+        silently rebind an already advertised name to a different remote item.
+        """
+        owner = self._mcp_registered_names.get(local_name)
+        if owner is None or owner == (item_type, remote_name):
+            return False
+        owner_type, owner_name = owner
+        logger.warning(
+            "Skipping MCP %s '%s' because normalized name '%s' is already registered by %s '%s'.",
+            item_type,
+            remote_name,
+            local_name,
+            owner_type,
+            owner_name,
+        )
+        return True
+
     async def load_prompts(self):
         """Load prompts from the MCP server."""
         try:
@@ -546,8 +569,11 @@ class MCPPluginBase:
             prompt_list = None
         for prompt in prompt_list.prompts if prompt_list else []:
             local_name = _normalize_mcp_name(prompt.name)
+            if self._is_mcp_local_name_taken("prompt", prompt.name, local_name):
+                continue
             if self._has_mcp_function_name_conflict("prompt", prompt.name, local_name):
                 continue
+            self._mcp_registered_names[local_name] = ("prompt", prompt.name)
             func = kernel_function(name=local_name, description=prompt.description)(
                 partial(self.get_prompt, prompt.name)
             )
@@ -563,8 +589,11 @@ class MCPPluginBase:
         # Create methods with the kernel_function decorator for each tool
         for tool in tool_list.tools if tool_list else []:
             local_name = _normalize_mcp_name(tool.name)
+            if self._is_mcp_local_name_taken("tool", tool.name, local_name):
+                continue
             if self._has_mcp_function_name_conflict("tool", tool.name, local_name):
                 continue
+            self._mcp_registered_names[local_name] = ("tool", tool.name)
             func = kernel_function(name=local_name, description=tool.description)(partial(self.call_tool, tool.name))
             func.__kernel_function_parameters__ = _get_parameter_dicts_from_mcp_tool(tool)
             setattr(self, local_name, func)
@@ -950,14 +979,16 @@ def create_mcp_server_from_functions(
     instructions: str | None = None,
     lifespan: Callable[[Server["LifespanResultT"]], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
     plugin_name: str = "mcp",
+    use_plugin_names: bool = False,
     **kwargs: Any,
 ) -> Server["LifespanResultT"]:
     """Create an MCP server from a function(s) or plugin(s).
 
-    This function automatically creates a MCP server from single or multiple functions or plugins,
-    all functions are added under the plugin_name that can be set by using the `plugin_name` argument.
-    It further uses the provided arguments to
-    configure the server and expose functions as tools, see the mcp documentation for more details.
+    This function automatically creates a MCP server from single or multiple functions or plugins.
+    Individual functions and objects that are not KernelPlugin instances are registered under `plugin_name`.
+    Existing KernelPlugin instances retain their names, regardless of `plugin_name`, as in Kernel.add_plugin.
+    It uses the provided arguments to configure the server and expose functions as tools,
+    see the mcp documentation for more details.
 
     Args:
         functions: The function(s) or plugin(s) instance to use.
@@ -968,7 +999,10 @@ def create_mcp_server_from_functions(
         version: The version of the server.
         instructions: The instructions to use for the server.
         lifespan: The lifespan of the server.
-        plugin_name: The name of the plugin to use.
+        plugin_name: The plugin name for individual functions and objects that are not KernelPlugin instances.
+            Ignored for existing KernelPlugin instances, which retain their names.
+        use_plugin_names: Whether to prefix tool names with their plugin name, separated by a hyphen.
+            Defaults to False.
         kwargs: Any extra arguments to pass to the server creation.
 
     Returns:
@@ -998,6 +1032,7 @@ def create_mcp_server_from_functions(
         version=version,
         instructions=instructions,
         lifespan=lifespan,
+        use_plugin_names=use_plugin_names,
         **kwargs,
     )
 
@@ -1012,6 +1047,7 @@ def create_mcp_server_from_kernel(
     instructions: str | None = None,
     lifespan: Callable[[Server["LifespanResultT"]], AbstractAsyncContextManager["LifespanResultT"]] | None = None,
     excluded_functions: OptionalOneOrMany[str] = None,
+    use_plugin_names: bool = False,
     **kwargs: Any,
 ) -> Server["LifespanResultT"]:
     """Create an MCP server from a kernel instance.
@@ -1019,8 +1055,13 @@ def create_mcp_server_from_kernel(
     This function automatically creates a MCP server from a kernel instance, it uses the provided arguments to
     configure the server and expose functions as tools and prompts, see the mcp documentation for more details.
 
-    By default, all functions are exposed as Tools, you can control this by using use the `excluded_functions` argument.
-    These need to be set to the function name, without the plugin_name.
+    By default, functions are exposed as Tools using their bare function names. If names collide,
+    the first function is exposed and subsequent functions are skipped with a warning.
+    Set `use_plugin_names=True` to expose names as `<registered_plugin_name>-<function_name>` instead.
+    The same function is used for each tool's metadata and invocation.
+    Tool names over MCP's recommended 128 characters are exposed with a warning.
+
+    Exclude functions using `excluded_functions`, with bare function names regardless of `use_plugin_names`.
 
     Args:
         kernel: The kernel instance to use.
@@ -1031,6 +1072,8 @@ def create_mcp_server_from_kernel(
         lifespan: The lifespan of the server.
         excluded_functions: The list of function names to exclude from the server.
             if None, no functions will be excluded.
+        use_plugin_names: Whether to prefix tool names with their registered plugin name, separated by a hyphen.
+            Defaults to False.
         kwargs: Any extra arguments to pass to the server creation.
 
     Returns:
@@ -1053,19 +1096,41 @@ def create_mcp_server_from_kernel(
 
     server: Server["LifespanResultT"] = Server(**server_args)  # type: ignore[call-arg]
 
-    functions_to_expose = [
-        func for func in kernel.get_full_list_of_function_metadata() if func.name not in (excluded_functions or [])
-    ]
-    exposed_names = frozenset(func.name for func in functions_to_expose)
+    # Map each public tool name to the exact function used for both listing and calls.
+    functions_to_expose: dict[str, KernelFunction] = {}
+    registered_names: dict[str, str] = {}
+    for plugin_name, plugin in kernel.plugins.items():
+        for function in plugin:
+            if function.name in (excluded_functions or []):
+                continue
 
-    if len(functions_to_expose) > 0:
+            registered_name = f"{plugin_name}{DEFAULT_FULLY_QUALIFIED_NAME_SEPARATOR}{function.name}"
+            tool_name = registered_name if use_plugin_names else function.name
+
+            if tool_name in functions_to_expose:
+                logger.warning(
+                    "Skipping function '%s' because MCP tool name '%s' is already registered by '%s'.",
+                    registered_name,
+                    tool_name,
+                    registered_names[tool_name],
+                )
+                continue
+
+            if len(tool_name) > 128:
+                logger.warning("MCP tool name '%s' exceeds the recommended 128 characters.", tool_name)
+
+            functions_to_expose[tool_name] = function
+            registered_names[tool_name] = registered_name
+
+    if functions_to_expose:
 
         @server.list_tools()
         async def _list_tools() -> list[types.Tool]:
             """List all tools in the kernel."""
+            # The public name may be plugin-qualified while func.name stays bare.
             tools = [
                 types.Tool(
-                    name=func.name,
+                    name=tool_name,
                     description=func.description,
                     inputSchema={
                         "type": "object",
@@ -1081,7 +1146,7 @@ def create_mcp_server_from_kernel(
                         ],
                     },
                 )
-                for func in functions_to_expose
+                for tool_name, func in functions_to_expose.items()
             ]
             await _log(level="debug", data=f"List of tools: {tools}")
             await asyncio.sleep(0.0)
@@ -1093,7 +1158,7 @@ def create_mcp_server_from_kernel(
         ) -> Sequence[types.TextContent | types.ImageContent | types.AudioContent | types.EmbeddedResource]:
             """Call a tool in the kernel."""
             function_name, arguments = args[0], args[1]
-            if function_name not in exposed_names:
+            if function_name not in functions_to_expose:
                 raise McpError(
                     error=types.ErrorData(
                         code=types.METHOD_NOT_FOUND,
@@ -1204,7 +1269,8 @@ def create_mcp_server_from_kernel(
         await _log(level=level, data=f"Log level set to {level}")
 
     async def _call_kernel_function(function_name: str, arguments: Any) -> FunctionResult | None:
-        function = kernel.get_function(plugin_name=None, function_name=function_name)
+        function = functions_to_expose[function_name]
+
         arguments["server"] = server
         return await function.invoke(kernel=kernel, **arguments)
 

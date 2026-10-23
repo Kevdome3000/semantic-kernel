@@ -1,15 +1,16 @@
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel.Memory;
-using Milvus.Client;
+﻿// Copyright (c) Microsoft. All rights reserved.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
-﻿// Copyright (c) Microsoft. All rights reserved.
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Memory;
+using Milvus.Client;
 
 namespace Microsoft.SemanticKernel.Connectors.Milvus;
 
@@ -18,43 +19,27 @@ namespace Microsoft.SemanticKernel.Connectors.Milvus;
 /// </summary>
 public class MilvusMemoryStore : IMemoryStore, IDisposable
 {
-
     private readonly int _vectorSize;
-
     private readonly SimilarityMetricType _metricType;
-
     private readonly ConsistencyLevel _consistencyLevel;
-
     private readonly bool _ownsMilvusClient;
-
     private readonly string _indexName;
 
     private const string DefaultIndexName = "default";
-
     private const string IsReferenceFieldName = "is_reference";
-
     private const string ExternalSourceNameFieldName = "external_source_name";
-
     private const string IdFieldName = "id";
-
     private const string DescriptionFieldName = "description";
-
     private const string TextFieldName = "text";
-
     private const string AdditionalMetadataFieldName = "additional_metadata";
-
     private const string EmbeddingFieldName = "embedding";
-
     private const string KeyFieldName = "key";
-
     private const string TimestampFieldName = "timestamp";
 
     private const int DefaultMilvusPort = 19530;
-
     private const int DefaultVarcharLength = 65_535;
 
     private readonly QueryParameters _queryParametersWithEmbedding;
-
     private readonly QueryParameters _queryParametersWithoutEmbedding;
 
     private readonly SearchParameters _searchParameters = new()
@@ -66,7 +51,6 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
     /// Exposes the underlying <see cref="Client" /> used to communicate with Milvus. Can be used to execute operations not supported by the <see cref="IMemoryStore" /> abstraction.
     /// </summary>
     public MilvusClient Client { get; }
-
 
     #region Constructors
 
@@ -95,20 +79,11 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         ConsistencyLevel consistencyLevel = ConsistencyLevel.Session,
         ILoggerFactory? loggerFactory = null)
         : this(
-            new MilvusClient(host,
-                port,
-                ssl,
-                database,
-                callOptions: default,
-                loggerFactory),
-            indexName,
-            vectorSize,
-            metricType,
-            consistencyLevel)
+            new MilvusClient(host, port, ssl, database, callOptions: default, loggerFactory),
+            indexName, vectorSize, metricType, consistencyLevel)
     {
-        _ownsMilvusClient = true;
+        this._ownsMilvusClient = true;
     }
-
 
     /// <summary>
     /// Creates a new <see cref="MilvusMemoryStore" />, connecting to the given hostname on the default Milvus port of 19530.
@@ -139,22 +114,11 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         ConsistencyLevel consistencyLevel = ConsistencyLevel.Session,
         ILoggerFactory? loggerFactory = null)
         : this(
-            new MilvusClient(host,
-                username,
-                password,
-                port,
-                ssl,
-                database,
-                callOptions: default,
-                loggerFactory),
-            indexName,
-            vectorSize,
-            metricType,
-            consistencyLevel)
+            new MilvusClient(host, username, password, port, ssl, database, callOptions: default, loggerFactory),
+            indexName, vectorSize, metricType, consistencyLevel)
     {
-        _ownsMilvusClient = true;
+        this._ownsMilvusClient = true;
     }
-
 
     /// <summary>
     /// Creates a new <see cref="MilvusMemoryStore" />, connecting to the given hostname on the default Milvus port of 19530.
@@ -183,21 +147,11 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         ConsistencyLevel consistencyLevel = ConsistencyLevel.Session,
         ILoggerFactory? loggerFactory = null)
         : this(
-            new MilvusClient(host,
-                apiKey,
-                port,
-                ssl,
-                database,
-                callOptions: default,
-                loggerFactory),
-            indexName,
-            vectorSize,
-            metricType,
-            consistencyLevel)
+            new MilvusClient(host, apiKey, port, ssl, database, callOptions: default, loggerFactory),
+            indexName, vectorSize, metricType, consistencyLevel)
     {
-        _ownsMilvusClient = true;
+        this._ownsMilvusClient = true;
     }
-
 
     /// <summary>
     /// Initializes a new instance of <see cref="MilvusMemoryStore" /> over the given <see cref="MilvusClient" />.
@@ -213,15 +167,9 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         int vectorSize = 1536,
         SimilarityMetricType metricType = SimilarityMetricType.Ip,
         ConsistencyLevel consistencyLevel = ConsistencyLevel.Session)
-        : this(client,
-            false,
-            indexName,
-            vectorSize,
-            metricType,
-            consistencyLevel)
+        : this(client, ownsMilvusClient: false, indexName, vectorSize, metricType, consistencyLevel)
     {
     }
-
 
     private MilvusMemoryStore(
         MilvusClient client,
@@ -231,98 +179,76 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         SimilarityMetricType metricType,
         ConsistencyLevel consistencyLevel)
     {
-        Client = client;
-        _indexName = indexName ?? DefaultIndexName;
-        _vectorSize = vectorSize;
-        _metricType = metricType;
-        _ownsMilvusClient = ownsMilvusClient;
-        _consistencyLevel = consistencyLevel;
+        this.Client = client;
+        this._indexName = indexName ?? DefaultIndexName;
+        this._vectorSize = vectorSize;
+        this._metricType = metricType;
+        this._ownsMilvusClient = ownsMilvusClient;
+        this._consistencyLevel = consistencyLevel;
 
-        _queryParametersWithEmbedding = new()
+        this._queryParametersWithEmbedding = new()
         {
             OutputFields = { IsReferenceFieldName, ExternalSourceNameFieldName, IdFieldName, DescriptionFieldName, TextFieldName, AdditionalMetadataFieldName, EmbeddingFieldName, KeyFieldName, TimestampFieldName },
-            ConsistencyLevel = _consistencyLevel
+            ConsistencyLevel = this._consistencyLevel
         };
 
-        _queryParametersWithoutEmbedding = new()
+        this._queryParametersWithoutEmbedding = new()
         {
             OutputFields = { IsReferenceFieldName, ExternalSourceNameFieldName, IdFieldName, DescriptionFieldName, TextFieldName, AdditionalMetadataFieldName, KeyFieldName, TimestampFieldName },
-            ConsistencyLevel = _consistencyLevel
+            ConsistencyLevel = this._consistencyLevel
         };
     }
 
     #endregion Constructors
 
-
     /// <inheritdoc />
     public async Task CreateCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
     {
-        var exists = await Client.HasCollectionAsync(collectionName, cancellationToken: cancellationToken).ConfigureAwait(false);
-
+        var exists = await this.Client.HasCollectionAsync(collectionName, cancellationToken: cancellationToken).ConfigureAwait(false);
         if (!exists)
         {
             CollectionSchema schema = new()
             {
                 Fields =
                 {
-                    FieldSchema.CreateVarchar(IdFieldName,
-                        maxLength: DefaultVarcharLength,
-                        isPrimaryKey: true,
-                        autoId: false),
-                    FieldSchema.CreateFloatVector(EmbeddingFieldName, _vectorSize)
+                    FieldSchema.CreateVarchar(IdFieldName, maxLength: DefaultVarcharLength, isPrimaryKey: true, autoId: false),
+                    FieldSchema.CreateFloatVector(EmbeddingFieldName, this._vectorSize)
                 },
                 EnableDynamicFields = true
             };
 
-            MilvusCollection collection = await Client.CreateCollectionAsync(collectionName,
-                    schema,
-                    _consistencyLevel,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
+            MilvusCollection collection = await this.Client.CreateCollectionAsync(collectionName, schema, this._consistencyLevel, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            await collection.CreateIndexAsync(EmbeddingFieldName,
-                    metricType: _metricType,
-                    indexName: _indexName,
-                    cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-
-            await collection.WaitForIndexBuildAsync("float_vector", _indexName, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await collection.CreateIndexAsync(EmbeddingFieldName, metricType: this._metricType, indexName: this._indexName, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await collection.WaitForIndexBuildAsync("float_vector", this._indexName, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             await collection.LoadAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-
             await collection.WaitForCollectionLoadAsync(waitingInterval: TimeSpan.FromMilliseconds(100), timeout: TimeSpan.FromMinutes(1), cancellationToken: cancellationToken).ConfigureAwait(false);
         }
     }
 
-
     /// <inheritdoc />
     public async IAsyncEnumerable<string> GetCollectionsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        foreach (MilvusCollectionInfo collection in await Client.ListCollectionsAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
+        foreach (MilvusCollectionInfo collection in await this.Client.ListCollectionsAsync(cancellationToken: cancellationToken).ConfigureAwait(false))
         {
             yield return collection.Name;
         }
     }
 
-
     /// <inheritdoc />
     public Task<bool> DoesCollectionExistAsync(string collectionName, CancellationToken cancellationToken = default)
-    {
-        return Client.HasCollectionAsync(collectionName, cancellationToken: cancellationToken);
-    }
-
+        => this.Client.HasCollectionAsync(collectionName, cancellationToken: cancellationToken);
 
     /// <inheritdoc />
     public Task DeleteCollectionAsync(string collectionName, CancellationToken cancellationToken = default)
-    {
-        return Client.GetCollection(collectionName).DropAsync(cancellationToken);
-    }
-
+        => this.Client.GetCollection(collectionName).DropAsync(cancellationToken);
 
     /// <inheritdoc />
     public async Task<string> UpsertAsync(string collectionName, MemoryRecord record, CancellationToken cancellationToken = default)
     {
-        MilvusCollection collection = Client.GetCollection(collectionName);
+        await this.EnsureSupportedServerAsync(cancellationToken).ConfigureAwait(false);
+        MilvusCollection collection = this.Client.GetCollection(collectionName);
 
         var metadata = record.Metadata;
 
@@ -345,15 +271,13 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         return result.Ids.StringIds![0];
     }
 
-
     /// <inheritdoc />
     public async IAsyncEnumerable<string> UpsertBatchAsync(
         string collectionName,
         IEnumerable<MemoryRecord> records,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        StringBuilder idString = new();
-
+        await this.EnsureSupportedServerAsync(cancellationToken).ConfigureAwait(false);
         List<bool> isReferenceData = [];
         List<string> externalSourceNameData = [];
         List<string> idData = [];
@@ -368,13 +292,6 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         {
             var metadata = record.Metadata;
 
-            if (idString.Length > 0)
-            {
-                idString.Append(',');
-            }
-
-            idString.Append('"').Append(metadata.Id).Append('"');
-
             isReferenceData.Add(metadata.IsReference);
             externalSourceNameData.Add(metadata.ExternalSourceName);
             idData.Add(record.Metadata.Id);
@@ -386,7 +303,7 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             timestampData.Add(record.Timestamp?.ToString(CultureInfo.InvariantCulture) ?? string.Empty);
         }
 
-        MilvusCollection collection = Client.GetCollection(collectionName);
+        MilvusCollection collection = this.Client.GetCollection(collectionName);
 
         FieldData[] fieldData =
         [
@@ -410,7 +327,6 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         }
     }
 
-
     /// <inheritdoc />
     public async Task<MemoryRecord?> GetAsync(
         string collectionName,
@@ -418,18 +334,13 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        await foreach (MemoryRecord record in GetBatchAsync(collectionName,
-                [key],
-                withEmbedding,
-                cancellationToken)
-            .ConfigureAwait(false))
+        await foreach (MemoryRecord record in this.GetBatchAsync(collectionName, [key], withEmbedding, cancellationToken).ConfigureAwait(false))
         {
             return record;
         }
 
         return null;
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<MemoryRecord> GetBatchAsync(
@@ -438,24 +349,12 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        StringBuilder idString = new();
-
-        foreach (string key in keys)
-        {
-            if (idString.Length > 0)
-            {
-                idString.Append(',');
-            }
-
-            idString.Append('"').Append(key).Append('"');
-        }
-
-        IReadOnlyList<FieldData> fields = await Client.GetCollection(collectionName)
+        await this.EnsureSupportedServerAsync(cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<FieldData> fields = await this.Client
+            .GetCollection(collectionName)
             .QueryAsync(
-                $"{IdFieldName} in [{idString}]",
-                withEmbeddings
-                    ? _queryParametersWithEmbedding
-                    : _queryParametersWithoutEmbedding,
+                BuildIdFilter(keys),
+                withEmbeddings ? this._queryParametersWithEmbedding : this._queryParametersWithoutEmbedding,
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
@@ -463,46 +362,23 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
 
         for (int rowNum = 0; rowNum < rowCount; rowNum++)
         {
-            yield return ReadMemoryRecord(fields, rowNum);
+            yield return this.ReadMemoryRecord(fields, rowNum);
         }
     }
-
 
     /// <inheritdoc />
     public Task RemoveAsync(string collectionName, string key, CancellationToken cancellationToken = default)
-    {
-        return Client.GetCollection(collectionName).DeleteAsync($@"{IdFieldName} in [""{key}""]", cancellationToken: cancellationToken);
-    }
-
+        => this.RemoveBatchAsync(collectionName, [key], cancellationToken);
 
     /// <inheritdoc />
-    public Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    public async Task RemoveBatchAsync(string collectionName, IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        StringBuilder idString = new();
-
-        idString.Append(IdFieldName).Append(" in [");
-
-        bool first = true;
-
-        foreach (string id in keys)
-        {
-            if (first)
-            {
-                first = false;
-            }
-            else
-            {
-                idString.Append(',');
-            }
-
-            idString.Append('"').Append(id).Append('"');
-        }
-
-        idString.Append(']');
-
-        return Client.GetCollection(collectionName).DeleteAsync(idString.ToString(), cancellationToken: cancellationToken);
+        await this.EnsureSupportedServerAsync(cancellationToken).ConfigureAwait(false);
+        await this.Client
+            .GetCollection(collectionName)
+            .DeleteAsync(BuildIdFilter(keys), cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public async Task<(MemoryRecord, double)?> GetNearestMatchAsync(
@@ -512,20 +388,13 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         bool withEmbedding = false,
         CancellationToken cancellationToken = default)
     {
-        await foreach ((MemoryRecord, double) result in GetNearestMatchesAsync(collectionName,
-                embedding,
-                1,
-                minRelevanceScore,
-                withEmbedding,
-                cancellationToken)
-            .ConfigureAwait(false))
+        await foreach ((MemoryRecord, double) result in this.GetNearestMatchesAsync(collectionName, embedding, limit: 1, minRelevanceScore, withEmbedding, cancellationToken).ConfigureAwait(false))
         {
             return result;
         }
 
         return null;
     }
-
 
     /// <inheritdoc />
     public async IAsyncEnumerable<(MemoryRecord, double)> GetNearestMatchesAsync(
@@ -536,14 +405,11 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         bool withEmbeddings = false,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        MilvusCollection collection = Client.GetCollection(collectionName);
+        await this.EnsureSupportedServerAsync(cancellationToken).ConfigureAwait(false);
+        MilvusCollection collection = this.Client.GetCollection(collectionName);
 
-        SearchResults results = await collection.SearchAsync(EmbeddingFieldName,
-                [embedding],
-                _metricType,
-                limit,
-                _searchParameters,
-                cancellationToken)
+        SearchResults results = await collection
+            .SearchAsync(EmbeddingFieldName, [embedding], this._metricType, limit, this._searchParameters, cancellationToken)
             .ConfigureAwait(false);
 
         IReadOnlyList<string> ids = results.Ids.StringIds!;
@@ -554,27 +420,10 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         // using the IDs returned from the Search above, populating a map from the IDs to the embedding.
         // TODO: There's some support for fetching vectors from Search in Milvus 2.3, check that out.
         Dictionary<string, ReadOnlyMemory<float>>? embeddingMap = null;
-
         if (withEmbeddings)
         {
-            StringBuilder filter = new();
-
-            filter.Append(IdFieldName).Append(" in [");
-
-            for (int rowNum = 0; rowNum < ids.Count; rowNum++)
-            {
-                if (rowNum > 0)
-                {
-                    filter.Append(',');
-                }
-
-                filter.Append('"').Append(ids[rowNum]).Append('"');
-            }
-
-            filter.Append(']');
-
             IReadOnlyList<FieldData> fieldData = await collection.QueryAsync(
-                    filter.ToString(),
+                    BuildIdFilter(ids),
                     new() { OutputFields = { EmbeddingFieldName } },
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
@@ -583,7 +432,6 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             IReadOnlyList<ReadOnlyMemory<float>> embeddingData = (fieldData[0] as FloatVectorFieldData ?? fieldData[1] as FloatVectorFieldData)!.Data;
 
             embeddingMap = new Dictionary<string, ReadOnlyMemory<float>>(ids.Count);
-
             for (int rowNum = 0; rowNum < ids.Count; rowNum++)
             {
                 embeddingMap[idData[rowNum]] = embeddingData[rowNum];
@@ -596,16 +444,88 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             if (results.Scores[rowNum] >= minRelevanceScore)
             {
                 yield return (
-                    ReadMemoryRecord(data,
-                        rowNum,
-                        withEmbeddings
-                            ? embeddingMap![ids[rowNum]]
-                            : null),
+                    this.ReadMemoryRecord(data, rowNum, withEmbeddings ? embeddingMap![ids[rowNum]] : null),
                     results.Scores[rowNum]);
             }
         }
     }
 
+    private async Task EnsureSupportedServerAsync(CancellationToken cancellationToken)
+    {
+        string version = await this.Client.GetVersionAsync(cancellationToken).ConfigureAwait(false);
+        ValidateServerVersion(version);
+    }
+
+    internal static void ValidateServerVersion(string version)
+    {
+        string numericVersion = version.StartsWith("v", StringComparison.Ordinal) ? version.Substring(1) : version;
+        // The official 2.3.0 release image reports "v2.3.0-dev".
+        if (numericVersion.EndsWith("-dev", StringComparison.Ordinal))
+        {
+            numericVersion = numericVersion.Substring(0, numericVersion.Length - 4);
+        }
+
+        // Older servers accept escaped strings but retain the escapes as part of the ID.
+        if (!Version.TryParse(numericVersion, out Version? parsedVersion) ||
+            parsedVersion < new Version(2, 3, 0))
+        {
+            throw new NotSupportedException($"Milvus 2.3.0 or newer is required to handle record IDs safely. The server reported version '{version}'.");
+        }
+    }
+
+    internal static string BuildIdFilter(IEnumerable<string> keys)
+    {
+        StringBuilder filter = new();
+        filter.Append(IdFieldName).Append(" in [");
+
+        bool first = true;
+        foreach (string key in keys)
+        {
+            if (!first)
+            {
+                filter.Append(',');
+            }
+
+            first = false;
+            filter.Append('"');
+            foreach (char character in key)
+            {
+                switch (character)
+                {
+                    case '\\':
+                        filter.Append(@"\\");
+                        break;
+                    case '"':
+                        filter.Append("\\\"");
+                        break;
+                    case '\r':
+                        filter.Append(@"\r");
+                        break;
+                    case '\n':
+                        filter.Append(@"\n");
+                        break;
+                    case '\t':
+                        filter.Append(@"\t");
+                        break;
+                    default:
+                        if (char.IsControl(character))
+                        {
+                            filter.Append(@"\u").Append(((int)character).ToString("x4", CultureInfo.InvariantCulture));
+                        }
+                        else
+                        {
+                            filter.Append(character);
+                        }
+
+                        break;
+                }
+            }
+
+            filter.Append('"');
+        }
+
+        return filter.Append(']').ToString();
+    }
 
     private MemoryRecord ReadMemoryRecord(IReadOnlyList<FieldData> data, int rowNum, ReadOnlyMemory<float>? externalEmbedding = null)
     {
@@ -625,52 +545,42 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
             {
                 case IsReferenceFieldName when field is FieldData<bool> isReferenceField:
                     isReference = isReferenceField.Data[rowNum];
-
                     break;
 
                 case ExternalSourceNameFieldName when field is FieldData<string> externalSourceNameField:
                     externalSourceName = externalSourceNameField.Data[rowNum];
-
                     break;
 
                 case IdFieldName when field is FieldData<string> idField:
                     id = idField.Data[rowNum];
-
                     break;
 
                 case DescriptionFieldName when field is FieldData<string> descriptionField:
                     description = descriptionField.Data[rowNum];
-
                     break;
 
                 case TextFieldName when field is FieldData<string> textField:
                     text = textField.Data[rowNum];
-
                     break;
 
                 case AdditionalMetadataFieldName when field is FieldData<string> additionalMetadataField:
                     additionalMetadata = additionalMetadataField.Data[rowNum];
-
                     break;
 
                 case EmbeddingFieldName when field is FloatVectorFieldData embeddingField:
                     Debug.Assert(externalEmbedding is null);
                     embedding = embeddingField.Data[rowNum];
-
                     break;
 
                 case KeyFieldName when field is FieldData<string> keyField:
                     key = keyField.Data[rowNum];
-
                     break;
 
                 case TimestampFieldName when field is FieldData<string> timestampField:
                     string timestampString = timestampField.Data[rowNum];
-
                     timestamp = timestampString is { Length: > 0 }
                         ? DateTimeOffset.Parse(timestampString, CultureInfo.InvariantCulture)
                         : null;
-
                     break;
 
                 default:
@@ -679,35 +589,27 @@ public class MilvusMemoryStore : IMemoryStore, IDisposable
         }
 
         return new MemoryRecord(
-            new MemoryRecordMetadata(isReference,
-                id,
-                text,
-                description,
-                externalSourceName,
-                additionalMetadata),
+            new MemoryRecordMetadata(isReference, id, text, description, externalSourceName, additionalMetadata),
             embedding ?? externalEmbedding ?? Array.Empty<float>(),
             key,
             timestamp);
     }
-
 
     /// <summary>
     /// Implements the dispose pattern.
     /// </summary>
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing && _ownsMilvusClient)
+        if (disposing && this._ownsMilvusClient)
         {
-            Client.Dispose();
+            this.Client.Dispose();
         }
     }
-
 
     /// <inheritdoc />
     public void Dispose()
     {
-        Dispose(true);
+        this.Dispose(true);
         GC.SuppressFinalize(this);
     }
-
 }

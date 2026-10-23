@@ -1,6 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Net.Http;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.SemanticKernel.Http;
 
 namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
@@ -11,19 +16,14 @@ namespace Microsoft.SemanticKernel.Plugins.AI.CrewAI;
 internal interface ICrewAIEnterpriseClient
 {
     Task<CrewAIRequiredInputs> GetInputsAsync(CancellationToken cancellationToken = default);
-
-
     Task<CrewAIKickoffResponse> KickoffAsync(
         object? inputs,
         string? taskWebhookUrl = null,
         string? stepWebhookUrl = null,
         string? crewWebhookUrl = null,
         CancellationToken cancellationToken = default);
-
-
     Task<CrewAIStatusResponse> GetStatusAsync(string taskId, CancellationToken cancellationToken = default);
 }
-
 
 /// <summary>
 /// A client for interacting with the CrewAI Enterprise API.
@@ -34,17 +34,15 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
     private readonly Func<Task<string>> _authTokenProvider;
     private readonly IHttpClientFactory? _httpClientFactory;
 
-
     public CrewAIEnterpriseClient(Uri endpoint, Func<Task<string>> authTokenProvider, IHttpClientFactory? clientFactory = null)
     {
         Verify.NotNull(endpoint, nameof(endpoint));
         Verify.NotNull(authTokenProvider, nameof(authTokenProvider));
 
-        _endpoint = endpoint;
-        _authTokenProvider = authTokenProvider;
-        _httpClientFactory = clientFactory;
+        this._endpoint = endpoint;
+        this._authTokenProvider = authTokenProvider;
+        this._httpClientFactory = clientFactory;
     }
-
 
     /// <summary>
     /// Get the inputs required for the Crew to kickoff.
@@ -56,7 +54,7 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
     {
         try
         {
-            using var client = await CreateHttpClientAsync().ConfigureAwait(false);
+            using var client = await this.CreateHttpClientAsync().ConfigureAwait(false);
             using var requestMessage = HttpRequest.CreateGetRequest("/inputs");
             using var response = await client.SendWithSuccessCheckAsync(requestMessage, cancellationToken)
                 .ConfigureAwait(false);
@@ -73,7 +71,6 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
             throw new KernelException(message: "Failed to get required inputs for CrewAI Crew.", innerException: ex);
         }
     }
-
 
     /// <summary>
     /// Kickoff the Crew.
@@ -101,7 +98,7 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
                 crewWebhookUrl
             };
 
-            using var client = await CreateHttpClientAsync().ConfigureAwait(false);
+            using var client = await this.CreateHttpClientAsync().ConfigureAwait(false);
             using var requestMessage = HttpRequest.CreatePostRequest("/kickoff", content);
             using var response = await client.SendWithSuccessCheckAsync(requestMessage, cancellationToken)
                 .ConfigureAwait(false);
@@ -118,7 +115,6 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
         }
     }
 
-
     /// <summary>
     /// Get the status of the Crew Task.
     /// </summary>
@@ -130,7 +126,16 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
     {
         try
         {
-            using var client = await CreateHttpClientAsync().ConfigureAwait(false);
+            Verify.NotNullOrWhiteSpace(taskId, nameof(taskId));
+
+            if (!Regex.IsMatch(taskId, @"\A[A-Za-z0-9_-]+\z"))
+            {
+                throw new ArgumentException(
+                    "Task ID must contain only ASCII letters, digits, underscores, or hyphens.",
+                    nameof(taskId));
+            }
+
+            using var client = await this.CreateHttpClientAsync().ConfigureAwait(false);
             using var requestMessage = HttpRequest.CreateGetRequest($"/status/{taskId}");
             using var response = await client.SendWithSuccessCheckAsync(requestMessage, cancellationToken)
                 .ConfigureAwait(false);
@@ -148,7 +153,6 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
         }
     }
 
-
     #region Private Methods
 
     private async Task<HttpClient> CreateHttpClientAsync()
@@ -160,13 +164,11 @@ internal class CrewAIEnterpriseClient : ICrewAIEnterpriseClient
             throw new KernelException(message: "Failed to get auth token for CrewAI.");
         }
 
-        var client = _httpClientFactory?.CreateClient() ?? new();
+        var client = this._httpClientFactory?.CreateClient() ?? new();
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authToken}");
-        client.BaseAddress = _endpoint;
+        client.BaseAddress = this._endpoint;
         return client;
     }
 
     #endregion
-
-
 }

@@ -29,65 +29,63 @@ public sealed class SessionsPythonPluginTests : IDisposable
     private static readonly string s_assemblyVersion = typeof(Kernel).Assembly.GetName().Version!.ToString();
 
     private readonly SessionsPythonSettings _defaultSettings = new(
-        Guid.NewGuid().ToString(),
-        new Uri("http://localhost:8888"))
+        sessionId: Guid.NewGuid().ToString(),
+        endpoint: new Uri("http://localhost:8888"))
     {
         CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
-        CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline
+        CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline,
+        AllowedDomains = ["localhost"]
     };
 
     private readonly SessionsPythonSettings _settingsWithFileOperationsEnabled;
 
     private readonly IHttpClientFactory _httpClientFactory;
 
-
     public SessionsPythonPluginTests()
     {
-        _messageHandlerStub = new HttpMessageHandlerStub();
-        _httpClient = new HttpClient(_messageHandlerStub, false);
+        this._messageHandlerStub = new HttpMessageHandlerStub();
+        this._httpClient = new HttpClient(this._messageHandlerStub, false);
 
         var httpClientFactoryMock = new Mock<IHttpClientFactory>();
-        httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(_httpClient);
+        httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(this._httpClient);
 
-        _httpClientFactory = httpClientFactoryMock.Object;
+        this._httpClientFactory = httpClientFactoryMock.Object;
 
         // Initialize settings with file operations enabled for tests that need them
-        _settingsWithFileOperationsEnabled = new SessionsPythonSettings(
-            Guid.NewGuid().ToString(),
-            new Uri("http://localhost:8888"))
+        this._settingsWithFileOperationsEnabled = new(
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri("http://localhost:8888"))
         {
             CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
             CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline,
+            AllowedDomains = ["localhost"],
             EnableDangerousFileUploads = true,
             AllowedUploadDirectories = new[] { Path.GetDirectoryName(Path.GetFullPath(FileTestDataFilePath))! },
             AllowedDownloadDirectories = new[] { Path.GetDirectoryName(Path.GetFullPath(FileTestDataFilePath))! }
         };
     }
 
-
     [Fact]
     public void ItCanBeInstantiated()
     {
         // Act - Assert no exception occurs
-        _ = new SessionsPythonPlugin(_defaultSettings, _httpClientFactory);
+        _ = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
     }
-
 
     [Fact]
     public void ItCanBeImported()
     {
-        var plugin = new SessionsPythonPlugin(_defaultSettings, _httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act - Assert no exception occurs e.g. due to reflection
         Assert.NotNull(KernelPluginFactory.CreateFromObject(plugin));
     }
 
-
     [Fact]
     public void ItExposesExpectedKernelFunctions()
     {
         // Arrange
-        var plugin = new SessionsPythonPlugin(_defaultSettings, _httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
         var kernelPlugin = KernelPluginFactory.CreateFromObject(plugin);
@@ -101,18 +99,17 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.DoesNotContain(kernelPlugin, f => f.Name == "DownloadFile");
     }
 
-
     [Fact]
     public async Task ItShouldExecuteCodeAsync()
     {
         var responseContent = File.ReadAllText(CodeExecutionTestDataFilePath);
-        _messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(responseContent)
+            Content = new StringContent(responseContent),
         };
 
         // Arrange
-        var plugin = new SessionsPythonPlugin(_defaultSettings, _httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
         var result = await plugin.ExecuteCodeAsync("print('hello world')");
@@ -123,7 +120,6 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.True(string.IsNullOrEmpty(result.Result?.StdErr));
         Assert.True(string.IsNullOrEmpty(result.Result?.ExecutionResult));
     }
-
 
     [Theory]
     [InlineData(nameof(SessionsPythonPlugin.DownloadFileAsync))]
@@ -140,12 +136,12 @@ public sealed class SessionsPythonPluginTests : IDisposable
             return Task.FromResult("token");
         }
 
-        _messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent("")
+            Content = new StringContent(""),
         };
 
-        var plugin = new SessionsPythonPlugin(_settingsWithFileOperationsEnabled, _httpClientFactory, tokenProviderAsync);
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory, tokenProviderAsync);
 
         // Act
         try
@@ -172,7 +168,6 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.True(tokenProviderCalled);
     }
 
-
     [Fact]
     public async Task ItShouldUseSameSessionIdAcrossMultipleCallsAsync()
     {
@@ -186,19 +181,18 @@ public sealed class SessionsPythonPluginTests : IDisposable
 
         List<HttpClient> httpClients = [];
         var httpClientFactoryMock = new Mock<IHttpClientFactory>();
-        httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>()))
-            .Returns(() =>
-            {
-                var targetClient = new HttpClient(multiMessageHandlerStub, false);
-                httpClients.Add(targetClient);
+        httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(() =>
+        {
+            var targetClient = new HttpClient(multiMessageHandlerStub, false);
+            httpClients.Add(targetClient);
 
-                return targetClient;
-            });
+            return targetClient;
+        });
 
         var expectedSessionId = Guid.NewGuid().ToString();
-        _settingsWithFileOperationsEnabled.SessionId = expectedSessionId;
+        this._settingsWithFileOperationsEnabled.SessionId = expectedSessionId;
 
-        var plugin = new SessionsPythonPlugin(_settingsWithFileOperationsEnabled, httpClientFactoryMock.Object);
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, httpClientFactoryMock.Object);
 
         // Act
         await plugin.ExecuteCodeAsync("print('hello world')");
@@ -216,18 +210,17 @@ public sealed class SessionsPythonPluginTests : IDisposable
         }
     }
 
-
     [Fact]
     public async Task ItShouldListFilesAsync()
     {
         var responseContent = File.ReadAllText(ListFilesTestDataFilePath);
-        _messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(responseContent)
+            Content = new StringContent(responseContent),
         };
 
         // Arrange
-        var plugin = new SessionsPythonPlugin(_defaultSettings, _httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
         var files = await plugin.ListFilesAsync();
@@ -250,7 +243,6 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal(638585580822423944, secondFile.LastModifiedAt.Ticks);
     }
 
-
     [Fact]
     public async Task ItShouldUploadFileAsync()
     {
@@ -258,21 +250,21 @@ public sealed class SessionsPythonPluginTests : IDisposable
         var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
         var requestPayload = await File.ReadAllBytesAsync(FileTestDataFilePath);
 
-        var expectedResponse = new SessionsRemoteFileMetadata
+        var expectedResponse = new SessionsRemoteFileMetadata()
         {
             Name = "test-file.txt",
             SizeInBytes = 516,
             Type = "file",
             LastModifiedAt = new DateTime(638585526384228269),
-            ContentType = "text/plain; charset=utf-8"
+            ContentType = "text/plain; charset=utf-8",
         };
 
-        _messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(responseContent)
+            Content = new StringContent(responseContent),
         };
 
-        var plugin = new SessionsPythonPlugin(_settingsWithFileOperationsEnabled, _httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory);
 
         // Act
         var result = await plugin.UploadFileAsync("test-file.txt", FileTestDataFilePath);
@@ -283,21 +275,75 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal(expectedResponse.LastModifiedAt, result.LastModifiedAt);
         Assert.Equal(expectedResponse.Type, result.Type);
         Assert.Equal(expectedResponse.ContentType, result.ContentType);
-        Assert.Equal(_messageHandlerStub.FirstMultipartContent, requestPayload);
+        Assert.Equal(this._messageHandlerStub.FirstMultipartContent, requestPayload);
     }
 
+    [Theory]
+    [InlineData(".")]
+    [InlineData("..")]
+    [InlineData("../test-file.txt")]
+    [InlineData("../../test-file.txt")]
+    [InlineData("./test-file.txt")]
+    [InlineData("nested/./test-file.txt")]
+    [InlineData("nested/../test-file.txt")]
+    [InlineData("nested/..")]
+    [InlineData("/mnt/data/../../test-file.txt")]
+    [InlineData(@"nested\.\test-file.txt")]
+    [InlineData(@"nested\..\test-file.txt")]
+    [InlineData(@"\test-file.txt")]
+    [InlineData(@"\\server\share\test-file.txt")]
+    [InlineData(@"C:\test-file.txt")]
+    [InlineData("C:test-file.txt")]
+    [InlineData("C:/test-file.txt")]
+    [InlineData("/test-file.txt")]
+    public async Task ItShouldRejectUnsafeUploadRemoteFileNamesAsync(string remoteFileName)
+    {
+        // Arrange
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory);
+
+        // Act
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync(remoteFileName, FileTestDataFilePath));
+
+        // Assert
+        Assert.Contains("must not contain '.' or '..' path segments", exception.Message);
+        Assert.Null(this._messageHandlerStub.RequestUri);
+    }
+
+    [Theory]
+    [InlineData("nested/dir/test-file.txt")]
+    [InlineData(@"nested\dir\test-file.txt")]
+    [InlineData(".hidden/test-file.txt")]
+    [InlineData("nested/a..b/test-file.txt")]
+    public async Task ItShouldAllowSafeUploadRemoteFileNamesAsync(string remoteFileName)
+    {
+        // Arrange
+        var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(responseContent),
+        };
+
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory);
+
+        // Act
+        await plugin.UploadFileAsync(remoteFileName, FileTestDataFilePath);
+
+        // Assert
+        Assert.NotNull(this._messageHandlerStub.RequestUri);
+    }
 
     [Fact]
     public async Task ItShouldDownloadFileWithoutSavingInDiskAsync()
     {
         // Arrange
         var responseContent = await File.ReadAllBytesAsync(FileTestDataFilePath);
-        _messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new ByteArrayContent(responseContent)
+            Content = new ByteArrayContent(responseContent),
         };
 
-        var plugin = new SessionsPythonPlugin(_defaultSettings, _httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
         var result = await plugin.DownloadFileAsync("test.txt");
@@ -306,26 +352,24 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.Equal(responseContent, result);
     }
 
-
     [Fact]
     public async Task ItShouldDownloadFileSavingInDiskAsync()
     {
         // Arrange
         var responseContent = await File.ReadAllBytesAsync(FileTestDataFilePath);
         var downloadDiskPath = FileTestDataFilePath.Replace(".txt", "_download.txt", StringComparison.InvariantCultureIgnoreCase);
-
         if (File.Exists(downloadDiskPath))
         {
             File.Delete(downloadDiskPath);
         }
 
-        _messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new ByteArrayContent(responseContent)
+            Content = new ByteArrayContent(responseContent),
         };
 
         // Downloads are permissive by default - no need for special settings
-        var plugin = new SessionsPythonPlugin(_defaultSettings, _httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act
         var result = await plugin.DownloadFileAsync("test.txt", downloadDiskPath);
@@ -335,7 +379,6 @@ public sealed class SessionsPythonPluginTests : IDisposable
         Assert.True(File.Exists(downloadDiskPath));
         Assert.Equal(responseContent, await File.ReadAllBytesAsync(downloadDiskPath));
     }
-
 
     /// <summary>
     /// Test the allowed domains for the endpoint.
@@ -349,35 +392,81 @@ public sealed class SessionsPythonPluginTests : IDisposable
     [InlineData("prod.fake-test-host.io", "https://prod.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
     [InlineData("www.fake-test-host.io", "https://www.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
     [InlineData("www.prod.fake-test-host.io", "https://www.prod.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
+    [InlineData("FAKE-TEST-HOST.IO", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", true)]
     [InlineData("fake-test-host.io", "https://fake-test-host-1.io/subscriptions/123/rg/456/sps/test-pool", false)]
     [InlineData("fake-test-host.io", "https://www.fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
     [InlineData("www.fake-test-host.io", "https://fake-test-host.io/subscriptions/123/rg/456/sps/test-pool", false)]
     public async Task ItShouldRespectAllowedDomainsAsync(string allowedDomain, string actualEndpoint, bool isAllowed)
     {
         // Arrange
-        _defaultSettings.AllowedDomains = [allowedDomain];
-        _defaultSettings.Endpoint = new Uri(actualEndpoint);
+        this._defaultSettings.AllowedDomains = [allowedDomain];
+        this._defaultSettings.Endpoint = new Uri(actualEndpoint);
 
-        _messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(File.ReadAllText(ListFilesTestDataFilePath))
+            Content = new StringContent(File.ReadAllText(ListFilesTestDataFilePath)),
         };
 
-        var sut = new SessionsPythonPlugin(_defaultSettings, _httpClientFactory);
+        var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
-        // Act
-#pragma warning disable CA1031 // Do not catch general exception types
-        try
+        // Act and assert
+        if (isAllowed)
         {
             await sut.ListFilesAsync();
         }
-        catch when (!isAllowed)
+        else
         {
-            // Ignore exception if the endpoint is not allowed since we expect it
+            await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ListFilesAsync());
         }
-#pragma warning restore CA1031 // Do not catch general exception types
     }
 
+    [Fact]
+    public async Task ItShouldDenyRequestsWhenAllowedDomainsIsNullAsync()
+    {
+        // Arrange
+        this._defaultSettings.AllowedDomains = null;
+        this._defaultSettings.Endpoint = new Uri("http://169.254.169.254/metadata/instance");
+        var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        // Act and assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ListFilesAsync());
+    }
+
+    [Fact]
+    public async Task ItShouldDenyRequestsWhenAllowedDomainsIsEmptyAsync()
+    {
+        // Arrange
+        this._defaultSettings.AllowedDomains = [];
+        this._defaultSettings.Endpoint = new Uri("http://169.254.169.254/metadata/instance");
+        var sut = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
+
+        // Act and assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ListFilesAsync());
+    }
+
+    [Fact]
+    public async Task ItShouldRejectRedirectResponseFromNonRedirectingClientAsync()
+    {
+        // Arrange
+        await using var server = new RedirectLoopbackServer("metadata/instance", "application/json", []);
+        using var httpClientHandler = new HttpClientHandler { AllowAutoRedirect = false };
+        using var nonRedirectingClient = new HttpClient(httpClientHandler);
+        var httpClientFactoryMock = new Mock<IHttpClientFactory>();
+        httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(nonRedirectingClient);
+        var settings = new SessionsPythonSettings(
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri(server.BaseUri, "start"))
+        {
+            AllowedDomains = [server.BaseUri.Host],
+            CodeExecutionType = SessionsPythonSettings.CodeExecutionTypeSetting.Synchronous,
+            CodeInputType = SessionsPythonSettings.CodeInputTypeSetting.Inline
+        };
+        var sut = new SessionsPythonPlugin(settings, httpClientFactoryMock.Object);
+
+        // Act and assert
+        await Assert.ThrowsAsync<HttpOperationException>(() => sut.ListFilesAsync());
+        Assert.False(server.RedirectTargetContacted, "The redirect target should not have been contacted.");
+    }
 
     [Fact]
     public async Task ItShouldAddHeadersAsync()
@@ -385,109 +474,108 @@ public sealed class SessionsPythonPluginTests : IDisposable
         // Arrange
         var responseContent = await File.ReadAllTextAsync(UpdaloadFileTestDataFilePath);
 
-        _messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(responseContent)
+            Content = new StringContent(responseContent),
         };
 
-        var plugin = new SessionsPythonPlugin(_settingsWithFileOperationsEnabled, _httpClientFactory, _ => Task.FromResult("test-auth-token"));
+        var plugin = new SessionsPythonPlugin(this._settingsWithFileOperationsEnabled, this._httpClientFactory, (_) => Task.FromResult("test-auth-token"));
 
         // Act
         var result = await plugin.UploadFileAsync("test-file.txt", FileTestDataFilePath);
 
         // Assert
-        Assert.NotNull(_messageHandlerStub.RequestHeaders);
+        Assert.NotNull(this._messageHandlerStub.RequestHeaders);
 
-        var userAgentHeaderValues = _messageHandlerStub.RequestHeaders.GetValues("User-Agent").ToArray();
+        var userAgentHeaderValues = this._messageHandlerStub.RequestHeaders.GetValues("User-Agent").ToArray();
         Assert.Equal(2, userAgentHeaderValues.Length);
         Assert.Equal($"{HttpHeaderConstant.Values.UserAgent}/{s_assemblyVersion}", userAgentHeaderValues[0]);
         Assert.Equal("(Language=dotnet)", userAgentHeaderValues[1]);
 
-        var authorizationHeaderValues = _messageHandlerStub.RequestHeaders.GetValues("Authorization");
+        var authorizationHeaderValues = this._messageHandlerStub.RequestHeaders.GetValues("Authorization");
         Assert.Single(authorizationHeaderValues, value => value == "Bearer test-auth-token");
     }
-
 
     [Fact]
     public async Task ItShouldDenyUploadWhenFileOperationsDisabledAsync()
     {
         // Arrange - default settings have EnableDangerousFileUploads = false
-        var plugin = new SessionsPythonPlugin(_defaultSettings, _httpClientFactory);
+        var plugin = new SessionsPythonPlugin(this._defaultSettings, this._httpClientFactory);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.UploadFileAsync("test.txt", FileTestDataFilePath));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync("test.txt", FileTestDataFilePath));
 
         Assert.Contains("EnableDangerousFileUploads", exception.Message);
     }
-
 
     [Fact]
     public async Task ItShouldDenyUploadWhenAllowedDirectoriesNotConfiguredAsync()
     {
         // Arrange - EnableDangerousFileUploads is true but AllowedUploadDirectories is null
         var settings = new SessionsPythonSettings(
-            Guid.NewGuid().ToString(),
-            new Uri("http://localhost:8888"))
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri("http://localhost:8888"))
         {
             EnableDangerousFileUploads = true,
             AllowedUploadDirectories = null
         };
 
-        var plugin = new SessionsPythonPlugin(settings, _httpClientFactory);
+        var plugin = new SessionsPythonPlugin(settings, this._httpClientFactory);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.UploadFileAsync("test.txt", FileTestDataFilePath));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync("test.txt", FileTestDataFilePath));
 
         Assert.Contains("AllowedUploadDirectories", exception.Message);
     }
-
 
     [Fact]
     public async Task ItShouldDenyUploadOutsideAllowedDirectoriesAsync()
     {
         // Arrange
         var settings = new SessionsPythonSettings(
-            Guid.NewGuid().ToString(),
-            new Uri("http://localhost:8888"))
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri("http://localhost:8888"))
         {
             EnableDangerousFileUploads = true,
             AllowedUploadDirectories = new[] { "/some/allowed/directory" }
         };
 
-        var plugin = new SessionsPythonPlugin(settings, _httpClientFactory);
+        var plugin = new SessionsPythonPlugin(settings, this._httpClientFactory);
 
         // Act & Assert - FileTestDataFilePath is not in /some/allowed/directory
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.UploadFileAsync("test.txt", FileTestDataFilePath));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync("test.txt", FileTestDataFilePath));
 
         Assert.Contains("not within allowed upload directories", exception.Message);
     }
-
 
     [Fact]
     public async Task ItShouldDenyDownloadOutsideAllowedDirectoriesAsync()
     {
         // Arrange - AllowedDownloadDirectories is configured, so path validation applies
         var settings = new SessionsPythonSettings(
-            Guid.NewGuid().ToString(),
-            new Uri("http://localhost:8888"))
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri("http://localhost:8888"))
         {
             AllowedDownloadDirectories = new[] { "/some/allowed/directory" }
         };
 
-        _messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
+        this._messageHandlerStub.ResponseToReturn = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new ByteArrayContent(new byte[] { 1, 2, 3 })
+            Content = new ByteArrayContent(new byte[] { 1, 2, 3 }),
         };
 
-        var plugin = new SessionsPythonPlugin(settings, _httpClientFactory);
+        var plugin = new SessionsPythonPlugin(settings, this._httpClientFactory);
         var downloadPath = Path.Combine(Path.GetTempPath(), "test_download.txt");
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.DownloadFileAsync("test.txt", downloadPath));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.DownloadFileAsync("test.txt", downloadPath));
 
         Assert.Contains("not within allowed download directories", exception.Message);
     }
-
 
     [Fact]
     public async Task ItShouldDenyDownloadThroughSymlinkOutsideAllowedDirectoriesAsync()
@@ -555,6 +643,7 @@ public sealed class SessionsPythonPluginTests : IDisposable
                 sessionId: Guid.NewGuid().ToString(),
                 endpoint: new Uri("http://localhost:8888"))
             {
+                AllowedDomains = ["localhost"],
                 AllowedDownloadDirectories = new[] { tempDir }
             };
 
@@ -621,14 +710,14 @@ public sealed class SessionsPythonPluginTests : IDisposable
     {
         // Arrange
         var settings = new SessionsPythonSettings(
-            Guid.NewGuid().ToString(),
-            new Uri("http://localhost:8888"))
+            sessionId: Guid.NewGuid().ToString(),
+            endpoint: new Uri("http://localhost:8888"))
         {
             EnableDangerousFileUploads = true,
             AllowedUploadDirectories = new[] { Path.GetDirectoryName(Path.GetFullPath(FileTestDataFilePath))! }
         };
 
-        var plugin = new SessionsPythonPlugin(settings, _httpClientFactory);
+        var plugin = new SessionsPythonPlugin(settings, this._httpClientFactory);
 
         // Attempt path traversal
         var traversalPath = Path.Combine(
@@ -639,16 +728,16 @@ public sealed class SessionsPythonPluginTests : IDisposable
             "passwd");
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => plugin.UploadFileAsync("test.txt", traversalPath));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => plugin.UploadFileAsync("test.txt", traversalPath));
 
         Assert.Contains("not within allowed upload directories", exception.Message);
     }
 
-
     public void Dispose()
     {
-        _httpClient.Dispose();
-        _messageHandlerStub.Dispose();
+        this._httpClient.Dispose();
+        this._messageHandlerStub.Dispose();
     }
 
     private static void TryDeleteDirectory(string path)

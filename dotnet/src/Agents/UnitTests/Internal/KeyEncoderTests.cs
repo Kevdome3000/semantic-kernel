@@ -11,7 +11,6 @@ namespace SemanticKernel.Agents.UnitTests.Internal;
 /// </summary>
 public class KeyEncoderTests
 {
-
     /// <summary>
     /// Validate the production of unique and consistent hashes.
     /// </summary>
@@ -19,17 +18,16 @@ public class KeyEncoderTests
     public void VerifyKeyEncoderUniqueness()
     {
         // Act
-        VerifyHashEquivalancy();
-        VerifyHashEquivalancy(nameof(KeyEncoderTests));
-        VerifyHashEquivalancy(nameof(KeyEncoderTests), "http://localhost", "zoo");
+        this.VerifyHashEquivalency([]);
+        this.VerifyHashEquivalency(nameof(KeyEncoderTests));
+        this.VerifyHashEquivalency(nameof(KeyEncoderTests), "http://localhost", "zoo");
 
         // Assert: Verify "well-known" value
         string localHash = KeyEncoder.GenerateHash([typeof(ChatHistoryChannel).FullName!]);
         Assert.Equal("Vdx37EnWT9BS+kkCkEgFCg9uHvHNw1+hXMA4sgNMKs4=", localHash);
     }
 
-
-    private void VerifyHashEquivalancy(params string[] keys)
+    private void VerifyHashEquivalency(params string[] keys)
     {
         // Act
         string hash1 = KeyEncoder.GenerateHash(keys);
@@ -40,5 +38,4 @@ public class KeyEncoderTests
         Assert.Equal(hash1, hash2);
         Assert.NotEqual(hash1, hash3);
     }
-
 }

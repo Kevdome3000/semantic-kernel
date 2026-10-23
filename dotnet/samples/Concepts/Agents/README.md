@@ -1,15 +1,12 @@
 # Semantic Kernel: Agent syntax examples
-
 This project contains a collection of examples on how to use _Semantic Kernel Agents_.
 
 #### NuGet:
-
 - [Microsoft.SemanticKernel.Agents.Abstractions](https://www.nuget.org/packages/Microsoft.SemanticKernel.Agents.Abstractions)
 - [Microsoft.SemanticKernel.Agents.Core](https://www.nuget.org/packages/Microsoft.SemanticKernel.Agents.Core)
 - [Microsoft.SemanticKernel.Agents.OpenAI](https://www.nuget.org/packages/Microsoft.SemanticKernel.Agents.OpenAI)
 
 #### Source
-
 - [Semantic Kernel Agent Framework](https://github.com/microsoft/semantic-kernel/tree/main/dotnet/src/Agents)
 
 The examples can be run as integration tests but their code can also be copied to stand-alone programs.
@@ -18,12 +15,12 @@ The examples can be run as integration tests but their code can also be copied t
 
 The concept agents examples are grouped by prefix:
 
- Prefix          | Description                                                                                          
------------------|------------------------------------------------------------------------------------------------------
- OpenAIAssistant | How to use agents based on the [Open AI Assistant API](https://platform.openai.com/docs/assistants). 
- MixedChat       | How to combine different agent types.                                                                
- ComplexChat     | How to deveop complex agent chat solutions.                                                          
- Legacy          | How to use the legacy _Experimental Agent API_.                                                      
+Prefix|Description
+---|---
+OpenAIAssistant|How to use agents based on the [Open AI Assistant API](https://platform.openai.com/docs/assistants).
+MixedChat|How to combine different agent types.
+ComplexChat|How to develop complex agent chat solutions.
+Legacy|How to use the legacy _Experimental Agent API_.
 
 ## Legacy Agents
 
@@ -33,14 +30,12 @@ Support for the OpenAI Assistant API was originally published in `Microsoft.Sema
 This package has been superseded by _Semantic Kernel Agents_, which includes support for Open AI Assistant agents.
 
 ## Running Examples
-
 Examples may be explored and ran within _Visual Studio_ using _Test Explorer_.
 
-You can also run specific examples via the command-line by using test filters (`dotnet test --filter`).
-Type `dotnet test --help` at the command line for more details.
+You can also run specific examples via the command-line by using test filters (`dotnet test --filter`). Type `dotnet test --help` at the command line for more details.
 
 Example:
-
+    
 ```
 dotnet test --filter OpenAIAssistant_CodeInterpreter
 ```
@@ -49,9 +44,7 @@ dotnet test --filter OpenAIAssistant_CodeInterpreter
 
 Each example requires secrets / credentials to access OpenAI or Azure OpenAI.
 
-We suggest using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) to avoid the
-risk of leaking secrets into the repository, branches and pull requests. You can also use environment variables if you
-prefer.
+We suggest using .NET [Secret Manager](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) to avoid the risk of leaking secrets into the repository, branches and pull requests. You can also use environment variables if you prefer.
 
 To set your secrets with .NET Secret Manager:
 
@@ -89,8 +82,7 @@ To set your secrets with .NET Secret Manager:
     dotnet user-secrets set "AzureOpenAI:ApiKey" "..."
     ```
 
-> NOTE: Azure secrets will take precedence, if both Open AI and Azure Open AI secrets are defined, unless `ForceOpenAI`
-> is set:
+> NOTE: Azure secrets will take precedence, if both Open AI and Azure Open AI secrets are defined, unless `ForceOpenAI` is set:
 
 ```
 protected override bool ForceOpenAI => true;
