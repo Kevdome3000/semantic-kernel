@@ -1,9 +1,17 @@
 # Semantic Kernel
 
 > [!IMPORTANT]
-> Semantic Kernel is now [Microsoft Agent Framework](https://github.com/microsoft/agent-framework)! Microsoft Agent Framework (MAF) is the enterprise‑ready successor to Semantic Kernel. Microsoft Agent Framework is now available at version 1.0 as a production-ready release: stable APIs, and a commitment to long-term support. Whether you're building a single assistant or orchestrating a fleet of specialized agents, Microsoft Agent Framework 1.0 gives you enterprise-grade multi-agent orchestration, multi-provider model support, and cross-runtime interoperability via A2A and MCP.
+> Semantic Kernel is now [Microsoft Agent Framework](https://github.com/microsoft/agent-framework)! Microsoft Agent
+Framework (MAF) is the enterprise‑ready successor to Semantic Kernel. Microsoft Agent Framework is now available at
+version 1.0 as a production-ready release: stable APIs, and a commitment to long-term support. Whether you're building a
+single assistant or orchestrating a fleet of specialized agents, Microsoft Agent Framework 1.0 gives you
+enterprise-grade multi-agent orchestration, multi-provider model support, and cross-runtime interoperability via A2A and
+MCP.
 >
-> Learn more about Semantic Kernel and Agent Framework here: [Semantic Kernel and Microsoft Agent Framework on the Agent Framework blog](https://devblogs.microsoft.com/agent-framework/semantic-kernel-and-microsoft-agent-framework/), and try out the [Semantic Kernel migration guide](https://learn.microsoft.com/en-us/agent-framework/migration-guide/from-semantic-kernel).
+> Learn more about Semantic Kernel and Agent Framework
+> here: [Semantic Kernel and Microsoft Agent Framework on the Agent Framework blog](https://devblogs.microsoft.com/agent-framework/semantic-kernel-and-microsoft-agent-framework/),
+> and try out
+> the [Semantic Kernel migration guide](https://learn.microsoft.com/en-us/agent-framework/migration-guide/from-semantic-kernel).
 
 **Build intelligent AI agents and multi-agent systems with this enterprise-ready orchestration framework**
 
@@ -14,24 +22,32 @@
 
 ## What is Semantic Kernel?
 
-Semantic Kernel is a model-agnostic SDK that empowers developers to build, orchestrate, and deploy AI agents and multi-agent systems. Whether you're building a simple chatbot or a complex multi-agent workflow, Semantic Kernel provides the tools you need with enterprise-grade reliability and flexibility.
+Semantic Kernel is a model-agnostic SDK that empowers developers to build, orchestrate, and deploy AI agents and
+multi-agent systems. Whether you're building a simple chatbot or a complex multi-agent workflow, Semantic Kernel
+provides the tools you need with enterprise-grade reliability and flexibility.
 
 ## System Requirements
 
 - **Python**: 3.10+
-- **.NET**: .NET 10.0+ 
+- **.NET**: .NET 10.0+
 - **Java**: JDK 17+
 - **OS Support**: Windows, macOS, Linux
 
 ## Key Features
 
-- **Model Flexibility**: Connect to any LLM with built-in support for [OpenAI](https://platform.openai.com/docs/introduction), [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service), [Hugging Face](https://huggingface.co/), [NVidia](https://www.nvidia.com/en-us/ai-data-science/products/nim-microservices/) and more
+- **Model Flexibility**: Connect to any LLM with built-in support
+  for [OpenAI](https://platform.openai.com/docs/introduction), [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service), [Hugging Face](https://huggingface.co/), [NVidia](https://www.nvidia.com/en-us/ai-data-science/products/nim-microservices/)
+  and more
 - **Agent Framework**: Build modular AI agents with access to tools/plugins, memory, and planning capabilities
 - **Multi-Agent Systems**: Orchestrate complex workflows with collaborating specialist agents
-- **Plugin Ecosystem**: Extend with native code functions, prompt templates, OpenAPI specs, or Model Context Protocol (MCP)
-- **Vector DB Support**: Seamless integration with [Azure AI Search](https://learn.microsoft.com/en-us/azure/search/search-what-is-azure-search), [Elasticsearch](https://www.elastic.co/), [Chroma](https://docs.trychroma.com/docs/overview/getting-started), and more
+- **Plugin Ecosystem**: Extend with native code functions, prompt templates, OpenAPI specs, or Model Context Protocol
+  (MCP)
+- **Vector DB Support**: Seamless integration
+  with [Azure AI Search](https://learn.microsoft.com/en-us/azure/search/search-what-is-azure-search), [Elasticsearch](https://www.elastic.co/), [Chroma](https://docs.trychroma.com/docs/overview/getting-started),
+  and more
 - **Multimodal Support**: Process text, vision, and audio inputs
-- **Local Deployment**: Run with [Ollama](https://ollama.com/), [LMStudio](https://lmstudio.ai/), or [ONNX](https://onnx.ai/)
+- **Local Deployment**: Run with [Ollama](https://ollama.com/), [LMStudio](https://lmstudio.ai/),
+  or [ONNX](https://onnx.ai/)
 - **Process Framework**: Model complex business processes with a structured workflow approach
 - **Enterprise Ready**: Built for observability, security, and stable APIs
 
@@ -40,11 +56,13 @@ Semantic Kernel is a model-agnostic SDK that empowers developers to build, orche
 First, set the environment variable for your AI Services:
 
 **Azure OpenAI:**
+
 ```bash
 export AZURE_OPENAI_API_KEY=AAA....
 ```
 
 **or OpenAI directly:**
+
 ```bash
 export OPENAI_API_KEY=sk-...
 ```
@@ -307,11 +325,10 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-
-
 ## Where to Go Next
 
-1. 📖 Try our [Getting Started Guide](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide) or learn about [Building Agents](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/)
+1. 📖 Try our [Getting Started Guide](https://learn.microsoft.com/en-us/semantic-kernel/get-started/quick-start-guide) or
+   learn about [Building Agents](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/)
 2. 🔌 Explore over 100 [Detailed Samples](https://learn.microsoft.com/en-us/semantic-kernel/get-started/detailed-samples)
 3. 💡 Learn about core Semantic Kernel [Concepts](https://learn.microsoft.com/en-us/semantic-kernel/concepts/kernel)
 
@@ -333,12 +350,14 @@ if __name__ == "__main__":
 - Search the [Discord community](https://aka.ms/SKDiscord) for solutions
 - Include your SDK version and full error messages when asking for help
 
-
 ## Join the community
 
-We welcome your contributions and suggestions to the SK community! One of the easiest ways to participate is to engage in discussions in the GitHub repository. Bug reports and fixes are welcome!
+We welcome your contributions and suggestions to the SK community! One of the easiest ways to participate is to engage
+in discussions in the GitHub repository. Bug reports and fixes are welcome!
 
-For new features, components, or extensions, please open an issue and discuss with us before sending a PR. This is to avoid rejection as we might be taking the core in a different direction, but also to consider the impact on the larger ecosystem.
+For new features, components, or extensions, please open an issue and discuss with us before sending a PR. This is to
+avoid rejection as we might be taking the core in a different direction, but also to consider the impact on the larger
+ecosystem.
 
 To learn more and get started:
 

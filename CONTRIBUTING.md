@@ -45,9 +45,9 @@ DO's:
 
 - **DO** follow the standard coding conventions
 
-  - [.NET](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
-  - [Python](https://pypi.org/project/black/)
-  - [Typescript](https://typescript-eslint.io/rules/)/[React](https://github.com/jsx-eslint/eslint-plugin-react/tree/master/docs/rules)
+    - [.NET](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
+    - [Python](https://pypi.org/project/black/)
+    - [Typescript](https://typescript-eslint.io/rules/)/[React](https://github.com/jsx-eslint/eslint-plugin-react/tree/master/docs/rules)
 
 - **DO** give priority to the current style of the project or file you're changing
   if it diverges from the general guidelines.
@@ -79,23 +79,25 @@ your idea or change if you believe that a breaking change is warranted.
 We use and recommend the following workflow:
 
 1. Create an issue for your work.
-   - You can skip this step for trivial changes.
-   - Reuse an existing issue on the topic, if there is one.
-   - Get agreement from the team and the community that your proposed change is
-     a good one.
-   - Clearly state that you are going to take on implementing it, if that's the case.
-     You can request that the issue be assigned to you. Note: The issue filer and
-     the implementer don't have to be the same person.
+    - You can skip this step for trivial changes.
+    - Reuse an existing issue on the topic, if there is one.
+    - Get agreement from the team and the community that your proposed change is
+      a good one.
+    - Clearly state that you are going to take on implementing it, if that's the case.
+      You can request that the issue be assigned to you. Note: The issue filer and
+      the implementer don't have to be the same person.
 2. Create a personal fork of the repository on GitHub (if you don't already have one).
 3. In your fork, create a branch off of main (`git checkout -b mybranch`).
-   - Name the branch so that it clearly communicates your intentions, such as
-     "issue-123" or "githubhandle-issue".
+    - Name the branch so that it clearly communicates your intentions, such as
+      "issue-123" or "githubhandle-issue".
 4. Make and commit your changes to your branch.
 5. Add new tests corresponding to your change, if applicable.
-6. Run the relevant scripts in [the section below](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md#dev-scripts) to ensure that your build is clean and all tests are passing.
+6. Run the relevant scripts
+   in [the section below](https://github.com/microsoft/semantic-kernel/blob/main/CONTRIBUTING.md#dev-scripts) to ensure
+   that your build is clean and all tests are passing.
 7. Create a PR against the repository's **main** branch.
-   - State in the description what issue or improvement your change is addressing.
-   - Verify that all the Continuous Integration checks are passing.
+    - State in the description what issue or improvement your change is addressing.
+    - Verify that all the Continuous Integration checks are passing.
 8. Wait for feedback or approval of your changes from the code maintainers.
 9. When area owners have signed off, and all checks are green, your PR will be merged.
 
@@ -103,13 +105,14 @@ We use and recommend the following workflow:
 
 The scripts below are used to build, test, and lint within the project.
 
-- Python: see [python/DEV_SETUP.md](https://github.com/microsoft/semantic-kernel/blob/main/python/DEV_SETUP.md#pipeline-checks).
+- Python:
+  see [python/DEV_SETUP.md](https://github.com/microsoft/semantic-kernel/blob/main/python/DEV_SETUP.md#pipeline-checks).
 - .NET:
-  - Build/Test: `run build.cmd` or `bash build.sh`
-  - Linting (auto-fix): `dotnet format`
+    - Build/Test: `run build.cmd` or `bash build.sh`
+    - Linting (auto-fix): `dotnet format`
 - Typescript:
-  - Build/Test: `yarn build`
-  - Linting (auto-fix): `yarn lint:fix`
+    - Build/Test: `yarn build`
+    - Linting (auto-fix): `yarn lint:fix`
 
 ### Adding Plugins and Memory Connectors
 
